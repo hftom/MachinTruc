@@ -1,0 +1,25 @@
+<RCC>
+  <qresource prefix="toolbar">
+    <file>icons/list-remove.png</file>
+    <file>icons/list-add.png</file>
+    <file>icons/clips.png</file>
+    <file>icons/project.png</file>
+    <file>icons/arrow-left.png</file>
+    <file>icons/arrow-right.png</file>
+    <file>icons/media-playback-pause.png</file>
+    <file>icons/media-playback-start.png</file>
+    <file>icons/media-seek-backward.png</file>
+    <file>icons/media-seek-forward.png</file>
+    <file>icons/media-skip-backward.png</file>
+    <file>icons/media-skip-forward.png</file>
+    <file>icons/document-open.png</file>
+    <file>icons/mixer-front.png</file>
+    <file>icons/edit-undo.png</file>
+    <file>icons/edit-redo.png</file>
+    <file>icons/applications-multimedia.png</file>
+    <file>icons/tools-wizard.png</file>
+  </qresource>
+  <qresource prefix="images">
+    <file>icons/sound.png</file>
+  </qresource>
+</RCC>

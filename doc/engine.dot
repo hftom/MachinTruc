@@ -1,0 +1,32 @@
+digraph G {
+
+ node [shape=box];
+
+ subgraph cluster2 {
+  InputN; Input2; Input1;
+ }
+ 
+ subgraph cluster1 {
+  SourceN; Source2; Source1;
+ }
+
+ subgraph cluster0 {
+  sceneN; scene2; scene1;
+ }
+
+ Sampler -> Composer [arrowhead=normal];
+ 
+ Source1 -> Input1;
+
+ Input1 -> Sampler;
+ Input2 -> Sampler;
+ InputN -> Sampler;
+
+ scene2 -> Sampler [ltail=cluster0, lhead=cluster1];
+ 
+
+ Composer -> Metronom;
+ Metronom -> Screen;
+ Metronom -> AudioOut
+
+}
