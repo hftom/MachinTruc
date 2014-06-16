@@ -16,6 +16,9 @@ public:
 	Effect* getMovitEffect();
 	
 	float width, height;
+	
+private:
+	float percent;
 };
 
 #endif //GLRESIZE_H

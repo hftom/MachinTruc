@@ -25,12 +25,12 @@ public:
 		((Filter*)t)->release();
 	}
 	
-	int count() const {
+	int count() {
 		QMutexLocker ml( &mutex );
 		return list.count();
 	}
 	
-	T at( int index ) const {
+	T at( int index ) {
 		QMutexLocker ml( &mutex );
 		return list.at( index );
 	}

@@ -37,6 +37,7 @@ Sampler::Sampler()
 	composer = new Composer( this );
 	connect( composer, SIGNAL(newFrame(Frame*)), this, SIGNAL(newFrame(Frame*)) );
 	connect( composer, SIGNAL(paused(bool)), this, SIGNAL(paused(bool)) );
+	connect( metronom, SIGNAL(discardFrame()), composer, SLOT(discardFrame()) );
 }
 
 

@@ -39,7 +39,7 @@ void Composer::setSharedContext( QGLWidget *shared )
     hiddenContext = shared;
     hiddenContext->makeCurrent();
 	
-	glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
+	/*/glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
     glClearDepth( 1.0f );
     glDepthFunc( GL_LEQUAL );
     glDisable( GL_DEPTH_TEST );
@@ -47,7 +47,7 @@ void Composer::setSharedContext( QGLWidget *shared )
     glDisable( GL_BLEND );
     glShadeModel( GL_SMOOTH );
     glEnable( GL_TEXTURE_2D );
-    glHint( GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST );
+    glHint( GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST );*/
 
 	QString movitPath;
 	if ( QFile("/usr/share/movit/header.frag").exists() )
@@ -59,7 +59,7 @@ void Composer::setSharedContext( QGLWidget *shared )
 	
     bool ok = init_movit( movitPath.toLocal8Bit().data(), MOVIT_DEBUG_ON );
 	
-	movitPool = new ResourcePool( 100, 500 << 20, 100 );
+	movitPool = new ResourcePool( 100, 300 << 20, 100 );
 
 	mask_texture = hiddenContext->bindTexture( QImage("/home/cris/mask.png") );
 	glBindTexture( GL_TEXTURE_2D, mask_texture );
@@ -68,11 +68,15 @@ void Composer::setSharedContext( QGLWidget *shared )
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 	printf("mask_texture = %u\n", mask_texture);
-	int gmfuc;
-	glGetIntegerv( GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, &gmfuc );
-	printf("GL_MAX_FRAGMENT_UNIFORM_COMPONENTS = %d\n", gmfuc );
 
     hiddenContext->doneCurrent();
+}
+
+
+
+void Composer::discardFrame()
+{
+	++skipFrame;
 }
 
 
@@ -107,6 +111,7 @@ void Composer::updateFrame( Frame *dst )
 	if ( isRunning() )
 		return;
 	
+	skipFrame = 0;
 	hiddenContext->makeCurrent();
 	
 	movitRender( dst, true );
@@ -129,6 +134,7 @@ void Composer::runOneShot()
 	if ( isRunning() )
 		return;
 	
+	skipFrame = 0;
 	hiddenContext->makeCurrent();
 	oneShot = true;
 
@@ -148,6 +154,7 @@ void Composer::run()
 	int ret;
 	Frame *f = NULL;
 
+	skipFrame = 0;
 	hiddenContext->makeCurrent();
 
 	while ( running ) {
@@ -257,6 +264,14 @@ bool Composer::renderVideoFrame( Frame *dst )
 		glFlush();
         return true;
     }
+    
+    if ( skipFrame > 0 ) {
+		--skipFrame;
+		Profile projectProfile = sampler->getProfile();
+		dst->setVideoFrame( Frame::NONE, projectProfile.getVideoWidth(), projectProfile.getVideoHeight(), projectProfile.getVideoAspectRatio(),
+                            false, false, sampler->currentPTS(), projectProfile.getVideoFrameDuration() );
+		return true;
+	}
 
 	movitRender( dst );
 

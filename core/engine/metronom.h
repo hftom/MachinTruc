@@ -52,6 +52,7 @@ private:
 signals:
     void newFrame( Frame* );
 	void currentFramePts( double );
+	void discardFrame();
 
 };
 

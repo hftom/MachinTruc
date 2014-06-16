@@ -40,6 +40,7 @@ public:
 
 public slots:
     void setSharedContext( QGLWidget *shared );
+	void discardFrame();
 
 private:
 	void run();
@@ -52,6 +53,7 @@ private:
 
     bool running;
     bool oneShot;
+	int skipFrame;
 
 	GLuint mask_texture;
 	

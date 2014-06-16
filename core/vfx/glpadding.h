@@ -14,6 +14,9 @@ public:
     bool process( Effect *e, Frame *src, Profile *p );
 
 	Effect* getMovitEffect();
+	
+private:
+	float xoffsetpercent, yoffsetpercent;
 };
 
 #endif //GLPADDING_H

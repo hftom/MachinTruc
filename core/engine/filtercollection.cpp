@@ -20,6 +20,8 @@ FilterCollection::FilterCollection()
 	videoFilters.append( FilterEntry( "GLLiftGammaGain", QObject::tr("Lift Gamma Gain"), &Maker<GLLiftGammaGain>::make ) );
 	videoFilters.append( FilterEntry( "GLOpacity", QObject::tr("Opacity"), &Maker<GLOpacity>::make ) );
 	videoFilters.append( FilterEntry( "GLWater", QObject::tr("Water"), &Maker<GLWater>::make ) );
+	videoFilters.append( FilterEntry( "GLPadding", QObject::tr("Move"), &Maker<GLPadding>::make ) );
+	videoFilters.append( FilterEntry( "GLResize", QObject::tr("Size"), &Maker<GLResize>::make ) );
 	
 	audioFilters.append( FilterEntry( "AudioVolume", QObject::tr("Volume"), &Maker<AudioVolume>::make ) );
 };

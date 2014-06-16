@@ -3,6 +3,7 @@
 #include <QMessageBox>
 #include <QFileDialog>
 
+#include <movit/resample_effect.h>
 #include "engine/movitchain.h"
 #include "engine/filtercollection.h"
 
@@ -185,9 +186,6 @@ QPixmap ProjectClipsPage::getSourceThumb( Frame *f )
 	if ( !f )
 		return QPixmap();
 	
-	f->glWidth = f->profile.getVideoWidth();
-	f->glHeight = f->profile.getVideoHeight();
-	
 	hidden->makeCurrent();
 
 	MovitChain *movitChain = new MovitChain();
@@ -200,11 +198,11 @@ QPixmap ProjectClipsPage::getSourceThumb( Frame *f )
 			
 	// deinterlace
 	if ( f->profile.getVideoInterlaced() ) {
-		GLDeinterlace *deint = new GLDeinterlace();
-		Effect *e = deint->getMovitEffect();
-		branch->filters.append( new MovitFilter( e, deint, true ) );
-		movitChain->chain->add_effect( e );
-		deint->process( e, f, &f->profile );
+		Effect *e = new MyDeinterlaceEffect();
+		if ( e->set_float( "height", f->profile.getVideoHeight() ) )
+			movitChain->chain->add_effect( e );
+		else
+			delete e;
 	}
 			
 	int iw, ih;
@@ -217,15 +215,13 @@ QPixmap ProjectClipsPage::getSourceThumb( Frame *f )
 		iw = ih * f->profile.getVideoAspectRatio();
 	}
 	// resize
-	GLResize *resize = new GLResize();
-	resize->width = iw;
-	resize->height = ih;
-	Effect *e = resize->getMovitEffect();
-	resize->process( e, f, &f->profile );
-	branch->filters.append( new MovitFilter( e, resize, true ) );
-	movitChain->chain->add_effect( e );
+	Effect *e = new ResampleEffect();
+	if ( e->set_int( "width", iw ) && e->set_int( "height", ih ) )
+		movitChain->chain->add_effect( e );
+	else
+		delete e;
 	
-	movitChain->chain->set_dither_bits( 0 );
+	movitChain->chain->set_dither_bits( 8 );
 	ImageFormat output_format;
 	output_format.color_space = COLORSPACE_sRGB;
 	output_format.gamma_curve = GAMMA_sRGB;
@@ -233,25 +229,13 @@ QPixmap ProjectClipsPage::getSourceThumb( Frame *f )
 	movitChain->chain->finalize();
 	
 	// render
-	GLuint fbo, tex;
-	glGenFramebuffers( 1, &fbo );
-	glGenTextures( 1, &tex );
-	glActiveTexture( GL_TEXTURE0 );
-    glBindTexture( GL_TEXTURE_2D, tex );
-    glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, iw, ih, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL );
-    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-	glBindFramebuffer( GL_FRAMEBUFFER, fbo );
-    glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex, 0 );
-	
-	movitChain->chain->render_to_fbo( fbo, iw, ih );
+	QGLFramebufferObject *fbo = new QGLFramebufferObject( iw, ih );
+	movitChain->chain->render_to_fbo( fbo->handle(), iw, ih );
 	
 	uint8_t data[iw*ih*4];
-	glBindFramebuffer( GL_FRAMEBUFFER, fbo );
+	fbo->bind();
 	glReadPixels(0, 0, iw, ih, GL_BGRA, GL_UNSIGNED_BYTE, data);
-	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
+	fbo->release();
 	
 	QImage img( ICONSIZEWIDTH + 4, ICONSIZEHEIGHT + 4, QImage::Format_ARGB32 );
 	img.fill( QColor(0,0,0,0) );
@@ -260,8 +244,7 @@ QPixmap ProjectClipsPage::getSourceThumb( Frame *f )
 
 	f->release();
 	delete movitChain;
-	glDeleteFramebuffers( 1, &fbo );
-	glDeleteTextures( 1, &tex );
+	delete fbo;
 	hidden->doneCurrent();
 	
 	return QPixmap::fromImage( img );

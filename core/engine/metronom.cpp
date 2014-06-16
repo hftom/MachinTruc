@@ -146,7 +146,11 @@ void Metronom::run()
                  t = sc + f->pts();
 			}
 
-            if ( t < ct ) {
+			if ( f->type() == Frame::NONE ) {
+				show = false;
+				f->release();
+			}
+            else if ( t < ct ) {
 				if ( (ct - t) > f->profile.getVideoFrameDuration() && skipped > -1 ) {
 					if ( ++skipped > 5 ) {
 						clockMutex.lock();
@@ -157,6 +161,7 @@ void Metronom::run()
 					}
 					show = false;
 					//qDebug() << "Skipped" << skipped;
+					emit discardFrame();
 					f->release();
 				}
 				else {
