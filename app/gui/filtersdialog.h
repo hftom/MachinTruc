@@ -33,6 +33,9 @@ private:
 	Sampler *sampler;
 	QWidget *currentVideoWidget;
 	QWidget *currentAudioWidget;
+	
+	QGridLayout *videoWidgetLayout;
+	QGridLayout *audioWidgetLayout;
 };
 
 

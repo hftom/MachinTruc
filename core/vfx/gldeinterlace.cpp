@@ -14,17 +14,19 @@ GLDeinterlace::~GLDeinterlace()
 
 
 
-bool GLDeinterlace::process( Effect *e, Frame *src, Profile *p )
+bool GLDeinterlace::process( const QList<Effect*> &el, Frame *src, Profile *p )
 {
 	Q_UNUSED( p );
-	return e->set_float( "height", src->glHeight );
+	return el.at(0)->set_float( "height", src->glHeight );
 }
 
 
 
-Effect* GLDeinterlace::getMovitEffect()
+QList<Effect*> GLDeinterlace::getMovitEffects()
 {
-	return new MyDeinterlaceEffect();
+	QList<Effect*> list;
+	list.append( new MyDeinterlaceEffect() );
+	return list;
 }
 
 

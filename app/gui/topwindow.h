@@ -41,6 +41,7 @@ public:
 	TopWindow();
 	
 	Source* getDroppedCut( int index, QString mime, QString filename, double &start, double &len );
+	Sampler* getSampler() { return sampler; };
 
 private slots:
 	void ensureVisible( const QGraphicsItem *it );
@@ -68,6 +69,7 @@ private slots:
 	
 private:
 	ProjectClipsPage *clipPage;
+	FxPage *fxPage;
 	SourceListItem *activeClip;
 	
 	Timeline *timeline;

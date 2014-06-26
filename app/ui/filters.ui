@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>648</width>
-    <height>567</height>
+    <width>632</width>
+    <height>619</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -102,21 +102,16 @@
                </sizepolicy>
               </property>
              </widget>
-             <widget class="QWidget" name="videoParamWidget" native="true">
+             <widget class="QScrollArea" name="videoParamWidget">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                 <horstretch>1</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
               </property>
-              <layout class="QGridLayout" name="videoWidgetLayout">
-               <property name="margin">
-                <number>0</number>
-               </property>
-               <property name="spacing">
-                <number>0</number>
-               </property>
-              </layout>
+              <property name="widgetResizable">
+               <bool>true</bool>
+              </property>
              </widget>
             </widget>
            </item>
@@ -201,21 +196,16 @@
                </sizepolicy>
               </property>
              </widget>
-             <widget class="QWidget" name="audioParamWidget" native="true">
+             <widget class="QScrollArea" name="audioParamWidget">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                 <horstretch>1</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
               </property>
-              <layout class="QGridLayout" name="audioWidgetLayout">
-               <property name="margin">
-                <number>0</number>
-               </property>
-               <property name="spacing">
-                <number>0</number>
-               </property>
-              </layout>
+              <property name="widgetResizable">
+               <bool>true</bool>
+              </property>
              </widget>
             </widget>
            </item>

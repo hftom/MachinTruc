@@ -21,18 +21,20 @@ GLSaturation::~GLSaturation()
 
 
 
-bool GLSaturation::process( Effect *e, Frame *src, Profile *p )
+bool GLSaturation::process( const QList<Effect*> &el, Frame *src, Profile *p )
 {
 	Q_UNUSED( src );
 	Q_UNUSED( p );
-	return e->set_float( "saturation", saturation );
+	return el.at(0)->set_float( "saturation", saturation );
 }
 
 
 
-Effect* GLSaturation::getMovitEffect()
+QList<Effect*> GLSaturation::getMovitEffects()
 {
-	return new MGLSaturation();
+	QList<Effect*> list;
+	list.append( new MGLSaturation() );
+	return list;
 }
 
 

@@ -14,15 +14,24 @@ template <class T>
 class FList
 {
 public:
+	~FList() {
+		QMutexLocker ml( &mutex );
+		while ( !list.isEmpty() ) {
+			Filter *t = (Filter*)list.takeFirst();
+			t->release();
+		}
+	}
+	
 	void append( T t ) {
 		QMutexLocker ml( &mutex );
 		list.append( t );
 	}
 	
-	void remove( T t ) {
+	bool remove( T t ) {
 		QMutexLocker ml( &mutex );
-		list.removeOne( t );
+		bool ok = list.removeOne( t );
 		((Filter*)t)->release();
+		return ok;
 	}
 	
 	int count() {

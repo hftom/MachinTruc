@@ -28,18 +28,20 @@ GLLiftGammaGain::~GLLiftGammaGain()
 
 
 
-bool GLLiftGammaGain::process( Effect *e, Frame *src, Profile *p )
+bool GLLiftGammaGain::process( const QList<Effect*> &el, Frame *src, Profile *p )
 {
 	Q_UNUSED( src );
 	Q_UNUSED( p );
-	return e->set_vec3( "lift", lift )
-		&& e->set_vec3( "gamma", gamma )
-		&& e->set_vec3( "gain", gain );
+	return el.at(0)->set_vec3( "lift", lift )
+		&& el.at(0)->set_vec3( "gamma", gamma )
+		&& el.at(0)->set_vec3( "gain", gain );
 }
 
 
 
-Effect* GLLiftGammaGain::getMovitEffect()
+QList<Effect*> GLLiftGammaGain::getMovitEffects()
 {
-	return new LiftGammaGainEffect();
+	QList<Effect*> list;
+	list.append( new LiftGammaGainEffect() );
+	return list;
 }

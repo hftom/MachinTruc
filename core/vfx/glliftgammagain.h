@@ -11,9 +11,9 @@ public:
     GLLiftGammaGain( QString id, QString name );
     ~GLLiftGammaGain();
 
-    bool process( Effect *e, Frame *src, Profile *p );
+    bool process( const QList<Effect*> &el, Frame *src, Profile *p );
 
-	Effect* getMovitEffect();
+	QList<Effect*> getMovitEffects();
 
 private:
     float lift[3], gamma[3], gain[3];

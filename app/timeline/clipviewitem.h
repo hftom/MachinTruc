@@ -22,10 +22,13 @@ public:
 	Clip* getClip() { return clip; }
 	
 protected:
-	void mousePressEvent( QGraphicsSceneMouseEvent * event );
-	void mouseMoveEvent( QGraphicsSceneMouseEvent * event );
-	void mouseReleaseEvent( QGraphicsSceneMouseEvent * event );
-	void hoverMoveEvent( QGraphicsSceneHoverEvent * event );
+	void mousePressEvent( QGraphicsSceneMouseEvent *event );
+	void mouseMoveEvent( QGraphicsSceneMouseEvent *event );
+	void mouseReleaseEvent( QGraphicsSceneMouseEvent *event );
+	void hoverMoveEvent( QGraphicsSceneHoverEvent *event );
+	
+	void dragEnterEvent( QGraphicsSceneDragDropEvent *event );
+	void dropEvent( QGraphicsSceneDragDropEvent *event );
 
 private:	
 	QString filename;

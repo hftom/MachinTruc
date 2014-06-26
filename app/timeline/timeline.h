@@ -50,6 +50,8 @@ public:
 	void clipItemMoved( ClipViewItem *clip, QPointF clipMouseStart );
 	void clipItemCanResize( ClipViewItem *clip, int way, QPointF mouse, double clipStartPos, double clipStartLen, QPointF clipStartMouse );
 	void clipItemResized( ClipViewItem *clip, int way );
+	void addFilter( ClipViewItem *clip, QString fx );
+	
 	void trackPressed( QPointF p );
 	void itemSelected( AbstractViewItem *it );
 	
@@ -61,6 +63,8 @@ public slots:
 	void setScene( Scene *s );
 	void deleteClip();
 	
+	void filterDeleted( Clip *c, Filter *f );
+	
 protected:
 	/*void mousePressEvent ( QGraphicsSceneMouseEvent *e );
 	void mouseMoveEvent( QGraphicsSceneMouseEvent *e );
@@ -70,7 +74,7 @@ protected:
 	void dragEnterEvent( QGraphicsSceneDragDropEvent *event );
 	void dragLeaveEvent( QGraphicsSceneDragDropEvent *event );
 	void dragMoveEvent( QGraphicsSceneDragDropEvent *event );
-	void dropEvent( QGraphicsSceneDragDropEvent * event );
+	void dropEvent( QGraphicsSceneDragDropEvent *event );
 	
 private slots:
 	void updateLength();
@@ -101,6 +105,8 @@ signals:
 	void ensureVisible( const QGraphicsItem* );
 	void centerOn( const QGraphicsItem* );
 	void seekTo( double );
+	void updateFrame();
+	void clipSelected( Clip* );
 };
 
 #endif //TIMELINE_H

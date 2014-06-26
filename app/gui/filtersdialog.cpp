@@ -12,6 +12,14 @@ FiltersDialog::FiltersDialog( QWidget *parent, Source *src, Sampler *samp ) : QD
 	source = src;
 	sampler = samp;
 	
+	QWidget *videoWidget = new QWidget();
+	videoWidgetLayout = new QGridLayout( videoWidget );
+	videoParamWidget->setWidget( videoWidget );
+	
+	QWidget *audioWidget = new QWidget();
+	audioWidgetLayout = new QGridLayout( audioWidget );
+	audioParamWidget->setWidget( audioWidget );
+	
 	if ( source->getProfile().hasVideo() ) {
 		videoList->addItems( source->videoFilters.videoFiltersNames() );	
 		connect( videoList, SIGNAL(currentRowChanged(int)), this, SLOT(videoFilterActivated(int)) );
@@ -58,7 +66,10 @@ void FiltersDialog::videoFilterActivated( int row )
 		return;
 	
 	currentVideoWidget = source->videoFilters.at( row )->getWidget();
-	videoWidgetLayout->addWidget( currentVideoWidget );
+	if ( currentVideoWidget ) {
+		videoWidgetLayout->addWidget( currentVideoWidget, 0, 1 );
+		videoWidgetLayout->setRowStretch( 1, 1 );
+	}
 }
 
 
@@ -76,7 +87,7 @@ void FiltersDialog::addVideoFilter( int i )
 {
 	FilterCollection *fc = FilterCollection::getGlobal();
 	
-	GLFilter *f = (GLFilter*)fc->videoFilters.at( i ).makeFilter( fc->videoFilters.at( i ).identifier, fc->videoFilters.at( i ).name );
+	GLFilter *f = (GLFilter*)fc->videoFilters[ i ].create();
 	connect( f, SIGNAL(updateFrame()), sampler, SLOT(updateFrame()) );
 	source->videoFilters.append( f );
 	videoList->clear();
@@ -101,7 +112,7 @@ void FiltersDialog::removeCurrentVideoFilter()
 	videoList->clear();
 	videoList->addItems( source->videoFilters.videoFiltersNames() );
 	if ( videoList->count() )
-		videoList->setCurrentRow( 0 );
+		videoList->setCurrentRow( videoList->count() - 1 );
 	else if ( currentVideoWidget ) {
 		delete currentVideoWidget;
 		currentVideoWidget = NULL;
@@ -123,7 +134,10 @@ void FiltersDialog::audioFilterActivated( int row )
 		return;
 	
 	currentAudioWidget = source->audioFilters.at( row )->getWidget();
-	audioWidgetLayout->addWidget( currentAudioWidget );
+	if ( currentAudioWidget ) {
+		audioWidgetLayout->addWidget( currentAudioWidget, 0, 1 );
+		audioWidgetLayout->setRowStretch( 1, 1 );
+	}	
 }
 
 
@@ -141,7 +155,7 @@ void FiltersDialog::addAudioFilter( int i )
 {
 	FilterCollection *fc = FilterCollection::getGlobal();
 	
-	AudioFilter *f = (AudioFilter*)fc->audioFilters.at( i ).makeFilter( fc->audioFilters.at( i ).identifier, fc->audioFilters.at( i ).name );
+	AudioFilter *f = (AudioFilter*)fc->audioFilters[ i ].create();
 	source->audioFilters.append( f );
 	audioList->clear();
 	audioList->addItems( source->audioFilters.audioFiltersNames() );
@@ -164,7 +178,7 @@ void FiltersDialog::removeCurrentAudioFilter()
 	audioList->clear();
 	audioList->addItems( source->audioFilters.audioFiltersNames() );
 	if ( audioList->count() )
-		audioList->setCurrentRow( 0 );
+		audioList->setCurrentRow( audioList->count() - 1 );
 	else if ( currentAudioWidget ) {
 		delete currentAudioWidget;
 		currentAudioWidget = NULL;

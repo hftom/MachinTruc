@@ -25,23 +25,25 @@ GLDeconvolutionSharpen::~GLDeconvolutionSharpen()
 
 
 
-bool GLDeconvolutionSharpen::process( Effect *e, Frame *src, Profile *p )
+bool GLDeconvolutionSharpen::process( const QList<Effect*> &el, Frame *src, Profile *p )
 {
 	Q_UNUSED( src );
 	Q_UNUSED( p );
-	return e->set_float( "circle_radius", circleRadius )
-		&& e->set_float( "gaussian_radius", gaussianRadius )
-		&& e->set_float( "correlation", correlation )
-		&& e->set_float( "noise", noise );
+	return el.at(0)->set_float( "circle_radius", circleRadius )
+		&& el.at(0)->set_float( "gaussian_radius", gaussianRadius )
+		&& el.at(0)->set_float( "correlation", correlation )
+		&& el.at(0)->set_float( "noise", noise );
 }
 
 
 
-Effect* GLDeconvolutionSharpen::getMovitEffect()
+QList<Effect*> GLDeconvolutionSharpen::getMovitEffects()
 {
 	Effect *e = new DeconvolutionSharpenEffect();
 	e->set_int( "matrix_size", R );
-	return e;
+	QList<Effect*> list;
+	list.append( e );
+	return list;
 }
 
 

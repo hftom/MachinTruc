@@ -19,20 +19,23 @@ GLPadding::~GLPadding()
 
 
 
-bool GLPadding::process( Effect *e, Frame *src, Profile *p )
+bool GLPadding::process( const QList<Effect*> &el, Frame *src, Profile *p )
 {
-	Q_UNUSED( p );
-	float left = xoffsetpercent * p->getVideoWidth() / 100.0;// - src->glWidth ) / 2.0;
-	float top = yoffsetpercent * p->getVideoHeight() / 100.0;//- src->glHeight ) / 2.0;
-	return e->set_int( "width", p->getVideoWidth() )
-		&& e->set_int( "height", p->getVideoHeight() )
-		&& e->set_float( "top", top )
-		&& e->set_float( "left", left );
+	float left = xoffsetpercent * p->getVideoWidth() / 100.0;
+	float top = yoffsetpercent * p->getVideoHeight() / 100.0;
+	src->glWidth = p->getVideoWidth();
+	src->glHeight = p->getVideoHeight();
+	return el.at(0)->set_int( "width", p->getVideoWidth() )
+		&& el.at(0)->set_int( "height", p->getVideoHeight() )
+		&& el.at(0)->set_float( "top", top )
+		&& el.at(0)->set_float( "left", left );
 }
 
 
 
-Effect* GLPadding::getMovitEffect()
+QList<Effect*> GLPadding::getMovitEffects()
 {
-	return new PaddingEffect();
+	QList<Effect*> list;
+	list.append( new PaddingEffect() );
+	return list;
 }

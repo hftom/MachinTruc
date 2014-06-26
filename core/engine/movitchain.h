@@ -38,10 +38,10 @@ private:
 class MovitFilter
 {
 public:
-	MovitFilter( Effect *e, GLFilter *f, bool owns = false );
+	MovitFilter( const QList<Effect*> &el, GLFilter *f, bool owns = false );
 	~MovitFilter();
 	
-	Effect *effect;
+	QList<Effect*> effects;
 	GLFilter *filter;
 	bool ownsFilter;
 };

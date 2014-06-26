@@ -17,6 +17,10 @@
 #include "vfx/glsharpen.h"
 #include "vfx/glvignette.h"
 #include "vfx/glwater.h"
+#include "vfx/glsize.h"
+#include "vfx/glshadow.h"
+#include "vfx/gldropshadow.h"
+#include "vfx/glpixelize.h"
 
 // video compositions
 #include "vfx/glmix.h"
@@ -48,6 +52,8 @@ public:
 		name = n;
 		makeFilter = p;
 	}
+	
+	Filter* create() { return makeFilter( identifier, name ); }
 
 	QString identifier; // must be unique
 	QString name; // translated UI name

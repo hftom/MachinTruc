@@ -40,7 +40,7 @@ public:
     GLCut( QString id, QString name );
     ~GLCut();
 
-	Effect* getMovitEffect();
+	QList<Effect*> getMovitEffects();
 };
 
 #endif // GLCUT_H

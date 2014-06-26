@@ -14,9 +14,11 @@ GLCut::~GLCut()
 
 
 
-Effect* GLCut::getMovitEffect()
+QList<Effect*> GLCut::getMovitEffects()
 {
-	return new MyCutEffect();
+	QList<Effect*> list;
+	list.append( new MyCutEffect() );
+	return list;
 }
 
 

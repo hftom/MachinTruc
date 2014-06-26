@@ -158,9 +158,9 @@ QString MovitInput::getDescriptor( Frame *src )
 
 
 
-MovitFilter::MovitFilter( Effect *e, GLFilter *f, bool owns )
+MovitFilter::MovitFilter( const QList<Effect*> &el, GLFilter *f, bool owns )
 {
-	effect = e;
+	effects = el;
 	filter = f;
 	ownsFilter = owns;
 }

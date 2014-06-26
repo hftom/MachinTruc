@@ -64,6 +64,9 @@ void Filter::addParameter( QString name, int type, QVariant min, QVariant max, b
 
 QWidget* Filter::getWidget()
 {
+	if ( !parameters.count() )
+		return NULL;
+
 	QWidget *widg = new QWidget();
 	widg->setMinimumWidth( 150 );
 	QBoxLayout* box = new QBoxLayout( QBoxLayout::TopToBottom, widg );
@@ -84,7 +87,6 @@ QWidget* Filter::getWidget()
 			box->addLayout( layout );
 		}
 	}
-	box->addStretch();
 	
 	return widg;
 }

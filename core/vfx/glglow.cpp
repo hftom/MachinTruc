@@ -21,16 +21,18 @@ GLGlow::~GLGlow()
 
 
 
-bool GLGlow::process( Effect *e, Frame *src, Profile *p )
+bool GLGlow::process( const QList<Effect*> &el, Frame *src, Profile *p )
 {
 	Q_UNUSED( src );
 	Q_UNUSED( p );
-	return e->set_float( "radius", radius ) && e->set_float( "blurred_mix_amount", glow ) && e->set_float( "highlight_cutoff", highlight );
+	return el.at(0)->set_float( "radius", radius ) && el.at(0)->set_float( "blurred_mix_amount", glow ) && el.at(0)->set_float( "highlight_cutoff", highlight );
 }
 
 
 
-Effect* GLGlow::getMovitEffect()
+QList<Effect*> GLGlow::getMovitEffects()
 {
-	return new GlowEffect();
+	QList<Effect*> list;
+	list.append( new GlowEffect() );
+	return list;
 }

@@ -1,6 +1,7 @@
 #include <QDebug>
 #include <QMimeData>
 
+#include "engine/filtercollection.h"
 #include "gui/mimetypes.h"
 #include "gui/topwindow.h"
 #include "timeline/timeline.h"
@@ -85,8 +86,18 @@ void Timeline::itemSelected( AbstractViewItem *it )
 {
 	if ( selectedItem )
 		selectedItem->setSelected( false );
-	it->setSelected (true );
-	selectedItem = it;
+	if ( it ) {
+		it->setSelected (true );
+		selectedItem = it;
+		if ( it->getItemType() == TypeRectItem::VIDEOCUT ) {
+			ClipViewItem *c = (ClipViewItem*)it;
+			emit clipSelected( c->getClip() );
+		}
+	}
+	else {
+		selectedItem = NULL;
+		emit clipSelected( NULL );
+	}
 }
 
 
@@ -124,6 +135,7 @@ void Timeline::clipItemCanMove( ClipViewItem *clip, QPointF mouse, double clipSt
 void Timeline::clipItemMoved( ClipViewItem *clip, QPointF clipStartMouse )
 {
 	scene->move( clip->getClip(), getTrack( clipStartMouse ), clip->getPosition(), getTrack( clip->sceneBoundingRect().topLeft() ) );
+	emit updateFrame();
 	QTimer::singleShot ( 1, this, SLOT(updateLength()) );
 }
 
@@ -160,6 +172,7 @@ void Timeline::clipItemResized( ClipViewItem *clip, int way )
 		scene->resize( clip->getClip(), clip->getLength(), getTrack( clip->sceneBoundingRect().topLeft() ) );
 	else
 		scene->resizeStart( clip->getClip(), clip->getPosition(), clip->getLength(), getTrack( clip->sceneBoundingRect().topLeft() ) );
+	emit updateFrame();
 	QTimer::singleShot ( 1, this, SLOT(updateLength()) );
 }
 
@@ -357,9 +370,39 @@ void Timeline::deleteClip()
 			removeItem( selectedItem );
 			delete selectedItem;
 			selectedItem = NULL;
+			itemSelected( NULL );
+			emit updateFrame();
 			QTimer::singleShot ( 1, this, SLOT(updateLength()) );
 		}
 	}
+}
+
+
+
+void Timeline::addFilter( ClipViewItem *clip, QString fx )
+{
+	int i;
+	FilterCollection *fc = FilterCollection::getGlobal();
+	for ( i = 0; i < fc->videoFilters.count(); ++i ) {
+		if ( fc->videoFilters[ i ].identifier == fx ) {
+			GLFilter *f = (GLFilter*)fc->videoFilters[ i ].create();
+			connect( f, SIGNAL(updateFrame()), topParent->getSampler(), SLOT(updateFrame()) );
+			clip->getClip()->videoFilters.append( f );
+			emit itemSelected( clip );
+			emit updateFrame();
+		}
+	}
+}
+
+
+
+void Timeline::filterDeleted( Clip *c, Filter *f )
+{
+	if ( !c->videoFilters.remove( (GLFilter*)f ) )
+		c->audioFilters.remove( (AudioFilter*)f );
+
+	emit clipSelected( c );
+	emit updateFrame();
 }
 
 
@@ -398,10 +441,7 @@ void Timeline::dragEnterEvent( QGraphicsSceneDragDropEvent *event )
 						return;
 					if ( scene->canMove( droppedCut.clip, droppedCut.clip->length(), newPos, newTrack ) ) {
 						addItem( droppedCut.clipItem );
-						if ( selectedItem )
-							selectedItem->setSelected( false );
-						selectedItem = droppedCut.clipItem;
-						selectedItem->setSelected( true );
+						itemSelected( droppedCut.clipItem );
 						droppedCut.shown = true;
 						droppedCut.clipItem->setParentItem( tracks.at( newTrack ) );
 						droppedCut.clipItem->setPosition( newPos, zoom );
@@ -413,7 +453,7 @@ void Timeline::dragEnterEvent( QGraphicsSceneDragDropEvent *event )
 			}
 		}
 	}
-	event->ignore();
+	QGraphicsScene::dragEnterEvent( event );
 }
 
 
@@ -439,38 +479,41 @@ void Timeline::dragMoveEvent( QGraphicsSceneDragDropEvent *event )
 			if ( !droppedCut.shown ) {
 				addItem( droppedCut.clipItem );
 				droppedCut.shown = true;
-				if ( selectedItem )
-					selectedItem->setSelected( false );
-				selectedItem = droppedCut.clipItem;
-				selectedItem->setSelected( true );
+				itemSelected( droppedCut.clipItem );
 			}
 			droppedCut.clipItem->setParentItem( tracks.at( newTrack ) );
 			droppedCut.clipItem->setPosition( newPos, zoom );
 			droppedCut.clip->setPosition( newPos );
 		}
 	}
+	else
+		QGraphicsScene::dragMoveEvent( event );
 }
 
 
 
-void Timeline::dragLeaveEvent( QGraphicsSceneDragDropEvent * )
+void Timeline::dragLeaveEvent( QGraphicsSceneDragDropEvent *event )
 {
 	if ( droppedCut.clip ) {
 		if ( droppedCut.shown ) {
 			selectedItem = NULL;
+			itemSelected( NULL );
 			removeItem( droppedCut.clipItem );
 		}
 		droppedCut.destroy();
 	}
+	else
+		QGraphicsScene::dragLeaveEvent( event );
 }
 
 
 
-void Timeline::dropEvent( QGraphicsSceneDragDropEvent * )
+void Timeline::dropEvent( QGraphicsSceneDragDropEvent *event )
 {
 	if ( droppedCut.clip ) {
 		if ( droppedCut.shown ) {
 			scene->addClip( droppedCut.clip, getTrack( droppedCut.clipItem->sceneBoundingRect().topLeft() ) );
+			emit updateFrame();
 			QTimer::singleShot ( 1, this, SLOT(updateLength()) );
 			droppedCut.reset();
 		}
@@ -478,4 +521,6 @@ void Timeline::dropEvent( QGraphicsSceneDragDropEvent * )
 			droppedCut.destroy();
 		}
 	}
+	else
+		QGraphicsScene::dropEvent( event );
 }

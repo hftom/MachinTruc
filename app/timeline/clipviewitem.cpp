@@ -2,6 +2,7 @@
 
 #include <QFileInfo>
 
+#include "gui/mimetypes.h"
 #include "timeline.h"
 #include "clipviewitem.h"
 
@@ -13,6 +14,7 @@ ClipViewItem::ClipViewItem( Clip *c, double scale ) : AbstractViewItem( VIDEOCUT
 	//setFlag(QGraphicsItem::ItemIsSelectable, true);
 	//setFlag(QGraphicsItem::ItemIsFocusable, true);
 	setAcceptHoverEvents(true);
+	setAcceptDrops( true );
 	 
 	setClip( c );
 	filename = clip->sourcePath();
@@ -87,7 +89,7 @@ void ClipViewItem::setSelected( bool b )
 
 
 
-void ClipViewItem::mousePressEvent( QGraphicsSceneMouseEvent * event )
+void ClipViewItem::mousePressEvent( QGraphicsSceneMouseEvent *event )
 {
 	firstMove = true;
 	if ( event->pos().x() < SNAPWIDTH ) {
@@ -111,7 +113,7 @@ void ClipViewItem::mousePressEvent( QGraphicsSceneMouseEvent * event )
 
 
 
-void ClipViewItem::mouseMoveEvent( QGraphicsSceneMouseEvent * event )
+void ClipViewItem::mouseMoveEvent( QGraphicsSceneMouseEvent *event )
 {
 	if ( firstMove && fabs( event->scenePos().x() - moveStartMouse.x() ) < SNAPWIDTH )
 		return;
@@ -125,8 +127,10 @@ void ClipViewItem::mouseMoveEvent( QGraphicsSceneMouseEvent * event )
 
 
 
-void ClipViewItem::mouseReleaseEvent( QGraphicsSceneMouseEvent* )
+void ClipViewItem::mouseReleaseEvent( QGraphicsSceneMouseEvent *event )
 {
+	if ( firstMove )
+		return;
 	Timeline* t = (Timeline*)scene();
 	if ( moveResize )
 		t->clipItemResized( this, moveResize );
@@ -136,12 +140,38 @@ void ClipViewItem::mouseReleaseEvent( QGraphicsSceneMouseEvent* )
 
 
 
-void ClipViewItem::hoverMoveEvent( QGraphicsSceneHoverEvent * event )
+void ClipViewItem::hoverMoveEvent( QGraphicsSceneHoverEvent *event )
 {
 	if ( event->pos().x() < SNAPWIDTH || event->pos().x() > rect().width() - SNAPWIDTH ) {
 		setCursor( Qt::SplitHCursor );
 	}
 	else {
 		setCursor( Qt::PointingHandCursor );
+	}
+}
+
+
+
+void ClipViewItem::dragEnterEvent( QGraphicsSceneDragDropEvent *event )
+{
+	const QMimeData *mimeData = event->mimeData();
+	if ( mimeData->formats().contains( MIMETYPEEFFECT ) ) {
+		QString t = mimeData->data( MIMETYPEEFFECT ).data();
+		event->accept();
+	}
+	else
+		event->ignore();
+}
+
+
+
+void ClipViewItem::dropEvent( QGraphicsSceneDragDropEvent *event )
+{
+	const QMimeData *mimeData = event->mimeData();
+	if ( mimeData->formats().contains( MIMETYPEEFFECT ) ) {
+		QString t = mimeData->data( MIMETYPEEFFECT ).data();
+		Timeline* tm = (Timeline*)scene();
+		tm->addFilter( this, t );
+		event->accept();
 	}
 }

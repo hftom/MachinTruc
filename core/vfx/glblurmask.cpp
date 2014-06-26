@@ -20,18 +20,20 @@ GLBlurmask::~GLBlurmask()
 
 
 
-bool GLBlurmask::process( Effect *e, Frame *src, Profile *p )
+bool GLBlurmask::process( const QList<Effect*> &el, Frame *src, Profile *p )
 {
 	Q_UNUSED( src );
 	Q_UNUSED( p );
-	return e->set_float( "radius", radius );
+	return el.at(0)->set_float( "radius", radius );
 }
 
 
 
-Effect* GLBlurmask::getMovitEffect()
+QList<Effect*> GLBlurmask::getMovitEffects()
 {
-	return new BlurEffectMask();
+	QList<Effect*> list;
+	list.append( new BlurEffectMask() );
+	return list;
 }
 
 

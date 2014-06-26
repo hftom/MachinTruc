@@ -1,6 +1,8 @@
 #ifndef SCENE_H
 #define SCENE_H
 
+#define FORWARDLOOKUP 2 * MICROSECOND // µs
+
 #include <QMutex>
 
 #include "engine/clip.h"
@@ -34,6 +36,7 @@ public:
 private:
 	bool clipLessThan( double margin, double cpos, double clen, double pos );	
 	bool collidesWith( double margin, double cpos, double pos, double len );
+	bool updateCurrentPosition( double begin, double end );
 };
 
 #endif //SCENE_H

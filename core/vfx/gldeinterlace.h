@@ -37,9 +37,9 @@ public:
     GLDeinterlace( QString id = "DeinterlaceAuto", QString name = "DeinterlaceAuto" );
     ~GLDeinterlace();
 
-    bool process( Effect *e, Frame *src, Profile *p );
+    bool process( const QList<Effect*> &el, Frame *src, Profile *p );
 
-	Effect* getMovitEffect();
+	QList<Effect*> getMovitEffects();
 };
 
 #endif // GLDEINTERLACE_H

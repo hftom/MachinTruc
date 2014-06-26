@@ -17,17 +17,19 @@ GLOpacity::~GLOpacity()
 
 
 
-bool GLOpacity::process( Effect *e, Frame *src, Profile *p )
+bool GLOpacity::process( const QList<Effect*> &el, Frame *src, Profile *p )
 {
 	Q_UNUSED( p );
 	Q_UNUSED( src );
 	float col[4] = { factor, factor, factor, factor };
-	return e->set_vec4( "factor", col );
+	return el.at(0)->set_vec4( "factor", col );
 }
 
 
 
-Effect* GLOpacity::getMovitEffect()
+QList<Effect*> GLOpacity::getMovitEffects()
 {
-	return new MultiplyEffect();
+	QList<Effect*> list;
+	list.append( new MultiplyEffect() );
+	return list;
 }

@@ -11,9 +11,9 @@ public:
     GLResize( QString id = "ResizeAuto", QString name = "ResizeAuto" );
     ~GLResize();
 
-    bool process( Effect *e, Frame *src, Profile *p );
+    bool process( const QList<Effect*> &el, Frame *src, Profile *p );
 
-	Effect* getMovitEffect();
+	QList<Effect*> getMovitEffects();
 	
 	float width, height;
 	

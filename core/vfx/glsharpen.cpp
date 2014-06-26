@@ -17,16 +17,18 @@ GLSharpen::~GLSharpen()
 
 
 
-bool GLSharpen::process( Effect *e, Frame *src, Profile *p )
+bool GLSharpen::process( const QList<Effect*> &el, Frame *src, Profile *p )
 {
 	Q_UNUSED( src );
 	Q_UNUSED( p );
-	return e->set_float( "amount", amount );
+	return el.at(0)->set_float( "amount", amount );
 }
 
 
 
-Effect* GLSharpen::getMovitEffect()
+QList<Effect*> GLSharpen::getMovitEffects()
 {
-	return new UnsharpMaskEffect();
+	QList<Effect*> list;
+	list.append( new UnsharpMaskEffect() );
+	return list;
 }

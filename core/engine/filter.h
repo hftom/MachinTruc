@@ -35,7 +35,7 @@ public:
 	QString getFilterName() { return filterName; }
 	QString getIdentifier() { return identifier; }
 	// the caller takes ownership of this widget
-	QWidget* getWidget();
+	virtual QWidget* getWidget();
 
 public slots:
 	void valueChanged( Parameter *p, QVariant val );

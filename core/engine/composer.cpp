@@ -282,7 +282,7 @@ bool Composer::renderVideoFrame( Frame *dst )
 
 void Composer::movitRender( Frame *dst, bool update )
 {
-    int i, j, k, start=0;
+    int i, j, k, l, start=0;
     Frame *f;
 	bool reload = !update;
 	
@@ -361,16 +361,18 @@ void Composer::movitRender( Frame *dst, bool update )
 			// deinterlace
 			if ( f->profile.getVideoInterlaced() ) {
 				GLDeinterlace *deint = new GLDeinterlace();
-				Effect *e = deint->getMovitEffect();
-				branch->filters.append( new MovitFilter( e, deint, true ) );
-				current = movitChain.chain->add_effect( e );
+				QList<Effect*> el = deint->getMovitEffects();
+				branch->filters.append( new MovitFilter( el, deint, true ) );
+				for ( l = 0; l < el.count(); ++l )
+					current = movitChain.chain->add_effect( el.at( l ) );
 			}
 			
 			// apply filters
 			for ( k = 0; k < dst->sample->frames[i - 1]->videoFilters.count(); ++k ) {
-				Effect *e = dst->sample->frames[i - 1]->videoFilters[k]->getMovitEffect();
-				branch->filters.append( new MovitFilter( e, dst->sample->frames[i - 1]->videoFilters[k] ) );
-				current = movitChain.chain->add_effect( e );
+				QList<Effect*> el = dst->sample->frames[i - 1]->videoFilters[k]->getMovitEffects();
+				branch->filters.append( new MovitFilter( el, dst->sample->frames[i - 1]->videoFilters[k] ) );
+				for ( l = 0; l < el.count(); ++l )
+					current = movitChain.chain->add_effect( el.at( l ) );
 			}
 			
 			// padding
@@ -381,14 +383,16 @@ void Composer::movitRender( Frame *dst, bool update )
 					GLResize *resize = new GLResize();
 					resize->width = (float)f->profile.getVideoHeight() * f->profile.getVideoAspectRatio();
 					resize->height = (float)f->profile.getVideoHeight();
-					Effect *e = resize->getMovitEffect();
-					branch->filters.append( new MovitFilter( e, resize, true ) );
-					current = movitChain.chain->add_effect( e );
+					QList<Effect*> el = resize->getMovitEffects();
+					branch->filters.append( new MovitFilter( el, resize, true ) );
+					for ( l = 0; l < el.count(); ++l )
+						current = movitChain.chain->add_effect( el.at( l ) );
 				}
 				GLPadding *padding = new GLPadding();
-				Effect *e = padding->getMovitEffect();
-				branch->filters.append( new MovitFilter( e, padding, true ) );
-				current = movitChain.chain->add_effect( e );
+				QList<Effect*> el = padding->getMovitEffects();
+				branch->filters.append( new MovitFilter( el, padding, true ) );
+				for ( l = 0; l < el.count(); ++l )
+					current = movitChain.chain->add_effect( el.at( l ) );
 			}
 					
 			// compose
@@ -424,7 +428,7 @@ void Composer::movitRender( Frame *dst, bool update )
 		if ( reload )
 			branch->input->process( f );
 		for ( k = 0; k < branch->filters.count(); ++k ) {
-			branch->filters[k]->filter->process( branch->filters[k]->effect, f, &projectProfile );
+			branch->filters[k]->filter->process( branch->filters[k]->effects, f, &projectProfile );
 		}
 		if ( branch->composition )
 			branch->composition->composition->process( branch->composition->effect, f, f, &projectProfile );

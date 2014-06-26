@@ -19,18 +19,20 @@ GLVignette::~GLVignette()
 
 
 
-bool GLVignette::process( Effect *e, Frame *src, Profile *p )
+bool GLVignette::process( const QList<Effect*> &el, Frame *src, Profile *p )
 {
 	Q_UNUSED( src );
 	Q_UNUSED( p )
-	return e->set_vec2( "center", center )
-		&& e->set_float( "radius", radius )
-		&& e->set_float( "inner_radius", inner_radius );
+	return el.at(0)->set_vec2( "center", center )
+		&& el.at(0)->set_float( "radius", radius )
+		&& el.at(0)->set_float( "inner_radius", inner_radius );
 }
 
 
 
-Effect* GLVignette::getMovitEffect()
+QList<Effect*> GLVignette::getMovitEffects()
 {
-	return new VignetteEffect();
+	QList<Effect*> list;
+	list.append( new VignetteEffect() );
+	return list;
 }

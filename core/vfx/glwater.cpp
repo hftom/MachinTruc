@@ -14,18 +14,20 @@ GLWater::~GLWater()
 
 
 
-bool GLWater::process( Effect *e, Frame *src, Profile *p )
+bool GLWater::process( const QList<Effect*> &el, Frame *src, Profile *p )
 {
 	Q_UNUSED( src );
 	Q_UNUSED( p )
-	return e->set_float( "time", src->pts() / MICROSECOND )
-		&& e->set_float( "inwidth", src->glWidth )
-		&& e->set_float( "inheight", src->glHeight );
+	return el.at(0)->set_float( "time", src->pts() / MICROSECOND )
+		&& el.at(0)->set_float( "inwidth", src->glWidth )
+		&& el.at(0)->set_float( "inheight", src->glHeight );
 }
 
 
 
-Effect* GLWater::getMovitEffect()
+QList<Effect*> GLWater::getMovitEffects()
 {
-	return new WaterEffect();
+	QList<Effect*> list;
+	list.append( new WaterEffect() );
+	return list;
 }

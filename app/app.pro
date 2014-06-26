@@ -9,6 +9,7 @@ SOURCES = \
 	gui/fxpage.cpp \
 	gui/fxsettingspage.cpp \
 	gui/filtersdialog.cpp \
+	gui/headereffect.cpp \
 	\
 	timeline/timeline.cpp \
 	timeline/typerectitem.cpp \
@@ -24,6 +25,7 @@ HEADERS = \
 	gui/fxsettingspage.h \
 	gui/profiledialog.h \
 	gui/filtersdialog.h \
+	gui/headereffect.h \
 	\
 	timeline/timelinegraphicsview.h \
 	timeline/timeline.h \
@@ -39,7 +41,8 @@ FORMS = \
 	ui/fxpage.ui \
 	ui/fxsettingspage.ui \
 	ui/profile.ui \
-	ui/filters.ui
+	ui/filters.ui \
+	ui/effectheader.ui
 
 LIBS = ../core/libcore.a
 

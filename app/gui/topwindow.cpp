@@ -26,7 +26,7 @@ TopWindow::TopWindow()
 	connect( timeline, SIGNAL(ensureVisible(const QGraphicsItem*)), this, SLOT(ensureVisible(const QGraphicsItem*)) );
 	connect( timeline, SIGNAL(centerOn(const QGraphicsItem*)), this, SLOT(centerOn(const QGraphicsItem*)) );
 	connect( graphicsView, SIGNAL(sizeChanged(const QSize&)), timeline, SLOT(viewSizeChanged(const QSize&)) );
-	//graphicsView->setRenderHints( QPainter::Antialiasing | QPainter::SmoothPixmapTransform );
+
 	graphicsView->setAlignment( Qt::AlignLeft | Qt::AlignTop );
 	graphicsView->setScene( timeline );
 	graphicsView->setAcceptDrops( true );
@@ -36,8 +36,12 @@ TopWindow::TopWindow()
 	clipPage = new ProjectClipsPage( sampler );
 	connect( clipPage, SIGNAL(sourceActivated(SourceListItem*)), this, SLOT(clipActivated(SourceListItem*)) );
 	
+	fxPage = new FxPage();
+	connect( timeline, SIGNAL(clipSelected(Clip*)), fxPage, SLOT(clipSelected(Clip*)) );
+	connect( fxPage, SIGNAL(filterDeleted(Clip*,Filter*)), timeline, SLOT(filterDeleted(Clip*,Filter*)) );
+	
 	stackedWidget->addWidget( clipPage );
-	stackedWidget->addWidget( new FxPage() );
+	stackedWidget->addWidget( fxPage );
 	stackedWidget->addWidget( new FxSettingsPage() );
 
 	QHBoxLayout *layout = new QHBoxLayout;
@@ -74,6 +78,7 @@ TopWindow::TopWindow()
 	connect( outButton, SIGNAL(clicked()), this, SLOT(setOutPoint()) );
 
 	connect( switchButton, SIGNAL(toggled(bool)), sampler, SLOT(switchMode(bool)) );
+	connect( timeline, SIGNAL(updateFrame()), sampler, SLOT(updateFrame()) );
 	
 	timeline->setScene( sampler->getScene() );
 

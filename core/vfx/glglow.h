@@ -11,9 +11,9 @@ public:
     GLGlow( QString id, QString name );
     ~GLGlow();
 
-    bool process( Effect *e, Frame *src, Profile *p );
+    bool process( const QList<Effect*> &el, Frame *src, Profile *p );
 
-	Effect* getMovitEffect();
+	QList<Effect*> getMovitEffects();
 
 private:
 	float radius;

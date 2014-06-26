@@ -1,7 +1,6 @@
 #include "engine/composer.h"
 #include "engine/sampler.h"
 
-#define FORWARDLOOKUP 2 * MICROSECOND // µs
 #define MAXINPUTS 20
 
 
@@ -145,6 +144,13 @@ void Sampler::updateFrame()
 		metronom->flush();
 		composer->updateFrame( last );
 	}
+	else {
+		Frame *last = metronom->getLastFrame();
+		if ( !last )
+			return;
+		metronom->flush();
+		seekTo( last->pts() );
+	}		
 }
 
 
@@ -429,8 +435,8 @@ int Sampler::updateLastFrame( Frame *dst )
 		Track *t = scene->tracks[j];
 		if ( scene->update )
 			return 0;
-		// find the clip at dst->pts
 		
+		// find the clip at dst->pts
 		for ( i = qMax(t->currentClipIndex() - 1, 0) ; i < t->clipCount(); ++i ) {
 			c = t->clipAt( i );
 			if ( (c->position() - (projectProfile.getVideoFrameDuration() / 4.0)) <= dst->pts() ) {

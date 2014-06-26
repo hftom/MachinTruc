@@ -20,21 +20,23 @@ GLEdge::~GLEdge()
 
 
 
-bool GLEdge::process( Effect *e, Frame *src, Profile *p )
+bool GLEdge::process( const QList<Effect*> &el, Frame *src, Profile *p )
 {
 	Q_UNUSED( p );
-	return e->set_float( "height", src->glHeight )
-		&& e->set_float( "width", src->glWidth )
-		&& e->set_float( "amp", amp )
-		&& e->set_float( "depth", depth )
-		&& e->set_float( "opacity", opacity );
+	return el.at(0)->set_float( "height", src->glHeight )
+		&& el.at(0)->set_float( "width", src->glWidth )
+		&& el.at(0)->set_float( "amp", amp )
+		&& el.at(0)->set_float( "depth", depth )
+		&& el.at(0)->set_float( "opacity", opacity );
 }
 
 
 
-Effect* GLEdge::getMovitEffect()
+QList<Effect*> GLEdge::getMovitEffects()
 {
-	return new EdgeEffect();
+	QList<Effect*> list;
+	list.append( new EdgeEffect() );
+	return list;
 }
 
 

@@ -39,6 +39,10 @@ SOURCES = \
 	vfx/glopacity.cpp \
 	vfx/glsharpen.cpp \
 	vfx/gldiffusion.cpp \
+	vfx/glsize.cpp \
+	vfx/glshadow.cpp \
+	vfx/gldropshadow.cpp \
+	vfx/glpixelize.cpp \
 	\
 	videoout/videowidget.cpp
 
@@ -91,6 +95,10 @@ HEADERS = \
 	vfx/glopacity.h \
 	vfx/glsharpen.h \
 	vfx/gldiffusion.h \
+	vfx/glsize.h \
+	vfx/glshadow.h \
+	vfx/gldropshadow.h \
+	vfx/glpixelize.h \
 	\
 	videoout/videowidget.h
 

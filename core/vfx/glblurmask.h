@@ -87,9 +87,9 @@ public:
     GLBlurmask( QString id, QString name );
     ~GLBlurmask();
 
-    bool process( Effect *e, Frame *src, Profile *p );
+    bool process( const QList<Effect*> &el, Frame *src, Profile *p );
 
-	Effect* getMovitEffect();
+	QList<Effect*> getMovitEffects();
 
 public slots:
     //QStringList getProperties();

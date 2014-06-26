@@ -55,6 +55,10 @@ bool Scene::canResizeStart( Clip *clip, double &newPos, double endPos, int track
 void Scene::resizeStart( Clip *clip, double newPos, double newLength, int track )
 {
 	QMutexLocker ml( &mutex );
+	
+	if ( clip->position() == newPos && clip->length() == newLength )
+		return;
+	
 	double margin = profile.getVideoFrameDuration() / 4.0;
 	int i, insert, self = 0;
 	Track *t = tracks[track];
@@ -72,6 +76,7 @@ void Scene::resizeStart( Clip *clip, double newPos, double newLength, int track 
 	}
 				
 	insert -= self;
+	double old = clip->position();
 	t->removeClip( clip );
 	t->insertClipAt( clip, insert );
 	if ( clip->getSource().getType() == InputBase::FFMPEG )
@@ -79,7 +84,7 @@ void Scene::resizeStart( Clip *clip, double newPos, double newLength, int track 
 	clip->setLength( newLength );
 	clip->setPosition( newPos );
 	clip->setInput( NULL );
-	update = true;
+	update = updateCurrentPosition( qMin( old, clip->position() ), qMax( old, clip->position() )  );
 }
 
 
@@ -118,6 +123,10 @@ bool Scene::canResize( Clip *clip, double &newLength, int track )
 void Scene::resize( Clip *clip, double newLength, int track )
 {
 	QMutexLocker ml( &mutex );
+	
+	if ( clip->length() == newLength )
+		return;
+	
 	double margin = profile.getVideoFrameDuration() / 4.0;
 	int i, insert, self = 0;
 	Track *t = tracks[track];
@@ -135,11 +144,12 @@ void Scene::resize( Clip *clip, double newLength, int track )
 	}
 				
 	insert -= self;
+	double old = clip->position() + clip->length();
 	t->removeClip( clip );
 	t->insertClipAt( clip, insert );
 	clip->setLength( newLength );
 	clip->setInput( NULL );
-	update = true;
+	update = updateCurrentPosition( qMin( old, clip->position() + clip->length() ), qMax( old, clip->position() + clip->length() )  );
 }
 
 
@@ -173,6 +183,10 @@ bool Scene::canMove( Clip *clip, double clipLength, double &newPos, int newTrack
 void Scene::move( Clip *clip, int clipTrack, double newPos, int newTrack )
 {
 	QMutexLocker ml( &mutex );
+	
+	if ( clip->position() == newPos && clipTrack == newTrack )
+		return;
+	
 	double margin = profile.getVideoFrameDuration() / 4.0;
 	int i, insert, self = 0;
 	Track *t = tracks[newTrack];
@@ -190,11 +204,12 @@ void Scene::move( Clip *clip, int clipTrack, double newPos, int newTrack )
 	}
 			
 	insert -= self;
+	update = updateCurrentPosition( clip->position(), clip->position() + clip->length() );
 	tracks[clipTrack]->removeClip( clip );
 	t->insertClipAt( clip, insert );
 	clip->setPosition( newPos );
 	clip->setInput( NULL );
-	update = true;
+	update = update || updateCurrentPosition( clip->position(), clip->position() + clip->length() );;
 }
 
 
@@ -216,6 +231,15 @@ bool Scene::collidesWith( double margin, double cpos, double pos, double len )
 }
 
 
+
+bool Scene::updateCurrentPosition( double begin, double end )
+{
+	if ( currentPTS > begin - FORWARDLOOKUP && currentPTS < end + FORWARDLOOKUP )
+		return true;
+	return false;
+}
+
+
 	
 void Scene::addClip( Clip *clip, int track )
 {
@@ -226,7 +250,7 @@ void Scene::addClip( Clip *clip, int track )
 		Clip *c = t->clipAt( i );
 		if ( clip->position() < c->position() ) {
 			t->insertClipAt( clip, i );
-			update = true;
+			update = updateCurrentPosition( clip->position(), clip->position() + clip->length() );
 			return;
 		}
 		++i;
@@ -246,8 +270,8 @@ bool Scene::removeClip( Clip *clip )
 			if ( clip == t->clipAt( j ) ) {
 				Clip *c = t->removeClip( j );
 				if ( c ) {
+					update = updateCurrentPosition( c->position(), c->position() + c->length() );
 					delete c;
-					update = true;
 				}
 				return true;
 			}
