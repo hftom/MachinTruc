@@ -4,6 +4,18 @@
 
 GLWater::GLWater( QString id, QString name ) : GLFilter( id, name )
 {
+	speed = 0.3;
+	emboss = 0.4;
+	intensity = 3.0;
+	frequency = 4.0;
+	delta = 160.0;
+	intence = 300.0;
+	addParameter( tr("Speed:"), PFLOAT, 0.01, 2.0, true, &speed );
+	addParameter( tr("Emboss:"), PFLOAT, 0.01, 2.0, true, &emboss );
+	addParameter( tr("Intensity:"), PFLOAT, 0.01, 10.0, true, &intensity );
+	addParameter( tr("Frequency:"), PFLOAT, 0.01, 10.0, true, &frequency );
+	addParameter( tr("Delta:"), PFLOAT, 10.0, 500.0, true, &delta );
+	addParameter( tr("Intence:"), PFLOAT, 0.0, 1000.0, true, &intence );
 }
 
 
@@ -18,9 +30,14 @@ bool GLWater::process( const QList<Effect*> &el, Frame *src, Profile *p )
 {
 	Q_UNUSED( src );
 	Q_UNUSED( p )
-	return el.at(0)->set_float( "time", src->pts() / MICROSECOND )
-		&& el.at(0)->set_float( "inwidth", src->glWidth )
-		&& el.at(0)->set_float( "inheight", src->glHeight );
+	Effect *e = el.at(0);
+	return e->set_float( "time", src->pts() / MICROSECOND )
+		&& e->set_float( "speed", speed )
+		&& e->set_float( "emboss", emboss )
+		&& e->set_float( "intensity", intensity )
+		&& e->set_float( "frequency", frequency )
+		&& e->set_float( "delta", delta )
+		&& e->set_float( "intence", intence * 10.0 );
 }
 
 

@@ -24,7 +24,7 @@ public:
 	virtual bool process( const QList<Effect*>&, Frame*, Profile* ) { return true; }
 	virtual QList<Effect*> getMovitEffects() = 0;
 
-	virtual QString getDescriptor() { return getFilterName(); }
+	virtual QString getDescriptor() { return getIdentifier(); }
 
 public slots:
 	void setPosition( double p ) { posInTrack = p; }

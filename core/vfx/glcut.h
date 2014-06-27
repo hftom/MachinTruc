@@ -7,11 +7,11 @@
 
 
 
-static const char *cutshader=
+static const char *MyCutEffect_shader=
 "uniform sampler2D PREFIX(mask);\n"
 "\n"
-"vec4 FUNCNAME(vec2 tc) {\n"
-"	return INPUT(tc) * texture2D(PREFIX(mask), tc).x;\n"
+"vec4 FUNCNAME( vec2 tc ) {\n"
+"	return INPUT( tc ) * texture2D( PREFIX(mask), tc ).x;\n"
 "}\n";
 
 
@@ -20,7 +20,7 @@ class MyCutEffect : public Effect {
 public:
 	MyCutEffect() {}
 	std::string effect_type_id() const { return "MyCutEffect"; }
-	std::string output_fragment_shader() { return cutshader; }
+	std::string output_fragment_shader() { return MyCutEffect_shader; }
 	void set_gl_state(GLuint glsl_program_num, const std::string &prefix, unsigned *sampler_num) {
 		glActiveTexture(GL_TEXTURE0 + *sampler_num);
 		check_error();

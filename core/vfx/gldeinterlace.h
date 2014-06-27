@@ -5,7 +5,7 @@
 
 
 
-static const char *shader=
+static const char *MyDeinterlaceEffect_shader=
 "vec4 FUNCNAME( vec2 tc ) {\n"
 "	vec4 blend = 2.0 * INPUT( tc );\n"
 "	blend += INPUT( vec2( tc.x, tc.y - (1.0 / PREFIX(height)) ) );\n"
@@ -21,7 +21,7 @@ public:
 		register_float("height", &height);
 	}
 	virtual std::string effect_type_id() const { return "MyDeinterlaceEffect"; }
-	std::string output_fragment_shader() { return shader; }
+	std::string output_fragment_shader() { return MyDeinterlaceEffect_shader; }
 	virtual bool needs_texture_bounce() const { return true; }
 	virtual AlphaHandling alpha_handling() const { return DONT_CARE_ALPHA_TYPE; }
 	

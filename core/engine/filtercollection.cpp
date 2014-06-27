@@ -19,6 +19,7 @@ FilterCollection::FilterCollection()
 	
 	videoFilters.append( FilterEntry( "GLSize", QObject::tr("Size and position"), &Maker<GLSize>::make ) );
 	videoFilters.append( FilterEntry( "GLPadding", QObject::tr("Position"), &Maker<GLPadding>::make ) );
+	videoFilters.append( FilterEntry( "GLCrop", QObject::tr("Crop"), &Maker<GLCrop>::make ) );
 	videoFilters.append( FilterEntry( "GLCut", QObject::tr("Cut"), &Maker<GLCut>::make ) );
 
 	videoFilters.append( FilterEntry( "GLOpacity", QObject::tr("Opacity"), &Maker<GLOpacity>::make ) );

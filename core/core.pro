@@ -32,6 +32,7 @@ SOURCES = \
 	vfx/glliftgammagain.cpp \
 	vfx/glresize.cpp \
 	vfx/glpadding.cpp \
+	vfx/glcrop.cpp \
 	vfx/gldeinterlace.cpp \
 	vfx/glblurmask.cpp \
 	vfx/glcut.cpp \
@@ -88,6 +89,7 @@ HEADERS = \
 	vfx/glliftgammagain.h \
 	vfx/glresize.h \
 	vfx/glpadding.h \
+	vfx/glcrop.h \
 	vfx/gldeinterlace.h \
 	vfx/glblurmask.h \
 	vfx/glcut.h \
