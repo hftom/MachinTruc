@@ -155,9 +155,6 @@ void VideoWidget::paintGL()
 	glEnd();
 	
 	if ( lastFrame ) {
-		/*if ( lastFrame->fence() ) {
-			glClientWaitSync( lastFrame->fence()->fence(), 0, GL_TIMEOUT_IGNORED );
-		}*/
 		glEnable( GL_BLEND );
 		glBindTexture( GL_TEXTURE_2D, lastFrame->texture()->texture() );
 		glBegin( GL_QUADS );
@@ -180,7 +177,7 @@ void VideoWidget::paintGL()
 
 void VideoWidget::showFrame( Frame *frame )
 {
-	lastFrameRatio = frame->profile.getVideoAspectRatio();
+	lastFrameRatio = frame->glSAR * (double)frame->glWidth / (double)frame->glHeight;
 	if ( lastFrame != frame ) {
 		lastFrame = frame;
 		emit frameShown( frame );
@@ -197,8 +194,8 @@ QImage VideoWidget::lastImage()
 	
 	makeCurrent();
 	
-	int h = lastFrame->profile.getVideoHeight();
-	int w = (h * lastFrame->profile.getVideoAspectRatio()) + 0.5;
+	int h = lastFrame->glHeight;
+	int w = lastFrame->glWidth * lastFrame->glSAR;
 	QGLFramebufferObject fb( w, h );
 	fb.bind();
 	glClearColor( 0, 0, 0, 0 );
@@ -250,19 +247,6 @@ void VideoWidget::shot()
 	while ( QFile::exists( QString("shot%1.jpg").arg( i ) ) )
 		++i;
 	img.save(QString("shot%1.jpg").arg( i ));
-}
-
-
-
-QImage VideoWidget::getThumb( int h, double *pts, bool outPts )
-{
-	QImage img = lastImage();
-	if ( img.isNull() )
-		return img;
-
-	*pts = lastFrame->pts() + (outPts ? lastFrame->profile.getVideoFrameDuration() : 0);
-	// resize
-	return img.scaled( h * lastFrame->profile.getVideoAspectRatio(), h, Qt::IgnoreAspectRatio, Qt::SmoothTransformation );	
 }
 
 

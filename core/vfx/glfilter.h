@@ -21,6 +21,7 @@ public:
 		length = 0;
 	}
 	virtual ~GLFilter() {}
+	virtual bool preProcess( Frame*, Profile* ) { return true; }
 	virtual bool process( const QList<Effect*>&, Frame*, Profile* ) { return true; }
 	virtual QList<Effect*> getMovitEffects() = 0;
 

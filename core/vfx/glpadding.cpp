@@ -19,14 +19,26 @@ GLPadding::~GLPadding()
 
 
 
-bool GLPadding::process( const QList<Effect*> &el, Frame *src, Profile *p )
+bool GLPadding::preProcess( Frame *src, Profile *p )
 {
-	float left = xoffsetpercent * p->getVideoWidth() / 100.0;
-	float top = yoffsetpercent * p->getVideoHeight() / 100.0;
 	src->glWidth = p->getVideoWidth();
 	src->glHeight = p->getVideoHeight();
-	return el.at(0)->set_int( "width", p->getVideoWidth() )
-		&& el.at(0)->set_int( "height", p->getVideoHeight() )
+	src->paddingAuto = false;
+	left = xoffsetpercent * src->glWidth / 100.0;
+	top = yoffsetpercent * src->glHeight / 100.0;
+	
+	return true;
+}
+
+
+
+
+bool GLPadding::process( const QList<Effect*> &el, Frame *src, Profile *p )
+{
+	preProcess( src, p );
+	
+	return el.at(0)->set_int( "width", src->glWidth )
+		&& el.at(0)->set_int( "height", src->glHeight )
 		&& el.at(0)->set_float( "top", top )
 		&& el.at(0)->set_float( "left", left );
 }

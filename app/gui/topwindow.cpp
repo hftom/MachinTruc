@@ -100,9 +100,9 @@ void TopWindow::setInPoint()
 {
 	if ( activeClip ) {
 		double pts;
-		QImage img = vw->getThumb( THUMBHEIGHT, &pts, false );
-		if ( !img.isNull() )
-			activeClip->setInPoint( img, pts );
+		//QImage img = vw->getThumb( THUMBHEIGHT, &pts, false );
+		//if ( !img.isNull() )
+			//activeClip->setInPoint( img, pts );
 	}
 }
 
@@ -112,11 +112,11 @@ void TopWindow::setOutPoint()
 {
 	if ( activeClip ) {
 		double pts;
-		QImage img = vw->getThumb( THUMBHEIGHT, &pts, true );
-		if ( !img.isNull() ) {
-			activeClip->setOutPoint( img, pts );
-			clipPage->newCut( activeClip );
-		}
+		//QImage img = vw->getThumb( THUMBHEIGHT, &pts, true );
+		//if ( !img.isNull() ) {
+			//activeClip->setOutPoint( img, pts );
+			//clipPage->newCut( activeClip );
+		//}
 	}
 }
 

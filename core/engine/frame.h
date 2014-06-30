@@ -70,7 +70,7 @@ public:
     // Push the frame back in origin MQueue, release the texture and release tracks.
     void release();
 
-	void setVideoFrame( DataType t, int w, int h, double ar, bool il, bool tff, double p, double d );
+	void setVideoFrame( DataType t, int w, int h, double sar, bool il, bool tff, double p, double d );
     void setVideoFrame( Frame *src );
     void setTexture( TEXTURE *t );
     TEXTURE* texture() { return tex; }
@@ -94,7 +94,9 @@ public:
 	Profile profile;
 
 	// composer helpers
-	float glWidth, glHeight;
+	int glWidth, glHeight;
+	double glSAR;
+	bool paddingAuto, resizeAuto;
 
 private:
     void resizeBuffer( int s );

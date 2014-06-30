@@ -22,8 +22,6 @@ Composer::Composer( Sampler *samp )
     oneShot = false;
 	audioSampleDelta = 0;
 	sampler = samp;
-	
-		
 }
 
 
@@ -38,16 +36,6 @@ void Composer::setSharedContext( QGLWidget *shared )
 {
     hiddenContext = shared;
     hiddenContext->makeCurrent();
-	
-	/*/glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
-    glClearDepth( 1.0f );
-    glDepthFunc( GL_LEQUAL );
-    glDisable( GL_DEPTH_TEST );
-    glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
-    glDisable( GL_BLEND );
-    glShadeModel( GL_SMOOTH );
-    glEnable( GL_TEXTURE_2D );
-    glHint( GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST );*/
 
 	QString movitPath;
 	if ( QFile("/usr/share/movit/header.frag").exists() )
@@ -256,7 +244,7 @@ bool Composer::renderVideoFrame( Frame *dst )
     if ( !sampler->getVideoTracks( dst ) ) {
         // make black
 		Profile projectProfile = sampler->getProfile();
-        dst->setVideoFrame( Frame::GLTEXTURE, projectProfile.getVideoWidth(), projectProfile.getVideoHeight(), projectProfile.getVideoAspectRatio(),
+        dst->setVideoFrame( Frame::GLTEXTURE, projectProfile.getVideoWidth(), projectProfile.getVideoHeight(), projectProfile.getVideoSAR(),
                             false, false, sampler->currentPTS(), projectProfile.getVideoFrameDuration() );
         if ( !gl.black( dst ) )
             return false;
@@ -268,7 +256,7 @@ bool Composer::renderVideoFrame( Frame *dst )
     if ( skipFrame > 0 ) {
 		--skipFrame;
 		Profile projectProfile = sampler->getProfile();
-		dst->setVideoFrame( Frame::NONE, projectProfile.getVideoWidth(), projectProfile.getVideoHeight(), projectProfile.getVideoAspectRatio(),
+		dst->setVideoFrame( Frame::NONE, projectProfile.getVideoWidth(), projectProfile.getVideoHeight(), projectProfile.getVideoSAR(),
                             false, false, sampler->currentPTS(), projectProfile.getVideoFrameDuration() );
 		return true;
 	}
@@ -300,9 +288,12 @@ void Composer::movitRender( Frame *dst, bool update )
 	i = start;
 	QStringList currentDescriptor;
 	while ( (f = getNextFrame( dst, i )) ) {
-		// set gl image width and height
+		bool paddingAuto = false;
+		bool resizeAuto = false;
+		f->paddingAuto = f->resizeAuto = true;
 		f->glWidth = f->profile.getVideoWidth();
 		f->glHeight = f->profile.getVideoHeight();
+		f->glSAR = f->profile.getVideoSAR();
 		
 		currentDescriptor.append( MovitInput::getDescriptor( f ) );
 		
@@ -311,16 +302,27 @@ void Composer::movitRender( Frame *dst, bool update )
 			currentDescriptor.append( GLDeinterlace().getDescriptor() );
 		}
 		
-		for ( k = 0; k < dst->sample->frames[i - 1]->videoFilters.count(); ++k )
+		for ( k = 0; k < dst->sample->frames[i - 1]->videoFilters.count(); ++k ) {
 			currentDescriptor.append( dst->sample->frames[i - 1]->videoFilters[k]->getDescriptor() );
+			dst->sample->frames[i - 1]->videoFilters[k]->preProcess( f, &projectProfile );
+		}
 		
+		// resize to match destination aspect ratio
+		if ( f->resizeAuto && fabs( projectProfile.getVideoSAR() - f->profile.getVideoSAR() ) > 1e-3 ) {
+			GLResize resize;
+			currentDescriptor.append( resize.getDescriptor() );
+			resize.preProcess( f, &projectProfile );
+			resizeAuto = true;
+		}
+
 		// padding
-		if ( f->profile.getVideoWidth() < projectProfile.getVideoWidth() || f->profile.getVideoHeight() < projectProfile.getVideoHeight() ) {
-			if ( fabs(( f->glWidth / f->glHeight ) - f->profile.getVideoAspectRatio()) > 1e-3 ) {
-				// resize to match destination aspect ratio
-				currentDescriptor.append( GLResize().getDescriptor() );
+		if ( f->paddingAuto ) {
+			if ( f->glWidth != projectProfile.getVideoWidth() || f->glHeight != projectProfile.getVideoHeight() ) {
+				GLPadding padding;
+				currentDescriptor.append( padding.getDescriptor() );
+				padding.preProcess( f, &projectProfile );
+				paddingAuto = true;
 			}
-			currentDescriptor.append( GLPadding().getDescriptor() );
 		}
 		
 		// compose
@@ -333,6 +335,9 @@ void Composer::movitRender( Frame *dst, bool update )
 				currentDescriptor.append( dst->sample->frames[i - 1]->composition->getDescriptor() );
 			}
 		}
+		
+		f->paddingAuto = paddingAuto;
+		f->resizeAuto = resizeAuto;
 	}
 
 	// rebuild the chain if neccessary
@@ -341,7 +346,7 @@ void Composer::movitRender( Frame *dst, bool update )
 			printf("%s\n", currentDescriptor[k].toLocal8Bit().data());
 		movitDescriptor = currentDescriptor;
 		movitChain.reset();
-		movitChain.chain = new EffectChain( projectProfile.getVideoAspectRatio(), 1.0, movitPool );
+		movitChain.chain = new EffectChain( projectProfile.getVideoSAR() * projectProfile.getVideoWidth() / projectProfile.getVideoHeight(), 1.0, movitPool );
 
 		i = start;
 		Effect *last, *current = NULL;
@@ -349,9 +354,6 @@ void Composer::movitRender( Frame *dst, bool update )
 		//current = movitChain.chain->add_input( new InputColor() );
 			
 		while ( (f = getNextFrame( dst, i )) ) {
-			// set gl image width and height
-			f->glWidth = f->profile.getVideoWidth();
-			f->glHeight = f->profile.getVideoHeight();
 			last = current;
 			MovitInput *in = new MovitInput();
 			MovitBranch *branch = new MovitBranch( in );
@@ -369,25 +371,33 @@ void Composer::movitRender( Frame *dst, bool update )
 			
 			// apply filters
 			for ( k = 0; k < dst->sample->frames[i - 1]->videoFilters.count(); ++k ) {
+				QString s = dst->sample->frames[i - 1]->videoFilters[k]->getDescriptor();
+				// auto resize before padding
+				if ( f->resizeAuto && s == "GLPadding" ) {
+					GLResize *resize = new GLResize();
+					QList<Effect*> el = resize->getMovitEffects();
+					branch->filters.append( new MovitFilter( el, resize, true ) );
+					for ( l = 0; l < el.count(); ++l )
+						current = movitChain.chain->add_effect( el.at( l ) );
+					f->resizeAuto = false;
+				}
 				QList<Effect*> el = dst->sample->frames[i - 1]->videoFilters[k]->getMovitEffects();
 				branch->filters.append( new MovitFilter( el, dst->sample->frames[i - 1]->videoFilters[k] ) );
 				for ( l = 0; l < el.count(); ++l )
 					current = movitChain.chain->add_effect( el.at( l ) );
 			}
 			
+			// auto resize to match destination aspect ratio
+			if ( f->resizeAuto ) {
+				GLResize *resize = new GLResize();
+				QList<Effect*> el = resize->getMovitEffects();
+				branch->filters.append( new MovitFilter( el, resize, true ) );
+				for ( l = 0; l < el.count(); ++l )
+					current = movitChain.chain->add_effect( el.at( l ) );
+			}
+
 			// padding
-			//f->glWidth = 192; f->glHeight = 108;
-			if ( f->glWidth < projectProfile.getVideoWidth() || f->glHeight < projectProfile.getVideoHeight() ) {
-				if ( fabs(( f->glWidth / f->glHeight ) - f->profile.getVideoAspectRatio()) > 1e-3 ) {
-					// resize to match destination aspect ratio
-					GLResize *resize = new GLResize();
-					resize->width = (float)f->profile.getVideoHeight() * f->profile.getVideoAspectRatio();
-					resize->height = (float)f->profile.getVideoHeight();
-					QList<Effect*> el = resize->getMovitEffects();
-					branch->filters.append( new MovitFilter( el, resize, true ) );
-					for ( l = 0; l < el.count(); ++l )
-						current = movitChain.chain->add_effect( el.at( l ) );
-				}
+			if ( f->paddingAuto ) {
 				GLPadding *padding = new GLPadding();
 				QList<Effect*> el = padding->getMovitEffects();
 				branch->filters.append( new MovitFilter( el, padding, true ) );
@@ -423,7 +433,13 @@ void Composer::movitRender( Frame *dst, bool update )
 
 	// update inputs data and filters parameters
 	i = start, j = 0;
+	int w = projectProfile.getVideoWidth();
+	int h = projectProfile.getVideoHeight();
 	while ( (f = getNextFrame( dst, i )) ) {
+		f->glWidth = f->profile.getVideoWidth();
+		f->glHeight = f->profile.getVideoHeight();
+		f->glSAR = f->profile.getVideoSAR();
+		
 		MovitBranch *branch = movitChain.branches[ j++ ];
 		if ( reload )
 			branch->input->process( f );
@@ -432,11 +448,12 @@ void Composer::movitRender( Frame *dst, bool update )
 		}
 		if ( branch->composition )
 			branch->composition->composition->process( branch->composition->effect, f, f, &projectProfile );
+		
+		w = f->glWidth;
+		h = f->glHeight;
 	}
 
 	// render
-	int w = projectProfile.getVideoWidth();
-	int h = projectProfile.getVideoHeight();
 	TEXTURE *dest = gl.getTexture( w, h, GL_RGBA );
 	FBO *fbo = gl.getFBO( w, h );
 	glBindFramebuffer( GL_FRAMEBUFFER, fbo->fbo() );
@@ -445,8 +462,11 @@ void Composer::movitRender( Frame *dst, bool update )
 
 	movitChain.chain->render_to_fbo( fbo->fbo(), w, h );
 	
+	dst->glWidth = w;
+	dst->glHeight = h;
+	dst->glSAR = projectProfile.getVideoSAR();
 	if ( !update ) {
-		dst->setVideoFrame( Frame::GLTEXTURE, w, h, projectProfile.getVideoAspectRatio(),
+		dst->setVideoFrame( Frame::GLTEXTURE, w, h, dst->glSAR,
 						projectProfile.getVideoInterlaced(), projectProfile.getVideoTopFieldFirst(),
 						sampler->currentPTS(), projectProfile.getVideoFrameDuration() );
 	}

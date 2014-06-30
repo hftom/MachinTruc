@@ -13,7 +13,7 @@ Sampler::Sampler()
 	projectProfile.setVideoFrameDuration( MICROSECOND / projectProfile.getVideoFrameRate() );
 	projectProfile.setVideoWidth( 1920 );
 	projectProfile.setVideoHeight( 1080 );
-	projectProfile.setVideoAspectRatio( 16. / 9. );
+	projectProfile.setVideoSAR( 1.0 );
 	projectProfile.setVideoInterlaced( false );
 	projectProfile.setVideoTopFieldFirst( true );
 	projectProfile.setAudioSampleRate( DEFAULTSAMPLERATE );
@@ -634,9 +634,9 @@ void Sampler::prepareInputs()
 			t->resetIndexes();
 
 		if ( minPTS == scene->currentPTS )
-			i = (t->currentClipIndex() == 0) ? 0 : t->currentClipIndex() - 1;
+			i = qMax( 0, t->currentClipIndex() - 1 );
 		else
-			i = (t->currentClipIndexAudio() == 0) ? 0 : t->currentClipIndexAudio() - 1;
+			i = qMax( 0, t->currentClipIndexAudio() - 1 );
 
 		for ( ; i < t->clipCount(); ++i ) {
 			c = t->clipAt( i );

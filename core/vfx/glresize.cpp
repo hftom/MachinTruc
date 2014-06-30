@@ -6,7 +6,6 @@
 
 GLResize::GLResize( QString id, QString name ) : GLFilter( id, name )
 {
-	width = height = 16;
 	percent = 100.0;
 	addParameter( tr("Size:"), PFLOAT, 0.01, 500.0, true, &percent );
 }
@@ -19,17 +18,28 @@ GLResize::~GLResize()
 
 
 
+bool GLResize::preProcess( Frame *src, Profile *p )
+{
+	src->glWidth = (double)src->glWidth * src->glSAR  / p->getVideoSAR() * percent / 100.0;
+	if ( src->glWidth < 1 )
+		src->glWidth = 1;
+	src->glHeight = (double)src->glHeight * percent / 100.0;
+	if ( src->glHeight < 1 )
+		src->glHeight = 1;
+	src->glSAR = p->getVideoSAR();
+	src->resizeAuto = false;
+	
+	return true;
+}
+
+
+
 bool GLResize::process( const QList<Effect*> &el, Frame *src, Profile *p )
 {
-	Q_UNUSED( p );
-	width = (float)src->profile.getVideoWidth() * percent / 100.0;
-	if ( width < 1 ) width = 1;
-	height = (float)src->profile.getVideoHeight() * width / (float)src->profile.getVideoWidth();
-	if ( height < 1 ) height = 1;
-	src->glWidth = width;
-	src->glHeight = height;
-	return el.at(0)->set_int( "width", width )
-		&& el.at(0)->set_int( "height", height );
+	preProcess( src, p );
+	
+	return el.at(0)->set_int( "width", src->glWidth )
+		&& el.at(0)->set_int( "height", src->glHeight );
 }
 
 

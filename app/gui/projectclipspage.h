@@ -46,7 +46,7 @@ class SourceListItem : public QListWidgetItem
 {
 public:
 	SourceListItem( QPixmap pix, Source *src ) : QListWidgetItem() {
-		// take ownership of src.
+		// takes ownership of src.
 		source = src;
 		Profile p = source->getProfile();
 		int hours, mins, secs;
@@ -71,7 +71,7 @@ public:
 	double getCurrentPts() { return currentPts; }
 	Source* getSource() { return source; }
 	const QImage & getInThumb() { return inThumb; }
-	QSize getThumbSize() { return QSize( source->getProfile().getVideoAspectRatio() * THUMBHEIGHT, THUMBHEIGHT ); }
+	QSize getThumbSize() { return QSize( source->getProfile().getVideoSAR() * source->getProfile().getVideoWidth() * THUMBHEIGHT / source->getProfile().getVideoHeight(), THUMBHEIGHT ); }
 	Cut* getCut( int index, QString filename ) {
 		if ( filename != source->getFileName() )
 			return NULL;

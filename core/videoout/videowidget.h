@@ -22,9 +22,6 @@ public:
 	VideoWidget( QWidget *parent=0 );
 	~VideoWidget();
 
-	QGLWidget* getSharedContext();
-	QImage getThumb( int h, double *pts, bool outPts );
-
 public slots:
 	void showFrame( Frame *frame );
 	void shot();

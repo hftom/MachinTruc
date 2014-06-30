@@ -340,7 +340,7 @@ bool InputFF::probe( QString fn, Profile *prof )
 		prof->setVideoFrameDuration( MICROSECOND / fps );
 		prof->setVideoWidth( f.profile.getVideoWidth() );
 		prof->setVideoHeight( f.profile.getVideoHeight() );
-		prof->setVideoAspectRatio( f.profile.getVideoAspectRatio() );
+		prof->setVideoSAR( f.profile.getVideoSAR() );
 		prof->setVideoInterlaced( ilaced );
 		prof->setVideoTopFieldFirst( tff );
 		prof->setVideoColorSpace( f.profile.getVideoColorSpace() );
@@ -794,16 +794,13 @@ bool InputFF::decodeVideo( Frame *f )
 			double tb = av_q2d( st->time_base ) * AV_TIME_BASE;
 			vpts = av_frame_get_best_effort_timestamp( videoAvframe ) * tb;
 
-			double ratio = (double)videoCodecCtx->width / (double)videoCodecCtx->height;
+			double ratio = 1.0;
 			if ( st->sample_aspect_ratio.num && av_cmp_q(st->sample_aspect_ratio, st->codec->sample_aspect_ratio) ) {
-				AVRational display_aspect_ratio;
-				av_reduce( &display_aspect_ratio.num, &display_aspect_ratio.den, st->codec->width * st->sample_aspect_ratio.num,
-							st->codec->height * st->sample_aspect_ratio.den, 1024 * 1024 );
-				//printf("SAR %d:%d DAR %d:%d\n", st->sample_aspect_ratio.num, st->sample_aspect_ratio.den, display_aspect_ratio.num, display_aspect_ratio.den);
-				ratio = (double)display_aspect_ratio.num / (double)display_aspect_ratio.den;
+				ratio = (double)st->sample_aspect_ratio.num / (double)st->sample_aspect_ratio.den;
 			}
-			else if ( videoAvframe->sample_aspect_ratio.num && videoAvframe->sample_aspect_ratio.den )
-				ratio *= (double)videoAvframe->sample_aspect_ratio.num / (double)videoAvframe->sample_aspect_ratio.den;
+			else if ( videoAvframe->sample_aspect_ratio.num && videoAvframe->sample_aspect_ratio.den ) {
+				ratio = (double)videoAvframe->sample_aspect_ratio.num / (double)videoAvframe->sample_aspect_ratio.den;
+			}
 
 			double dur = inProfile.getVideoFrameDuration();
 			if ( videoAvframe->repeat_pict ) {

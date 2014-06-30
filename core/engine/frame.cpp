@@ -74,12 +74,12 @@ void Frame::resizeBuffer( int s )
 
 
 
-void Frame::setVideoFrame( DataType t, int w, int h, double ar, bool il, bool tff, double p, double d )
+void Frame::setVideoFrame( DataType t, int w, int h, double sar, bool il, bool tff, double p, double d )
 {
 	pType = t;
 	profile.setVideoWidth( w );
 	profile.setVideoHeight( h );
-	profile.setVideoAspectRatio( ar );
+	profile.setVideoSAR( sar );
 	profile.setVideoInterlaced( il );
 	profile.setVideoTopFieldFirst( tff );
 	profile.setVideoFrameDuration( d );

@@ -29,7 +29,7 @@ public:
     void setVideoFrameDuration( double d ) { videoFrameDuration = d; }
     void setVideoWidth( int w ) { videoWidth = w; }
     void setVideoHeight( int h ) { videoHeight = h; }
-    void setVideoAspectRatio( double ar ) { videoAspectRatio = ar; }
+    void setVideoSAR( double sar ) { videoSAR = sar; }
     void setVideoInterlaced( bool il ) { videoInterlaced = il; }
     void setVideoTopFieldFirst( bool tff ) { videoTopFieldFirst = tff; }
     void setStreamStartTime( double st ) { streamStartTime = st; }
@@ -45,7 +45,7 @@ public:
     double getVideoFrameDuration() const { return videoFrameDuration; }
     int getVideoWidth() const { return videoWidth; }
     int getVideoHeight() const { return videoHeight; }
-    double getVideoAspectRatio() const { return videoAspectRatio; }
+    double getVideoSAR() const { return videoSAR; }
     bool getVideoInterlaced() const { return videoInterlaced; }
     bool getVideoTopFieldFirst() const { return videoTopFieldFirst; }
     double getStreamStartTime() const { return streamStartTime; }
@@ -81,7 +81,7 @@ private:
     double videoFrameDuration;
     int videoWidth;
     int videoHeight;
-    double videoAspectRatio;
+    double videoSAR;
     bool videoInterlaced;
     bool videoTopFieldFirst;
 	int videoColorSpace;

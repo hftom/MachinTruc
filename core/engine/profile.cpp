@@ -8,7 +8,7 @@ Profile::Profile()
 	videoFrameDuration = 40000;
 	videoWidth = 1280;
 	videoHeight = 720;
-	videoAspectRatio = 16./9.;
+	videoSAR = 1.0;
 	videoInterlaced = false;
 	videoTopFieldFirst = true;
 	videoColorSpace = SPC_UNDEF;

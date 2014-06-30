@@ -189,7 +189,8 @@ QPixmap ProjectClipsPage::getSourceThumb( Frame *f )
 	hidden->makeCurrent();
 
 	MovitChain *movitChain = new MovitChain();
-	movitChain->chain = new EffectChain( f->profile.getVideoAspectRatio(), 1.0 );
+	double ar = f->profile.getVideoSAR() * f->profile.getVideoWidth() / f->profile.getVideoHeight();
+	movitChain->chain = new EffectChain( ar, 1.0 );
 	MovitInput *in = new MovitInput();
 	MovitBranch *branch = new MovitBranch( in );
 	movitChain->branches.append( branch );
@@ -206,13 +207,13 @@ QPixmap ProjectClipsPage::getSourceThumb( Frame *f )
 	}
 			
 	int iw, ih;
-	if ( f->profile.getVideoAspectRatio() >= ICONSIZEWIDTH / ICONSIZEHEIGHT ) {
+	if ( ar >= ICONSIZEWIDTH / ICONSIZEHEIGHT ) {
 		iw = ICONSIZEWIDTH;
-		ih = iw / f->profile.getVideoAspectRatio();
+		ih = iw / ar;
 	}
 	else {
 		ih = ICONSIZEHEIGHT;
-		iw = ih * f->profile.getVideoAspectRatio();
+		iw = ih * ar;
 	}
 	// resize
 	Effect *e = new ResampleEffect();

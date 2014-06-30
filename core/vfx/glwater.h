@@ -13,13 +13,13 @@ static const char *water_frag=
 "uniform vec2 PREFIX(size_div_delta);\n"
 "\n"
 "// crystals effect\n"
-"const float delta_theta = 2.0 * 3.1415926535897932 / 7.0;\n"
+"const float PREFIX(delta_theta) = 2.0 * 3.1415926535897932 / 7.0;\n"
 "float PREFIX(color)( vec2 coord ) {\n"
 "	float col = 0.0;\n"
 "	float theta = 0.0;\n"
 "	for ( int i = 0; i < 8; i++ ) {\n"
 "		vec2 adjc = coord;\n"
-"		theta = delta_theta * float( i );\n"
+"		theta = PREFIX(delta_theta) * float( i );\n"
 "		adjc.x += cos( theta ) * PREFIX(time) * PREFIX(speed);\n"
 "		adjc.y -= sin( theta ) * PREFIX(time) * PREFIX(speed);\n"
 "		col = col + cos( ( adjc.x * cos( theta ) - adjc.y * sin( theta ) ) * PREFIX(frequency) ) * PREFIX(intensity);\n"
@@ -38,9 +38,9 @@ static const char *water_frag=
 "	c1.x += dx;\n"
 "	c1.y += dy;\n"
 "	float alpha = 1.0 + dot( dx, dy ) * PREFIX(intence);\n"
-"	vec4 org = INPUT( c1 );\n"
-"	org.rgb *= alpha;\n"
-"	return org;\n"
+"	vec4 result = INPUT( c1 );\n"
+"	result.rgb *= alpha;\n"
+"	return result;\n"
 "}\n";
 
 

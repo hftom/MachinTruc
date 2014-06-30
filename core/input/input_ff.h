@@ -136,7 +136,7 @@ public:
 	}
 
 	void duplicate( Frame *f ) {
-		f->setVideoFrame( (Frame::DataType)repeatType, profile.getVideoWidth(), profile.getVideoHeight(), profile.getVideoAspectRatio(),
+		f->setVideoFrame( (Frame::DataType)repeatType, profile.getVideoWidth(), profile.getVideoHeight(), profile.getVideoSAR(),
 						  profile.getVideoInterlaced(), profile.getVideoTopFieldFirst(), repeatPTS + outputDuration, profile.getVideoFrameDuration() );
 		f->profile = profile;
 		int num = (repeatType == Frame::YUV420P) ? 3 : 4;

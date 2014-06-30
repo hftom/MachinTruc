@@ -42,7 +42,7 @@ bool InputImage::probe( QString fn, Profile *prof )
 
 	prof->setVideoWidth( image.width() );
 	prof->setVideoHeight( image.height() );
-	prof->setVideoAspectRatio( (double)image.width() / (double)image.height() );
+	prof->setVideoSAR( 1.0 );
 	prof->setVideoFrameRate( fps );
     prof->setVideoFrameDuration( MICROSECOND / fps );
     prof->setStreamStartTime( 0 );
@@ -119,7 +119,7 @@ bool InputImage::upload( Frame *f )
 
 	if ( image.isNull() || (image.depth()!=24 && image.depth()!=32) )
 		return false;
-	f->setVideoFrame( (image.depth() == 24) ? Frame::RGB : Frame::RGBA, image.width(), image.height(), (double)image.width() / (double)image.height(), false, false, currentVideoPTS, outProfile.getVideoFrameDuration() );
+	f->setVideoFrame( (image.depth() == 24) ? Frame::RGB : Frame::RGBA, image.width(), image.height(), 1.0, false, false, currentVideoPTS, outProfile.getVideoFrameDuration() );
 	memcpy( f->data(), image.constBits(), image.byteCount() );
 
 	currentVideoPTS += outProfile.getVideoFrameDuration();
