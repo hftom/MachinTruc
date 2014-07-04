@@ -5,8 +5,8 @@
 
 GLBlur::GLBlur( QString id, QString name ) : GLFilter( id, name )
 {
-	radius = 4.0;
-	addParameter( tr("Radius:"), PFLOAT, 0.0, 100.0, true, &radius );
+	amount = 1.0f;
+	addParameter( tr("Amount:"), PFLOAT, 0.0, 10.0, true, &amount );
 }
 
 
@@ -21,7 +21,7 @@ bool GLBlur::process( const QList<Effect*> &el, Frame *src, Profile *p )
 {
 	Q_UNUSED( src );
 	Q_UNUSED( p );
-	return el.at(0)->set_float( "radius", radius );
+	return el.at(0)->set_float( "radius", src->glWidth * amount / 100.0f );
 }
 
 

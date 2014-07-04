@@ -156,7 +156,7 @@ void VideoWidget::paintGL()
 	
 	if ( lastFrame ) {
 		glEnable( GL_BLEND );
-		glBindTexture( GL_TEXTURE_2D, lastFrame->texture()->texture() );
+		glBindTexture( GL_TEXTURE_2D, lastFrame->fbo()->texture() );
 		glBegin( GL_QUADS );
 			glTexCoord2f( 0, 0 );
 			glVertex3f( left, top, 0 );
@@ -217,7 +217,7 @@ QImage VideoWidget::lastImage()
 		glTexCoord2f( w/BOARDWIDTH, 0 );
 		glVertex3f( w, h, 0.);
 	glEnd();*/
-	glBindTexture( GL_TEXTURE_2D, lastFrame->texture()->texture() );
+	glBindTexture( GL_TEXTURE_2D, lastFrame->fbo()->texture() );
 	glEnable( GL_BLEND );
 	glBegin( GL_QUADS );
 		glTexCoord2f( 0, 0 );

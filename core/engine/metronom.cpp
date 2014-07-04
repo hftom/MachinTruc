@@ -179,12 +179,14 @@ void Metronom::run()
 				ct = (tv.tv_sec * MICROSECOND + tv.tv_usec);
 
 				t = t - ct;
+				//qDebug() << "usleep" << t << freeVideoFrames.count();
 				if ( t > 0 ) {
-					//qDebug() << "usleep" << t;
 					usleep( t );
 				}
 				emit newFrame( f );
 			}
+			else
+				qDebug() << "metronom : skipped";
         }
         else
             usleep( 1000 );

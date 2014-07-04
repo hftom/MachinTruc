@@ -36,6 +36,8 @@ void Composer::setSharedContext( QGLWidget *shared )
 {
     hiddenContext = shared;
     hiddenContext->makeCurrent();
+	
+	glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
 
 	QString movitPath;
 	if ( QFile("/usr/share/movit/header.frag").exists() )
@@ -248,6 +250,9 @@ bool Composer::renderVideoFrame( Frame *dst )
                             false, false, sampler->currentPTS(), projectProfile.getVideoFrameDuration() );
         if ( !gl.black( dst ) )
             return false;
+		dst->glWidth = dst->profile.getVideoWidth();
+		dst->glHeight = dst->profile.getVideoHeight();
+		dst->glSAR = dst->profile.getVideoSAR();
 		dst->setFence( gl.getFence() );
 		glFlush();
         return true;
@@ -274,12 +279,16 @@ void Composer::movitRender( Frame *dst, bool update )
     Frame *f;
 	bool reload = !update;
 	
+	//QTime time;
+	//time.start();
+	
 	Profile projectProfile = sampler->getProfile();
 
     // find the lowest frame to process
-    for ( j = dst->sample->frames.count() - 1; j > -1; --j ) {
+    for ( j = 0 ; j < dst->sample->frames.count(); ++j ) {
         if ( (f = dst->sample->frames[j]->frame) ) {
             start = j;
+			break;
         }
     }
 
@@ -316,7 +325,7 @@ void Composer::movitRender( Frame *dst, bool update )
 		}
 
 		// padding
-		if ( f->paddingAuto ) {
+		if ( f->paddingAuto && !sampler->previewMode() ) {
 			if ( f->glWidth != projectProfile.getVideoWidth() || f->glHeight != projectProfile.getVideoHeight() ) {
 				GLPadding padding;
 				currentDescriptor.append( padding.getDescriptor() );
@@ -342,11 +351,11 @@ void Composer::movitRender( Frame *dst, bool update )
 
 	// rebuild the chain if neccessary
 	if ( currentDescriptor !=  movitDescriptor ) {
-		for (k=0; k<currentDescriptor.count(); k++)
+		for ( k = 0; k < currentDescriptor.count(); k++ )
 			printf("%s\n", currentDescriptor[k].toLocal8Bit().data());
 		movitDescriptor = currentDescriptor;
 		movitChain.reset();
-		movitChain.chain = new EffectChain( projectProfile.getVideoSAR() * projectProfile.getVideoWidth() / projectProfile.getVideoHeight(), 1.0, movitPool );
+		movitChain.chain = new EffectChain( projectProfile.getVideoSAR() * projectProfile.getVideoWidth(), projectProfile.getVideoHeight(), movitPool );
 
 		i = start;
 		Effect *last, *current = NULL;
@@ -442,7 +451,7 @@ void Composer::movitRender( Frame *dst, bool update )
 		
 		MovitBranch *branch = movitChain.branches[ j++ ];
 		if ( reload )
-			branch->input->process( f );
+			branch->input->process( f, &gl );
 		for ( k = 0; k < branch->filters.count(); ++k ) {
 			branch->filters[k]->filter->process( branch->filters[k]->effects, f, &projectProfile );
 		}
@@ -454,12 +463,7 @@ void Composer::movitRender( Frame *dst, bool update )
 	}
 
 	// render
-	TEXTURE *dest = gl.getTexture( w, h, GL_RGBA );
-	FBO *fbo = gl.getFBO( w, h );
-	glBindFramebuffer( GL_FRAMEBUFFER, fbo->fbo() );
-	glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, dest->texture(), 0 );
-	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
-
+	FBO *fbo = gl.getFBO( w, h, GL_RGBA );
 	movitChain.chain->render_to_fbo( fbo->fbo(), w, h );
 	
 	dst->glWidth = w;
@@ -470,10 +474,11 @@ void Composer::movitRender( Frame *dst, bool update )
 						projectProfile.getVideoInterlaced(), projectProfile.getVideoTopFieldFirst(),
 						sampler->currentPTS(), projectProfile.getVideoFrameDuration() );
 	}
-	dst->setTexture( dest );
+	dst->setFBO( fbo );
 	dst->setFence( gl.getFence() );
 	glFlush();
-	gl.releaseFBO( fbo );
+	
+	//qDebug() << "elapsed" << time.elapsed();
 }
 
 

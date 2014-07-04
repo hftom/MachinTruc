@@ -6,67 +6,57 @@
 #define GL_GLEXT_PROTOTYPES
 
 #include <movit/effect_chain.h>
-//#include <QGLShaderProgram>
+
+
 
 class Frame;
 
 
-class GLOBJECT
+
+class FBO
 {
 public:
-    GLOBJECT( int w, int h );
-    int width();
-    int height();
-    bool isFree();
-    void setFree( bool b );
-    bool isValid();
+	FBO( int w, int h, GLint iformat );
+	~FBO();
+	int width() { return iw; }
+	int height() { return ih; }
+	GLint format() { return internalFormat; }
+	GLuint fbo() { return fb; }
+	GLuint texture() { return tex; }
+	void setFree( bool b ) { used = !b; }
+	bool isFree() { return !used; }
+	bool isValid() { return valid; }
 
-protected:
-    int pwidth;
-    int pheight;
-    bool used;
-    bool valid;
+private:
+	bool init( int w, int h, GLint iformat );
+
+	int iw, ih;
+	GLuint fb;
+	GLuint tex;
+	GLint internalFormat;
+	bool used, valid;
 };
 
 
 
-class FBO : public GLOBJECT
+class PBO
 {
 public:
-    FBO( int w, int h );
-    ~FBO();
-    GLuint fbo();
+	PBO( int sz );
+	~PBO();
+	bool resize( int sz );
+	int size() { return isize; }
+	GLuint pbo() { return pb; }
+	void setFree( bool b ) { used = !b; }
+	bool isFree() { return !used; }
+	bool isValid() { return valid; }
 
 private:
-    GLuint fb;
-};
+	bool init( int sz );
 
-
-
-class RBO : public GLOBJECT
-{
-public:
-    RBO( int w, int h );
-    ~RBO();
-    GLuint rbo();
-
-private:
-    GLuint rb;
-};
-
-
-
-class TEXTURE : public GLOBJECT
-{
-public:
-    TEXTURE( int w, int h, GLint iformat );
-    ~TEXTURE();
-    GLuint texture();
-    GLint internalFormat();
-
-private:
-    GLuint tex;
-    GLint pinternalFormat;
+	int isize;
+	GLuint pb;
+	bool used, valid;
 };
 
 
@@ -95,31 +85,18 @@ private:
 class GLResource
 {
 public:
-    GLResource();
-    ~GLResource();
-
-    FBO* getFBO( int width, int height );
-    void releaseFBO( FBO* f );
-    RBO* getRBO( int width, int height );
-    void releaseRBO( RBO* r );
-    TEXTURE* getTexture( int width, int height, GLint iformat );
-    void releaseTexture( TEXTURE *t );
-    GLuint getPBO( int size );
+    FBO* getFBO( int width, int height, GLint iformat );
+    PBO* getPBO( int size );
 	FENCE* getFence();
 
     void setOrthoView( int width, int height );
     void drawQuad( float x1, float y1, float x2, float y2 );
-
     bool black( Frame *dst );
 
 private:
     QList<FBO*> fboList;
-    QList<RBO*> rboList;
-    QList<TEXTURE*> textureList;
+	QList<PBO*> pboList;
 	QList<FENCE*> fences;
-
-    GLuint videoPBO;
-    int videoPBOSize;
 };
 
 #endif //GLRESOURCE_H

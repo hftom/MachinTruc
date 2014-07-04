@@ -9,7 +9,7 @@ Sampler::Sampler()
 {	
 	playMode = PlayClip;
 
-	projectProfile.setVideoFrameRate( 25 );
+	projectProfile.setVideoFrameRate( 50 );
 	projectProfile.setVideoFrameDuration( MICROSECOND / projectProfile.getVideoFrameRate() );
 	projectProfile.setVideoWidth( 1920 );
 	projectProfile.setVideoHeight( 1080 );

@@ -3,6 +3,8 @@
 
 #include "engine/movitchain.h"
 
+#define BUFFER_OFFSET(i) ((uint8_t*)NULL + (i))
+
 
 
 MovitInput::MovitInput()
@@ -17,31 +19,77 @@ MovitInput::~MovitInput()
 
 
 
-bool MovitInput::process( Frame *src )
+bool MovitInput::setBuffer( PBO *p, Frame *src, int size )
+{
+	glBindBuffer( GL_PIXEL_UNPACK_BUFFER_ARB, p->pbo() );
+	void *mem = glMapBuffer( GL_PIXEL_UNPACK_BUFFER_ARB, GL_WRITE_ONLY );
+	if ( !mem )
+		return false;
+	memcpy( mem, src->data(), size );
+	glUnmapBuffer( GL_PIXEL_UNPACK_BUFFER_ARB );
+	glBindBuffer( GL_PIXEL_UNPACK_BUFFER_ARB, 0 );
+	src->setPBO( p );
+	return true;
+}
+
+
+
+bool MovitInput::process( Frame *src, GLResource *gl )
 {
 	int w = src->profile.getVideoWidth();
 	int h = src->profile.getVideoHeight();
 	uint8_t *data = src->data();
+	int size;
 
 	switch ( src->type() ) {
 		case Frame::YUV420P: {
 			YCbCrInput *ycbcr = (YCbCrInput*)input;
-			ycbcr->set_pixel_data( 0, data );
-			ycbcr->set_pixel_data( 1, &data[w * h]);
-			ycbcr->set_pixel_data( 2, &data[w * h + (w / 2 * h / 2)] );
+			size = w * h * 3 / 2;
+			PBO *p = NULL;
+			if ( gl )
+				p = gl->getPBO( size );
+			if ( p && setBuffer( p, src, size ) ) {
+				ycbcr->set_pixel_data( 0, BUFFER_OFFSET( 0 ), p->pbo() );
+				ycbcr->set_pixel_data( 1, BUFFER_OFFSET( w * h ), p->pbo());
+				ycbcr->set_pixel_data( 2, BUFFER_OFFSET( w * h + (w / 2 * h / 2) ), p->pbo() );
+			}
+			else {
+				ycbcr->set_pixel_data( 0, data );
+				ycbcr->set_pixel_data( 1, &data[w * h]);
+				ycbcr->set_pixel_data( 2, &data[w * h + (w / 2 * h / 2)] );
+			}
 			return true;
 		}
 		case Frame::YUV422P: {
 			YCbCrInput *ycbcr = (YCbCrInput*)input;
-			ycbcr->set_pixel_data( 0, data );
-			ycbcr->set_pixel_data( 1, &data[w * h]);
-			ycbcr->set_pixel_data( 2, &data[w * h + (w / 2 * h)] );
+			size = w * h * 2;
+			PBO *p = NULL;
+			if ( gl )
+				p = gl->getPBO( size );
+			if ( p  && setBuffer( p, src, size ) ) {
+				ycbcr->set_pixel_data( 0, BUFFER_OFFSET( 0 ), p->pbo() );
+				ycbcr->set_pixel_data( 1, BUFFER_OFFSET( w * h ), p->pbo());
+				ycbcr->set_pixel_data( 2, BUFFER_OFFSET( w * h + (w / 2 * h) ), p->pbo() );
+			}
+			else {
+				ycbcr->set_pixel_data( 0, data );
+				ycbcr->set_pixel_data( 1, &data[w * h]);
+				ycbcr->set_pixel_data( 2, &data[w * h + (w / 2 * h)] );
+			}
 			return true;
 		}
 		case Frame::RGB:
 		case Frame::RGBA: {
 			FlatInput *flat = (FlatInput*)input;
-			flat->set_pixel_data( data );
+			size = src->type() == Frame::RGB ? w * h * 3 : w * h * 4;
+			PBO *p = NULL;
+			if ( gl )
+				p = gl->getPBO( size );
+			if ( p && setBuffer( p, src, size ) ) {
+				flat->set_pixel_data( BUFFER_OFFSET( 0 ), p->pbo() );
+			}
+			else
+				flat->set_pixel_data( data );
 			return true;
 		}
 	}

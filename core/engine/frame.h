@@ -72,8 +72,10 @@ public:
 
 	void setVideoFrame( DataType t, int w, int h, double sar, bool il, bool tff, double p, double d );
     void setVideoFrame( Frame *src );
-    void setTexture( TEXTURE *t );
-    TEXTURE* texture() { return tex; }
+    void setFBO( FBO *f );
+    FBO* fbo() { return fb; }
+    void setPBO( PBO *p );
+	PBO* pbo() { return pb; }
     void setFence( FENCE *f );
     FENCE* fence() { return glfence; }
 
@@ -102,7 +104,8 @@ private:
     void resizeBuffer( int s );
 
 	int pType;
-	TEXTURE *tex;
+	FBO *fb;
+	PBO *pb;
 	FENCE *glfence;
     int pAudioSamples;
     double pPTS;

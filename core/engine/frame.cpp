@@ -10,7 +10,8 @@
 
 Frame::Frame( MQueue<Frame*> *origin, bool makeSample )
 {
-	tex = NULL;
+	fb = NULL;
+	pb = NULL;
 	glfence = NULL;
 	buffer = NULL;
 	bufferSize = 0;
@@ -28,8 +29,12 @@ Frame::~Frame()
 {
 	if ( buffer )
 		free( buffer );
-	if ( tex )
-		tex->setFree( true );
+	if ( fb )
+		fb->setFree( true );
+	if ( pb )
+		pb->setFree( true );
+	if ( glfence )
+		glfence->setFree();
 	if ( sample ) {
 		sample->clear();
 		delete sample;
@@ -40,9 +45,14 @@ Frame::~Frame()
 
 void Frame::release()
 {
-	if ( tex ) {
-		tex->setFree( true );
-		tex = NULL;
+	if ( fb ) {
+		fb->setFree( true );
+		fb = NULL;
+	}
+
+	if ( pb ) {
+		pb->setFree( true );
+		pb = NULL;
 	}
 
 	if ( glfence ) {
@@ -106,12 +116,21 @@ void Frame::setVideoFrame( Frame *src )
 
 
 
-void Frame::setTexture( TEXTURE *t )
+void Frame::setFBO( FBO *f )
 {
 	pType = GLTEXTURE;
-	if ( tex )
-		tex->setFree( true );
-	tex = t;
+	if ( fb )
+		fb->setFree( true );
+	fb = f;
+}
+
+
+
+void Frame::setPBO( PBO *p )
+{
+	if ( pb )
+		pb->setFree( true );
+	pb = p;
 }
 
 

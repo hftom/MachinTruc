@@ -24,12 +24,13 @@ public:
 	MovitInput();
 	~MovitInput();
 
-	bool process( Frame *src );
+	bool process( Frame *src, GLResource *gl = NULL );
 	Input* getMovitInput( Frame *src );
 
 	static QString getDescriptor( Frame *src );
 
 private:
+	bool setBuffer( PBO *p, Frame *src, int size );
 	Input *input;
 };
 

@@ -122,6 +122,7 @@ public:
 	void play( bool b );
 	
 	Scene* getScene() { return scene; }
+	bool previewMode() { return playMode == PlayClip; }
 
 public slots:
 	void setSharedContext( QGLWidget *shared );
