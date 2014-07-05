@@ -9,7 +9,7 @@
 /* Simple Water shader. (c) Victor Korsun, bitekas@gmail.com; 2012.
    Attribution-ShareAlike CC License.
 */
-static const char *water_frag=
+static const char *WaterEffect_frag=
 "uniform vec2 PREFIX(size_div_delta);\n"
 "\n"
 "// crystals effect\n"
@@ -67,7 +67,7 @@ public:
 	}
 
 	virtual std::string effect_type_id() const { return "WaterEffect"; }
-	std::string output_fragment_shader() { return water_frag; }
+	std::string output_fragment_shader() { return WaterEffect_frag; }
 	
 	virtual void inform_input_size(unsigned, unsigned width, unsigned height) {
 		inwidth = width;

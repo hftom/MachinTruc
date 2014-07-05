@@ -2,6 +2,7 @@
 #define FILTERCOLLECTION_H
 
 // video filters
+#include "vfx/gltest.h"
 #include "vfx/glblur.h"
 #include "vfx/glcut.h"
 #include "vfx/gldeconvolutionsharpen.h"

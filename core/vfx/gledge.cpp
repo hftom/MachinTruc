@@ -37,10 +37,3 @@ QList<Effect*> GLEdge::getMovitEffects()
 	list.append( new EdgeEffect() );
 	return list;
 }
-
-
-
-
-
-
-

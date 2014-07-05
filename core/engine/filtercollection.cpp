@@ -9,6 +9,8 @@ static FilterCollection globalFilterCollection;
 
 FilterCollection::FilterCollection()
 {
+	videoFilters.append( FilterEntry( "GLTest", QObject::tr("Test"), &Maker<GLTest>::make ) );
+	
 	videoFilters.append( FilterEntry( "GLSaturation", QObject::tr("Saturation"), &Maker<GLSaturation>::make ) );
 	videoFilters.append( FilterEntry( "GLLiftGammaGain", QObject::tr("Lift Gamma Gain"), &Maker<GLLiftGammaGain>::make ) );
 

@@ -7,7 +7,7 @@
 
 
 
-static const char *filter_edge_frag=
+static const char *EdgeEffect_frag=
 "uniform vec2 PREFIX(one_div_size);\n"
 "vec4 FUNCNAME( vec2 tc ) {\n"
 "	float xof = PREFIX(one_div_size).x;\n"
@@ -40,7 +40,7 @@ public:
 		register_float("opacity", &opacity);
 	}
 	std::string effect_type_id() const { return "EdgeEffect"; }
-	std::string output_fragment_shader() { return filter_edge_frag; }
+	std::string output_fragment_shader() { return EdgeEffect_frag; }
 	bool needs_texture_bounce() const { return true; }
 	
 	virtual void inform_input_size(unsigned, unsigned width, unsigned height) {

@@ -21,6 +21,7 @@ SOURCES = \
 	\
 	audioout/ao_sdl.cpp \
 	\
+	vfx/gltest.cpp \
 	vfx/glmix.cpp \
 	vfx/gloverlay.cpp \
 	vfx/glsaturation.cpp \
@@ -76,6 +77,7 @@ HEADERS = \
 	afx/audiovolume.h \
 	afx/audiocomposition.h \
 	\
+	vfx/gltest.h \
 	vfx/glfilter.h \
 	vfx/glcomposition.h \
 	vfx/glmix.h \

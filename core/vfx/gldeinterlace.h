@@ -7,7 +7,7 @@
 
 
 
-static const char *MyDeinterlaceEffect_shader=
+static const char *MyDeinterlaceEffect_frag=
 "uniform float PREFIX(one_div_height);\n"
 "vec4 FUNCNAME( vec2 tc ) {\n"
 "	vec4 blend = 2.0 * INPUT( tc );\n"
@@ -22,7 +22,7 @@ class MyDeinterlaceEffect : public Effect {
 public:
 	MyDeinterlaceEffect() {}
 	virtual std::string effect_type_id() const { return "MyDeinterlaceEffect"; }
-	std::string output_fragment_shader() { return MyDeinterlaceEffect_shader; }
+	std::string output_fragment_shader() { return MyDeinterlaceEffect_frag; }
 	virtual bool needs_texture_bounce() const { return true; }
 	virtual AlphaHandling alpha_handling() const { return DONT_CARE_ALPHA_TYPE; }
 	
