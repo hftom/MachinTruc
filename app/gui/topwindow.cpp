@@ -20,18 +20,28 @@ TopWindow::TopWindow()
 	seekSlider->setTickInterval( 0 );
 	horizontalLayout_2->insertWidget( 9, seekSlider );
 	
-	Timeline *timeline = new Timeline( this );
+	sampler = new Sampler();
+	
+	timeline = new Timeline( this );
+
+	timelineView = new TimelineGraphicsView( 0 );
+	timelineView->setFocusPolicy( Qt::NoFocus );
+	timelineView->setAlignment( Qt::AlignLeft | Qt::AlignTop );
+	timelineView->setScene( timeline );
+	timelineView->setAcceptDrops( true );
+	timelineStackedWidget->addWidget( timelineView );
+	
 	connect( this, SIGNAL(setCursorPos(double)), timeline, SLOT(setCursorPos(double)) );
 	connect( timeline, SIGNAL(seekTo(double)), this, SLOT(timelineSeek(double)) );
 	connect( timeline, SIGNAL(ensureVisible(const QGraphicsItem*)), this, SLOT(ensureVisible(const QGraphicsItem*)) );
 	connect( timeline, SIGNAL(centerOn(const QGraphicsItem*)), this, SLOT(centerOn(const QGraphicsItem*)) );
-	connect( graphicsView, SIGNAL(sizeChanged(const QSize&)), timeline, SLOT(viewSizeChanged(const QSize&)) );
-
-	graphicsView->setAlignment( Qt::AlignLeft | Qt::AlignTop );
-	graphicsView->setScene( timeline );
-	graphicsView->setAcceptDrops( true );
-
-	sampler = new Sampler();
+	connect( timeline, SIGNAL(updateFrame()), sampler, SLOT(updateFrame()) );
+	connect( timelineView, SIGNAL(sizeChanged(const QSize&)), timeline, SLOT(viewSizeChanged(const QSize&)) );
+	
+	animEditor = new AnimEditor( 0 );
+	connect( animEditor, SIGNAL(quitEditor()), this, SLOT(quitEditor()) );
+	connect( animEditor, SIGNAL(updateFrame()), sampler, SLOT(updateFrame()) );
+	timelineStackedWidget->addWidget( animEditor );
 	
 	clipPage = new ProjectClipsPage( sampler );
 	connect( clipPage, SIGNAL(sourceActivated(SourceListItem*)), this, SLOT(clipActivated(SourceListItem*)) );
@@ -39,6 +49,9 @@ TopWindow::TopWindow()
 	fxPage = new FxPage();
 	connect( timeline, SIGNAL(clipSelected(Clip*)), fxPage, SLOT(clipSelected(Clip*)) );
 	connect( fxPage, SIGNAL(filterDeleted(Clip*,Filter*)), timeline, SLOT(filterDeleted(Clip*,Filter*)) );
+	connect( fxPage, SIGNAL(filterDeleted(Clip*,Filter*)), animEditor, SLOT(filterDeleted(Clip*,Filter*)) );
+	connect( fxPage, SIGNAL(updateFrame()), sampler, SLOT(updateFrame()) );
+	connect( fxPage, SIGNAL(editAnimation(FilterWidget*,ParameterWidget*,Parameter*)), this, SLOT(editAnimation(FilterWidget*,ParameterWidget*,Parameter*)) );
 	
 	stackedWidget->addWidget( clipPage );
 	stackedWidget->addWidget( fxPage );
@@ -78,12 +91,26 @@ TopWindow::TopWindow()
 	connect( outButton, SIGNAL(clicked()), this, SLOT(setOutPoint()) );
 
 	connect( switchButton, SIGNAL(toggled(bool)), sampler, SLOT(switchMode(bool)) );
-	connect( timeline, SIGNAL(updateFrame()), sampler, SLOT(updateFrame()) );
 	
 	timeline->setScene( sampler->getScene() );
 
 	connect( actionBlackBackground, SIGNAL(toggled(bool)), vw, SLOT(setBlackBackground(bool)) );
 	connect( actionDeleteClip, SIGNAL(triggered()), timeline, SLOT(deleteClip()) );
+}
+
+
+
+void TopWindow::editAnimation( FilterWidget* f, ParameterWidget *pw, Parameter *p )
+{
+	timelineStackedWidget->setCurrentIndex( 1 );
+	animEditor->setCurrentParam( f, pw, p );
+}
+
+
+
+void TopWindow::quitEditor()
+{
+	timelineStackedWidget->setCurrentIndex( 0 );
 }
 
 
@@ -169,14 +196,14 @@ void TopWindow::currentFramePts( double d )
 
 void TopWindow::ensureVisible( const QGraphicsItem *it )
 {
-	graphicsView->ensureVisible( it, 100, 100 );
+	timelineView->ensureVisible( it, 100, 100 );
 }
 
 
 
 void TopWindow::centerOn( const QGraphicsItem *it )
 {
-	graphicsView->centerOn( it );
+	timelineView->centerOn( it );
 }
 
 
@@ -199,8 +226,6 @@ void TopWindow::clipActivated( SourceListItem *item )
 			switchButton->toggle();
 		else
 			sampler->setClip( activeClip->getSource(), activeClip->getCurrentPts() );
-		
-		//timeline->setCurrentPos( activeClip->getCurrentPts() );
 	}
 }
 

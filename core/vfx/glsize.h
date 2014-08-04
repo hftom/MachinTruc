@@ -16,7 +16,11 @@ public:
     bool process( const QList<Effect*> &el, Frame *src, Profile *p );
 
 	QList<Effect*> getMovitEffects();
-	QWidget* getWidget();
+	
+	// Filter virtuals
+	void setPosition( double p );
+	void setLength( double len );
+	QList<Parameter*> getParameters();
 		
 private:
 	GLPadding *padding;

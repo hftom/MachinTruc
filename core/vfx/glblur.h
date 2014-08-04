@@ -16,7 +16,7 @@ public:
 	QList<Effect*> getMovitEffects();
 
 private:
-	float amount;
+	Parameter *amount;
 };
 
 #endif //GLBLUR_H

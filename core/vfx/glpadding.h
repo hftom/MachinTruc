@@ -17,8 +17,8 @@ public:
 	QList<Effect*> getMovitEffects();
 	
 private:
-	float xoffsetpercent, yoffsetpercent;
-	float left, top;
+	Parameter *xoffsetpercent, *yoffsetpercent;
+	double left, top;
 };
 
 #endif //GLPADDING_H

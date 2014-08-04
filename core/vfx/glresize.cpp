@@ -6,8 +6,7 @@
 
 GLResize::GLResize( QString id, QString name ) : GLFilter( id, name )
 {
-	percent = 100.0;
-	addParameter( tr("Size:"), PFLOAT, 0.01, 500.0, true, &percent );
+	percent = addParameter( tr("Size:"), Parameter::PDOUBLE, 100.0, 0.0, 500.0, true, "%" );
 }
 
 
@@ -20,10 +19,11 @@ GLResize::~GLResize()
 
 bool GLResize::preProcess( Frame *src, Profile *p )
 {
-	src->glWidth = (double)src->glWidth * src->glSAR  / p->getVideoSAR() * percent / 100.0;
+	double pc = getParamValue( percent, src->pts() );
+	src->glWidth = (double)src->glWidth * src->glSAR  / p->getVideoSAR() * pc / 100.0;
 	if ( src->glWidth < 1 )
 		src->glWidth = 1;
-	src->glHeight = (double)src->glHeight * percent / 100.0;
+	src->glHeight = (double)src->glHeight * pc / 100.0;
 	if ( src->glHeight < 1 )
 		src->glHeight = 1;
 	src->glSAR = p->getVideoSAR();

@@ -5,12 +5,9 @@
 
 GLGlow::GLGlow( QString id, QString name ) : GLFilter( id, name )
 {
-	radius = 20.0;
-	glow = 1.0;
-	highlight = 0.2;	
-	addParameter( tr("Radius:"), PFLOAT, 0.0, 100.0, true, &radius );
-	addParameter( tr("Glow:"), PFLOAT, 0.0, 10.0, true, &glow );
-	addParameter( tr("Highlight:"), PFLOAT, 0.0, 1.0, true, &highlight );
+	radius = addParameter( tr("Radius:"), Parameter::PDOUBLE, 20.0, 0.0, 100.0, true );
+	glow = addParameter( tr("Glow:"), Parameter::PDOUBLE, 1.0, 0.0, 10.0, true );
+	highlight = addParameter( tr("Highlight:"), Parameter::PDOUBLE, 0.2, 0.0, 1.0, true );
 }
 
 
@@ -23,9 +20,12 @@ GLGlow::~GLGlow()
 
 bool GLGlow::process( const QList<Effect*> &el, Frame *src, Profile *p )
 {
-	Q_UNUSED( src );
 	Q_UNUSED( p );
-	return el.at(0)->set_float( "radius", radius ) && el.at(0)->set_float( "blurred_mix_amount", glow ) && el.at(0)->set_float( "highlight_cutoff", highlight );
+	double pts = src->pts();
+	Effect *e = el[0];
+	return e->set_float( "radius", getParamValue( radius, pts ) )
+		&& e->set_float( "blurred_mix_amount", getParamValue( glow, pts ) )
+		&& e->set_float( "highlight_cutoff", getParamValue( highlight, pts ) );
 }
 
 

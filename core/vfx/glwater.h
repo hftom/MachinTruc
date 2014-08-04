@@ -103,9 +103,9 @@ public:
 	QList<Effect*> getMovitEffects();
 	
 private:
-	float speed;
-	float emboss, intensity, frequency;
-	float delta, intence;
+	Parameter *speed;
+	Parameter *emboss, *intensity, *frequency;
+	Parameter *delta, *intence;
 };
 
 #endif //GLWATER_H

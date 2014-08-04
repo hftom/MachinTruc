@@ -84,6 +84,7 @@ public:
 	
 	EffectChain *chain;
 	QList<MovitBranch*> branches;
+	double lastPTS;
 };
 
 #endif //MOVITCHAIN_H

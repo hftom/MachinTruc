@@ -9,8 +9,7 @@
 
 GLSaturation::GLSaturation( QString id, QString name ) : GLFilter( id, name )
 {
-	saturation = 2.0;
-	addParameter( tr("Saturation:"), PFLOAT, 0.0, 5.0, true, &saturation );
+	saturation = addParameter( tr("Saturation:"), Parameter::PDOUBLE, 1.0, 0.0, 5.0, true );
 }
 
 
@@ -23,9 +22,8 @@ GLSaturation::~GLSaturation()
 
 bool GLSaturation::process( const QList<Effect*> &el, Frame *src, Profile *p )
 {
-	Q_UNUSED( src );
 	Q_UNUSED( p );
-	return el.at(0)->set_float( "saturation", saturation );
+	return el.at(0)->set_float( "saturation", getParamValue( saturation, src->pts() ) );
 }
 
 

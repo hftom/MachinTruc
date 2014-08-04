@@ -4,7 +4,6 @@
 #include <QWidget>
 
 #include "ui_effectheader.h"
-#include "engine/clip.h"
 
 
 
@@ -12,22 +11,18 @@ class HeaderEffect : public QWidget, private Ui::EffectHeader
 {
 	Q_OBJECT
 public:
-	HeaderEffect( Clip *c, Filter *f );
+	HeaderEffect( QWidget *parent, QString name );
 	
 protected:
 	void mousePressEvent( QMouseEvent *event );
 	void mouseMoveEvent( QMouseEvent *event );
 	void mouseReleaseEvent( QMouseEvent *event );
 	
-private:
-	Clip *clip;
-	Filter *filter;
-	
 private slots:
 	void buttonClicked();
 	
 signals:
-	void filterDeleted( Clip*, Filter* );
-
+	void deleteFilter();
 };
+
 #endif // HEADEREFFECT_H

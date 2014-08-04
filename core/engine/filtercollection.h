@@ -20,7 +20,6 @@
 #include "vfx/glvignette.h"
 #include "vfx/glwater.h"
 #include "vfx/glsize.h"
-#include "vfx/glshadow.h"
 #include "vfx/gldropshadow.h"
 #include "vfx/glpixelize.h"
 
@@ -68,7 +67,7 @@ class FilterCollection
 {
 public:
 	FilterCollection();
-	static FilterCollection* getGlobal();
+	static FilterCollection* getGlobalInstance();
 	
 	QList<FilterEntry> videoFilters;
 	QList<FilterEntry> audioFilters;

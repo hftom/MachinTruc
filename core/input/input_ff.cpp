@@ -85,6 +85,8 @@ InputFF::InputFF() : InputBase()
 
 	running = false;
 	oneShot = false;
+
+	semaphore = new QSemaphore( 1 );
 }
 
 
@@ -647,9 +649,32 @@ double InputFF::seekTo( double p )
 
 
 
+/* openSeekPlay is asynchronous and as such it could be called again before open and seek
+ * have completed. So the need for a mutex that is also required in getVideoFrame/getAudioFrame
+ * since we want to wait for seek completion before asking for a frame.
+ * We use a semaphore here because a mutex must be locked and unlocked in the same thread
+ * but we have to lock in openSeekPlay (main thread) and unlock in run (other thread).
+ * This SemaphoreLocker used in getVideoFrame/getAudioFrame behaves like QMutexLocker.*/
+class SemaphoreLocker
+{
+public:
+	explicit SemaphoreLocker( QSemaphore *s ) {
+		sem = s;
+		sem->acquire();
+	}
+	~SemaphoreLocker() {
+		sem->release();
+	}
+
+private:
+	QSemaphore *sem;
+};
+
+
+
 void InputFF::openSeekPlay( QString fn, double p )
 {
-	mutex.lock(); // unlocked in run()
+	semaphore->acquire();
 	play( false );
 	seekAndPlayPTS = p;
 	seekAndPlayPath = fn;
@@ -663,16 +688,11 @@ void InputFF::openSeekPlay( QString fn, double p )
 void InputFF::play( bool b )
 {
 	if ( !b ) {
-		runningMutex.lock();
 		running = false;
-		wakeUp();
-		runningMutex.unlock();
 		wait();
 	}
 	else {
-		runningMutex.lock();
 		running = true;
-		runningMutex.unlock();
 		start();
 	}
 }
@@ -681,7 +701,7 @@ void InputFF::play( bool b )
 
 void InputFF::run()
 {
-	int wait;
+	int doWait;
 	Frame *f;
 
 	if ( seekAndPlay ) {
@@ -689,16 +709,12 @@ void InputFF::run()
 			open( seekAndPlayPath );
 		seekTo( seekAndPlayPTS );
 		seekAndPlay = false;
-		runningMutex.lock();
 		running = true;
-		runningMutex.unlock();
-		mutex.unlock(); // locked in openSeekPlay()
+		semaphore->release();
 	}
 
-	waitMutex.lock();
-
 	while ( running ) {
-		wait = 1;
+		doWait = 1;
 
 		if ( haveVideo && !( endOfFile & EofVideo ) ) {
 			if ( (f = freeVideoFrames.dequeue()) ) {
@@ -732,14 +748,14 @@ void InputFF::run()
 				}
 				else
 					f->release();
-				wait = 0;
+				doWait = 0;
 			}
 		}
 
 		if ( haveAudio && !( endOfFile & EofAudio ) ) {
 			if ( arb->writable() ) {
 				decodeAudio();
-				wait = 0;
+				doWait = 0;
 			}
 		}
 
@@ -748,18 +764,10 @@ void InputFF::run()
 			break;
 		}
 
-		if ( wait ) {
-			runningMutex.lock();
-			if ( running ) {
-				runningMutex.unlock();
-				waitCond.wait( &waitMutex );
-			}
-			else
-				runningMutex.unlock();
+		if ( doWait ) {
+			usleep( 1000 );
 		}
 	}
-
-	waitMutex.unlock();
 }
 
 
@@ -1118,20 +1126,20 @@ void InputFF::freePacket( AVPacket *packet )
 
 Frame* InputFF::getVideoFrame()
 {
-	QMutexLocker ml( &mutex );
+	SemaphoreLocker sem( semaphore );
 
-	if ( !haveVideo )
+	if ( !haveVideo ) {
 		return NULL;
+	}
 
 	while ( videoFrames.queueEmpty() ) {
-		if ( endOfFile & EofVideo )
+		if ( endOfFile & EofVideo ) {
 			return NULL;
-		wakeUp();
+		}
 		usleep( 1000 );
 	}
 
 	Frame *f = videoFrames.dequeue();
-	wakeUp();
 	return f;
 }
 
@@ -1139,13 +1147,15 @@ Frame* InputFF::getVideoFrame()
 
 Frame* InputFF::getAudioFrame( int nSamples )
 {
-	QMutexLocker ml( &mutex );
+	SemaphoreLocker sem( semaphore );
 
-	if ( !haveAudio )
+	if ( !haveAudio ) {
 		return NULL;
+	}
 
-	while ( freeAudioFrames.queueEmpty() )
+	while ( freeAudioFrames.queueEmpty() ) {
 		usleep( 1000 );
+	}
 	Frame *f = freeAudioFrames.dequeue();
 
 	while ( !arb->readable( nSamples ) ) {
@@ -1160,25 +1170,13 @@ Frame* InputFF::getAudioFrame( int nSamples )
 			memset( f->data() + ( n * arb->getBytesPerSample() ), 0, (nSamples - n) * arb->getBytesPerSample() );
 			return f;
 		}
-		wakeUp();
 		usleep( 1000 );
 	}
 
 	f->setAudioFrame( arb->getChannels(), arb->getSampleRate(), arb->getBytesPerChannel(), nSamples, arb->readPts() );
 	arb->read( f->data(), nSamples );
 
-	wakeUp();
 	return f;
-}
-
-
-
-void InputFF::wakeUp()
-{
-	if ( waitMutex.tryLock() ) {
-		waitMutex.unlock();
-		waitCond.wakeAll();
-	}
 }
 
 

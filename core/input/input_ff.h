@@ -15,7 +15,7 @@ extern "C" {
 
 #include <QString>
 #include <QQueue>
-#include <QWaitCondition>
+#include <QSemaphore>
 
 #include "input/input.h"
 
@@ -198,8 +198,6 @@ private:
 	bool seek( double t );
 	bool seekDecodeNext( Frame *f );
 
-	void wakeUp();
-
 	AVFormatContext *formatCtx;
 	AVCodecContext *videoCodecCtx;
 	AVCodecContext *audioCodecCtx;
@@ -237,9 +235,7 @@ private:
 	int endOfFile;
 
 	bool running, oneShot;
-	QMutex mutex;
-	QMutex waitMutex, runningMutex;
-	QWaitCondition waitCond;
+	QSemaphore *semaphore;
 };
 
 #endif //INPUTFF_H

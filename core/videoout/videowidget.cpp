@@ -244,9 +244,9 @@ void VideoWidget::shot()
 	if ( img.isNull() )
 		return;
 	int i=0;
-	while ( QFile::exists( QString("shot%1.jpg").arg( i ) ) )
+	while ( QFile::exists( QString("shot%1.png").arg( i ) ) )
 		++i;
-	img.save(QString("shot%1.jpg").arg( i ));
+	img.save(QString("shot%1.png").arg( i ));
 }
 
 

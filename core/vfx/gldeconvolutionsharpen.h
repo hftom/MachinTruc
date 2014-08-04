@@ -17,11 +17,8 @@ public:
 	QString getDescriptor();
 	
 private:
-	int R;
-	float circleRadius;
-	float gaussianRadius;
-	float correlation;
-	float noise;
+	Parameter *R;
+	Parameter *circleRadius, *gaussianRadius, *correlation, *noise;
 };
 
 #endif //GLDECONVOLUTIONSHARPEN_H

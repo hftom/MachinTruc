@@ -16,6 +16,7 @@ Frame::Frame( MQueue<Frame*> *origin, bool makeSample )
 	buffer = NULL;
 	bufferSize = 0;
 	pType = Frame::NONE;
+	pPTS = 0;
 	originQueue = origin;
 	if ( makeSample )
 		sample = new ProjectSample();

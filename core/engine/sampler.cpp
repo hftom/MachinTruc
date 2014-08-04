@@ -9,7 +9,7 @@ Sampler::Sampler()
 {	
 	playMode = PlayClip;
 
-	projectProfile.setVideoFrameRate( 50 );
+	projectProfile.setVideoFrameRate( 60000.0 / 1001.0 );
 	projectProfile.setVideoFrameDuration( MICROSECOND / projectProfile.getVideoFrameRate() );
 	projectProfile.setVideoWidth( 1920 );
 	projectProfile.setVideoHeight( 1080 );
@@ -145,9 +145,6 @@ void Sampler::updateFrame()
 		composer->updateFrame( last );
 	}
 	else {
-		Frame *last = metronom->getLastFrame();
-		if ( !last )
-			return;
 		metronom->flush();
 		seekTo( last->pts() );
 	}		
@@ -501,7 +498,7 @@ int Sampler::getVideoTracks( Frame *dst )
 		if ( scene->update )
 			t->resetIndexes();
 		// find the clip at scene->currentPTS
-		for ( i = t->currentClipIndex() ; i < t->clipCount(); ++i ) {
+		for ( i = t->currentClipIndex(); i < t->clipCount(); ++i ) {
 			c = t->clipAt( i );
 			if ( (c->position() - (projectProfile.getVideoFrameDuration() / 4.0)) <= scene->currentPTS ) {
 				if ( (c->position() + c->length() - (projectProfile.getVideoFrameDuration() / 4.0)) > scene->currentPTS ) {

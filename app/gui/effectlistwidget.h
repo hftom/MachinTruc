@@ -11,6 +11,7 @@
 
 class EffectListWidget : public QListWidget
 {
+	Q_OBJECT
 public:
 	EffectListWidget( QWidget *parent ) : QListWidget( parent ) {}
 	

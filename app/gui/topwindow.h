@@ -13,11 +13,13 @@
 #include "engine/composer.h"
 #include "videoout/videowidget.h"
 #include "timeline/timeline.h"
+#include "animation/animeditor.h"
 
 
 
 class SeekSlider : public QSlider
 {
+	Q_OBJECT
 public:
 	explicit SeekSlider(QWidget *parent) : QSlider(parent) { }
 	~SeekSlider() { }
@@ -67,12 +69,18 @@ private slots:
 	void seek( int v );
 	void timelineSeek( double pts );
 	
+	void editAnimation( FilterWidget *f, ParameterWidget *pw, Parameter *p );
+	void quitEditor();
+	
 private:
 	ProjectClipsPage *clipPage;
 	FxPage *fxPage;
 	SourceListItem *activeClip;
 	
+	TimelineGraphicsView *timelineView;
 	Timeline *timeline;
+	AnimEditor *animEditor;
+	
 	VideoWidget *vw;
 	Sampler *sampler;
 

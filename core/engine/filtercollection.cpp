@@ -26,8 +26,8 @@ FilterCollection::FilterCollection()
 
 	videoFilters.append( FilterEntry( "GLOpacity", QObject::tr("Opacity"), &Maker<GLOpacity>::make ) );
 	videoFilters.append( FilterEntry( "GLDropShadow", QObject::tr("Drop shadow"), &Maker<GLDropShadow>::make ) );
-	videoFilters.append( FilterEntry( "GLShadow", QObject::tr("Shadow"), &Maker<GLShadow>::make ) );
 
+	videoFilters.append( FilterEntry( "GLVignette", QObject::tr("Vignette"), &Maker<GLVignette>::make ) );
 	videoFilters.append( FilterEntry( "GLDiffusion", QObject::tr("Diffusion"), &Maker<GLDiffusion>::make ) );
 	videoFilters.append( FilterEntry( "GLGlow", QObject::tr("Glow"), &Maker<GLGlow>::make ) );
 	videoFilters.append( FilterEntry( "GLWater", QObject::tr("Water"), &Maker<GLWater>::make ) );
@@ -40,7 +40,7 @@ FilterCollection::FilterCollection()
 
 
 
-FilterCollection* FilterCollection::getGlobal()
+FilterCollection* FilterCollection::getGlobalInstance()
 {
 	return &globalFilterCollection;
 }

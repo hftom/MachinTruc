@@ -23,6 +23,28 @@ Clip::~Clip()
 
 
 
+void Clip::setPosition( double p )
+{
+	posInTrack = p;
+	
+	int i;
+	for ( i = 0; i< videoFilters.count(); ++i )
+		videoFilters.at( i )->setPosition( p );
+}
+
+
+
+void Clip::setLength( double len )
+{
+	clipLength = len;
+	
+	int i;
+	for ( i = 0; i< videoFilters.count(); ++i )
+		videoFilters.at( i )->setLength( length() );
+}
+
+
+
 double Clip::length()
 {
 	return nearestPTS( clipLength, frameDuration );

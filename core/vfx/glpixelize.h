@@ -56,7 +56,7 @@ public:
 	QList<Effect*> getMovitEffects();
 	
 private:
-	float pixelSize;
+	Parameter *pixelSize;
 };
 
 #endif // GLPIXELIZE_H

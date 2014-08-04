@@ -8,9 +8,6 @@ GLSize::GLSize( QString id, QString name ) : GLFilter( id, name )
 {
 	resize = new GLResize();
 	padding = new GLPadding();
-	
-	connect( resize, SIGNAL(updateFrame()), this, SIGNAL(updateFrame()) );
-	connect( padding, SIGNAL(updateFrame()), this, SIGNAL(updateFrame()) );
 }
 
 
@@ -53,13 +50,25 @@ QList<Effect*> GLSize::getMovitEffects()
 
 
 
-QWidget* GLSize::getWidget()
+void GLSize::setPosition( double p )
 {
-	QWidget *widg = new QWidget();
-	widg->setMinimumWidth( 150 );
-	QBoxLayout* box = new QBoxLayout( QBoxLayout::TopToBottom, widg );
-	box->addWidget( resize->getWidget() );
-	box->addWidget( padding->getWidget() );
-	
-	return widg;
+	Filter::setPosition( p );
+	resize->setPosition( p );
+	padding->setPosition( p );
+}
+
+
+
+void GLSize::setLength( double len )
+{
+	Filter::setLength( len );
+	resize->setLength( len );
+	padding->setLength( len );
+}
+
+
+
+QList<Parameter*> GLSize::getParameters()
+{
+	return resize->getParameters() + padding->getParameters();
 }

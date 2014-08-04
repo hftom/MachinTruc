@@ -6,13 +6,10 @@
 
 GLDropShadow::GLDropShadow( QString id, QString name ) : GLFilter( id, name )
 {
-	opacity = 0.9;
-	xoffset = yoffset = 10.0;
-	radius = 4.0;
-	addParameter( tr("X offset:"), PFLOAT, -100.0, 100.0, true, &xoffset );
-	addParameter( tr("Y offset:"), PFLOAT, -100.0, 100.0, true, &yoffset );
-	addParameter( tr("Opacity:"), PFLOAT, 0.0, 1.0, true, &opacity );
-	addParameter( tr("Blur radius:"), PFLOAT, 0.0, 50.0, true, &radius );
+	xoffset = addParameter( tr("X offset:"), Parameter::PDOUBLE, 10.0, -100.0, 100.0, true );
+	yoffset = addParameter( tr("Y offset:"), Parameter::PDOUBLE, 10.0, -100.0, 100.0, true );
+	opacity = addParameter( tr("Opacity:"), Parameter::PDOUBLE, 0.8, 0.0, 1.0, true );
+	radius = addParameter( tr("Blur radius:"), Parameter::PDOUBLE, 4.0, 0.0, 50.0, true );
 }
 
 
@@ -25,12 +22,13 @@ GLDropShadow::~GLDropShadow()
 
 bool GLDropShadow::process( const QList<Effect*> &el, Frame *src, Profile *p )
 {
-	Q_UNUSED( src );
 	Q_UNUSED( p );
-	return el.at(0)->set_float( "xoffset", xoffset )
-		&& el.at(0)->set_float( "yoffset", yoffset )
-		&& el.at(0)->set_float( "opacity", opacity )
-		&& el.at(0)->set_float( "radius", radius );
+	double pts = src->pts();
+	Effect *e = el[0];
+	return e->set_float( "xoffset", getParamValue( xoffset, pts ) )
+		&& e->set_float( "yoffset", getParamValue( yoffset, pts ) )
+		&& e->set_float( "opacity", getParamValue( opacity, pts ) )
+		&& e->set_float( "radius", getParamValue( radius, pts ) );
 }
 
 

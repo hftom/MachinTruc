@@ -382,14 +382,16 @@ void Timeline::deleteClip()
 void Timeline::addFilter( ClipViewItem *clip, QString fx )
 {
 	int i;
-	FilterCollection *fc = FilterCollection::getGlobal();
+	FilterCollection *fc = FilterCollection::getGlobalInstance();
 	for ( i = 0; i < fc->videoFilters.count(); ++i ) {
 		if ( fc->videoFilters[ i ].identifier == fx ) {
 			GLFilter *f = (GLFilter*)fc->videoFilters[ i ].create();
-			connect( f, SIGNAL(updateFrame()), topParent->getSampler(), SLOT(updateFrame()) );
+			f->setPosition( clip->getClip()->position() );
+			f->setLength( clip->getClip()->length() );
 			clip->getClip()->videoFilters.append( f );
-			emit itemSelected( clip );
+			itemSelected( clip );
 			emit updateFrame();
+			break;
 		}
 	}
 }
@@ -401,7 +403,6 @@ void Timeline::filterDeleted( Clip *c, Filter *f )
 	if ( !c->videoFilters.remove( (GLFilter*)f ) )
 		c->audioFilters.remove( (AudioFilter*)f );
 
-	emit clipSelected( c );
 	emit updateFrame();
 }
 

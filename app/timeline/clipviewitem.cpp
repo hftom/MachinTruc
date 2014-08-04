@@ -1,6 +1,7 @@
 #include <math.h>
 
 #include <QFileInfo>
+#include <QMimeData>
 
 #include "gui/mimetypes.h"
 #include "timeline.h"
@@ -10,7 +11,7 @@
 
 ClipViewItem::ClipViewItem( Clip *c, double scale ) : AbstractViewItem( VIDEOCUT )
 {
-	setFlag( QGraphicsItem::ItemIsMovable, true );
+	//setFlag( QGraphicsItem::ItemIsMovable, true );
 	//setFlag(QGraphicsItem::ItemIsSelectable, true);
 	//setFlag(QGraphicsItem::ItemIsFocusable, true);
 	setAcceptHoverEvents(true);

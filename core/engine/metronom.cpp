@@ -8,19 +8,19 @@
 
 Metronom::Metronom()
 {
-    int i;
+	int i;
 
-    for ( i = 0; i < NUMOUTPUTFRAMES; ++i ) {
-        freeVideoFrames.enqueue( new Frame( &freeVideoFrames, true ) );
-        freeAudioFrames.enqueue( new Frame( &freeAudioFrames, true ) );
-    }
+	for ( i = 0; i < NUMOUTPUTFRAMES; ++i ) {
+		freeVideoFrames.enqueue( new Frame( &freeVideoFrames, true ) );
+		freeAudioFrames.enqueue( new Frame( &freeAudioFrames, true ) );
+	}
 
 
-    running = false;
-    ao.setReadCallback( (void*)readData, (void*)this );
-    //ao.go();
+	running = false;
+	ao.setReadCallback( (void*)readData, (void*)this );
+	//ao.go();
 
-    lastFrame = NULL;
+	lastFrame = NULL;
 	fencesContext = NULL;
 }
 
@@ -41,10 +41,10 @@ void Metronom::setSharedContext( QGLWidget *shared )
 
 void Metronom::setLastFrame( Frame *f )
 {
-    QMutexLocker ml( &lastFrameMutex );
-    if ( lastFrame )
-        lastFrame->release();
-    lastFrame = f;
+	QMutexLocker ml( &lastFrameMutex );
+	if ( lastFrame )
+		lastFrame->release();
+	lastFrame = f;
 	emit currentFramePts( f->pts() );
 }
 
@@ -52,19 +52,19 @@ void Metronom::setLastFrame( Frame *f )
 
 Frame* Metronom::getLastFrame()
 {
-    QMutexLocker ml( &lastFrameMutex );
-    return (lastFrame) ? lastFrame : NULL;
+	QMutexLocker ml( &lastFrameMutex );
+	return (lastFrame) ? lastFrame : NULL;
 }
 
 
 
 void Metronom::flush()
 {
-    Frame *f;
-    while ( (f = videoFrames.dequeue()) )
-        f->release();
-    while ( (f = audioFrames.dequeue()) )
-        f->release();
+	Frame *f;
+	while ( (f = videoFrames.dequeue()) )
+		f->release();
+	while ( (f = audioFrames.dequeue()) )
+		f->release();
 	// make sure all queued frames are shown
 	qApp->processEvents();
 }
@@ -73,58 +73,58 @@ void Metronom::flush()
 
 void Metronom::play( bool b )
 {
-    if ( b ) {
-        sclock = videoLate = 0;
-        running = true;
-        ao.go();
-        start();
-    }
-    else {
-        running = false;
-        ao.stop();
-        wait();
-    }
+	if ( b ) {
+		sclock = videoLate = 0;
+		running = true;
+		ao.go();
+		start();
+	}
+	else {
+		running = false;
+		ao.stop();
+		wait();
+	}
 }
 
 
 
 void Metronom::readData( Frame **data, double time, void *userdata )
 {
-    Metronom *m = (Metronom*)userdata;
-    Frame *f;
+	Metronom *m = (Metronom*)userdata;
+	Frame *f;
 	int waitVideo = 0;
 
-    if ( (f = m->audioFrames.dequeue()) ) {
-        m->clockMutex.lock();
-        m->sclock = time - f->pts();
+	if ( (f = m->audioFrames.dequeue()) ) {
+		m->clockMutex.lock();
+		m->sclock = time - f->pts();
 		if ( m->videoLate > 0 ) {
 			waitVideo = m->videoLate;
 			m->videoLate = 0;
 		}
-        m->clockMutex.unlock();
+		m->clockMutex.unlock();
 		if ( waitVideo ) {
 			usleep( waitVideo );
 			waitVideo = 0;
 		}
-        *data = f;
-    }
+		*data = f;
+	}
 }
 
 
 
 void Metronom::run()
 {
-    Frame *f;
-    double lastpts = 0, lastct = 0;
+	Frame *f;
+	double lastpts = 0, lastct = 0;
 	int skipped = -1;
 	struct timeval tv;
-	double sc, ct, t;
+	double sc, ct, t, predict = 0;
 	bool show;
 
 	fencesContext->makeCurrent();
 
-    while ( running ) {
-        if ( (f = videoFrames.dequeue()) ) {
+	while ( running ) {
+		if ( (f = videoFrames.dequeue()) ) {
 			clockMutex.lock();
 			sc = sclock;
 			clockMutex.unlock();
@@ -132,25 +132,34 @@ void Metronom::run()
 			ct = tv.tv_sec * MICROSECOND + tv.tv_usec;
 
 			show = true;
-            if ( !sc ) {
+			if ( !sc ) {
 				if ( lastpts == 0 ) {
 					t = ct;
 				}
 				else {
 					t = lastct + f->pts() - lastpts;
 				}
-				lastpts = f->pts();
-				lastct = ct;
-            }
-            else {
-                 t = sc + f->pts();
+				lastct = t;
 			}
+			else {
+				t = sc + f->pts();
+				if ( !predict )
+					 predict = t;
+				else {
+					predict += f->pts() - lastpts;
+					if ( qAbs( predict - t ) < f->profile.getVideoFrameDuration() * 3 )
+						t = predict;
+					else
+						predict = t;
+				}
+			}
+			lastpts = f->pts();
 
 			if ( f->type() == Frame::NONE ) {
 				show = false;
 				f->release();
 			}
-            else if ( t < ct ) {
+			else if ( t < ct ) {
 				if ( (ct - t) > f->profile.getVideoFrameDuration() && skipped > -1 ) {
 					if ( ++skipped > 5 ) {
 						clockMutex.lock();
@@ -158,9 +167,9 @@ void Metronom::run()
 						//qDebug() << "videoLate" << videoLate;
 						clockMutex.unlock();
 						skipped = -1;
+						predict = 0;
 					}
 					show = false;
-					//qDebug() << "Skipped" << skipped;
 					emit discardFrame();
 					f->release();
 				}
@@ -179,18 +188,16 @@ void Metronom::run()
 				ct = (tv.tv_sec * MICROSECOND + tv.tv_usec);
 
 				t = t - ct;
-				//qDebug() << "usleep" << t << freeVideoFrames.count();
 				if ( t > 0 ) {
+					//qDebug() << "sleep:" << t;
 					usleep( t );
 				}
 				emit newFrame( f );
 			}
-			else
-				qDebug() << "metronom : skipped";
-        }
-        else
-            usleep( 1000 );
-    }
+		}
+		else
+			usleep( 1000 );
+	}
 
-    fencesContext->doneCurrent();
+	fencesContext->doneCurrent();
 }

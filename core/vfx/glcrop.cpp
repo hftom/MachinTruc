@@ -5,14 +5,10 @@
 
 GLCrop::GLCrop( QString id, QString name ) : GLFilter( id, name )
 {
-	left = 0.0;
-	right = 0.0;
-	top = 0.0;
-	bottom = 0.0;
-	addParameter( tr("Left:"), PFLOAT, 0.0, 100.0, true, &left );
-	addParameter( tr("Right:"), PFLOAT, 0.0, 100.0, true, &right );
-	addParameter( tr("Top:"), PFLOAT, 0.0, 100.0, true, &top );
-	addParameter( tr("Bottom:"), PFLOAT, 0.0, 100.0, true, &bottom );
+	left = addParameter( tr("Left:"), Parameter::PDOUBLE, 0.0, 0.0, 100.0, true, "%" );
+	right = addParameter( tr("Right:"), Parameter::PDOUBLE, 0.0, 0.0, 100.0, true, "%" );
+	top = addParameter( tr("Top:"), Parameter::PDOUBLE, 0.0, 0.0, 100.0, true, "%" );
+	bottom = addParameter( tr("Bottom:"), Parameter::PDOUBLE, 0.0, 0.0, 100.0, true, "%" );
 }
 
 
@@ -25,12 +21,13 @@ GLCrop::~GLCrop()
 
 bool GLCrop::preProcess( Frame *src, Profile *p )
 {
-	pleft = left * src->glWidth / 100.0f;
-	float r = right * src->glWidth / 100.0f;
-	ptop = top * src->glHeight / 100.0f;
-	float b = bottom * src->glHeight / 100.0f;
-	src->glWidth = qMax( src->glWidth - pleft - r, 1.0f );
-	src->glHeight = qMax( src->glHeight - ptop - b, 1.0f );
+	double pts = src->pts();
+	pleft = getParamValue( left, pts ) * src->glWidth / 100.0;
+	double r = getParamValue( right, pts ) * src->glWidth / 100.0;
+	ptop = getParamValue( top, pts ) * src->glHeight / 100.0;
+	double b = getParamValue( bottom, pts ) * src->glHeight / 100.0;
+	src->glWidth = qMax( src->glWidth - pleft - r, 1.0 );
+	src->glHeight = qMax( src->glHeight - ptop - b, 1.0 );
 	return true;
 }
 
@@ -39,10 +36,11 @@ bool GLCrop::preProcess( Frame *src, Profile *p )
 bool GLCrop::process( const QList<Effect*> &el, Frame *src, Profile *p )
 {
 	preProcess( src, p );
-	return el.at(0)->set_int( "width", src->glWidth )
-		&& el.at(0)->set_int( "height", src->glHeight )
-		&& el.at(0)->set_float( "top", -ptop )
-		&& el.at(0)->set_float( "left", -pleft );
+	Effect *e = el[0];
+	return e->set_int( "width", src->glWidth )
+		&& e->set_int( "height", src->glHeight )
+		&& e->set_float( "top", -ptop )
+		&& e->set_float( "left", -pleft );
 }
 
 

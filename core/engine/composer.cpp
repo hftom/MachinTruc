@@ -151,7 +151,7 @@ void Composer::run()
 		ret = process( &f );
 
 		if ( ret == PROCESSEND ) {
-			while ( !sampler->getMetronom()->videoFrames.queueEmpty() )
+			while ( running && !sampler->getMetronom()->videoFrames.queueEmpty() )
 				usleep( 5000 );
 			sampler->getMetronom()->play( false );
 			emit paused( true );
@@ -450,7 +450,7 @@ void Composer::movitRender( Frame *dst, bool update )
 		f->glSAR = f->profile.getVideoSAR();
 		
 		MovitBranch *branch = movitChain.branches[ j++ ];
-		if ( reload )
+		if ( reload || movitChain.lastPTS != dst->pts() )
 			branch->input->process( f, &gl );
 		for ( k = 0; k < branch->filters.count(); ++k ) {
 			branch->filters[k]->filter->process( branch->filters[k]->effects, f, &projectProfile );
@@ -473,6 +473,7 @@ void Composer::movitRender( Frame *dst, bool update )
 		dst->setVideoFrame( Frame::GLTEXTURE, w, h, dst->glSAR,
 						projectProfile.getVideoInterlaced(), projectProfile.getVideoTopFieldFirst(),
 						sampler->currentPTS(), projectProfile.getVideoFrameDuration() );
+		movitChain.lastPTS = dst->pts();
 	}
 	dst->setFBO( fbo );
 	dst->setFence( gl.getFence() );

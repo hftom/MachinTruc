@@ -16,7 +16,9 @@ public:
 	QList<Effect*> getMovitEffects();
 
 private:
-    float lift[3], gamma[3], gain[3];
+    Parameter *liftR, *liftG, *liftB;
+	Parameter *gammaR, *gammaG, *gammaB;
+	Parameter *gainR, *gainB, *gainG;
 };
 
 #endif //GLLIFTGAMMAGAIN_H

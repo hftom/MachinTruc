@@ -1,5 +1,6 @@
 SOURCES = \
 	engine/util.cpp \
+	engine/parameter.cpp \
 	engine/filter.cpp \
 	engine/filtercollection.cpp \
 	engine/profile.cpp \
@@ -42,7 +43,6 @@ SOURCES = \
 	vfx/glsharpen.cpp \
 	vfx/gldiffusion.cpp \
 	vfx/glsize.cpp \
-	vfx/glshadow.cpp \
 	vfx/gldropshadow.cpp \
 	vfx/glpixelize.cpp \
 	\
@@ -100,7 +100,6 @@ HEADERS = \
 	vfx/glsharpen.h \
 	vfx/gldiffusion.h \
 	vfx/glsize.h \
-	vfx/glshadow.h \
 	vfx/gldropshadow.h \
 	vfx/glpixelize.h \
 	\

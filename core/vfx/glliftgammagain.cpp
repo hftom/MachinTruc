@@ -6,18 +6,15 @@
 
 GLLiftGammaGain::GLLiftGammaGain( QString id, QString name ) : GLFilter( id, name )
 {
-	lift[0] = lift[1] = lift[2] = 0.0;
-	gamma[0] = gamma[1] = gamma[2] = 1.0;
-	gain[0] = gain[1] = gain[2] = 1.0;
-	addParameter( tr("Lift red:"), PFLOAT, 0.0, 1.0, true, &lift[0] );
-	addParameter( tr("Lift green:"), PFLOAT, 0.0, 1.0, true, &lift[1] );
-	addParameter( tr("Lift blue:"), PFLOAT, 0.0, 1.0, true, &lift[2] );
-	addParameter( tr("Gamma red:"), PFLOAT, 0.0, 5.0, true, &gamma[0] );
-	addParameter( tr("Gamma green:"), PFLOAT, 0.0, 5.0, true, &gamma[1] );
-	addParameter( tr("Gamma blue:"), PFLOAT, 0.0, 5.0, true, &gamma[2] );
-	addParameter( tr("Gain red:"), PFLOAT, 0.0, 5.0, true, &gain[0] );
-	addParameter( tr("Gain green:"), PFLOAT, 0.0, 5.0, true, &gain[1] );
-	addParameter( tr("Gain blue:"), PFLOAT, 0.0, 5.0, true, &gain[2] );
+	liftR = addParameter( tr("Lift red:"), Parameter::PDOUBLE, 0.0, 0.0, 1.0, true );
+	liftG = addParameter( tr("Lift green:"), Parameter::PDOUBLE, 0.0, 0.0, 1.0, true );
+	liftB = addParameter( tr("Lift blue:"), Parameter::PDOUBLE, 0.0, 0.0, 1.0, true );
+	gammaR = addParameter( tr("Gamma red:"), Parameter::PDOUBLE, 1.0, 0.0, 5.0, true );
+	gammaG = addParameter( tr("Gamma green:"), Parameter::PDOUBLE, 1.0, 0.0, 5.0, true );
+	gammaB = addParameter( tr("Gamma blue:"), Parameter::PDOUBLE, 1.0, 0.0, 5.0, true );
+	gainR = addParameter( tr("Gain red:"), Parameter::PDOUBLE, 1.0, 0.0, 5.0, true );
+	gainG = addParameter( tr("Gain green:"), Parameter::PDOUBLE, 1.0, 0.0, 5.0, true );
+	gainB = addParameter( tr("Gain blue:"), Parameter::PDOUBLE, 1.0, 0.0, 5.0, true );
 }
 
 
@@ -30,11 +27,15 @@ GLLiftGammaGain::~GLLiftGammaGain()
 
 bool GLLiftGammaGain::process( const QList<Effect*> &el, Frame *src, Profile *p )
 {
-	Q_UNUSED( src );
 	Q_UNUSED( p );
-	return el.at(0)->set_vec3( "lift", lift )
-		&& el.at(0)->set_vec3( "gamma", gamma )
-		&& el.at(0)->set_vec3( "gain", gain );
+	double pts = src->pts();
+	float lift[3] = { (float)getParamValue( liftR, pts ), (float)getParamValue( liftG, pts ), (float)getParamValue( liftB, pts ) };
+	float gamma[3] = { (float)getParamValue( gammaR, pts ), (float)getParamValue( gammaG, pts ), (float)getParamValue( gammaB, pts ) };
+	float gain[3] = { (float)getParamValue( gainR, pts ), (float)getParamValue( gainG, pts ), (float)getParamValue( gainB, pts ) };
+	Effect *e = el[0];
+	return e->set_vec3( "lift", lift )
+		&& e->set_vec3( "gamma", gamma )
+		&& e->set_vec3( "gain", gain );
 }
 
 

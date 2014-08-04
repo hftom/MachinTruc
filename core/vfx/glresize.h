@@ -17,7 +17,7 @@ public:
 	QList<Effect*> getMovitEffects();
 	
 private:
-	float percent;
+	Parameter *percent;
 };
 
 #endif //GLRESIZE_H

@@ -74,7 +74,7 @@ void AudioOutSDL::streamRequestCallback( void *userdata, uint8_t *stream, int le
     }
     struct timeval tv;
     gettimeofday( &tv, NULL );
-    int latency = MICROSECOND * (len / ao->bytesPerSample) / ao->sampleRate;
+    double latency = MICROSECOND * ( (double)len / (double)ao->bytesPerSample ) / (double)ao->sampleRate;
 
     uint8_t *dst = stream;
     int size = len;
@@ -93,7 +93,7 @@ void AudioOutSDL::streamRequestCallback( void *userdata, uint8_t *stream, int le
             memcpy( dst, ao->buffer + ao->bufferOffset, ao->bufferLen );
             dst += ao->bufferLen;
             size -= ao->bufferLen;
-            latency += MICROSECOND * ((len-size) / ao->bytesPerSample) / ao->sampleRate;
+            latency += MICROSECOND * ( (double)ao->bufferLen / (double)ao->bytesPerSample ) / (double)ao->sampleRate;
             ao->bufferOffset = 	ao->bufferLen = 0;
         }
     }
@@ -102,14 +102,15 @@ void AudioOutSDL::streamRequestCallback( void *userdata, uint8_t *stream, int le
         ao->readData( &data, (tv.tv_sec * MICROSECOND) + tv.tv_usec + latency, ao->readUserData );
         if ( data ) {
             int s = data->profile.bytesPerChannel( &data->profile ) * data->profile.getAudioChannels() * data->audioSamples();
+			latency += MICROSECOND * ( (double)s / (double)ao->bytesPerSample ) / (double)ao->sampleRate;
             if ( size < s ) {
                 memcpy( dst, data->data(), size );
                 s -= size;
+				// buffer the remaining samples
                 if ( ao->bufferSize < s ) {
                     ao->bufferSize = s;
                     ao->buffer = (uint8_t*)realloc( ao->buffer, ao->bufferSize );
                 }
-                // buffer the remaining samples
                 memcpy( ao->buffer, data->data() + size, s );
                 ao->bufferLen += s;
                 size = 0;
@@ -122,6 +123,10 @@ void AudioOutSDL::streamRequestCallback( void *userdata, uint8_t *stream, int le
             data->release();
             data = NULL;
         }
+        else {
+			usleep( 1000 );
+			latency += 1000;
+		}
     }
 }
 

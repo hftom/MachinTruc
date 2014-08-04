@@ -4,8 +4,7 @@
 
 GLPixelize::GLPixelize( QString id, QString name ) : GLFilter( id, name )
 {
-	pixelSize = 2.0;
-	addParameter( tr("Pixel size:"), PFLOAT, 1.0, 100.0, true, &pixelSize );
+	pixelSize = addParameter( tr("Pixel size:"), Parameter::PDOUBLE, 10.0, 1.0, 100.0, true );
 }
 
 
@@ -18,9 +17,8 @@ GLPixelize::~GLPixelize()
 
 bool GLPixelize::process( const QList<Effect*> &el, Frame *src, Profile *p )
 {
-	Q_UNUSED( src );
 	Q_UNUSED( p );
-	return el.at(0)->set_float( "pixelSize", pixelSize );
+	return el.at(0)->set_float( "pixelSize", getParamValue( pixelSize, src->pts() ) );
 }
 
 

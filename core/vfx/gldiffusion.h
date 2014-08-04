@@ -16,8 +16,7 @@ public:
 	QList<Effect*> getMovitEffects();
 
 private:
-	float mixAmount;
-	float blurRadius;
+	Parameter *mixAmount, *blurRadius;
 };
 
 #endif //GLDIFFUSION_H

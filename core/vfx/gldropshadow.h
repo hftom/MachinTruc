@@ -78,9 +78,7 @@ public:
 	QList<Effect*> getMovitEffects();
 	
 private:
-	float radius;
-	float opacity;
-	float xoffset, yoffset;
+	Parameter *radius, *opacity, *xoffset, *yoffset;
 };
 
 #endif // GLDROPSHADOW_H

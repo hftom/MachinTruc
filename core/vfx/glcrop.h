@@ -17,8 +17,8 @@ public:
 	QList<Effect*> getMovitEffects();
 	
 private:
-	float left, right, top, bottom;
-	float ptop, pleft;
+	Parameter *left, *right, *top, *bottom;
+	double ptop, pleft;
 };
 
 #endif //GLCROP_H

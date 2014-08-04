@@ -58,7 +58,7 @@ public:
 	QList<Effect*> getMovitEffects();
 	
 private:
-	float loop;
+	Parameter *loop;
 };
 
 #endif // GLTEST_H

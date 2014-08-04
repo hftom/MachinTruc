@@ -89,8 +89,6 @@ public:
     PBO* getPBO( int size );
 	FENCE* getFence();
 
-    void setOrthoView( int width, int height );
-    void drawQuad( float x1, float y1, float x2, float y2 );
     bool black( Frame *dst );
 
 private:

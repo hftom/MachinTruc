@@ -91,13 +91,13 @@
                 <string>...</string>
                </property>
                <property name="icon">
-                <iconset resource="../../../Gengis/app/resources.qrc">
+                <iconset resource="../resources.qrc">
                  <normaloff>:/toolbar/icons/edit-undo.png</normaloff>:/toolbar/icons/edit-undo.png</iconset>
                </property>
                <property name="iconSize">
                 <size>
-                 <width>22</width>
-                 <height>22</height>
+                 <width>16</width>
+                 <height>16</height>
                 </size>
                </property>
                <property name="checkable">
@@ -126,13 +126,13 @@
                 <string>...</string>
                </property>
                <property name="icon">
-                <iconset resource="../../../Gengis/app/resources.qrc">
+                <iconset resource="../resources.qrc">
                  <normaloff>:/toolbar/icons/edit-redo.png</normaloff>:/toolbar/icons/edit-redo.png</iconset>
                </property>
                <property name="iconSize">
                 <size>
-                 <width>22</width>
-                 <height>22</height>
+                 <width>16</width>
+                 <height>16</height>
                 </size>
                </property>
                <property name="checkable">
@@ -174,13 +174,13 @@
                 <string>...</string>
                </property>
                <property name="icon">
-                <iconset resource="../../../Gengis/app/resources.qrc">
+                <iconset resource="../resources.qrc">
                  <normaloff>:/toolbar/icons/applications-multimedia.png</normaloff>:/toolbar/icons/applications-multimedia.png</iconset>
                </property>
                <property name="iconSize">
                 <size>
-                 <width>22</width>
-                 <height>22</height>
+                 <width>16</width>
+                 <height>16</height>
                 </size>
                </property>
                <property name="checkable">
@@ -209,13 +209,13 @@
                 <string>...</string>
                </property>
                <property name="icon">
-                <iconset resource="../../../Gengis/app/resources.qrc">
+                <iconset resource="../resources.qrc">
                  <normaloff>:/toolbar/icons/tools-wizard.png</normaloff>:/toolbar/icons/tools-wizard.png</iconset>
                </property>
                <property name="iconSize">
                 <size>
-                 <width>22</width>
-                 <height>22</height>
+                 <width>16</width>
+                 <height>16</height>
                 </size>
                </property>
                <property name="checkable">
@@ -241,13 +241,13 @@
                 <string>...</string>
                </property>
                <property name="icon">
-                <iconset resource="../../../Gengis/app/resources.qrc">
+                <iconset resource="../resources.qrc">
                  <normaloff>:/toolbar/icons/mixer-front.png</normaloff>:/toolbar/icons/mixer-front.png</iconset>
                </property>
                <property name="iconSize">
                 <size>
-                 <width>22</width>
-                 <height>22</height>
+                 <width>16</width>
+                 <height>16</height>
                 </size>
                </property>
                <property name="checkable">
@@ -359,7 +359,7 @@
                   <string>...</string>
                  </property>
                  <property name="icon">
-                  <iconset resource="../../../Gengis/app/resources.qrc">
+                  <iconset resource="../resources.qrc">
                    <normaloff>:/toolbar/icons/media-skip-backward.png</normaloff>:/toolbar/icons/media-skip-backward.png</iconset>
                  </property>
                 </widget>
@@ -379,7 +379,7 @@
                   <string>...</string>
                  </property>
                  <property name="icon">
-                  <iconset resource="../../../Gengis/app/resources.qrc">
+                  <iconset resource="../resources.qrc">
                    <normaloff>:/toolbar/icons/media-seek-backward.png</normaloff>:/toolbar/icons/media-seek-backward.png</iconset>
                  </property>
                 </widget>
@@ -402,7 +402,7 @@
                   <string>...</string>
                  </property>
                  <property name="icon">
-                  <iconset resource="../../../Gengis/app/resources.qrc">
+                  <iconset resource="../resources.qrc">
                    <normaloff>:/toolbar/icons/media-playback-start.png</normaloff>
                    <activeon>:/toolbar/icons/media-playback-pause.png</activeon>:/toolbar/icons/media-playback-start.png</iconset>
                  </property>
@@ -426,7 +426,7 @@
                   <string>...</string>
                  </property>
                  <property name="icon">
-                  <iconset resource="../../../Gengis/app/resources.qrc">
+                  <iconset resource="../resources.qrc">
                    <normaloff>:/toolbar/icons/media-seek-forward.png</normaloff>:/toolbar/icons/media-seek-forward.png</iconset>
                  </property>
                 </widget>
@@ -446,7 +446,7 @@
                   <string>...</string>
                  </property>
                  <property name="icon">
-                  <iconset resource="../../../Gengis/app/resources.qrc">
+                  <iconset resource="../resources.qrc">
                    <normaloff>:/toolbar/icons/media-skip-forward.png</normaloff>:/toolbar/icons/media-skip-forward.png</iconset>
                  </property>
                 </widget>
@@ -482,7 +482,7 @@
                   <string>...</string>
                  </property>
                  <property name="icon">
-                  <iconset resource="../../../Gengis/app/resources.qrc">
+                  <iconset resource="../resources.qrc">
                    <normaloff>:/toolbar/icons/arrow-right.png</normaloff>:/toolbar/icons/arrow-right.png</iconset>
                  </property>
                 </widget>
@@ -502,7 +502,7 @@
                   <string>...</string>
                  </property>
                  <property name="icon">
-                  <iconset resource="../../../Gengis/app/resources.qrc">
+                  <iconset resource="../resources.qrc">
                    <normaloff>:/toolbar/icons/arrow-left.png</normaloff>:/toolbar/icons/arrow-left.png</iconset>
                  </property>
                 </widget>
@@ -538,7 +538,7 @@
                   <string>...</string>
                  </property>
                  <property name="icon">
-                  <iconset resource="../../../Gengis/app/resources.qrc">
+                  <iconset resource="../resources.qrc">
                    <normaloff>:/toolbar/icons/clips.png</normaloff>
                    <activeon>:/toolbar/icons/project.png</activeon>:/toolbar/icons/clips.png</iconset>
                  </property>
@@ -560,24 +560,9 @@
           </layout>
          </widget>
         </widget>
-        <widget class="TimelineGraphicsView" name="graphicsView">
-         <property name="enabled">
-          <bool>true</bool>
-         </property>
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="minimumSize">
-          <size>
-           <width>0</width>
-           <height>0</height>
-          </size>
-         </property>
-         <property name="focusPolicy">
-          <enum>Qt::NoFocus</enum>
+        <widget class="QStackedWidget" name="timelineStackedWidget">
+         <property name="currentIndex">
+          <number>-1</number>
          </property>
         </widget>
        </widget>
@@ -643,15 +628,8 @@
    </property>
   </action>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>TimelineGraphicsView</class>
-   <extends>QGraphicsView</extends>
-   <header>timeline/timelinegraphicsview.h</header>
-  </customwidget>
- </customwidgets>
  <resources>
-  <include location="../../../Gengis/app/resources.qrc"/>
+  <include location="../resources.qrc"/>
  </resources>
  <connections/>
 </ui>

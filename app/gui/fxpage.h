@@ -5,6 +5,7 @@
 
 #include "ui_fxpage.h"
 #include "engine/clip.h"
+#include "gui/filter/filterwidget.h"
 
 
 
@@ -16,13 +17,18 @@ public:
 	
 public slots:
 	void clipSelected( Clip *clip );
+	
+private slots:
+	void deletedFilter( Clip *c, Filter *f );
 
 private:
 	QWidget *currentEffectsWidget;
+	QList<FilterWidget*> filterWidgets;
 	
 signals:
 	void filterDeleted( Clip*, Filter* );
-
+	void editAnimation( FilterWidget*, ParameterWidget*, Parameter* );
+	void updateFrame();
 };
 
 #endif // FXPAGE_H

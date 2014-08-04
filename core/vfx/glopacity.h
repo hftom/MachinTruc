@@ -16,7 +16,7 @@ public:
 	QList<Effect*> getMovitEffects();
 	
 private:
-	float factor;
+	Parameter *factor;
 };
 
 #endif //GLOPACITY_H

@@ -250,6 +250,7 @@ MovitBranch::~MovitBranch()
 MovitChain::MovitChain()
 {
 	chain = NULL;
+	lastPTS = 0;
 }
 	
 MovitChain::~MovitChain() 
@@ -265,4 +266,5 @@ void MovitChain::reset()
 		delete chain;
 		chain = NULL;
 	}
+	lastPTS = -1;
 }

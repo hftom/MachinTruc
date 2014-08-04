@@ -24,11 +24,11 @@ public:
 	const Profile & getProfile() const { return source->getProfile(); }
 	
 	double position() { return posInTrack; }
-	void setPosition( double p ) { posInTrack = p; }
+	void setPosition( double p );
 	double start() { return clipStart; }
 	void setStart( double st ) { clipStart = st; }
 	double length();
-	void setLength( double len ) { clipLength = len; }
+	void setLength( double len );
 	
 	void setInput( InputBase *i );
 	InputBase *getInput() { return in; }

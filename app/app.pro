@@ -9,14 +9,23 @@ SOURCES = \
 	gui/fxpage.cpp \
 	gui/fxsettingspage.cpp \
 	gui/filtersdialog.cpp \
-	gui/headereffect.cpp \
+	\
+	gui/filter/headereffect.cpp \
+	gui/filter/sliderdouble.cpp \
+	gui/filter/sliderint.cpp \
+	gui/filter/filterwidget.cpp \
 	\
 	timeline/timeline.cpp \
 	timeline/typerectitem.cpp \
 	timeline/abstractviewitem.cpp \
 	timeline/clipviewitem.cpp \
 	timeline/cursorviewitem.cpp \
-	timeline/trackviewitem.cpp
+	timeline/trackviewitem.cpp \
+	\
+	animation/animeditor.cpp \
+	animation/animscene.cpp \
+	animation/animitem.cpp \
+	animation/keyitem.cpp
 	
 HEADERS = \
 	gui/topwindow.h \
@@ -25,7 +34,14 @@ HEADERS = \
 	gui/fxsettingspage.h \
 	gui/profiledialog.h \
 	gui/filtersdialog.h \
-	gui/headereffect.h \
+	gui/sourcelistwidget.h \
+	gui/effectlistwidget.h \
+	\
+	gui/filter/parameterwidget.h \
+	gui/filter/headereffect.h \
+	gui/filter/sliderdouble.h \
+	gui/filter/sliderint.h \
+	gui/filter/filterwidget.h \
 	\
 	timeline/timelinegraphicsview.h \
 	timeline/timeline.h \
@@ -33,7 +49,12 @@ HEADERS = \
 	timeline/abstractviewitem.h \
 	timeline/clipviewitem.h \
 	timeline/cursorviewitem.h \
-	timeline/trackviewitem.h
+	timeline/trackviewitem.h \
+	\
+	animation/animeditor.h \
+	animation/animscene.h \
+	animation/animitem.h \
+	animation/keyitem.h
 	
 FORMS = \
 	ui/mainwindow.ui \
@@ -42,7 +63,8 @@ FORMS = \
 	ui/fxsettingspage.ui \
 	ui/profile.ui \
 	ui/filters.ui \
-	ui/effectheader.ui
+	ui/effectheader.ui \
+	ui/animeditor.ui
 
 LIBS = ../core/libcore.a
 

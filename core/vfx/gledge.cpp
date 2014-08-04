@@ -1,15 +1,15 @@
+#include <movit/blur_effect.h>
+
 #include "vfx/gledge.h"
 
 
 
 GLEdge::GLEdge( QString id, QString name ) : GLFilter( id, name )
 {
-	amp = 5.0f;
-	depth = 1.0f;
-	opacity = 1.0f;
-	addParameter( tr("Amount:"), PFLOAT, 0.0, 20.0, true, &amp );
-	addParameter( tr("Depth:"), PFLOAT, 0.0, 1.0, true, &depth );
-	addParameter( tr("Opacity:"), PFLOAT, 0.0, 1.0, true, &opacity );
+	amp = addParameter( tr("Amount:"), Parameter::PDOUBLE, 5.0, 0.0, 20.0, true );
+	depth = addParameter( tr("Depth:"), Parameter::PDOUBLE, 1.0, 0.0, 1.0, true );
+	opacity = addParameter( tr("Opacity:"), Parameter::PDOUBLE, 1.0, 0.0, 1.0, true );
+	blur = addParameter( tr("Blur radius:"), Parameter::PDOUBLE, 1.0, 0.0, 4.0, false );
 }
 
 
@@ -23,10 +23,12 @@ GLEdge::~GLEdge()
 bool GLEdge::process( const QList<Effect*> &el, Frame *src, Profile *p )
 {
 	Q_UNUSED( p );
-	Q_UNUSED( src );
-	return el.at(0)->set_float( "amp", amp )
-		&& el.at(0)->set_float( "depth", 1.0f - depth )
-		&& el.at(0)->set_float( "opacity", opacity );
+	double pts = src->pts();
+	Effect *e = el[1];
+	return el.at(0)->set_float( "radius", getParamValue( blur, 0 ) )
+		&& e->set_float( "amp", getParamValue( amp, pts ) )
+		&& e->set_float( "depth", 1.0f - getParamValue( depth, pts ) )
+		&& e->set_float( "opacity", getParamValue( opacity, pts ) );
 }
 
 
@@ -34,6 +36,9 @@ bool GLEdge::process( const QList<Effect*> &el, Frame *src, Profile *p )
 QList<Effect*> GLEdge::getMovitEffects()
 {
 	QList<Effect*> list;
+	BlurEffect* blur = new BlurEffect();
+	blur->set_int( "num_taps", 6 );
+	list.append( blur );
 	list.append( new EdgeEffect() );
 	return list;
 }

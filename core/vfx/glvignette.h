@@ -16,9 +16,8 @@ public:
 	QList<Effect*> getMovitEffects();
 
 private:
-    float inner_radius;
-	float radius;
-	float center[2];
+    Parameter *softness, *radius;
+	Parameter *centerX, *centerY;
 };
 
 #endif //GLVIGNETTE_H

@@ -1,6 +1,4 @@
 #include <QDebug>
-#include <QBoxLayout>
-#include <QLabel>
 
 #include "filter.h"
 
@@ -48,90 +46,31 @@ void Filter::release()
 
 
 
-void Filter::addParameter( QString name, int type, QVariant min, QVariant max, bool keyframeable, void *value )
+Parameter* Filter::addParameter( QString name, int type, QVariant def, QVariant min, QVariant max, bool keyframeable, const QString &suffix )
 {
 	Parameter *param = new Parameter();
 	param->name = name;
 	param->type = type;
+	param->defValue = def;
 	param->min = min;
 	param->max = max;
+	param->value = def;
 	param->keyframeable = keyframeable;
-	param->value = value;
+	param->suffix = suffix;
 	parameters.append( param );
+	
+	return param;
 }
 
 
 
-QWidget* Filter::getWidget()
+double Filter::getParamValue( Parameter *p, double pts )
 {
-	if ( !parameters.count() )
-		return NULL;
-
-	QWidget *widg = new QWidget();
-	widg->setMinimumWidth( 150 );
-	QBoxLayout* box = new QBoxLayout( QBoxLayout::TopToBottom, widg );
-	
-	int i;
-	for ( i = 0; i < parameters.count(); ++i ) {
-		Parameter *p = parameters.at ( i );
-		QLayout *layout = NULL;
-		switch ( p->type ) {
-			case PFLOAT:
-				layout = layoutPFLOAT( widg, p );
-				break;
-			case PINT:
-				layout = layoutPINT( widg, p );
-				break;
-		}
-		if ( layout ) {
-			box->addLayout( layout );
-		}
+	if ( !p->graph.keys.count() ) {
+		return  p->value.toDouble();
 	}
 	
-	return widg;
-}
-
-
-
-void Filter::valueChanged( Parameter *p, QVariant val )
-{
-	switch ( p->type ) {
-		case PFLOAT:
-			*(float*)(p->value) = val.toInt() / 100.0;
-			break;
-		case PINT:
-			*(int*)(p->value) = val.toInt();
-			break;
-	}
-	emit updateFrame();
-}
-
-
-
-QLayout* Filter::layoutPFLOAT( QWidget *w, Parameter *p )
-{
-	QBoxLayout *box = new QBoxLayout( QBoxLayout::TopToBottom );
-	box->addWidget( new QLabel( p->name, w ) );
-	FSlider *sl = new FSlider( p, w );
-	sl->setRange( p->min.toFloat() * 100, p->max.toFloat() * 100 );
-	sl->setValue( *(float*)(p->value) * 100.0 );
-	connect( sl, SIGNAL(valueChanged(Parameter*,QVariant)), this, SLOT(valueChanged(Parameter*,QVariant)) );
-	box->addWidget( sl );
-	
-	return box;
-}
-
-
-
-QLayout* Filter::layoutPINT( QWidget *w, Parameter *p )
-{
-	QBoxLayout *box = new QBoxLayout( QBoxLayout::TopToBottom );
-	box->addWidget( new QLabel( p->name, w ) );
-	FSlider *sl = new FSlider( p, w );
-	sl->setRange( p->min.toInt(), p->max.toInt() );
-	sl->setValue( *(int*)(p->value) );
-	connect( sl, SIGNAL(valueChanged(Parameter*,QVariant)), this, SLOT(valueChanged(Parameter*,QVariant)) );
-	box->addWidget( sl );
-	
-	return box;
+	double range = qAbs( -p->min.toDouble() + p->max.toDouble() );
+	double time = (pts - posInTrack) / length;
+	return (range * p->graph.valueAt( time )) + p->min.toDouble();
 }

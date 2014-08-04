@@ -1,4 +1,5 @@
 #include "engine/filtercollection.h"
+#include "filter/filterwidget.h"
 #include "filtersdialog.h"
 
 
@@ -64,12 +65,13 @@ void FiltersDialog::videoFilterActivated( int row )
 	
 	if ( row < 0 || row >= source->videoFilters.count() ) // list was cleared
 		return;
-	
-	currentVideoWidget = source->videoFilters.at( row )->getWidget();
-	if ( currentVideoWidget ) {
-		videoWidgetLayout->addWidget( currentVideoWidget, 0, 1 );
-		videoWidgetLayout->setRowStretch( 1, 1 );
-	}
+
+	FilterWidget *fw = new FilterWidget( 0, 0, source->videoFilters.at( row ) );
+	connect( fw, SIGNAL(updateFrame()), sampler, SLOT(updateFrame()) );
+	connect( fw, SIGNAL(filterSourceDeleted()), this, SLOT(removeCurrentVideoFilter()) );
+	currentVideoWidget = fw;
+	videoWidgetLayout->addWidget( currentVideoWidget, 0, 1 );
+	videoWidgetLayout->setRowStretch( 1, 1 );
 }
 
 
@@ -85,10 +87,9 @@ void FiltersDialog::showVideoFiltersList()
 
 void FiltersDialog::addVideoFilter( int i )
 {
-	FilterCollection *fc = FilterCollection::getGlobal();
+	FilterCollection *fc = FilterCollection::getGlobalInstance();
 	
 	GLFilter *f = (GLFilter*)fc->videoFilters[ i ].create();
-	connect( f, SIGNAL(updateFrame()), sampler, SLOT(updateFrame()) );
 	source->videoFilters.append( f );
 	videoList->clear();
 	videoList->addItems( source->videoFilters.videoFiltersNames() );
@@ -133,11 +134,12 @@ void FiltersDialog::audioFilterActivated( int row )
 	if ( row < 0 || row >= source->audioFilters.count() ) // list was cleared
 		return;
 	
-	currentAudioWidget = source->audioFilters.at( row )->getWidget();
-	if ( currentAudioWidget ) {
-		audioWidgetLayout->addWidget( currentAudioWidget, 0, 1 );
-		audioWidgetLayout->setRowStretch( 1, 1 );
-	}	
+	FilterWidget *fw = new FilterWidget( 0, 0, source->audioFilters.at( row ) );
+	connect( fw, SIGNAL(updateFrame()), sampler, SLOT(updateFrame()) );
+	connect( fw, SIGNAL(filterSourceDeleted()), this, SLOT(removeCurrentAudioFilter()) );
+	currentAudioWidget = fw;
+	audioWidgetLayout->addWidget( currentAudioWidget, 0, 1 );
+	audioWidgetLayout->setRowStretch( 1, 1 );	
 }
 
 
@@ -153,7 +155,7 @@ void FiltersDialog::showAudioFiltersList()
 
 void FiltersDialog::addAudioFilter( int i )
 {
-	FilterCollection *fc = FilterCollection::getGlobal();
+	FilterCollection *fc = FilterCollection::getGlobalInstance();
 	
 	AudioFilter *f = (AudioFilter*)fc->audioFilters[ i ].create();
 	source->audioFilters.append( f );
@@ -194,7 +196,7 @@ FiltersListDlg::FiltersListDlg( int m, QWidget *parent ) : QDialog( parent )
 {
 	mode = m;
 	
-	FilterCollection *fc = FilterCollection::getGlobal();
+	FilterCollection *fc = FilterCollection::getGlobalInstance();
 	int i;
 	
 	if ( mode == MODEVIDEO )
@@ -222,7 +224,7 @@ FiltersListDlg::FiltersListDlg( int m, QWidget *parent ) : QDialog( parent )
 
 void FiltersListDlg::filterSelected( QListWidgetItem *item )
 {
-	FilterCollection *fc = FilterCollection::getGlobal();
+	FilterCollection *fc = FilterCollection::getGlobalInstance();
 	int i;
 
 	if ( mode == MODEVIDEO ) {

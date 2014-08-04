@@ -39,6 +39,7 @@ public:
 
 	//virtual bool needs_srgb_primaries() const { return false; }
 	virtual unsigned num_inputs() const { return 2; }
+	virtual AlphaHandling alpha_handling() const { return DONT_CARE_ALPHA_TYPE; }
 
 private:
 	GLuint mask_texture_num;
@@ -81,7 +82,7 @@ public:
 	QList<Effect*> getMovitEffects();
 
 private:
-	float saturation;
+	Parameter *saturation;
 	GLuint mask_texture_num;
 };
 

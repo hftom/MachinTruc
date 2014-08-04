@@ -27,7 +27,7 @@ static const char *EdgeEffect_frag=
 "	diff = clamp( diff, 0.0, 1.0 );\n"
 "	vec4 top = vec4( vec3( 0.0 ), diff ) * c1.a;\n"
 "	vec4 bottom = mix( c1, vec4(1.0, 1.0, 1.0, c1.a), PREFIX(opacity));\n"
-"	return  top + (1.0 - top.a) * bottom;\n"
+"	return (top + (1.0 - top.a) * bottom) * c1.a;\n"
 "}\n";
 
 
@@ -74,9 +74,7 @@ public:
 	QList<Effect*> getMovitEffects();
 	
 private:
-	float amp;
-	float depth;
-	float opacity;
+	Parameter *amp, *depth, *opacity, *blur;
 };
 
 #endif // GLEDGE_H

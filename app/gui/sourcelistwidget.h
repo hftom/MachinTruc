@@ -11,6 +11,7 @@
 
 class SourceListWidget : public QListWidget
 {
+	Q_OBJECT
 public:
 	SourceListWidget( QWidget *parent ) : QListWidget( parent ) {}
 	
