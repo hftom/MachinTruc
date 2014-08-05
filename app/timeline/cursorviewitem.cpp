@@ -1,4 +1,5 @@
 #include <QPainter>
+#include <QDebug>
 
 #include "cursorviewitem.h"
 

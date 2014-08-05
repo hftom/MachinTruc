@@ -174,11 +174,11 @@ private:
 
 
 
-class ProjectClipsPage : public QWidget, private Ui::StackProjectClips
+class ProjectSourcesPage : public QWidget, private Ui::StackProjectClips
 {
 	Q_OBJECT
 public:
-	ProjectClipsPage( Sampler *samp );
+	ProjectSourcesPage( Sampler *samp );
 	Source* getSource( int index, const QString &filename );
 	
 public slots:

@@ -122,19 +122,19 @@ public:
 	void play( bool b );
 	
 	Scene* getScene() { return scene; }
-	bool previewMode() { return playMode == PlayClip; }
+	bool previewMode() { return playMode == PlaySource; }
 
 public slots:
 	void setSharedContext( QGLWidget *shared );
 	void setFencesContext( QGLWidget *shared );
 	void switchMode( bool down );
-	void setClip( Source *source, double pts );
+	void setSource( Source *source, double pts );
 	void wheelSeek( int a );
 	void slideSeek( double p );
 	void updateFrame();
 
 private:
-	enum PlayMode{ PlayClip, PlayScene };
+	enum PlayMode{ PlaySource, PlayScene };
 	
 	int updateLastFrame( Frame *dst );
 	InputBase* getInput( QString fn, InputBase::InputType type );

@@ -17,7 +17,7 @@
 
 
 
-ProjectClipsPage::ProjectClipsPage( Sampler *samp )
+ProjectSourcesPage::ProjectSourcesPage( Sampler *samp )
 {
 	sampler = samp;
 	
@@ -40,7 +40,7 @@ ProjectClipsPage::ProjectClipsPage( Sampler *samp )
 
 
 
-Source* ProjectClipsPage::getSource( int index, const QString &filename )
+Source* ProjectSourcesPage::getSource( int index, const QString &filename )
 {
 	if ( index < 0 || index > sourceListWidget->count() - 1 )
 		return NULL;
@@ -55,7 +55,7 @@ Source* ProjectClipsPage::getSource( int index, const QString &filename )
 
 
 
-void ProjectClipsPage::sourceItemActivated( QListWidgetItem *item, QListWidgetItem* )
+void ProjectSourcesPage::sourceItemActivated( QListWidgetItem *item, QListWidgetItem* )
 {
 	SourceListItem *it = (SourceListItem*)item;
 	emit sourceActivated( it );
@@ -66,7 +66,7 @@ void ProjectClipsPage::sourceItemActivated( QListWidgetItem *item, QListWidgetIt
 
 
 
-void ProjectClipsPage::newCut( SourceListItem* item )
+void ProjectSourcesPage::newCut( SourceListItem* item )
 {
 	item->addCut();
 	cutListView->reset();
@@ -74,7 +74,7 @@ void ProjectClipsPage::newCut( SourceListItem* item )
 
 
 
-void ProjectClipsPage::sourceItemMenu( const QPoint &pos )
+void ProjectSourcesPage::sourceItemMenu( const QPoint &pos )
 {
 	SourceListItem *item = (SourceListItem*)sourceListWidget->itemAt( pos );
 	if ( !item )
@@ -88,7 +88,7 @@ void ProjectClipsPage::sourceItemMenu( const QPoint &pos )
 
 
 
-void ProjectClipsPage::showSourceProperties()
+void ProjectSourcesPage::showSourceProperties()
 {
 	SourceListItem *item = (SourceListItem*)sourceListWidget->currentItem();
 
@@ -102,7 +102,7 @@ void ProjectClipsPage::showSourceProperties()
 
 
 
-void ProjectClipsPage::showSourceFilters()
+void ProjectSourcesPage::showSourceFilters()
 {
 	SourceListItem *item = (SourceListItem*)sourceListWidget->currentItem();
 	if ( !item )
@@ -113,7 +113,7 @@ void ProjectClipsPage::showSourceFilters()
 
 
 
-void ProjectClipsPage::openSources()
+void ProjectSourcesPage::openSources()
 {
 	QStringList	list = QFileDialog::getOpenFileNames( this, tr("Open files"), sourceCurrentDir,
 		"Videos(*.dv *.m2t *.mts *.mkv *.mpg *.mpeg *.ts *.avi *.mov *.vob *.wmv *.mjpg *.mp4 *.ogg *.wav *.mp3 *.ac3 *.mp2 *.mpa *.mpc *.png *.jpg)" );
@@ -181,7 +181,7 @@ void ProjectClipsPage::openSources()
 
 
 
-QPixmap ProjectClipsPage::getSourceThumb( Frame *f )
+QPixmap ProjectSourcesPage::getSourceThumb( Frame *f )
 {
 	if ( !f )
 		return QPixmap();
@@ -253,7 +253,7 @@ QPixmap ProjectClipsPage::getSourceThumb( Frame *f )
 
 
 
-void ProjectClipsPage::setSharedContext( QGLWidget *shared )
+void ProjectSourcesPage::setSharedContext( QGLWidget *shared )
 {	
 	hidden = shared;
 }

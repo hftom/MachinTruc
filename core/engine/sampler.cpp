@@ -7,7 +7,7 @@
 
 Sampler::Sampler()
 {	
-	playMode = PlayClip;
+	playMode = PlaySource;
 
 	projectProfile.setVideoFrameRate( 60000.0 / 1001.0 );
 	projectProfile.setVideoFrameDuration( MICROSECOND / projectProfile.getVideoFrameRate() );
@@ -49,7 +49,7 @@ Sampler::~Sampler()
 
 void Sampler::switchMode( bool down )
 {
-	if ( (down ? PlayScene : PlayClip) == playMode )
+	if ( (down ? PlayScene : PlaySource) == playMode )
 		return;
 
 	if ( composer->isRunning() ) {
@@ -63,14 +63,14 @@ void Sampler::switchMode( bool down )
 		seekTo( currentPTS() );
 	}
 	else {
-		playMode = PlayClip;
+		playMode = PlaySource;
 		emit modeSwitched();
 	}	
 }
 
 
 
-void Sampler::setClip( Source *source, double pts )
+void Sampler::setSource( Source *source, double pts )
 {
 	if ( composer->isRunning() ) {
 		composer->play( false );
@@ -79,7 +79,7 @@ void Sampler::setClip( Source *source, double pts )
 
 	preview.play( false );
 	metronom->flush();
-	playMode = PlayClip;
+	playMode = PlaySource;
 
 	preview.setSource( source, getInput( source->getFileName(), source->getType() ) );
 	seekTo( pts );
@@ -96,7 +96,7 @@ void Sampler::setProfile( Profile p )
 
 Profile Sampler::getProfile()
 {
-	if ( playMode == PlayClip )
+	if ( playMode == PlaySource )
 		return preview.getProfile();
 	
 	return projectProfile;
@@ -120,7 +120,7 @@ void Sampler::setFencesContext( QGLWidget *shared )
 
 void Sampler::play( bool b )
 {
-	if ( playMode == PlayClip && !preview.isValid() ) {
+	if ( playMode == PlaySource && !preview.isValid() ) {
 		emit paused( true );
 		return;
 	}
@@ -134,7 +134,7 @@ void Sampler::updateFrame()
 {
 	if ( composer->isRunning() )
 		return;
-	if ( playMode == PlayClip && !preview.isValid() )
+	if ( playMode == PlaySource && !preview.isValid() )
 		return;
 	Frame *last = metronom->getLastFrame();
 	if ( !last )
@@ -156,7 +156,7 @@ void Sampler::wheelSeek( int a )
 {
 	if ( composer->isRunning() )
 		return;
-	if ( playMode == PlayClip && !preview.isValid() )
+	if ( playMode == PlaySource && !preview.isValid() )
 		return;
 
 	printf("running=%d, a=%d\n", composer->isRunning(), a);
@@ -200,7 +200,7 @@ void Sampler::seekTo( double p )
 
 	metronom->flush();
 	
-	if ( playMode == PlayClip ) {
+	if ( playMode == PlaySource ) {
 		if ( !preview.seekTo( p ) )
 			return;
 	}
@@ -228,7 +228,7 @@ void Sampler::seekTo( double p )
 
 double Sampler::getEndPTS()
 {
-	if ( playMode == PlayClip )
+	if ( playMode == PlaySource )
 		return preview.endPTS();
 	
 	return samplerDuration();
@@ -238,7 +238,7 @@ double Sampler::getEndPTS()
 
 double Sampler::getSamplerDuration()
 {
-	if ( playMode == PlayClip )
+	if ( playMode == PlaySource )
 		return preview.duration();
 
 	return samplerDuration();
@@ -266,7 +266,7 @@ double Sampler::samplerDuration()
 
 double Sampler::currentPTS()
 {
-	if ( playMode == PlayClip )
+	if ( playMode == PlaySource )
 		return preview.currentPTS;
 
 	return scene->currentPTS;
@@ -276,7 +276,7 @@ double Sampler::currentPTS()
 
 double Sampler::currentPTSAudio()
 {
-	if ( playMode == PlayClip )
+	if ( playMode == PlaySource )
 		return preview.currentPTSAudio;
 	
 	return scene->currentPTSAudio;
@@ -286,7 +286,7 @@ double Sampler::currentPTSAudio()
 
 void Sampler::shiftCurrentPTS( double d )
 {
-	if ( playMode == PlayClip ) {
+	if ( playMode == PlaySource ) {
 		if ( d )
 			preview.currentPTS = d + preview.getProfile().getVideoFrameDuration();
 		else
@@ -300,7 +300,7 @@ void Sampler::shiftCurrentPTS( double d )
 
 void Sampler::shiftCurrentPTSAudio( double d )
 {
-	if ( playMode == PlayClip ) {
+	if ( playMode == PlaySource ) {
 		if ( d )
 			preview.currentPTSAudio = d + preview.getProfile().getVideoFrameDuration();
 		else
@@ -314,7 +314,7 @@ void Sampler::shiftCurrentPTSAudio( double d )
 
 void Sampler::rewardPTS()
 {
-	if ( playMode == PlayClip ) {
+	if ( playMode == PlaySource ) {
 		preview.currentPTS -= preview.getProfile().getVideoFrameDuration();
 		preview.currentPTSAudio = preview.currentPTS;
 	}
@@ -414,7 +414,7 @@ int Sampler::updateLastFrame( Frame *dst )
 	GLComposition *gc;
 	int nframes = 0;
 	
-	if ( playMode == PlayClip ) {
+	if ( playMode == PlaySource ) {
 		if ( !preview.isValid() || !dst->sample->frames.count() )
 			return 0;
 		FrameSample *fs = dst->sample->frames.at( 0 );
@@ -479,7 +479,7 @@ int Sampler::getVideoTracks( Frame *dst )
 	GLComposition *gc;
 	int nFrames = 0;
 	
-	if ( playMode == PlayClip ) {
+	if ( playMode == PlaySource ) {
 		if ( !preview.isValid() )
 			return 0;
 		FrameSample *fs = new FrameSample();
@@ -546,7 +546,7 @@ int Sampler::getAudioTracks( Frame *dst, int nSamples )
 	InputBase *in = NULL;
 	int nFrames = 0;
 	
-	if ( playMode == PlayClip ) {
+	if ( playMode == PlaySource ) {
 		if ( !preview.isValid() )
 			return 0;
 		FrameSample *fs = new FrameSample();
@@ -611,7 +611,7 @@ void Sampler::prepareInputs()
 	InputBase *in = NULL;
 	double minPTS, maxPTS;
 	
-	if ( playMode == PlayClip )
+	if ( playMode == PlaySource )
 		return;
 
 	if ( scene->currentPTS < scene->currentPTSAudio ) {

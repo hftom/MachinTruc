@@ -52,7 +52,7 @@ private slots:
 	void showFxPage();
 	void showFxSettingsPage();
 
-	void clipActivated( SourceListItem *item );
+	void sourceActivated( SourceListItem *item );
 	void currentFramePts( double d );
 	void modeSwitched();
 
@@ -73,9 +73,9 @@ private slots:
 	void quitEditor();
 	
 private:
-	ProjectClipsPage *clipPage;
+	ProjectSourcesPage *sourcePage;
 	FxPage *fxPage;
-	SourceListItem *activeClip;
+	SourceListItem *activeSource;
 	
 	TimelineGraphicsView *timelineView;
 	Timeline *timeline;

@@ -6,7 +6,7 @@ TopWindow::TopWindow()
 {
 	setupUi( this );
 
-	activeClip = NULL;
+	activeSource = NULL;
 
 	seekSlider = new SeekSlider( baseVideoWidget );
 	seekSlider->setObjectName(QString::fromUtf8("seekSlider"));
@@ -43,8 +43,8 @@ TopWindow::TopWindow()
 	connect( animEditor, SIGNAL(updateFrame()), sampler, SLOT(updateFrame()) );
 	timelineStackedWidget->addWidget( animEditor );
 	
-	clipPage = new ProjectClipsPage( sampler );
-	connect( clipPage, SIGNAL(sourceActivated(SourceListItem*)), this, SLOT(clipActivated(SourceListItem*)) );
+	sourcePage = new ProjectSourcesPage( sampler );
+	connect( sourcePage, SIGNAL(sourceActivated(SourceListItem*)), this, SLOT(sourceActivated(SourceListItem*)) );
 	
 	fxPage = new FxPage();
 	connect( timeline, SIGNAL(clipSelected(Clip*)), fxPage, SLOT(clipSelected(Clip*)) );
@@ -53,7 +53,7 @@ TopWindow::TopWindow()
 	connect( fxPage, SIGNAL(updateFrame()), sampler, SLOT(updateFrame()) );
 	connect( fxPage, SIGNAL(editAnimation(FilterWidget*,ParameterWidget*,Parameter*)), this, SLOT(editAnimation(FilterWidget*,ParameterWidget*,Parameter*)) );
 	
-	stackedWidget->addWidget( clipPage );
+	stackedWidget->addWidget( sourcePage );
 	stackedWidget->addWidget( fxPage );
 	stackedWidget->addWidget( new FxSettingsPage() );
 
@@ -67,7 +67,7 @@ TopWindow::TopWindow()
 	connect( vw, SIGNAL(wheelSeek(int)), sampler, SLOT(wheelSeek(int)) );
 	connect( vw, SIGNAL(newSharedContext(QGLWidget*)), sampler, SLOT(setSharedContext(QGLWidget*)) );
 	connect( vw, SIGNAL(newFencesContext(QGLWidget*)), sampler, SLOT(setFencesContext(QGLWidget*)) );
-	connect( vw, SIGNAL(newThumbContext(QGLWidget*)), clipPage, SLOT(setSharedContext(QGLWidget*)) );
+	connect( vw, SIGNAL(newThumbContext(QGLWidget*)), sourcePage, SLOT(setSharedContext(QGLWidget*)) );
 	connect( sampler->getMetronom(), SIGNAL(newFrame(Frame*)), vw, SLOT(showFrame(Frame*)) );
 	connect( sampler->getMetronom(), SIGNAL(currentFramePts(double)), this, SLOT(currentFramePts(double)) );
 	connect( vw, SIGNAL(frameShown(Frame*)), sampler->getMetronom(), SLOT(setLastFrame(Frame*)) );
@@ -117,19 +117,19 @@ void TopWindow::quitEditor()
 
 void TopWindow::modeSwitched()
 {
-	if ( activeClip )
-		sampler->setClip( activeClip->getSource(), activeClip->getCurrentPts() );
+	if ( activeSource )
+		sampler->setSource( activeSource->getSource(), activeSource->getCurrentPts() );
 }
 
 
 
 void TopWindow::setInPoint()
 {
-	if ( activeClip ) {
+	if ( activeSource ) {
 		double pts;
 		//QImage img = vw->getThumb( THUMBHEIGHT, &pts, false );
 		//if ( !img.isNull() )
-			//activeClip->setInPoint( img, pts );
+			//activeSource->setInPoint( img, pts );
 	}
 }
 
@@ -137,12 +137,12 @@ void TopWindow::setInPoint()
 
 void TopWindow::setOutPoint()
 {
-	if ( activeClip ) {
+	if ( activeSource ) {
 		double pts;
 		//QImage img = vw->getThumb( THUMBHEIGHT, &pts, true );
 		//if ( !img.isNull() ) {
-			//activeClip->setOutPoint( img, pts );
-			//clipPage->newCut( activeClip );
+			//activeSource->setOutPoint( img, pts );
+			//sourcePage->newCut( activeSource );
 		//}
 	}
 }
@@ -152,9 +152,9 @@ void TopWindow::setOutPoint()
 Source* TopWindow::getDroppedCut( int index, QString mime, QString filename, double &start, double &len )
 {
 	if ( mime == MIMETYPECUT ) {
-		if ( !activeClip )
+		if ( !activeSource )
 			return NULL;
-		Cut *cut = activeClip->getCut( index, filename );
+		Cut *cut = activeSource->getCut( index, filename );
 		if ( !cut )
 			return NULL;
 		start = cut->getStart();
@@ -162,7 +162,7 @@ Source* TopWindow::getDroppedCut( int index, QString mime, QString filename, dou
 		return cut->getSource();
 	}
 	if ( mime == MIMETYPESOURCE ) {
-		Source *source = clipPage->getSource( index, filename );
+		Source *source = sourcePage->getSource( index, filename );
 		start = source->getProfile().getStreamStartTime();
 		len = source->getProfile().getStreamDuration();
 		return source;
@@ -175,10 +175,10 @@ Source* TopWindow::getDroppedCut( int index, QString mime, QString filename, dou
 void TopWindow::currentFramePts( double d )
 {
 	if ( !switchButton->isChecked() ) {
-		if ( !activeClip )
+		if ( !activeSource )
 			return;
-		activeClip->setCurrentPts( d );
-		Profile prof = activeClip->getProfile();
+		activeSource->setCurrentPts( d );
+		Profile prof = activeSource->getProfile();
 		d -= prof.getStreamStartTime();
 		d *= seekSlider->maximum() / prof.getStreamDuration();
 	}
@@ -218,14 +218,14 @@ void TopWindow::composerPaused( bool b )
 
 
 
-void TopWindow::clipActivated( SourceListItem *item )
+void TopWindow::sourceActivated( SourceListItem *item )
 {
 	if ( item ) {
-		activeClip = item;
+		activeSource = item;
 		if ( switchButton->isChecked() )
 			switchButton->toggle();
 		else
-			sampler->setClip( activeClip->getSource(), activeClip->getCurrentPts() );
+			sampler->setSource( activeSource->getSource(), activeSource->getCurrentPts() );
 	}
 }
 
@@ -283,9 +283,9 @@ void TopWindow::seek( int v )
 	double value;
 	
 	if ( !switchButton->isChecked() ) {
-		if ( !activeClip )
+		if ( !activeSource )
 			return;
-		Profile prof = activeClip->getProfile();
+		Profile prof = activeSource->getProfile();
 		value = prof.getStreamStartTime();
 		value += v * prof.getStreamDuration() / seekSlider->maximum();
 	}
