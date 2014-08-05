@@ -4,20 +4,7 @@
 #include "movitchain.h"
 #include "vfx/glmix.h"
 #include "vfx/gloverlay.h"
-#include "vfx/glsaturation.h"
-#include "vfx/glvignette.h"
-#include "vfx/glblurmask.h"
-#include "vfx/glblur.h"
-#include "vfx/glliftgammagain.h"
-#include "vfx/glcut.h"
-#include "vfx/glresize.h"
-#include "vfx/glpadding.h"
-#include "vfx/gldeinterlace.h"
-#include "vfx/glglow.h"
-#include "vfx/glwater.h"
-#include "vfx/gldeconvolutionsharpen.h"
-#include "vfx/gledge.h"
-#include "vfx/glopacity.h"
+#include "filtercollection.h"
 
 #include <QGLWidget>
 #include <QThread>
