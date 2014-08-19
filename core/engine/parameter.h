@@ -2,6 +2,7 @@
 #define PARAMETER_H
 
 #include <QVariant>
+#include <QColor>
 
 
 
@@ -31,7 +32,7 @@ public:
 class Parameter
 {
 public:
-	enum ParameterType{ PDOUBLE, PINT, PRGB };
+	enum ParameterType{ PDOUBLE, PINT, PCOLOR };
 	
 	QString name;
 	int type;

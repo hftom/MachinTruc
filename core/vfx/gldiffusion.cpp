@@ -20,8 +20,8 @@ GLDiffusion::~GLDiffusion()
 bool GLDiffusion::process( const QList<Effect*> &el, Frame *src, Profile *p )
 {
 	Q_UNUSED( p );
-	return el.at(0)->set_float( "blurred_mix_amount", getParamValue( mixAmount, src->pts() ) )
-		&& el.at(0)->set_float( "radius", getParamValue( blurRadius, src->pts() ) );
+	return el.at(0)->set_float( "blurred_mix_amount", getParamValue( mixAmount, src->pts() ).toFloat() )
+		&& el.at(0)->set_float( "radius", getParamValue( blurRadius, src->pts() ).toFloat() );
 }
 
 

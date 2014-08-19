@@ -22,10 +22,10 @@ GLCrop::~GLCrop()
 bool GLCrop::preProcess( Frame *src, Profile *p )
 {
 	double pts = src->pts();
-	pleft = getParamValue( left, pts ) * src->glWidth / 100.0;
-	double r = getParamValue( right, pts ) * src->glWidth / 100.0;
-	ptop = getParamValue( top, pts ) * src->glHeight / 100.0;
-	double b = getParamValue( bottom, pts ) * src->glHeight / 100.0;
+	pleft = getParamValue( left, pts ).toDouble() * src->glWidth / 100.0;
+	double r = getParamValue( right, pts ).toDouble() * src->glWidth / 100.0;
+	ptop = getParamValue( top, pts ).toDouble() * src->glHeight / 100.0;
+	double b = getParamValue( bottom, pts ).toDouble() * src->glHeight / 100.0;
 	src->glWidth = qMax( src->glWidth - pleft - r, 1.0 );
 	src->glHeight = qMax( src->glHeight - ptop - b, 1.0 );
 	return true;

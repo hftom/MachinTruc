@@ -26,12 +26,12 @@ bool GLWater::process( const QList<Effect*> &el, Frame *src, Profile *p )
 	Effect *e = el[0];
 	double pts = src->pts();
 	return e->set_float( "time", pts / MICROSECOND )
-		&& e->set_float( "speed", getParamValue( speed ) )
-		&& e->set_float( "emboss", getParamValue( emboss, pts ) )
-		&& e->set_float( "intensity", getParamValue( intensity ) )
-		&& e->set_float( "frequency", getParamValue( frequency ) )
-		&& e->set_float( "delta", getParamValue( delta, pts ) )
-		&& e->set_float( "intence", getParamValue( intence, pts ) );
+		&& e->set_float( "speed", getParamValue( speed ).toFloat() )
+		&& e->set_float( "emboss", getParamValue( emboss, pts ).toFloat() )
+		&& e->set_float( "intensity", getParamValue( intensity ).toFloat() )
+		&& e->set_float( "frequency", getParamValue( frequency ).toFloat() )
+		&& e->set_float( "delta", getParamValue( delta, pts ).toFloat() )
+		&& e->set_float( "intence", getParamValue( intence, pts ).toFloat() );
 }
 
 

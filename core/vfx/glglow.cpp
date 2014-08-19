@@ -23,9 +23,9 @@ bool GLGlow::process( const QList<Effect*> &el, Frame *src, Profile *p )
 	Q_UNUSED( p );
 	double pts = src->pts();
 	Effect *e = el[0];
-	return e->set_float( "radius", getParamValue( radius, pts ) )
-		&& e->set_float( "blurred_mix_amount", getParamValue( glow, pts ) )
-		&& e->set_float( "highlight_cutoff", getParamValue( highlight, pts ) );
+	return e->set_float( "radius", getParamValue( radius, pts ).toFloat() )
+		&& e->set_float( "blurred_mix_amount", getParamValue( glow, pts ).toFloat() )
+		&& e->set_float( "highlight_cutoff", getParamValue( highlight, pts ).toFloat() );
 }
 
 

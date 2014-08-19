@@ -18,7 +18,7 @@ GLPixelize::~GLPixelize()
 bool GLPixelize::process( const QList<Effect*> &el, Frame *src, Profile *p )
 {
 	Q_UNUSED( p );
-	return el.at(0)->set_float( "pixelSize", getParamValue( pixelSize, src->pts() ) );
+	return el.at(0)->set_float( "pixelSize", getParamValue( pixelSize, src->pts() ).toFloat() );
 }
 
 

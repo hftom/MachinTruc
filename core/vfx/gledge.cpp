@@ -25,10 +25,10 @@ bool GLEdge::process( const QList<Effect*> &el, Frame *src, Profile *p )
 	Q_UNUSED( p );
 	double pts = src->pts();
 	Effect *e = el[1];
-	return el.at(0)->set_float( "radius", getParamValue( blur, 0 ) )
-		&& e->set_float( "amp", getParamValue( amp, pts ) )
-		&& e->set_float( "depth", 1.0f - getParamValue( depth, pts ) )
-		&& e->set_float( "opacity", getParamValue( opacity, pts ) );
+	return el.at(0)->set_float( "radius", getParamValue( blur ).toFloat() )
+		&& e->set_float( "amp", getParamValue( amp, pts ).toFloat() )
+		&& e->set_float( "depth", 1.0f - getParamValue( depth, pts ).toFloat() )
+		&& e->set_float( "opacity", getParamValue( opacity, pts ).toFloat() );
 }
 
 

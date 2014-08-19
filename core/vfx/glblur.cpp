@@ -19,7 +19,7 @@ GLBlur::~GLBlur()
 bool GLBlur::process( const QList<Effect*> &el, Frame *src, Profile *p )
 {
 	Q_UNUSED( p );
-	return el.at(0)->set_float( "radius", src->glWidth * getParamValue( amount, src->pts() ) / 100.0 );
+	return el.at(0)->set_float( "radius", src->glWidth * getParamValue( amount, src->pts() ).toDouble() / 100.0 );
 }
 
 

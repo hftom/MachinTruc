@@ -13,6 +13,7 @@ SOURCES = \
 	gui/filter/headereffect.cpp \
 	gui/filter/sliderdouble.cpp \
 	gui/filter/sliderint.cpp \
+	gui/filter/colorchooser.cpp \
 	gui/filter/filterwidget.cpp \
 	\
 	timeline/timeline.cpp \
@@ -41,6 +42,7 @@ HEADERS = \
 	gui/filter/headereffect.h \
 	gui/filter/sliderdouble.h \
 	gui/filter/sliderint.h \
+	gui/filter/colorchooser.h \
 	gui/filter/filterwidget.h \
 	\
 	timeline/timelinegraphicsview.h \

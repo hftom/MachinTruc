@@ -64,10 +64,10 @@ Parameter* Filter::addParameter( QString name, int type, QVariant def, QVariant 
 
 
 
-double Filter::getParamValue( Parameter *p, double pts )
+QVariant Filter::getParamValue( Parameter *p, double pts )
 {
 	if ( !p->graph.keys.count() ) {
-		return  p->value.toDouble();
+		return  p->value;
 	}
 	
 	double range = qAbs( -p->min.toDouble() + p->max.toDouble() );

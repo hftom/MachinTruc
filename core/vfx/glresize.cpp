@@ -19,7 +19,7 @@ GLResize::~GLResize()
 
 bool GLResize::preProcess( Frame *src, Profile *p )
 {
-	double pc = getParamValue( percent, src->pts() );
+	double pc = getParamValue( percent, src->pts() ).toDouble();
 	src->glWidth = (double)src->glWidth * src->glSAR  / p->getVideoSAR() * pc / 100.0;
 	if ( src->glWidth < 1 )
 		src->glWidth = 1;

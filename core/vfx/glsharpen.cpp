@@ -20,8 +20,8 @@ GLSharpen::~GLSharpen()
 bool GLSharpen::process( const QList<Effect*> &el, Frame *src, Profile *p )
 {
 	Q_UNUSED( p );
-	return el.at(0)->set_float( "amount", getParamValue( amount, src->pts() ) )
-		&& el.at(0)->set_float( "radius", getParamValue( radius, src->pts() ) );
+	return el.at(0)->set_float( "amount", getParamValue( amount, src->pts() ).toFloat() )
+		&& el.at(0)->set_float( "radius", getParamValue( radius, src->pts() ).toFloat() );
 }
 
 

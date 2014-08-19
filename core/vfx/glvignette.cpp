@@ -23,11 +23,11 @@ bool GLVignette::process( const QList<Effect*> &el, Frame *src, Profile *p )
 {
 	Q_UNUSED( p );
 	double pts = src->pts();
-	float center[2] = { (float)getParamValue( centerX, pts ), (float)getParamValue( centerY, pts ) };
+	float center[2] = { getParamValue( centerX, pts ).toFloat(), getParamValue( centerY, pts ).toFloat() };
 	Effect *e = el[0];
 	return e->set_vec2( "center", center )
-		&& e->set_float( "radius", getParamValue( softness ) )
-		&& e->set_float( "inner_radius", getParamValue( radius, pts ) - 0.5 );
+		&& e->set_float( "radius", getParamValue( softness ).toFloat() )
+		&& e->set_float( "inner_radius", getParamValue( radius, pts ).toFloat() - 0.5 );
 }
 
 

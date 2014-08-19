@@ -15,7 +15,7 @@ public:
 	bool process( Frame *src ) {
 		int i, j, samples = src->audioSamples(), channels = src->profile.getAudioChannels();
 		int16_t *in = (int16_t*)src->data();
-		double vol = getParamValue( volume, src->pts() );
+		double vol = getParamValue( volume, src->pts() ).toDouble();
 
 		for ( i = 0; i < samples; ++i ) {
 			for ( j = 0; j < channels; ++j )

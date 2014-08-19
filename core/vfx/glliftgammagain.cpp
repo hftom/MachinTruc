@@ -29,9 +29,9 @@ bool GLLiftGammaGain::process( const QList<Effect*> &el, Frame *src, Profile *p 
 {
 	Q_UNUSED( p );
 	double pts = src->pts();
-	float lift[3] = { (float)getParamValue( liftR, pts ), (float)getParamValue( liftG, pts ), (float)getParamValue( liftB, pts ) };
-	float gamma[3] = { (float)getParamValue( gammaR, pts ), (float)getParamValue( gammaG, pts ), (float)getParamValue( gammaB, pts ) };
-	float gain[3] = { (float)getParamValue( gainR, pts ), (float)getParamValue( gainG, pts ), (float)getParamValue( gainB, pts ) };
+	float lift[3] = { getParamValue( liftR, pts ).toFloat(), getParamValue( liftG, pts ).toFloat(), getParamValue( liftB, pts ).toFloat() };
+	float gamma[3] = { getParamValue( gammaR, pts ).toFloat(), getParamValue( gammaG, pts ).toFloat(), getParamValue( gammaB, pts ).toFloat() };
+	float gain[3] = { getParamValue( gainR, pts ).toFloat(), getParamValue( gainG, pts ).toFloat(), getParamValue( gainB, pts ).toFloat() };
 	Effect *e = el[0];
 	return e->set_vec3( "lift", lift )
 		&& e->set_vec3( "gamma", gamma )

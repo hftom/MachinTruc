@@ -29,7 +29,7 @@ public:
 
 protected:	
 	Parameter* addParameter( QString name, int type, QVariant def, QVariant min, QVariant max, bool keyframeable, const QString &suffix = QString() );
-	double getParamValue( Parameter *param, double pts = 0 );
+	QVariant getParamValue( Parameter *param, double pts = 0 );
 	
 private:
 	QList<Parameter*> parameters;

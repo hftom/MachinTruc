@@ -25,10 +25,10 @@ bool GLDropShadow::process( const QList<Effect*> &el, Frame *src, Profile *p )
 	Q_UNUSED( p );
 	double pts = src->pts();
 	Effect *e = el[0];
-	return e->set_float( "xoffset", getParamValue( xoffset, pts ) )
-		&& e->set_float( "yoffset", getParamValue( yoffset, pts ) )
-		&& e->set_float( "opacity", getParamValue( opacity, pts ) )
-		&& e->set_float( "radius", getParamValue( radius, pts ) );
+	return e->set_float( "xoffset", getParamValue( xoffset, pts ).toFloat() )
+		&& e->set_float( "yoffset", getParamValue( yoffset, pts ).toFloat() )
+		&& e->set_float( "opacity", getParamValue( opacity, pts ).toFloat() )
+		&& e->set_float( "radius", getParamValue( radius, pts ).toFloat() );
 }
 
 

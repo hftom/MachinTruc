@@ -12,7 +12,8 @@ GLSoftBorder::GLSoftBorder( QString id, QString name ) : GLFilter( id, name )
 bool GLSoftBorder::process( const QList<Effect*> &el, Frame *src, Profile *p )
 {
 	Q_UNUSED( p );
-	return el[0]->set_float( "borderSize", getParamValue( borderSize, src->pts() ) * src->glHeight / 2.0 / 100.0 );
+	Q_UNUSED( src );
+	return el[0]->set_float( "borderSize", getParamValue( borderSize ).toDouble() * src->glHeight / 2.0 / 100.0 );
 }
 
 

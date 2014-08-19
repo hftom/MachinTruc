@@ -18,7 +18,7 @@ GLCut::~GLCut()
 bool GLCut::process( const QList<Effect*> &el, Frame *src, Profile *p )
 {
 	Q_UNUSED( p );
-	return el[0]->set_float( "opacity", getParamValue( opacity, src->pts() ) );
+	return el[0]->set_float( "opacity", getParamValue( opacity, src->pts() ).toFloat() );
 }
 
 

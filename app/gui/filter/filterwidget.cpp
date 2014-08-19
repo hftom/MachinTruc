@@ -4,6 +4,7 @@
 
 #include "sliderdouble.h"
 #include "sliderint.h"
+#include "colorchooser.h"
 
 
 
@@ -32,6 +33,10 @@ FilterWidget::FilterWidget( QWidget *parent, Clip *c, Filter *f ) : QWidget( par
 			}
 			case Parameter::PINT: {
 				pw = new SliderInt( this, p, clip != 0 );
+				break;
+			}
+			case Parameter::PCOLOR: {
+				pw = new ColorChooser( this, p, clip != 0 );
 				break;
 			}
 		}
@@ -78,8 +83,8 @@ void FilterWidget::valueChanged( Parameter *p, QVariant val )
 		case Parameter::PDOUBLE:
 			p->value = val.toInt() / 100.0;
 			break;
-		case Parameter::PINT:
-			p->value = val.toInt();
+		default:
+			p->value = val;
 			break;
 	}
 	emit updateFrame();

@@ -25,8 +25,8 @@ bool GLPadding::preProcess( Frame *src, Profile *p )
 	src->glHeight = p->getVideoHeight();
 	src->paddingAuto = false;
 	double pts = src->pts();
-	left += getParamValue( xoffsetpercent, pts ) * src->glWidth / 100.0;
-	top += getParamValue( yoffsetpercent, pts ) * src->glHeight / 100.0;
+	left += getParamValue( xoffsetpercent, pts ).toDouble() * src->glWidth / 100.0;
+	top += getParamValue( yoffsetpercent, pts ).toDouble() * src->glHeight / 100.0;
 	
 	return true;
 }

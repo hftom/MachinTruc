@@ -12,7 +12,7 @@ static const char *MyBorderEffect_shader=
 "vec4 FUNCNAME(vec2 tc) {\n"
 "	if ( any( lessThan( tc, PREFIX(border) ) ) ||\n"
 "	    any( greaterThan( tc, 1.0 - PREFIX(border) ) ) ) {\n"
-"		return vec4(1.0);\n"
+"		return PREFIX(color);\n"
 "	}\n"
 "\n"
 "	return INPUT(tc);\n"
@@ -32,6 +32,7 @@ public:
 	}
 	
 	virtual void set_gl_state( GLuint glsl_program_num, const std::string &prefix, unsigned *sampler_num ) {
+		Effect::set_gl_state( glsl_program_num, prefix, sampler_num );
 		float border[2] = { 1.0f / iwidth * borderSize, 1.0f / iheight * borderSize };
 		set_uniform_vec2( glsl_program_num, prefix, "border", border );
 	}
@@ -39,6 +40,7 @@ public:
 private:
 	float iwidth, iheight;
 	float borderSize;
+	RGBATuple color;
 };
 
 
@@ -53,7 +55,7 @@ public:
 	QList<Effect*> getMovitEffects();
 	
 private:
-	Parameter *borderSize;
+	Parameter *borderSize, *color;
 };
 
 #endif // GLBORDER_H

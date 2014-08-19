@@ -25,10 +25,10 @@ bool GLDeconvolutionSharpen::process( const QList<Effect*> &el, Frame *src, Prof
 	Q_UNUSED( p );
 	double pts = src->pts();
 	Effect *e = el[0];
-	return e->set_float( "circle_radius", getParamValue( circleRadius, pts ) )
-		&& e->set_float( "gaussian_radius", getParamValue( gaussianRadius, pts ) )
-		&& e->set_float( "correlation", getParamValue( correlation, pts ) )
-		&& e->set_float( "noise", getParamValue( noise, pts ) );
+	return e->set_float( "circle_radius", getParamValue( circleRadius, pts ).toFloat() )
+		&& e->set_float( "gaussian_radius", getParamValue( gaussianRadius, pts ).toFloat() )
+		&& e->set_float( "correlation", getParamValue( correlation, pts ).toFloat() )
+		&& e->set_float( "noise", getParamValue( noise, pts ).toFloat() );
 }
 
 
@@ -36,7 +36,7 @@ bool GLDeconvolutionSharpen::process( const QList<Effect*> &el, Frame *src, Prof
 QList<Effect*> GLDeconvolutionSharpen::getMovitEffects()
 {
 	Effect *e = new DeconvolutionSharpenEffect();
-	e->set_int( "matrix_size", getParamValue( R ) );
+	e->set_int( "matrix_size", getParamValue( R ).toInt() );
 	QList<Effect*> list;
 	list.append( e );
 	return list;
@@ -46,5 +46,5 @@ QList<Effect*> GLDeconvolutionSharpen::getMovitEffects()
 
 QString GLDeconvolutionSharpen::getDescriptor()
 {
-	return QString("%1 %2").arg( getIdentifier() ).arg( getParamValue( R ) );
+	return QString("%1 %2").arg( getIdentifier() ).arg( getParamValue( R ).toInt() );
 }

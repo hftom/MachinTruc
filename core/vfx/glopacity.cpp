@@ -19,7 +19,7 @@ GLOpacity::~GLOpacity()
 bool GLOpacity::process( const QList<Effect*> &el, Frame *src, Profile *p )
 {
 	Q_UNUSED( p );
-	float f = getParamValue( factor, src->pts() );
+	float f = getParamValue( factor, src->pts() ).toFloat();
 	float col[4] = { f, f, f, f };
 	return el.at(0)->set_vec4( "factor", col );
 }

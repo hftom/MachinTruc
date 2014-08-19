@@ -23,7 +23,7 @@ GLSaturation::~GLSaturation()
 bool GLSaturation::process( const QList<Effect*> &el, Frame *src, Profile *p )
 {
 	Q_UNUSED( p );
-	return el.at(0)->set_float( "saturation", getParamValue( saturation, src->pts() ) );
+	return el.at(0)->set_float( "saturation", getParamValue( saturation, src->pts() ).toFloat() );
 }
 
 
