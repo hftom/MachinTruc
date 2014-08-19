@@ -22,6 +22,7 @@
 #include "vfx/glsize.h"
 #include "vfx/gldropshadow.h"
 #include "vfx/glpixelize.h"
+#include "vfx/glsoftborder.h"
 
 // video compositions
 #include "vfx/glmix.h"

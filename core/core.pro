@@ -45,6 +45,7 @@ SOURCES = \
 	vfx/glsize.cpp \
 	vfx/gldropshadow.cpp \
 	vfx/glpixelize.cpp \
+	vfx/glsoftborder.cpp \
 	\
 	videoout/videowidget.cpp
 
@@ -102,6 +103,7 @@ HEADERS = \
 	vfx/glsize.h \
 	vfx/gldropshadow.h \
 	vfx/glpixelize.h \
+	vfx/glsoftborder.h \
 	\
 	videoout/videowidget.h
 

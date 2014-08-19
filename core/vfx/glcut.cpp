@@ -4,12 +4,21 @@
 
 GLCut::GLCut( QString id, QString name ) : GLFilter( id, name )
 {
+	opacity = addParameter( tr("Opacity:"), Parameter::PDOUBLE, 1.0, 0.0, 1.0, true );
 }
 
 
 
 GLCut::~GLCut()
 {
+}
+
+
+
+bool GLCut::process( const QList<Effect*> &el, Frame *src, Profile *p )
+{
+	Q_UNUSED( p );
+	return el[0]->set_float( "opacity", getParamValue( opacity, src->pts() ) );
 }
 
 
