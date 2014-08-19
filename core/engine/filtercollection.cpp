@@ -24,6 +24,7 @@ FilterCollection::FilterCollection()
 	videoFilters.append( FilterEntry( "GLCrop", QObject::tr("Crop"), &Maker<GLCrop>::make ) );
 	videoFilters.append( FilterEntry( "GLCut", QObject::tr("Cut"), &Maker<GLCut>::make ) );
 	videoFilters.append( FilterEntry( "GLSoftBorder", QObject::tr("Soft border"), &Maker<GLSoftBorder>::make ) );
+	videoFilters.append( FilterEntry( "GLBorder", QObject::tr("Border color"), &Maker<GLBorder>::make ) );
 
 	videoFilters.append( FilterEntry( "GLOpacity", QObject::tr("Opacity"), &Maker<GLOpacity>::make ) );
 	videoFilters.append( FilterEntry( "GLDropShadow", QObject::tr("Drop shadow"), &Maker<GLDropShadow>::make ) );

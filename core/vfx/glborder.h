@@ -1,5 +1,5 @@
-#ifndef GLSOFTBORDER_H
-#define GLSOFTBORDER_H
+#ifndef GLBORDER_H
+#define GLBORDER_H
 
 #include <movit/effect_util.h>
 #include <movit/effect_chain.h>
@@ -7,24 +7,24 @@
 
 #include "glfilter.h"
 
-static const char *MySoftBorderEffect_shader=
+static const char *MyBorderEffect_shader=
 "uniform vec2 PREFIX(border);\n"
 "vec4 FUNCNAME(vec2 tc) {\n"
-"	float a = tc.x / PREFIX(border.x);\n"
-"	a = min( a, tc.y / PREFIX(border.y) );\n"
-"	a = min( a, ( 1.0 - tc.x ) / PREFIX(border.x) );\n"
-"	a = min( a, ( 1.0 - tc.y ) / PREFIX(border.y) );\n"
+"	if ( any( lessThan( tc, PREFIX(border) ) ) ||\n"
+"	    any( greaterThan( tc, 1.0 - PREFIX(border) ) ) ) {\n"
+"		return vec4(1.0);\n"
+"	}\n"
 "\n"
-"	return INPUT( tc ) * clamp( a, 0.0, 1.0 );\n"
+"	return INPUT(tc);\n"
 "}\n";
 
 
 
-class MySoftBorderEffect : public Effect {
+class MyBorderEffect : public Effect {
 public:
-	MySoftBorderEffect();
-	virtual std::string effect_type_id() const { return "MySoftBorderEffect"; }
-	std::string output_fragment_shader() { return MySoftBorderEffect_shader; }
+	MyBorderEffect();
+	virtual std::string effect_type_id() const { return "MyBorderEffect"; }
+	std::string output_fragment_shader() { return MyBorderEffect_shader; }
 	
 	virtual void inform_input_size(unsigned, unsigned width, unsigned height) {
 		iwidth = width;
@@ -43,10 +43,10 @@ private:
 
 
 
-class GLSoftBorder : public GLFilter
+class GLBorder : public GLFilter
 {
 public:
-    GLSoftBorder( QString id, QString name );
+    GLBorder( QString id, QString name );
 	
 	bool process( const QList<Effect*> &el, Frame *src, Profile *p );
 
@@ -56,4 +56,4 @@ private:
 	Parameter *borderSize;
 };
 
-#endif // GLSOFTBORDER_H
+#endif // GLBORDER_H

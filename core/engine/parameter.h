@@ -31,7 +31,7 @@ public:
 class Parameter
 {
 public:
-	enum ParameterType{ PDOUBLE, PINT };
+	enum ParameterType{ PDOUBLE, PINT, PRGB };
 	
 	QString name;
 	int type;
