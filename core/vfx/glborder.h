@@ -11,7 +11,7 @@ static const char *MyBorderEffect_shader=
 "uniform vec2 PREFIX(border);\n"
 "vec4 FUNCNAME(vec2 tc) {\n"
 "	if ( any( lessThan( tc, PREFIX(border) ) ) ||\n"
-"	    any( greaterThan( tc, 1.0 - PREFIX(border) ) ) ) {\n"
+"		any( greaterThan( tc, 1.0 - PREFIX(border) ) ) ) {\n"
 "		return PREFIX(color);\n"
 "	}\n"
 "\n"
@@ -48,7 +48,7 @@ private:
 class GLBorder : public GLFilter
 {
 public:
-    GLBorder( QString id, QString name );
+	GLBorder( QString id, QString name );
 	
 	bool process( const QList<Effect*> &el, Frame *src, Profile *p );
 

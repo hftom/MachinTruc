@@ -46,7 +46,7 @@ private:
 class GLSoftBorder : public GLFilter
 {
 public:
-    GLSoftBorder( QString id, QString name );
+	GLSoftBorder( QString id, QString name );
 	
 	bool process( const QList<Effect*> &el, Frame *src, Profile *p );
 

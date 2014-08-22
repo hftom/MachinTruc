@@ -8,10 +8,10 @@
 class GLGlow : public GLFilter
 {
 public:
-    GLGlow( QString id, QString name );
-    ~GLGlow();
+	GLGlow( QString id, QString name );
+	~GLGlow();
 
-    bool process( const QList<Effect*> &el, Frame *src, Profile *p );
+	bool process( const QList<Effect*> &el, Frame *src, Profile *p );
 
 	QList<Effect*> getMovitEffects();
 

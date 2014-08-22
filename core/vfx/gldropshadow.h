@@ -70,8 +70,8 @@ private:
 class GLDropShadow : public GLFilter
 {
 public:
-    GLDropShadow( QString id, QString name );
-    ~GLDropShadow();
+	GLDropShadow( QString id, QString name );
+	~GLDropShadow();
 	
 	bool process( const QList<Effect*> &el, Frame *src, Profile *p );
 

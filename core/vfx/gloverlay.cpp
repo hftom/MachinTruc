@@ -6,7 +6,7 @@
 GLOverlay::GLOverlay() : GLComposition()
 {
 	compositionName = "OverlayEffect";
-    invert = 0;
+	invert = 0;
 }
 
 
@@ -23,7 +23,7 @@ bool GLOverlay::process( Effect *e, Frame *src, Frame *dst, Profile *p )
 	Q_UNUSED( src );
 	Q_UNUSED( dst );
 	Q_UNUSED( p );
-    return true;
+	return true;
 }
 
 

@@ -66,10 +66,10 @@ private:
 class GLEdge : public GLFilter
 {
 public:
-    GLEdge( QString id, QString name );
-    ~GLEdge();
+	GLEdge( QString id, QString name );
+	~GLEdge();
 
-    bool process( const QList<Effect*> &el, Frame *src, Profile *p );
+	bool process( const QList<Effect*> &el, Frame *src, Profile *p );
 
 	QList<Effect*> getMovitEffects();
 	

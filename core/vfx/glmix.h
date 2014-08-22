@@ -8,8 +8,8 @@
 class GLMix : public GLComposition
 {
 public:
-    GLMix();
-    ~GLMix();
+	GLMix();
+	~GLMix();
 
 	bool process( Effect *e, Frame *src, Frame *dst, Profile *p );
 	Effect* getMovitEffect();

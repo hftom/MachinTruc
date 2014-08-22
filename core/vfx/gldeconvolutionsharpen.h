@@ -8,10 +8,10 @@
 class GLDeconvolutionSharpen : public GLFilter
 {
 public:
-    GLDeconvolutionSharpen( QString id, QString name );
-    ~GLDeconvolutionSharpen();
+	GLDeconvolutionSharpen( QString id, QString name );
+	~GLDeconvolutionSharpen();
 
-    bool process( const QList<Effect*> &el, Frame *src, Profile *p );
+	bool process( const QList<Effect*> &el, Frame *src, Profile *p );
 
 	QList<Effect*> getMovitEffects();
 	QString getDescriptor();

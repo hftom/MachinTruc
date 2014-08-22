@@ -16,8 +16,8 @@
 
 Composer::Composer( Sampler *samp )
 {
-    running = false;
-    oneShot = false;
+	running = false;
+	oneShot = false;
 	audioSampleDelta = 0;
 	sampler = samp;
 }
@@ -32,8 +32,8 @@ Composer::~Composer()
 
 void Composer::setSharedContext( QGLWidget *shared )
 {
-    hiddenContext = shared;
-    hiddenContext->makeCurrent();
+	hiddenContext = shared;
+	hiddenContext->makeCurrent();
 	
 	glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
 
@@ -45,7 +45,7 @@ void Composer::setSharedContext( QGLWidget *shared )
 	else
 		assert(false);
 	
-    bool ok = init_movit( movitPath.toLocal8Bit().data(), MOVIT_DEBUG_OFF );
+	bool ok = init_movit( movitPath.toLocal8Bit().data(), MOVIT_DEBUG_OFF );
 	
 	movitPool = new ResourcePool( 100, 300 << 20, 100 );
 
@@ -57,7 +57,7 @@ void Composer::setSharedContext( QGLWidget *shared )
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 	printf("mask_texture = %u\n", mask_texture);
 
-    hiddenContext->doneCurrent();
+	hiddenContext->doneCurrent();
 }
 
 
@@ -71,8 +71,8 @@ void Composer::discardFrame()
 
 void Composer::seeking()
 {
-    audioSampleDelta = 0;
-    runOneShot();
+	audioSampleDelta = 0;
+	runOneShot();
 }
 
 
@@ -245,26 +245,26 @@ int Composer::process( Frame **frame )
 
 bool Composer::renderVideoFrame( Frame *dst )
 {
-    if ( !sampler->getVideoTracks( dst ) ) {
-        // make black
+	if ( !sampler->getVideoTracks( dst ) ) {
+		// make black
 		Profile projectProfile = sampler->getProfile();
-        dst->setVideoFrame( Frame::GLTEXTURE, projectProfile.getVideoWidth(), projectProfile.getVideoHeight(), projectProfile.getVideoSAR(),
-                            false, false, sampler->currentPTS(), projectProfile.getVideoFrameDuration() );
-        if ( !gl.black( dst ) )
-            return false;
+		dst->setVideoFrame( Frame::GLTEXTURE, projectProfile.getVideoWidth(), projectProfile.getVideoHeight(), projectProfile.getVideoSAR(),
+							false, false, sampler->currentPTS(), projectProfile.getVideoFrameDuration() );
+		if ( !gl.black( dst ) )
+			return false;
 		dst->glWidth = dst->profile.getVideoWidth();
 		dst->glHeight = dst->profile.getVideoHeight();
 		dst->glSAR = dst->profile.getVideoSAR();
 		dst->setFence( gl.getFence() );
 		glFlush();
-        return true;
-    }
-    
-    if ( skipFrame > 0 ) {
+		return true;
+	}
+	
+	if ( skipFrame > 0 ) {
 		--skipFrame;
 		Profile projectProfile = sampler->getProfile();
 		dst->setVideoFrame( Frame::NONE, projectProfile.getVideoWidth(), projectProfile.getVideoHeight(), projectProfile.getVideoSAR(),
-                            false, false, sampler->currentPTS(), projectProfile.getVideoFrameDuration() );
+							false, false, sampler->currentPTS(), projectProfile.getVideoFrameDuration() );
 		return true;
 	}
 
@@ -277,8 +277,8 @@ bool Composer::renderVideoFrame( Frame *dst )
 
 void Composer::movitRender( Frame *dst, bool update )
 {
-    int i, j, k, l, start=0;
-    Frame *f;
+	int i, j, k, l, start=0;
+	Frame *f;
 	bool reload = !update;
 	
 	//QTime time;
@@ -286,13 +286,13 @@ void Composer::movitRender( Frame *dst, bool update )
 	
 	Profile projectProfile = sampler->getProfile();
 
-    // find the lowest frame to process
-    for ( j = 0 ; j < dst->sample->frames.count(); ++j ) {
-        if ( (f = dst->sample->frames[j]->frame) ) {
-            start = j;
+	// find the lowest frame to process
+	for ( j = 0 ; j < dst->sample->frames.count(); ++j ) {
+		if ( (f = dst->sample->frames[j]->frame) ) {
+			start = j;
 			break;
-        }
-    }
+		}
+	}
 
 	// build a "description" of the required chain
 	// processing frames from bottom to top
@@ -488,49 +488,49 @@ void Composer::movitRender( Frame *dst, bool update )
 
 bool Composer::renderAudioFrame( Frame *dst, int nSamples )
 {
-    int i = 0, k;
-    Frame *f;
+	int i = 0, k;
+	Frame *f;
 
-    if ( !sampler->getAudioTracks( dst, nSamples ) ) {
+	if ( !sampler->getAudioTracks( dst, nSamples ) ) {
 		// make silence
 		Profile profile = sampler->getProfile();
 		int bps = profile.getAudioChannels() * profile.bytesPerChannel( &profile );
 		dst->setAudioFrame( profile.getAudioChannels(), profile.getAudioSampleRate(), profile.bytesPerChannel( &profile ), nSamples, sampler->currentPTSAudio() );
 		memset( dst->data(), 0, nSamples * bps );
 		return true;
-    }
-    
-    // process first frame
-    f = getNextFrame( dst, i );
-    for ( k = 0; k < dst->sample->frames[i - 1]->audioFilters.count(); ++k )
-        dst->sample->frames[i - 1]->audioFilters[k]->process( f );
-    // copy in dst
-    AudioCopy ac;
-    ac.process( f, dst );
+	}
+	
+	// process first frame
+	f = getNextFrame( dst, i );
+	for ( k = 0; k < dst->sample->frames[i - 1]->audioFilters.count(); ++k )
+		dst->sample->frames[i - 1]->audioFilters[k]->process( f );
+	// copy in dst
+	AudioCopy ac;
+	ac.process( f, dst );
 
-    // process remaining frames
-    while ( (f = getNextFrame( dst, i )) ) {
-        for ( k = 0; k < dst->sample->frames[i - 1]->audioFilters.count(); ++k )
-            dst->sample->frames[i - 1]->audioFilters[k]->process( f );
-        // mix
-        AudioMix am;
-        am.process( f, dst );
-    }
+	// process remaining frames
+	while ( (f = getNextFrame( dst, i )) ) {
+		for ( k = 0; k < dst->sample->frames[i - 1]->audioFilters.count(); ++k )
+			dst->sample->frames[i - 1]->audioFilters[k]->process( f );
+		// mix
+		AudioMix am;
+		am.process( f, dst );
+	}
 
-    return true;
+	return true;
 }
 
 
 
 Frame* Composer::getNextFrame( Frame *dst, int &track )
 {
-    Frame *f;
+	Frame *f;
 
-    while ( track < dst->sample->frames.count() ) {
-        if ( ( f = dst->sample->frames[track++]->frame ) ) {
-            return f;
-        }
-    }
+	while ( track < dst->sample->frames.count() ) {
+		if ( ( f = dst->sample->frames[track++]->frame ) ) {
+			return f;
+		}
+	}
 
-    return NULL;
+	return NULL;
 }

@@ -50,10 +50,10 @@ private:
 class GLTest : public GLFilter
 {
 public:
-    GLTest( QString id, QString name );
-    ~GLTest();
+	GLTest( QString id, QString name );
+	~GLTest();
 
-    bool process( const QList<Effect*> &el, Frame *src, Profile *p );
+	bool process( const QList<Effect*> &el, Frame *src, Profile *p );
 
 	QList<Effect*> getMovitEffects();
 	

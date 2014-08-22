@@ -74,10 +74,10 @@ private:
 class GLSaturation : public GLFilter
 {
 public:
-    GLSaturation( QString id, QString name );
-    ~GLSaturation();
+	GLSaturation( QString id, QString name );
+	~GLSaturation();
 
-    bool process( const QList<Effect*> &el, Frame *src, Profile *p );
+	bool process( const QList<Effect*> &el, Frame *src, Profile *p );
 
 	QList<Effect*> getMovitEffects();
 

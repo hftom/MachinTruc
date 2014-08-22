@@ -8,11 +8,11 @@
 class GLResize : public GLFilter
 {
 public:
-    GLResize( QString id = "ResizeAuto", QString name = "ResizeAuto" );
-    ~GLResize();
+	GLResize( QString id = "ResizeAuto", QString name = "ResizeAuto" );
+	~GLResize();
 
 	bool preProcess( Frame *src, Profile *p ); 
-    bool process( const QList<Effect*> &el, Frame *src, Profile *p );
+	bool process( const QList<Effect*> &el, Frame *src, Profile *p );
 
 	QList<Effect*> getMovitEffects();
 	

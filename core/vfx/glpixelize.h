@@ -48,8 +48,8 @@ private:
 class GLPixelize : public GLFilter
 {
 public:
-    GLPixelize( QString id, QString name );
-    ~GLPixelize();
+	GLPixelize( QString id, QString name );
+	~GLPixelize();
 	
 	bool process( const QList<Effect*> &el, Frame *src, Profile *p );
 

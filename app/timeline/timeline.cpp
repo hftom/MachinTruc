@@ -48,7 +48,7 @@ void Timeline::viewSizeChanged( const QSize &size )
 
 void Timeline::wheelEvent( QGraphicsSceneWheelEvent *e )
 {
-    if ( e->modifiers() & Qt::ControlModifier ) {
+	if ( e->modifiers() & Qt::ControlModifier ) {
 		double oldzoom = zoom;
 		
 		if ( e->delta() > 0 ) {

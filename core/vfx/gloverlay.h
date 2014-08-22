@@ -8,10 +8,10 @@
 class GLOverlay : public GLComposition
 {
 public:
-    GLOverlay();
-    ~GLOverlay();
+	GLOverlay();
+	~GLOverlay();
 
-    bool process( Effect *e, Frame *src, Frame *dst, Profile *p );
+	bool process( Effect *e, Frame *src, Frame *dst, Profile *p );
 	Effect* getMovitEffect();
 };
 

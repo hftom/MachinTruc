@@ -8,15 +8,15 @@
 class GLLiftGammaGain : public GLFilter
 {
 public:
-    GLLiftGammaGain( QString id, QString name );
-    ~GLLiftGammaGain();
+	GLLiftGammaGain( QString id, QString name );
+	~GLLiftGammaGain();
 
-    bool process( const QList<Effect*> &el, Frame *src, Profile *p );
+	bool process( const QList<Effect*> &el, Frame *src, Profile *p );
 
 	QList<Effect*> getMovitEffects();
 
 private:
-    Parameter *liftR, *liftG, *liftB;
+	Parameter *liftR, *liftG, *liftB;
 	Parameter *gammaR, *gammaG, *gammaB;
 	Parameter *gainR, *gainB, *gainG;
 };

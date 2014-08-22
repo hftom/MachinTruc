@@ -95,10 +95,10 @@ private:
 class GLWater : public GLFilter
 {
 public:
-    GLWater( QString id, QString name );
-    ~GLWater();
+	GLWater( QString id, QString name );
+	~GLWater();
 
-    bool process( const QList<Effect*> &el, Frame *src, Profile *p );
+	bool process( const QList<Effect*> &el, Frame *src, Profile *p );
 
 	QList<Effect*> getMovitEffects();
 	

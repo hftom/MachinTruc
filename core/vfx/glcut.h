@@ -44,8 +44,8 @@ private:
 class GLCut : public GLFilter
 {
 public:
-    GLCut( QString id, QString name );
-    ~GLCut();
+	GLCut( QString id, QString name );
+	~GLCut();
 	
 	bool process( const QList<Effect*> &el, Frame *src, Profile *p );
 

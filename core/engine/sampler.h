@@ -98,17 +98,17 @@ private:
 
 class Sampler : public QObject
 {
-    Q_OBJECT
+	Q_OBJECT
 public:
-    Sampler();
-    ~Sampler();
+	Sampler();
+	~Sampler();
 	
 	void setProfile( Profile p );
 
 	int getVideoTracks( Frame *dst );
-    int getAudioTracks( Frame *dst, int nSamples );
-    void prepareInputs();
-    double getSamplerDuration();
+	int getAudioTracks( Frame *dst, int nSamples );
+	void prepareInputs();
+	double getSamplerDuration();
 	double getEndPTS();
 	double currentPTS();
 	double currentPTSAudio();
@@ -138,15 +138,15 @@ private:
 	
 	int updateLastFrame( Frame *dst );
 	InputBase* getInput( QString fn, InputBase::InputType type );
-    InputBase* getClipInput( Clip *c, double pts );
-    GLComposition* getComposition( int track, double pts );
+	InputBase* getClipInput( Clip *c, double pts );
+	GLComposition* getComposition( int track, double pts );
 	double samplerDuration();
 
 	QList<Scene*> sceneList;
 	Scene *scene;
-    QList<InputBase*> inputs;
+	QList<InputBase*> inputs;
 
-    Profile projectProfile;
+	Profile projectProfile;
 
 	PlayMode playMode;
 	Preview preview;

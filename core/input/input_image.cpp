@@ -44,12 +44,12 @@ bool InputImage::probe( QString fn, Profile *prof )
 	prof->setVideoHeight( image.height() );
 	prof->setVideoSAR( 1.0 );
 	prof->setVideoFrameRate( fps );
-    prof->setVideoFrameDuration( MICROSECOND / fps );
-    prof->setStreamStartTime( 0 );
-    prof->setStreamDuration( DEFAULTLENGTH );
-    prof->setVideoColorPrimaries( Profile::PRI_709 );
-    prof->setVideoGammaCurve( Profile::GAMMA_SRGB );
-    prof->setVideoCodecName( "image" );
+	prof->setVideoFrameDuration( MICROSECOND / fps );
+	prof->setStreamStartTime( 0 );
+	prof->setStreamDuration( DEFAULTLENGTH );
+	prof->setVideoColorPrimaries( Profile::PRI_709 );
+	prof->setVideoGammaCurve( Profile::GAMMA_SRGB );
+	prof->setVideoCodecName( "image" );
 	prof->setHasVideo( true );
 	return true;
 }

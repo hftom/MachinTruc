@@ -43,7 +43,7 @@ template <class T>
 class Maker
 {
 public:
-    static Filter* make( QString id, QString name ) { return new T( id, name ); }
+	static Filter* make( QString id, QString name ) { return new T( id, name ); }
 };
 
 

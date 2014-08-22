@@ -8,11 +8,11 @@
 class GLPadding : public GLFilter
 {
 public:
-    GLPadding( QString id = "PaddingAuto", QString name = "PaddingAuto" );
-    ~GLPadding();
+	GLPadding( QString id = "PaddingAuto", QString name = "PaddingAuto" );
+	~GLPadding();
 
 	bool preProcess( Frame *src, Profile *p ); 
-    bool process( const QList<Effect*> &el, Frame *src, Profile *p );
+	bool process( const QList<Effect*> &el, Frame *src, Profile *p );
 
 	QList<Effect*> getMovitEffects();
 	

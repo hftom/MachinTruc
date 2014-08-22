@@ -45,8 +45,8 @@ private:
 class GLDeinterlace : public GLFilter
 {
 public:
-    GLDeinterlace( QString id = "DeinterlaceAuto", QString name = "DeinterlaceAuto" );
-    ~GLDeinterlace();
+	GLDeinterlace( QString id = "DeinterlaceAuto", QString name = "DeinterlaceAuto" );
+	~GLDeinterlace();
 
 	QList<Effect*> getMovitEffects();
 };

@@ -32,7 +32,7 @@ private:
 class GLBackgroundColor : public GLFilter
 {
 public:
-    GLBackgroundColor( QString id, QString name );
+	GLBackgroundColor( QString id, QString name );
 	
 	bool process( const QList<Effect*> &el, Frame *src, Profile *p );
 

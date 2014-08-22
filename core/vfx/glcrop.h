@@ -8,11 +8,11 @@
 class GLCrop : public GLFilter
 {
 public:
-    GLCrop( QString id, QString name );
-    ~GLCrop();
+	GLCrop( QString id, QString name );
+	~GLCrop();
 
 	bool preProcess( Frame *src, Profile *p ); 
-    bool process( const QList<Effect*> &el, Frame *src, Profile *p );
+	bool process( const QList<Effect*> &el, Frame *src, Profile *p );
 
 	QList<Effect*> getMovitEffects();
 	

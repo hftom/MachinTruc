@@ -85,14 +85,14 @@ private:
 class GLResource
 {
 public:
-    FBO* getFBO( int width, int height, GLint iformat );
-    PBO* getPBO( int size );
+	FBO* getFBO( int width, int height, GLint iformat );
+	PBO* getPBO( int size );
 	FENCE* getFence();
 
-    bool black( Frame *dst );
+	bool black( Frame *dst );
 
 private:
-    QList<FBO*> fboList;
+	QList<FBO*> fboList;
 	QList<PBO*> pboList;
 	QList<FENCE*> fences;
 };

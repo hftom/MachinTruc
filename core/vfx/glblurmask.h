@@ -82,18 +82,18 @@ private:
 
 class GLBlurmask : public GLFilter
 {
-    Q_OBJECT
+	Q_OBJECT
 public:
-    GLBlurmask( QString id, QString name );
-    ~GLBlurmask();
+	GLBlurmask( QString id, QString name );
+	~GLBlurmask();
 
-    bool process( const QList<Effect*> &el, Frame *src, Profile *p );
+	bool process( const QList<Effect*> &el, Frame *src, Profile *p );
 
 	QList<Effect*> getMovitEffects();
 
 public slots:
-    //QStringList getProperties();
-    //void setProperty( QStringList prop );
+	//QStringList getProperties();
+	//void setProperty( QStringList prop );
 
 private:
 	float radius;

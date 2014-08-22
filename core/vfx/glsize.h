@@ -9,11 +9,11 @@
 class GLSize : public GLFilter
 {
 public:
-    GLSize( QString id, QString name );
-    ~GLSize();
+	GLSize( QString id, QString name );
+	~GLSize();
 
 	bool preProcess( Frame *src, Profile *p ); 
-    bool process( const QList<Effect*> &el, Frame *src, Profile *p );
+	bool process( const QList<Effect*> &el, Frame *src, Profile *p );
 
 	QList<Effect*> getMovitEffects();
 	

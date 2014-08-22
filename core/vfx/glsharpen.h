@@ -8,10 +8,10 @@
 class GLSharpen : public GLFilter
 {
 public:
-    GLSharpen( QString id, QString name );
-    ~GLSharpen();
+	GLSharpen( QString id, QString name );
+	~GLSharpen();
 
-    bool process( const QList<Effect*> &el, Frame *src, Profile *p );
+	bool process( const QList<Effect*> &el, Frame *src, Profile *p );
 
 	QList<Effect*> getMovitEffects();
 
