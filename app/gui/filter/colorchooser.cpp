@@ -29,8 +29,9 @@ ColorChooser::ColorChooser( QWidget *parent, Parameter *p, bool keyframeable ) :
 void ColorChooser::showDialog()
 {
 	QColorDialog dlg;
-	dlg.setParent( this );
+	//dlg.setParent( this );
 	dlg.setOption( QColorDialog::ShowAlphaChannel );
+	dlg.setOption( QColorDialog::NoButtons );
 	dlg.setCurrentColor( param->value.value<QColor>() );
 	connect( &dlg, SIGNAL(currentColorChanged(const QColor&)), this, SLOT(colorChanged(const QColor&)) );
 	dlg.exec();

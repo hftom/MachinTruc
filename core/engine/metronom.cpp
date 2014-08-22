@@ -35,6 +35,9 @@ Metronom::~Metronom()
 void Metronom::setSharedContext( QGLWidget *shared )
 {
 	fencesContext = shared;
+#if QT_VERSION >= 0x050000
+	fencesContext->context()->moveToThread( this );
+#endif
 }
 
 

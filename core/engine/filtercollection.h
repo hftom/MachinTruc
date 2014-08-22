@@ -24,6 +24,7 @@
 #include "vfx/glpixelize.h"
 #include "vfx/glsoftborder.h"
 #include "vfx/glborder.h"
+#include "vfx/glbackgroundcolor.h"
 
 // video compositions
 #include "vfx/glmix.h"

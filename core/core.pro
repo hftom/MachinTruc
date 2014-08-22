@@ -47,6 +47,7 @@ SOURCES = \
 	vfx/glpixelize.cpp \
 	vfx/glsoftborder.cpp \
 	vfx/glborder.cpp \
+	vfx/glbackgroundcolor.cpp \
 	\
 	videoout/videowidget.cpp
 
@@ -106,6 +107,7 @@ HEADERS = \
 	vfx/glpixelize.h \
 	vfx/glsoftborder.h \
 	vfx/glborder.h \
+	vfx/glbackgroundcolor.h \
 	\
 	videoout/videowidget.h
 

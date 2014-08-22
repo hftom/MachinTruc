@@ -1,3 +1,4 @@
+#include <QApplication>
 #include <QFile>
 #include <QTime>
 
@@ -15,9 +16,6 @@
 
 Composer::Composer( Sampler *samp )
 {
-	/*guiThread = QThread::currentThread();
-	qDebug() << "guiThread" << guiThread;*/
-	
     running = false;
     oneShot = false;
 	audioSampleDelta = 0;
@@ -83,7 +81,9 @@ void Composer::play( bool b )
 {
 	if ( b ) {
 		sampler->getMetronom()->play( b );
-		//hiddenContext->context()->moveToThread( this );
+#if QT_VERSION >= 0x050000
+		hiddenContext->context()->moveToThread( this );
+#endif
 		running = true;
 		start();
 	}
@@ -163,7 +163,9 @@ void Composer::run()
 	}
 
 	hiddenContext->doneCurrent();
-	//hiddenContext->context()->moveToThread( guiThread );
+#if QT_VERSION >= 0x050000
+	hiddenContext->context()->moveToThread( qApp->thread() );
+#endif	
 }
 
 

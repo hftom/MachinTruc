@@ -5,7 +5,7 @@
 GLBorder::GLBorder( QString id, QString name ) : GLFilter( id, name )
 {
 	borderSize = addParameter( tr("Border size:"), Parameter::PDOUBLE, 1.0, 0.0, 100.0, false, "%" );
-	color = addParameter( tr("Border color:"), Parameter::PCOLOR, QColor::fromRgbF( 1, 1, 1 ), QColor::fromRgbF( 0, 0, 0, 0 ), QColor::fromRgbF( 1, 1, 1 ), false );
+	color = addParameter( tr("Color:"), Parameter::PCOLOR, QColor::fromRgbF( 1, 1, 1 ), QColor::fromRgbF( 0, 0, 0, 0 ), QColor::fromRgbF( 1, 1, 1 ), false );
 }
 
 
@@ -13,7 +13,6 @@ GLBorder::GLBorder( QString id, QString name ) : GLFilter( id, name )
 bool GLBorder::process( const QList<Effect*> &el, Frame *src, Profile *p )
 {
 	Q_UNUSED( p );
-	Q_UNUSED( src );
 	QColor c = getParamValue( color ).value<QColor>();
 	float a = c.alphaF();
 	// pass premultiplied to Movit

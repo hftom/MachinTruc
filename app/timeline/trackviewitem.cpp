@@ -6,9 +6,14 @@
 TrackViewItem::TrackViewItem() : TypeRectItem( UNDEF )
 {
 	setRect( 0, 0, 1, TRACKVIEWITEMHEIGHT );
+	
+	QLinearGradient grad( QPointF(0, 0), QPointF(0, 1) );
+	grad.setCoordinateMode( QGradient::ObjectBoundingMode );
+	grad.setColorAt( 0, "#8E8E8E" );
+	grad.setColorAt( 1, "#ECECEC" );
 
-	setPen( QColor(255, 255, 200) );
-	setBrush( QColor(255, 255, 200) );
+	setPen( QColor( "#ECECEC" ) );
+	setBrush( QBrush( grad ) );
 }
 
 

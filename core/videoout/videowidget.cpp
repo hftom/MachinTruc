@@ -69,19 +69,19 @@ void VideoWidget::initializeGL()
 	glGetIntegerv(GL_GPU_MEM_INFO_CURRENT_AVAILABLE_MEM_NVX, &cur_avail_mem_kb);
 	printf("Total GPU mem = %d MB, Available = %d MB\n", total_mem_kb/1024, cur_avail_mem_kb/1024);
 
-	hidden = new QGLWidget( this, this );
+	hidden = new QGLWidget( NULL, this );
 	if ( hidden ) {
 		hidden->hide();
 		emit newSharedContext( hidden );
 	}
 	
-	thumb = new QGLWidget( this );
+	thumb = new QGLWidget();
 	if ( thumb ) {
 		thumb->hide();
 		emit newThumbContext( thumb );
 	}
 	
-	fences = new QGLWidget( this );
+	fences = new QGLWidget( NULL, this );
 	if ( fences ) {
 		fences->hide();
 		emit newFencesContext( fences );

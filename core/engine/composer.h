@@ -54,8 +54,6 @@ private:
 
     Sampler *sampler;
 	double audioSampleDelta;
-	
-	//QThread *guiThread;
 
 signals:
 	void newFrame( Frame* );

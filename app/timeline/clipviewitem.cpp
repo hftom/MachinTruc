@@ -29,10 +29,23 @@ ClipViewItem::ClipViewItem( Clip *c, double scale ) : AbstractViewItem( VIDEOCUT
 	selectionPen.setJoinStyle( Qt::MiterJoin );
 	selectionPen.setColor( QColor(255, 0, 0) );
 
-	normalBrush.setStyle( Qt::SolidPattern );
-	normalBrush.setColor( QColor(192, 192, 255) );
-	selectionBrush.setStyle( Qt::SolidPattern );
-	selectionBrush.setColor( QColor(255, 192, 220) );
+	QLinearGradient grad( QPointF(0, 0), QPointF(0, 1) );
+	grad.setCoordinateMode( QGradient::ObjectBoundingMode );
+	grad.setColorAt( 0, "lightskyblue" );
+	grad.setColorAt( 1, "darkblue" );
+	normalBrush = QBrush( grad );
+	
+	grad.setColorAt( 0, "lightpink" );
+	grad.setColorAt( 1, "maroon" );
+	selectionBrush = QBrush( grad );
+	
+	grad.setColorAt( 1, "#2A2AA5" );
+	grad.setColorAt( 0, "#000060" );
+	titleNormalBrush = QBrush( grad );
+	
+	grad.setColorAt( 1, "brown" );
+	grad.setColorAt( 0, "#600000" );
+	titleSelectionBrush = QBrush( grad );
 	
 	setPen( normalPen );
 	setBrush( normalBrush );
@@ -55,14 +68,11 @@ void ClipViewItem::paint( QPainter *painter, const QStyleOptionGraphicsItem *opt
 		r.setWidth( inside.width() );
 	}
 	
-	if ( selected ) {
-		painter->setPen( selectionPen );
-		painter->setBrush( QColor(255, 0, 0) );
-	}
-	else {
-		painter->setPen( normalPen );
-		painter->setBrush( QColor(0, 0, 255) );
-	}
+	painter->setPen( QColor(0,0,0,0) );
+	if ( selected )
+		painter->setBrush( titleSelectionBrush );
+	else
+		painter->setBrush( titleNormalBrush );
 	
 	if ( r.width() > 0 ) {
 		painter->drawRect( r );

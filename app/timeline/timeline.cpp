@@ -184,7 +184,7 @@ void Timeline::snapResize( ClipViewItem *item, int way, double &poslen, double m
 	double delta = fabs( itemScenePos - ( mouseX - ( way == 2 ? src.right() : src.left() ) ) );
 	if ( delta > SNAPWIDTH )
 		return;
-	QList<QGraphicsItem*> snapItems = items( src.left() - SNAPWIDTH, 0, src.right() + SNAPWIDTH, cursor->rect().height(), Qt::IntersectsItemBoundingRect );
+	QList<QGraphicsItem*> snapItems = items( src.left() - SNAPWIDTH, 0, src.right() + SNAPWIDTH, cursor->rect().height(), Qt::IntersectsItemBoundingRect, Qt::AscendingOrder );
 	int i;
 	for ( i = 0; i < snapItems.count(); ++i ) {
 		TypeRectItem* it = (TypeRectItem*)snapItems.at( i );
@@ -225,7 +225,7 @@ void Timeline::snapMove( ClipViewItem *item, double &pos, double mouseX, double 
 	double delta = fabs( itemScenePos - ( mouseX - src.left() ) );
 	if ( delta > SNAPWIDTH )
 		return;
-	QList<QGraphicsItem*> snapItems = items( src.left() - SNAPWIDTH, 0, src.right() + SNAPWIDTH, cursor->rect().height(), Qt::IntersectsItemBoundingRect );
+	QList<QGraphicsItem*> snapItems = items( src.left() - SNAPWIDTH, 0, src.right() + SNAPWIDTH, cursor->rect().height(), Qt::IntersectsItemBoundingRect, Qt::AscendingOrder );
 	int i;
 	for ( i = 0; i < snapItems.count(); ++i ) {
 		TypeRectItem* it = (TypeRectItem*)snapItems.at( i );

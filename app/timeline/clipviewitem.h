@@ -34,6 +34,7 @@ private:
 	QString filename;
 	QPen normalPen, selectionPen;
 	QBrush normalBrush, selectionBrush;
+	QBrush titleNormalBrush, titleSelectionBrush;
 	Clip *clip;
 	
 	double moveStartPosition;
