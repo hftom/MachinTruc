@@ -11,12 +11,14 @@ public:
 	GLCrop( QString id, QString name );
 	~GLCrop();
 
-	bool preProcess( Frame *src, Profile *p ); 
+	QString getDescriptor( Frame *src, Profile *p ); 
 	bool process( const QList<Effect*> &el, Frame *src, Profile *p );
 
 	QList<Effect*> getMovitEffects();
 	
 private:
+	void preProcess( Frame *src, Profile *p );
+
 	Parameter *left, *right, *top, *bottom;
 	double ptop, pleft;
 };

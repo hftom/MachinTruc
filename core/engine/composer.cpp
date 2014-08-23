@@ -310,19 +310,17 @@ void Composer::movitRender( Frame *dst, bool update )
 		
 		// deinterlace
 		if ( f->profile.getVideoInterlaced() ) {
-			currentDescriptor.append( GLDeinterlace().getDescriptor() );
+			currentDescriptor.append( GLDeinterlace().getDescriptor( f, &projectProfile ) );
 		}
 		
 		for ( k = 0; k < dst->sample->frames[i - 1]->videoFilters.count(); ++k ) {
-			currentDescriptor.append( dst->sample->frames[i - 1]->videoFilters[k]->getDescriptor() );
-			dst->sample->frames[i - 1]->videoFilters[k]->preProcess( f, &projectProfile );
+			currentDescriptor.append( dst->sample->frames[i - 1]->videoFilters[k]->getDescriptor( f, &projectProfile ) );
 		}
 		
 		// resize to match destination aspect ratio
 		if ( f->resizeAuto && fabs( projectProfile.getVideoSAR() - f->profile.getVideoSAR() ) > 1e-3 ) {
 			GLResize resize;
-			currentDescriptor.append( resize.getDescriptor() );
-			resize.preProcess( f, &projectProfile );
+			currentDescriptor.append( resize.getDescriptor( f, &projectProfile ) );
 			resizeAuto = true;
 		}
 
@@ -330,8 +328,7 @@ void Composer::movitRender( Frame *dst, bool update )
 		if ( f->paddingAuto && !sampler->previewMode() ) {
 			if ( f->glWidth != projectProfile.getVideoWidth() || f->glHeight != projectProfile.getVideoHeight() ) {
 				GLPadding padding;
-				currentDescriptor.append( padding.getDescriptor() );
-				padding.preProcess( f, &projectProfile );
+				currentDescriptor.append( padding.getDescriptor( f, &projectProfile ) );
 				paddingAuto = true;
 			}
 		}
@@ -382,16 +379,6 @@ void Composer::movitRender( Frame *dst, bool update )
 			
 			// apply filters
 			for ( k = 0; k < dst->sample->frames[i - 1]->videoFilters.count(); ++k ) {
-				QString s = dst->sample->frames[i - 1]->videoFilters[k]->getDescriptor();
-				// auto resize before padding
-				if ( f->resizeAuto && s == "GLPadding" ) {
-					GLResize *resize = new GLResize();
-					QList<Effect*> el = resize->getMovitEffects();
-					branch->filters.append( new MovitFilter( el, resize, true ) );
-					for ( l = 0; l < el.count(); ++l )
-						current = movitChain.chain->add_effect( el.at( l ) );
-					f->resizeAuto = false;
-				}
 				QList<Effect*> el = dst->sample->frames[i - 1]->videoFilters[k]->getMovitEffects();
 				branch->filters.append( new MovitFilter( el, dst->sample->frames[i - 1]->videoFilters[k] ) );
 				for ( l = 0; l < el.count(); ++l )

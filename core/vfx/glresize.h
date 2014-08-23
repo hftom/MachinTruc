@@ -11,12 +11,14 @@ public:
 	GLResize( QString id = "ResizeAuto", QString name = "ResizeAuto" );
 	~GLResize();
 
-	bool preProcess( Frame *src, Profile *p ); 
+	QString getDescriptor( Frame *src, Profile *p );
 	bool process( const QList<Effect*> &el, Frame *src, Profile *p );
 
 	QList<Effect*> getMovitEffects();
 	
 private:
+	void preProcess( Frame *src, Profile *p );
+
 	Parameter *percent;
 };
 

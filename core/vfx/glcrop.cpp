@@ -19,7 +19,7 @@ GLCrop::~GLCrop()
 
 
 
-bool GLCrop::preProcess( Frame *src, Profile *p )
+void GLCrop::preProcess( Frame *src, Profile *p )
 {
 	double pts = src->pts();
 	pleft = getParamValue( left, pts ).toDouble() * src->glWidth / 100.0;
@@ -28,7 +28,14 @@ bool GLCrop::preProcess( Frame *src, Profile *p )
 	double b = getParamValue( bottom, pts ).toDouble() * src->glHeight / 100.0;
 	src->glWidth = qMax( src->glWidth - pleft - r, 1.0 );
 	src->glHeight = qMax( src->glHeight - ptop - b, 1.0 );
-	return true;
+}
+
+
+
+QString GLCrop::getDescriptor( Frame *src, Profile *p )
+{
+	preProcess( src, p );
+	return getIdentifier();
 }
 
 

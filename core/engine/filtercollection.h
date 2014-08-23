@@ -12,7 +12,6 @@
 #include "vfx/glglow.h"
 #include "vfx/glliftgammagain.h"
 #include "vfx/glopacity.h"
-#include "vfx/glpadding.h"
 #include "vfx/glcrop.h"
 #include "vfx/glresize.h"
 #include "vfx/glsaturation.h"

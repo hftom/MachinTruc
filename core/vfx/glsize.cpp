@@ -6,8 +6,8 @@
 
 GLSize::GLSize( QString id, QString name ) : GLFilter( id, name )
 {
-	resize = new GLResize();
-	padding = new GLPadding();
+	resize = new GLResize( "GLResize" );
+	padding = new GLPadding( "GLPadding" );
 }
 
 
@@ -20,9 +20,9 @@ GLSize::~GLSize()
 
 
 
-bool GLSize::preProcess( Frame *src, Profile *p )
+QString GLSize::getDescriptor( Frame *src, Profile *p )
 {
-	return resize->preProcess( src, p ) && padding->preProcess( src, p );
+	return resize->getDescriptor( src, p ) + padding->getDescriptor( src, p );
 }
 
 

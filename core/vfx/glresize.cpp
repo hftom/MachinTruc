@@ -17,7 +17,7 @@ GLResize::~GLResize()
 
 
 
-bool GLResize::preProcess( Frame *src, Profile *p )
+void GLResize::preProcess( Frame *src, Profile *p )
 {
 	double pc = getParamValue( percent, src->pts() ).toDouble();
 	src->glWidth = (double)src->glWidth * src->glSAR  / p->getVideoSAR() * pc / 100.0;
@@ -28,8 +28,14 @@ bool GLResize::preProcess( Frame *src, Profile *p )
 		src->glHeight = 1;
 	src->glSAR = p->getVideoSAR();
 	src->resizeAuto = false;
-	
-	return true;
+}
+
+
+
+QString GLResize::getDescriptor( Frame *src, Profile *p )
+{
+	preProcess( src, p );
+	return getIdentifier();
 }
 
 

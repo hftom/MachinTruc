@@ -17,7 +17,7 @@ GLPadding::~GLPadding()
 
 
 
-bool GLPadding::preProcess( Frame *src, Profile *p )
+void GLPadding::preProcess( Frame *src, Profile *p )
 {
 	left = (p->getVideoWidth() - src->glWidth) / 2.0;
 	top = (p->getVideoHeight() - src->glHeight) / 2.0;
@@ -27,8 +27,14 @@ bool GLPadding::preProcess( Frame *src, Profile *p )
 	double pts = src->pts();
 	left += getParamValue( xoffsetpercent, pts ).toDouble() * src->glWidth / 100.0;
 	top += getParamValue( yoffsetpercent, pts ).toDouble() * src->glHeight / 100.0;
-	
-	return true;
+}
+
+
+
+QString GLPadding::getDescriptor( Frame *src, Profile *p )
+{
+	preProcess( src, p );
+	return getIdentifier();
 }
 
 
