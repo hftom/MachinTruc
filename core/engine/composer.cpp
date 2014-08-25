@@ -45,7 +45,7 @@ void Composer::setSharedContext( QGLWidget *shared )
 	else
 		assert(false);
 	
-	bool ok = init_movit( movitPath.toLocal8Bit().data(), MOVIT_DEBUG_OFF );
+	bool ok = init_movit( movitPath.toLocal8Bit().data(), MOVIT_DEBUG_ON );
 	
 	movitPool = new ResourcePool( 100, 300 << 20, 100 );
 
@@ -421,8 +421,8 @@ void Composer::movitRender( Frame *dst, bool update )
 
 		movitChain.chain->set_dither_bits( 8 );
 		ImageFormat output_format;
-		output_format.color_space = COLORSPACE_REC_709;//COLORSPACE_sRGB;
-		output_format.gamma_curve = GAMMA_REC_709;//GAMMA_sRGB;
+		output_format.color_space = COLORSPACE_sRGB;
+		output_format.gamma_curve = GAMMA_REC_709;
 		movitChain.chain->add_output( output_format, OUTPUT_ALPHA_FORMAT_POSTMULTIPLIED );
 		movitChain.chain->finalize();
 		

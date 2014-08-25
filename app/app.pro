@@ -20,6 +20,7 @@ SOURCES = \
 	timeline/typerectitem.cpp \
 	timeline/abstractviewitem.cpp \
 	timeline/clipviewitem.cpp \
+	timeline/clipeffectviewitem.cpp \
 	timeline/cursorviewitem.cpp \
 	timeline/trackviewitem.cpp \
 	\
@@ -50,6 +51,7 @@ HEADERS = \
 	timeline/typerectitem.h \
 	timeline/abstractviewitem.h \
 	timeline/clipviewitem.h \
+	timeline/clipeffectviewitem.h \
 	timeline/cursorviewitem.h \
 	timeline/trackviewitem.h \
 	\

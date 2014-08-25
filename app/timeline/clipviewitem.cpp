@@ -7,6 +7,8 @@
 #include "timeline.h"
 #include "clipviewitem.h"
 
+#include "clipeffectviewitem.h"
+
 
 
 ClipViewItem::ClipViewItem( Clip *c, double scale ) : AbstractViewItem( VIDEOCUT )
@@ -24,10 +26,10 @@ ClipViewItem::ClipViewItem( Clip *c, double scale ) : AbstractViewItem( VIDEOCUT
 	setScale( scale );
 
 	normalPen.setJoinStyle( Qt::MiterJoin );
-	normalPen.setColor( QColor(0, 0, 255) );
+	normalPen.setColor( "blue" );
 	
 	selectionPen.setJoinStyle( Qt::MiterJoin );
-	selectionPen.setColor( QColor(255, 0, 0) );
+	selectionPen.setColor( "red" );
 
 	QLinearGradient grad( QPointF(0, 0), QPointF(0, 1) );
 	grad.setCoordinateMode( QGradient::ObjectBoundingMode );
