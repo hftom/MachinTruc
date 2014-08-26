@@ -1,3 +1,5 @@
+#include "engine/util.h"
+
 #include "glborder.h"
 
 
@@ -14,9 +16,9 @@ bool GLBorder::process( const QList<Effect*> &el, Frame *src, Profile *p )
 {
 	Q_UNUSED( p );
 	QColor c = getParamValue( color ).value<QColor>();
-	float a = c.alphaF();
-	// pass premultiplied to Movit
-	RGBATuple col = RGBATuple( c.redF() * a, c.greenF() * a, c.blueF() * a, a );
+	// convert gamma and premultiply
+	sRgbColorToPremultipliedLinear( c );
+	RGBATuple col = RGBATuple( c.redF(), c.greenF(), c.blueF(), c.alphaF() );
 	return el[0]->set_float( "borderSize", getParamValue( borderSize ).toDouble() * src->glHeight / 2.0 / 100.0 )
 		&& el[0]->set_vec4( "color", (float*)&col );
 }

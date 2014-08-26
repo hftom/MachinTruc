@@ -1,10 +1,12 @@
+#include "engine/util.h"
+
 #include "glbackgroundcolor.h"
 
 
 
 GLBackgroundColor::GLBackgroundColor( QString id, QString name ) : GLFilter( id, name )
 {
-	color = addParameter( tr("Color:"), Parameter::PCOLOR, QColor::fromRgbF( 1, 1, 1 ), QColor::fromRgbF( 0, 0, 0, 0 ), QColor::fromRgbF( 1, 1, 1 ), false );
+	color = addParameter( tr("Color:"), Parameter::PCOLOR, QColor::fromRgbF( 0, 0, 0 ), QColor::fromRgbF( 0, 0, 0, 0 ), QColor::fromRgbF( 1, 1, 1 ), false );
 }
 
 
@@ -13,9 +15,9 @@ bool GLBackgroundColor::process( const QList<Effect*> &el, Frame *src, Profile *
 {
 	Q_UNUSED( p );
 	QColor c = getParamValue( color ).value<QColor>();
-	float a = c.alphaF();
-	// pass premultiplied to Movit
-	RGBATuple col = RGBATuple( c.redF() * a, c.greenF() * a, c.blueF() * a, a );
+	// convert gamma and premultiply
+	sRgbColorToPremultipliedLinear( c );
+	RGBATuple col = RGBATuple( c.redF(), c.greenF(), c.blueF(), c.alphaF() );
 	return el[0]->set_vec4( "color", (float*)&col );
 }
 
@@ -31,7 +33,7 @@ QList<Effect*> GLBackgroundColor::getMovitEffects()
 
 
 MyBackgroundColorEffect::MyBackgroundColorEffect()
-	: color( 1.0f, 1.0f, 1.0f, 1.0f )
+	: color( 0.0f, 0.0f, 0.0f, 1.0f )
 {
 	register_vec4( "color", (float *)&color );
 }

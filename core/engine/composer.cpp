@@ -422,7 +422,7 @@ void Composer::movitRender( Frame *dst, bool update )
 		movitChain.chain->set_dither_bits( 8 );
 		ImageFormat output_format;
 		output_format.color_space = COLORSPACE_sRGB;
-		output_format.gamma_curve = GAMMA_REC_709;
+		output_format.gamma_curve = GAMMA_sRGB;//REC_709;
 		movitChain.chain->add_output( output_format, OUTPUT_ALPHA_FORMAT_POSTMULTIPLIED );
 		movitChain.chain->finalize();
 		
