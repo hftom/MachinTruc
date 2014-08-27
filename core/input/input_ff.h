@@ -136,7 +136,7 @@ public:
 		if ( f ) {
 			//printf("repeat frame = %d\n", r);
 			repeatBuffer = f->getBuffer();
-			repeatBuffer->use();
+			BufferPool::globalInstance()->useBuffer( repeatBuffer );
 			profile = f->profile;
 			repeatType = f->type();
 			repeatPTS = f->pts();

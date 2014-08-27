@@ -63,6 +63,14 @@ void BufferPool::releaseBuffer( Buffer *buf )
 
 
 
+void BufferPool::useBuffer( Buffer *buf )
+{
+	QMutexLocker ml( &mutex );
+	buf->use();
+}
+
+
+
 BufferPool* BufferPool::globalInstance()
 {
 	return &globalBufferPool;

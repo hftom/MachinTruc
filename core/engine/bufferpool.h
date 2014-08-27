@@ -8,9 +8,17 @@
 
 
 
+class BufferPool;
+
 class Buffer
 {
 public:
+	uint8_t* data() {
+		return buf;
+	}
+	
+private:
+	friend class BufferPool;
 	Buffer( int size ) {
 		bufSize = size;
 		buf = (uint8_t*)malloc( bufSize );
@@ -18,9 +26,6 @@ public:
 	}
 	~Buffer() {
 		free ( buf );
-	}
-	uint8_t* data() {
-		return buf;
 	}
 	int getBufferSize() {
 		return bufSize;
@@ -36,7 +41,6 @@ public:
 		return --refCount == 0;
 	}
 
-private:
 	int bufSize;
 	uint8_t *buf;
 	int refCount;
@@ -52,6 +56,7 @@ public:
 	
 	Buffer* getBuffer( int size );
 	void releaseBuffer( Buffer *buf );
+	void useBuffer( Buffer *buf );
 	
 	static BufferPool* globalInstance();
 	

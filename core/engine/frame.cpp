@@ -82,7 +82,7 @@ void Frame::setSharedBuffer( Buffer *b )
 	if ( buffer )
 		BufferPool::globalInstance()->releaseBuffer( buffer );
 	buffer = b;
-	buffer->use();
+	BufferPool::globalInstance()->useBuffer( buffer );
 }
 
 
