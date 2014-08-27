@@ -10,8 +10,9 @@
 #include <QDebug>
 #include <QStringList>
 
-#include "engine/profile.h"
-#include "engine/glresource.h"
+#include "bufferpool.h"
+#include "profile.h"
+#include "glresource.h"
 
 #define NUMINPUTFRAMES 5
 #define NUMOUTPUTFRAMES 4
@@ -86,8 +87,14 @@ public:
 	void setPts( double p ) { pPTS = p; }
 	double pts() { return pPTS; }
 
+	// memory management indicator
+	// Gives some indication to the video composer about this frame data.
+	// Simply set to 0 when seeking, then increment for each further frame unless duplicate.
+	quint32 mmi;
 	// video or audio data
-	uint8_t *data() { return buffer; }
+	Buffer* getBuffer() { return buffer; }
+	void setSharedBuffer( Buffer *b );
+	uint8_t *data() { return buffer->data(); }
 
 	// The list of input Frame used to compose this output one.
 	ProjectSample *sample;
@@ -101,8 +108,6 @@ public:
 	bool paddingAuto, resizeAuto;
 
 private:
-	void resizeBuffer( int s );
-
 	int pType;
 	FBO *fb;
 	PBO *pb;
@@ -110,8 +115,7 @@ private:
 	int pAudioSamples;
 	double pPTS;
 
-	uint8_t *buffer;
-	int bufferSize;
+	Buffer *buffer;
 
 	MQueue<Frame*> *originQueue;
 };

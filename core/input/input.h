@@ -17,6 +17,7 @@ public:
 		haveAudio = haveVideo = false;
 		usedByClip = false;
 		inputType = UNDEF;
+		mmi = 0;
 	}
 	virtual ~InputBase() {}
 	virtual bool probe( QString fn, Profile *prof ) = 0;
@@ -44,6 +45,7 @@ protected:
 	bool usedByClip;
 	QString sourceName;
 	InputType inputType;
+	quint32 mmi;
 
 	Profile inProfile, outProfile;
 };

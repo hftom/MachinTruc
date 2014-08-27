@@ -1,4 +1,5 @@
 SOURCES = \
+	engine/bufferpool.cpp \
 	engine/util.cpp \
 	engine/parameter.cpp \
 	engine/filter.cpp \
@@ -52,6 +53,7 @@ SOURCES = \
 	videoout/videowidget.cpp
 
 HEADERS = \
+	engine/bufferpool.h \
 	engine/filter.h \
 	engine/filtercollection.h \
 	engine/profile.h \

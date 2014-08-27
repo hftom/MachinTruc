@@ -13,8 +13,8 @@ Frame::Frame( MQueue<Frame*> *origin, bool makeSample )
 	fb = NULL;
 	pb = NULL;
 	glfence = NULL;
+	mmi = 0;
 	buffer = NULL;
-	bufferSize = 0;
 	pType = Frame::NONE;
 	pPTS = 0;
 	originQueue = origin;
@@ -29,7 +29,7 @@ Frame::Frame( MQueue<Frame*> *origin, bool makeSample )
 Frame::~Frame()
 {
 	if ( buffer )
-		free( buffer );
+		BufferPool::globalInstance()->releaseBuffer( buffer );
 	if ( fb )
 		fb->setFree( true );
 	if ( pb )
@@ -64,23 +64,25 @@ void Frame::release()
 	if ( sample )
 		sample->clear();
 
+	if ( buffer ) {
+		BufferPool::globalInstance()->releaseBuffer( buffer );
+		buffer = NULL;
+	}
+
+	mmi = 0;
+
 	if ( originQueue )
 		originQueue->enqueue( this );
 }
 
 
 
-void Frame::resizeBuffer( int s )
+void Frame::setSharedBuffer( Buffer *b )
 {
-	if ( bufferSize < s ) {
-		if ( !buffer ) {
-			buffer = (uint8_t*)malloc( s );
-		}
-		else {
-			buffer = (uint8_t*)realloc( buffer, s );
-		}
-		bufferSize = s;
-	}
+	if ( buffer )
+		BufferPool::globalInstance()->releaseBuffer( buffer );
+	buffer = b;
+	buffer->use();
 }
 
 
@@ -104,7 +106,9 @@ void Frame::setVideoFrame( DataType t, int w, int h, double sar, bool il, bool t
 		case RGB : s = s * 3; break;
 		default : s = 0;
 	}
-	resizeBuffer( s );
+
+	if ( s > 0 && !buffer )
+		buffer = BufferPool::globalInstance()->getBuffer( s );
 }
 
 
@@ -153,7 +157,11 @@ void Frame::setAudioFrame( int c, int r, int bpc, int samples, double p )
 	pPTS = p;
 
 	int s = c * bpc * samples;
-	resizeBuffer( s );
+	if ( s > 0 ) {
+		if ( buffer )
+			BufferPool::globalInstance()->releaseBuffer( buffer );
+		buffer = BufferPool::globalInstance()->getBuffer( s );
+	}
 }
 
 

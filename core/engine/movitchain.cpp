@@ -9,6 +9,7 @@
 
 MovitInput::MovitInput()
 {
+	mmi = -1;
 }
 
 
@@ -36,6 +37,11 @@ bool MovitInput::setBuffer( PBO *p, Frame *src, int size )
 
 bool MovitInput::process( Frame *src, GLResource *gl )
 {
+	if ( mmi != -1 && src->mmi != 0 && src->mmi == mmi )
+		return true;
+	
+	mmi = src->mmi;
+	
 	int w = src->profile.getVideoWidth();
 	int h = src->profile.getVideoHeight();
 	uint8_t *data = src->data();

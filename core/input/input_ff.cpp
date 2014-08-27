@@ -552,6 +552,8 @@ bool InputFF::seekDecodeNext( Frame *f )
 
 double InputFF::seekTo( double p )
 {
+	mmi = 0;
+
 	if ( !formatCtx || ( p < startTime ) )
 		return p;
 
@@ -719,35 +721,39 @@ void InputFF::run()
 		if ( haveVideo && !( endOfFile & EofVideo ) ) {
 			if ( (f = freeVideoFrames.dequeue()) ) {
 				// resample if necessary
-				if ( videoResampler.repeat && videoResampler.repeatFrame ) {
+				if ( videoResampler.repeat && videoResampler.repeatBuffer ) {
 					// duplicate previous frame
 					videoResampler.duplicate( f );
+					f->mmi = mmi;
 					videoFrames.enqueue( f );
 				}
-				else if ( decodeVideo( f ) ) {
-					double delta = f->pts() - videoResampler.outputPts;
-					if ( outProfile.getVideoFrameRate() == inProfile.getVideoFrameRate() ) { // no resampling
-						videoFrames.enqueue( f );
+				else {
+					f->mmi = mmi++;
+					if ( decodeVideo( f ) ) {
+						double delta = f->pts() - videoResampler.outputPts;
+						if ( outProfile.getVideoFrameRate() == inProfile.getVideoFrameRate() ) { // no resampling
+							videoFrames.enqueue( f );
+						}
+						else if ( delta >= videoResampler.outputDuration ) {
+							// this frame will be duplicated (delta / videoResampler.outputDuration) times
+							printf("duplicate, delta=%f, f->pts=%f, outputPts=%f\n", delta, f->pts(), videoResampler.outputPts);
+							videoResampler.setRepeat( f, delta / videoResampler.outputDuration );
+							videoFrames.enqueue( f );
+							videoResampler.outputPts += videoResampler.outputDuration;
+						}
+						else if ( delta <= -videoResampler.outputDuration ) {
+							// skip
+							printf("skip frame delta=%f, f->pts=%f, outputPts=%f\n", delta, f->pts(), videoResampler.outputPts);
+							f->release();
+						}
+						else {
+							videoFrames.enqueue( f );
+							videoResampler.outputPts += videoResampler.outputDuration;
+						}
 					}
-					else if ( delta >= videoResampler.outputDuration ) {
-						// this frame will be duplicated (delta / videoResampler.outputDuration) times
-						printf("duplicate, delta=%f, f->pts=%f, outputPts=%f\n", delta, f->pts(), videoResampler.outputPts);
-						videoResampler.setRepeat( f, delta / videoResampler.outputDuration );
-						videoFrames.enqueue( f );
-						videoResampler.outputPts += videoResampler.outputDuration;
-					}
-					else if ( delta <= -videoResampler.outputDuration ) {
-						// skip
-						printf("skip frame delta=%f, f->pts=%f, outputPts=%f\n", delta, f->pts(), videoResampler.outputPts);
+					else
 						f->release();
-					}
-					else {
-						videoFrames.enqueue( f );
-						videoResampler.outputPts += videoResampler.outputDuration;
-					}
 				}
-				else
-					f->release();
 				doWait = 0;
 			}
 		}

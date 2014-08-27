@@ -40,6 +40,7 @@ private:
 	MQueue<Frame*> freeVideoFrames;
 
 	QImage image;
+	Buffer *buffer;
 	QMutex mutex;
 };
 

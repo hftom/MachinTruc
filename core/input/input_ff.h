@@ -115,6 +115,7 @@ class VideoResampler
 {
 public:
 	VideoResampler() {
+		repeatBuffer = NULL;
 		reset( 40000 );
 	}
 	~VideoResampler() {}
@@ -122,13 +123,20 @@ public:
 		outputPts = 0;
 		outputDuration = dur;
 		repeat = 0;
-		repeatFrame = NULL;
+		if ( repeatBuffer )
+			BufferPool::globalInstance()->releaseBuffer( repeatBuffer );
+		repeatBuffer = NULL;
 	}
 	void setRepeat( Frame *f, int r ) {
 		repeat = r;
-		repeatFrame = f;
+		if ( repeatBuffer ) {
+			BufferPool::globalInstance()->releaseBuffer( repeatBuffer );
+			repeatBuffer = NULL;
+		}
 		if ( f ) {
 			//printf("repeat frame = %d\n", r);
+			repeatBuffer = f->getBuffer();
+			repeatBuffer->use();
 			profile = f->profile;
 			repeatType = f->type();
 			repeatPTS = f->pts();
@@ -136,11 +144,11 @@ public:
 	}
 
 	void duplicate( Frame *f ) {
+		if ( repeatBuffer )
+			f->setSharedBuffer( repeatBuffer );
 		f->setVideoFrame( (Frame::DataType)repeatType, profile.getVideoWidth(), profile.getVideoHeight(), profile.getVideoSAR(),
 						  profile.getVideoInterlaced(), profile.getVideoTopFieldFirst(), repeatPTS + outputDuration, profile.getVideoFrameDuration() );
 		f->profile = profile;
-		int num = (repeatType == Frame::YUV420P) ? 3 : 4;
-		memcpy( f->data(), repeatFrame->data(), profile.getVideoWidth() * profile.getVideoHeight() * num / 2 );
 		if ( (repeat - 1) > 0 )
 			setRepeat( f, repeat - 1 );
 		else
@@ -152,7 +160,7 @@ public:
 	double outputDuration;
 
 	int repeat;
-	Frame *repeatFrame;
+	Buffer *repeatBuffer;
 	int repeatType;
 	double repeatPTS;
 	Profile profile;

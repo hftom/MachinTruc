@@ -12,6 +12,7 @@
 
 InputImage::InputImage() : InputBase()
 {
+	buffer = NULL;
 	inputType = IMAGE;
 	currentVideoPTS = 0;
 	fps = 30;
@@ -28,6 +29,8 @@ InputImage::~InputImage()
 	Frame *f;
 	while ( (f = freeVideoFrames.dequeue()) )
 		delete f;
+	if ( buffer )
+		BufferPool::globalInstance()->releaseBuffer( buffer );
 }
 
 
@@ -67,6 +70,12 @@ void InputImage::run()
 bool InputImage::open( QString fn )
 {
 	sourceName = fn;
+
+	mmi = 0;
+	if ( buffer ) {
+		BufferPool::globalInstance()->releaseBuffer( buffer );
+		buffer = NULL;
+	}
 
 	if ( !image.load( sourceName ) )
 		return false;
@@ -115,13 +124,19 @@ double InputImage::seekTo( double p )
 
 bool InputImage::upload( Frame *f )
 {
-	QMutexLocker m( &mutex );
+	QMutexLocker ml( &mutex );
 
 	if ( image.isNull() || (image.depth()!=24 && image.depth()!=32) )
 		return false;
+	if ( !buffer ) {
+		buffer = BufferPool::globalInstance()->getBuffer( image.byteCount() );
+		memcpy( buffer->data(), image.constBits(), image.byteCount() );
+	}
+	f->setSharedBuffer( buffer );
+	f->mmi = mmi;
 	f->setVideoFrame( (image.depth() == 24) ? Frame::RGB : Frame::RGBA, image.width(), image.height(), 1.0, false, false, currentVideoPTS, outProfile.getVideoFrameDuration() );
-	memcpy( f->data(), image.constBits(), image.byteCount() );
 
+	mmi = 1;
 	currentVideoPTS += outProfile.getVideoFrameDuration();
 	return true;
 }
