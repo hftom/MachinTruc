@@ -63,6 +63,7 @@ public:
 private:
 	QList<Buffer*> freeBuffers;
 	QMutex mutex;
+	quint64 totalBytes, totalBuffers;
 };
 
 #endif // BUFFERPOOL_H
