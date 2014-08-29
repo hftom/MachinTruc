@@ -87,9 +87,7 @@ public:
 	void setPts( double p ) { pPTS = p; }
 	double pts() { return pPTS; }
 
-	// memory management indicator
-	// Gives some indication to the video composer about this frame data.
-	// Simply set to 0 when seeking, then increment for each further frame unless duplicate.
+	// memory management indicator. See input.h
 	quint32 mmi;
 	// video or audio data
 	Buffer* getBuffer() { return buffer; }

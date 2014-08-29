@@ -39,7 +39,10 @@ public:
 	InputType getType() { return inputType; }
 	bool isUsed() { return usedByClip; }
 	void setUsed( bool b ) { usedByClip = b; }
-	
+
+	// mmi (memory management indicator) gives some indication to the video composer about this frame data.
+	// Call mmiSeek when seeking, then if data is the same than previous frame call mmiDuplicate
+	// else call mmiIncrement.
 	void mmiSeek() { mmi = 0; }
 	void mmiDuplicate() {
 		if ( mmi == 0 )
