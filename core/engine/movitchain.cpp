@@ -40,7 +40,7 @@ bool MovitInput::process( Frame *src, GLResource *gl )
 	if ( mmi != -1 && src->mmi != 0 && src->mmi == mmi )
 		return true;
 	
-	mmi = src->mmi;
+	mmi = src->mmi ? src->mmi : ++src->mmi;
 	
 	int w = src->profile.getVideoWidth();
 	int h = src->profile.getVideoHeight();
@@ -256,7 +256,6 @@ MovitBranch::~MovitBranch()
 MovitChain::MovitChain()
 {
 	chain = NULL;
-	lastPTS = 0;
 }
 	
 MovitChain::~MovitChain() 
@@ -272,5 +271,4 @@ void MovitChain::reset()
 		delete chain;
 		chain = NULL;
 	}
-	lastPTS = -1;
 }

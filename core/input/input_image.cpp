@@ -20,6 +20,8 @@ InputImage::InputImage() : InputBase()
 	int i;
 	for ( i = 0; i < NUMINPUTFRAMES; ++i )
 		freeVideoFrames.enqueue( new Frame( &freeVideoFrames ) );
+
+	semaphore = new QSemaphore( 1 );
 }
 
 
@@ -62,7 +64,7 @@ bool InputImage::probe( QString fn, Profile *prof )
 void InputImage::run()
 {
 	open( sourceName );
-	mutex.unlock();
+	semaphore->release();
 }
 
 
@@ -71,7 +73,8 @@ bool InputImage::open( QString fn )
 {
 	sourceName = fn;
 
-	mmi = 0;
+	mmiSeek();
+
 	if ( buffer ) {
 		BufferPool::globalInstance()->releaseBuffer( buffer );
 		buffer = NULL;
@@ -95,7 +98,7 @@ void InputImage::openSeekPlay( QString fn, double p )
 {
 	if ( fn != sourceName ) {
 		wait();
-		mutex.lock();
+		semaphore->acquire();
 		sourceName = fn;
 		start();
 	}
@@ -113,6 +116,8 @@ void InputImage::seekFast( float percent )
 
 double InputImage::seekTo( double p )
 {
+	mmiSeek();
+	
 	double dur = MICROSECOND / fps;
 	qint64 i = p / dur;
 	currentVideoPTS = i * dur;
@@ -124,10 +129,12 @@ double InputImage::seekTo( double p )
 
 bool InputImage::upload( Frame *f )
 {
-	QMutexLocker ml( &mutex );
+	semaphore->acquire();
 
-	if ( image.isNull() || (image.depth()!=24 && image.depth()!=32) )
+	if ( image.isNull() || (image.depth()!=24 && image.depth()!=32) ) {
+		semaphore->release();
 		return false;
+	}
 	if ( !buffer ) {
 		buffer = BufferPool::globalInstance()->getBuffer( image.byteCount() );
 		memcpy( buffer->data(), image.constBits(), image.byteCount() );
@@ -136,8 +143,10 @@ bool InputImage::upload( Frame *f )
 	f->mmi = mmi;
 	f->setVideoFrame( (image.depth() == 24) ? Frame::RGB : Frame::RGBA, image.width(), image.height(), 1.0, false, false, currentVideoPTS, outProfile.getVideoFrameDuration() );
 
-	mmi = 1;
+	mmiDuplicate();
 	currentVideoPTS += outProfile.getVideoFrameDuration();
+
+	semaphore->release();
 	return true;
 }
 

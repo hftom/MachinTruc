@@ -4,6 +4,7 @@
 #define INPUTIMAGE_H
 
 #include <QImage>
+#include <QSemaphore>
 
 #include "input/input.h"
 
@@ -41,7 +42,7 @@ private:
 
 	QImage image;
 	Buffer *buffer;
-	QMutex mutex;
+	QSemaphore *semaphore;
 };
 
 #endif //INPUTIMAGE_H

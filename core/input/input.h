@@ -39,6 +39,18 @@ public:
 	InputType getType() { return inputType; }
 	bool isUsed() { return usedByClip; }
 	void setUsed( bool b ) { usedByClip = b; }
+	
+	void mmiSeek() { mmi = 0; }
+	void mmiDuplicate() {
+		if ( mmi == 0 )
+			mmi = 10;
+	}
+	void mmiIncrement() {
+		if ( mmi == 0 )
+			mmi = 10;
+		else
+			++mmi;
+	}
 
 protected:
 	bool haveAudio, haveVideo;

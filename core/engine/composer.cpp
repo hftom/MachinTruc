@@ -261,12 +261,24 @@ bool Composer::renderVideoFrame( Frame *dst )
 	}
 	
 	if ( skipFrame > 0 ) {
-		qDebug() << "skipFrame" << sampler->currentPTS();
-		skipFrame = 0;
-		Profile projectProfile = sampler->getProfile();
-		dst->setVideoFrame( Frame::NONE, projectProfile.getVideoWidth(), projectProfile.getVideoHeight(), projectProfile.getVideoSAR(),
-							false, false, sampler->currentPTS(), projectProfile.getVideoFrameDuration() );
-		return true;
+		Frame *f;
+		bool skip = true;
+		for ( int i = 0 ; i < dst->sample->frames.count(); ++i) {
+			if ( (f = dst->sample->frames[i]->frame) ) {
+				if ( f->mmi == 0 ) {
+					skip = false;
+					break;
+				}
+			}
+		}
+		if ( skip ) {
+			qDebug() << "skipFrame" << sampler->currentPTS();
+			skipFrame = 0;
+			Profile projectProfile = sampler->getProfile();
+			dst->setVideoFrame( Frame::NONE, projectProfile.getVideoWidth(), projectProfile.getVideoHeight(), projectProfile.getVideoSAR(),
+								false, false, sampler->currentPTS(), projectProfile.getVideoFrameDuration() );
+			return true;
+		}
 	}
 
 	movitRender( dst );
@@ -280,8 +292,6 @@ void Composer::movitRender( Frame *dst, bool update )
 {
 	int i, j, k, l, start=0;
 	Frame *f;
-	bool reload = !update;
-	
 	//QTime time;
 	//time.start();
 	
@@ -426,8 +436,6 @@ void Composer::movitRender( Frame *dst, bool update )
 		output_format.gamma_curve = GAMMA_sRGB;//REC_709;
 		movitChain.chain->add_output( output_format, OUTPUT_ALPHA_FORMAT_POSTMULTIPLIED );
 		movitChain.chain->finalize();
-		
-		reload = true;
 	}
 
 	// update inputs data and filters parameters
@@ -440,9 +448,11 @@ void Composer::movitRender( Frame *dst, bool update )
 		f->glSAR = f->profile.getVideoSAR();
 		
 		MovitBranch *branch = movitChain.branches[ j++ ];
-		if ( reload || movitChain.lastPTS != dst->pts() )
-			branch->input->process( f, &gl );
-		for ( k = 0; k < branch->filters.count(); ++k ) {
+		branch->input->process( f, &gl );
+		int vf = 0;
+		for ( k = 0; k < branch->filters.count(); ++k ) { 
+			if ( !branch->filters[k]->ownsFilter )
+				branch->filters[k]->filter = dst->sample->frames[i - 1]->videoFilters[vf++];
 			branch->filters[k]->filter->process( branch->filters[k]->effects, f, &projectProfile );
 		}
 		if ( branch->composition )
@@ -463,7 +473,6 @@ void Composer::movitRender( Frame *dst, bool update )
 		dst->setVideoFrame( Frame::GLTEXTURE, w, h, dst->glSAR,
 						projectProfile.getVideoInterlaced(), projectProfile.getVideoTopFieldFirst(),
 						sampler->currentPTS(), projectProfile.getVideoFrameDuration() );
-		movitChain.lastPTS = dst->pts();
 	}
 	dst->setFBO( fbo );
 	dst->setFence( gl.getFence() );

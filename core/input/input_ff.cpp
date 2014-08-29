@@ -552,7 +552,7 @@ bool InputFF::seekDecodeNext( Frame *f )
 
 double InputFF::seekTo( double p )
 {
-	mmi = 0;
+	mmiSeek();
 
 	if ( !formatCtx || ( p < startTime ) )
 		return p;
@@ -728,7 +728,8 @@ void InputFF::run()
 					videoFrames.enqueue( f );
 				}
 				else {
-					f->mmi = mmi++;
+					f->mmi = mmi;
+					mmiIncrement();
 					if ( decodeVideo( f ) ) {
 						double delta = f->pts() - videoResampler.outputPts;
 						if ( outProfile.getVideoFrameRate() == inProfile.getVideoFrameRate() ) { // no resampling
