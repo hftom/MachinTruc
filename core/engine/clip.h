@@ -34,7 +34,7 @@ public:
 	InputBase *getInput() { return in; }
 	InputBase::InputType getType() { return source->getType(); }
 	
-	Source & getSource() const { return *source; }
+	Source * getSource() { return source; }
 	
 	void setFrameDuration( double d ) { frameDuration = d; }
 

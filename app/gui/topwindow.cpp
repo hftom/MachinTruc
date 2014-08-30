@@ -96,6 +96,7 @@ TopWindow::TopWindow()
 
 	connect( actionBlackBackground, SIGNAL(toggled(bool)), vw, SLOT(setBlackBackground(bool)) );
 	connect( actionDeleteClip, SIGNAL(triggered()), timeline, SLOT(deleteClip()) );
+	connect( actionCutCurrentClip, SIGNAL(triggered()), timeline, SLOT(cutCurrentClip()) );
 }
 
 

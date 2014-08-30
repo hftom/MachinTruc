@@ -405,6 +405,26 @@ void Timeline::deleteClip()
 
 
 
+void Timeline::cutCurrentClip()
+{
+	if ( selectedItem && selectedItem->getItemType() == TypeRectItem:: VIDEOCUT ) {
+		ClipViewItem *cv = (ClipViewItem*)selectedItem;
+		double cursor_pts = cursor->mapRectToScene( cursor->rect() ).left() * zoom ;
+		int t = getTrack( cv->sceneBoundingRect().topLeft() );
+		Clip *current_clip = cv->getClip();
+		Clip *c = scene->sceneCutClip( current_clip, t, cursor_pts );
+		if ( c ) {
+			QGraphicsItem *it = new ClipViewItem( c, zoom );
+			addItem( it );
+			it->setParentItem( tracks.at( t ) );
+			cv->setLength( current_clip->length(), zoom );
+			itemSelected( (ClipViewItem*)it );
+		}
+	}
+}
+
+
+
 void Timeline::addFilter( ClipViewItem *clip, QString fx )
 {
 	int i;

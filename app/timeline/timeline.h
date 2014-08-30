@@ -62,6 +62,7 @@ public slots:
 	
 	void setScene( Scene *s );
 	void deleteClip();
+	void cutCurrentClip();
 	
 	void filterDeleted( Clip *c, Filter *f );
 	

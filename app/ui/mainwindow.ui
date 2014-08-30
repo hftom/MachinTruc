@@ -590,6 +590,7 @@
      <string>Timeline</string>
     </property>
     <addaction name="actionDeleteClip"/>
+    <addaction name="actionCutCurrentClip"/>
    </widget>
    <widget class="QMenu" name="menuSettings">
     <property name="title">
@@ -625,6 +626,14 @@
    </property>
    <property name="shortcut">
     <string>Del</string>
+   </property>
+  </action>
+  <action name="actionCutCurrentClip">
+   <property name="text">
+    <string>Cut current clip</string>
+   </property>
+   <property name="shortcut">
+    <string>Shift+R</string>
    </property>
   </action>
  </widget>

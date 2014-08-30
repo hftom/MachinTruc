@@ -26,6 +26,7 @@ public:
 	void move( Clip *clip, int clipTrack, double newPos, int newTrack );
 	void addClip( Clip *clip, int track );
 	bool removeClip( Clip *clip );
+	Clip* sceneCutClip( Clip *clip, int track, double pts );
 
 	bool update;
 	QList<Track*> tracks;

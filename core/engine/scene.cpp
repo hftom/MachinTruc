@@ -18,6 +18,30 @@ Clip* Scene::createClip( Source *src, double posInTrackPTS, double strt, double 
 	clip->setFrameDuration( profile.getVideoFrameDuration() );
 	return clip;
 }
+
+
+
+Clip* Scene::sceneCutClip( Clip *clip, int track, double pts )
+{
+	double margin = profile.getVideoFrameDuration() / 4.0;
+	pts = nearestPTS( pts, profile.getVideoFrameDuration() );
+
+	if ( pts <= clip->position() + profile.getVideoFrameDuration() - margin )
+		return NULL;
+	if ( pts >= clip->position() + clip->length() - profile.getVideoFrameDuration() + margin )
+		return NULL;
+
+	double oldLength = clip->length();
+	double newLength = pts - clip->position();
+	if ( canResize( clip, newLength, track ) ) {
+		resize( clip, newLength, track );
+		Clip *nc = createClip( clip->getSource(), pts, clip->start() + newLength, oldLength - newLength );
+		addClip( nc, track );
+		return nc;
+	}
+
+	return NULL;
+}
 	
 
 
@@ -26,10 +50,10 @@ bool Scene::canResizeStart( Clip *clip, double &newPos, double endPos, int track
 	double margin = profile.getVideoFrameDuration() / 4.0;
 	newPos = nearestPTS( newPos, profile.getVideoFrameDuration() );
 	double newLength = endPos - newPos;
-	double start = clip->getSource().getProfile().getStreamStartTime();
+	double start = clip->getSource()->getProfile().getStreamStartTime();
 	if ( newLength < profile.getVideoFrameDuration() )
 		return false;
-	if ( clip->getSource().getType() == InputBase::FFMPEG && clip->start() + newPos - clip->position() < start )
+	if ( clip->getSource()->getType() == InputBase::FFMPEG && clip->start() + newPos - clip->position() < start )
 		return false;
 
 	int i;
@@ -79,7 +103,7 @@ void Scene::resizeStart( Clip *clip, double newPos, double newLength, int track 
 	double old = clip->position();
 	t->removeClip( clip );
 	t->insertClipAt( clip, insert );
-	if ( clip->getSource().getType() == InputBase::FFMPEG )
+	if ( clip->getSource()->getType() == InputBase::FFMPEG )
 		clip->setStart( clip->start() + clip->length() - newLength );
 	clip->setLength( newLength );
 	clip->setPosition( newPos );
@@ -94,10 +118,10 @@ bool Scene::canResize( Clip *clip, double &newLength, int track )
 	QMutexLocker ml( &mutex );
 	double margin = profile.getVideoFrameDuration() / 4.0;
 	newLength = nearestPTS( newLength, profile.getVideoFrameDuration() );
-	double end = clip->getSource().getProfile().getStreamStartTime() + clip->getSource().getProfile().getStreamDuration();
+	double end = clip->getSource()->getProfile().getStreamStartTime() + clip->getSource()->getProfile().getStreamDuration();
 	if ( newLength < profile.getVideoFrameDuration() )
 		return false;
-	if ( clip->getSource().getType() == InputBase::FFMPEG && clip->start() + newLength > end )
+	if ( clip->getSource()->getType() == InputBase::FFMPEG && clip->start() + newLength > end )
 		return false;
 
 	int i;
@@ -188,14 +212,13 @@ void Scene::move( Clip *clip, int clipTrack, double newPos, int newTrack )
 		return;
 	
 	double margin = profile.getVideoFrameDuration() / 4.0;
-	int i, insert, originPosIndex = 0, self = 0;
+	int i, insert, self = 0;
 	Track *t = tracks[newTrack];
 	insert = t->clipCount();
 	for ( i = 0; i < t->clipCount(); ++i ) {
 		Clip *c = t->clipAt( i );
 		if ( clip && c == clip ) {
 			++self;
-			originPosIndex = i;
 			continue;
 		}
 		if ( clipLessThan( margin, newPos, clip->length(), c->position() ) ) {

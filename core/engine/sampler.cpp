@@ -367,7 +367,7 @@ InputBase* Sampler::getInput( QString fn, InputBase::InputType type )
 
 InputBase* Sampler::getClipInput( Clip *c, double pts )
 {
-	InputBase *in = getInput( c->getSource().getFileName(), c->getSource().getType() );
+	InputBase *in = getInput( c->getSource()->getFileName(), c->getSource()->getType() );
 	double pos = c->start();
 	if ( c->position() < pts )
 		pos += pts - c->position();
@@ -458,7 +458,7 @@ int Sampler::updateLastFrame( Frame *dst )
 				return 0;
 			++nframes;
 			fs->clear( false );
-			c->getSource().videoFilters.copy( &fs->videoFilters );
+			c->getSource()->videoFilters.copy( &fs->videoFilters );
 			c->videoFilters.copy( &fs->videoFilters );
 			if ( (gc = getComposition( j, dst->pts() )) )
 				fs->composition = gc;
@@ -524,7 +524,7 @@ int Sampler::getVideoTracks( Frame *dst )
 				++nFrames;
 				f->setPts( scene->currentPTS );
 				fs->frame = f;
-				c->getSource().videoFilters.copy( &fs->videoFilters );
+				c->getSource()->videoFilters.copy( &fs->videoFilters );
 				c->videoFilters.copy( &fs->videoFilters );
 				if ( (gc = getComposition( j, scene->currentPTS )) )
 					fs->composition = gc;
@@ -592,7 +592,7 @@ int Sampler::getAudioTracks( Frame *dst, int nSamples )
 				++nFrames;
 				f->setPts( scene->currentPTSAudio );
 				fs->frame = f;
-				c->getSource().audioFilters.copy( &fs->audioFilters );
+				c->getSource()->audioFilters.copy( &fs->audioFilters );
 				c->audioFilters.copy( &fs->audioFilters );
 			}
 		}
