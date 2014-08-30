@@ -10,7 +10,7 @@
 class TypeRectItem : public QGraphicsRectItem
 {
 public:
-	enum Type{ UNDEF, VIDEOCUT, VIDEOFILTER, AUDIOCUT, AUDIOFILTER };
+	enum Type{ UNDEF, CURSOR, VIDEOCUT, VIDEOFILTER, AUDIOCUT, AUDIOFILTER };
 	
 	TypeRectItem( int t );
 	int getItemType() { return type; }

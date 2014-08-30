@@ -188,13 +188,14 @@ void Scene::move( Clip *clip, int clipTrack, double newPos, int newTrack )
 		return;
 	
 	double margin = profile.getVideoFrameDuration() / 4.0;
-	int i, insert, self = 0;
+	int i, insert, originPosIndex = 0, self = 0;
 	Track *t = tracks[newTrack];
 	insert = t->clipCount();
 	for ( i = 0; i < t->clipCount(); ++i ) {
 		Clip *c = t->clipAt( i );
 		if ( clip && c == clip ) {
 			++self;
+			originPosIndex = i;
 			continue;
 		}
 		if ( clipLessThan( margin, newPos, clip->length(), c->position() ) ) {
@@ -204,12 +205,11 @@ void Scene::move( Clip *clip, int clipTrack, double newPos, int newTrack )
 	}
 			
 	insert -= self;
-	update = updateCurrentPosition( clip->position(), clip->position() + clip->length() );
 	tracks[clipTrack]->removeClip( clip );
 	t->insertClipAt( clip, insert );
 	clip->setPosition( newPos );
 	clip->setInput( NULL );
-	update = update || updateCurrentPosition( clip->position(), clip->position() + clip->length() );;
+	update = true;
 }
 
 

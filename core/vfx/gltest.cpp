@@ -20,7 +20,6 @@ bool GLTest::process( const QList<Effect*> &el, Frame *src, Profile *p )
 	Q_UNUSED( p );
 	Q_UNUSED( src );
 	int lp = getParamValue( loop ).toInt();
-	qDebug() << "Loop" << lp;
 	return el.at(0)->set_float( "loop", lp );
 }
 

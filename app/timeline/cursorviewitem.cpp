@@ -5,7 +5,7 @@
 
 
 
-CursorViewItem::CursorViewItem() : TypeRectItem( UNDEF )
+CursorViewItem::CursorViewItem() : TypeRectItem( CURSOR )
 {
 	setRect( 0, 0, 8, TRACKVIEWITEMHEIGHT - 2 );
 	

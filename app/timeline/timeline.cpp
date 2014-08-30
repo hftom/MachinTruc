@@ -214,6 +214,21 @@ void Timeline::snapResize( ClipViewItem *item, int way, double &poslen, double m
 				}
 			}
 		}
+		else if ( it->getItemType() == TypeRectItem::CURSOR ) {
+			QRectF dst = cursor->mapRectToScene( cursor->rect() );
+			if ( way == 2 ) {
+				if ( (dst.left() > src.right() - SNAPWIDTH) && (dst.left() < src.right() + SNAPWIDTH) ) {
+					poslen = (dst.left() * zoom) - item->getPosition() + (scene->profile.getVideoFrameDuration() / 4.0);
+					return;
+				}				
+			}
+			else {
+				if ( (dst.left() > src.left() - SNAPWIDTH) && (dst.left() < src.left() + SNAPWIDTH) ) {
+					poslen = (dst.left() * zoom) + (scene->profile.getVideoFrameDuration() / 4.0);
+					return;
+				}
+			}
+		}
 	}
 }
 
@@ -249,6 +264,17 @@ void Timeline::snapMove( ClipViewItem *item, double &pos, double mouseX, double 
 					pos = cv->getPosition() + cv->getLength() - item->getLength() + (scene->profile.getVideoFrameDuration() / 4.0);
 					return;
 				}				
+			}
+		}
+		else if ( it->getItemType() == TypeRectItem::CURSOR ) {
+			QRectF dst = cursor->mapRectToScene( cursor->rect() );
+			if ( (dst.left() > src.left() - SNAPWIDTH) && (dst.left() < src.left() + SNAPWIDTH) ) {
+				pos = (dst.left() * zoom) + (scene->profile.getVideoFrameDuration() / 4.0);
+				return;
+			}
+			else if ( (dst.left() > src.right() - SNAPWIDTH) && (dst.left() < src.right() + SNAPWIDTH) ) {
+				pos = (dst.left() * zoom) - item->getLength() + (scene->profile.getVideoFrameDuration() / 4.0);
+				return;
 			}
 		}
 	}
