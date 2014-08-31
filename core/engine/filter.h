@@ -18,11 +18,12 @@ public:
 	void release();
 	
 	virtual QList<Parameter*> getParameters() { return parameters; }
+	void splitParameters( Filter *second, double posPts );
 
 	virtual void setPosition( double p ) { posInTrack = p; }
 	virtual double getPosition() { return posInTrack; }
 	virtual void setLength( double len ) { length = len; }
-	virtual double getlength() { return length; }
+	virtual double getLength() { return length; }
 	
 	QString getFilterName() { return filterName; }
 	QString getIdentifier() { return identifier; }

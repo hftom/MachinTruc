@@ -1,5 +1,6 @@
 #include "engine/util.h"
 #include "engine/scene.h"
+#include "engine/filtercollection.h"
 
 
 
@@ -21,7 +22,7 @@ Clip* Scene::createClip( Source *src, double posInTrackPTS, double strt, double 
 
 
 
-Clip* Scene::sceneCutClip( Clip *clip, int track, double pts )
+Clip* Scene::sceneSplitClip( Clip *clip, int track, double pts )
 {
 	double margin = profile.getVideoFrameDuration() / 4.0;
 	pts = nearestPTS( pts, profile.getVideoFrameDuration() );
@@ -34,8 +35,21 @@ Clip* Scene::sceneCutClip( Clip *clip, int track, double pts )
 	double oldLength = clip->length();
 	double newLength = pts - clip->position();
 	if ( canResize( clip, newLength, track ) ) {
-		resize( clip, newLength, track );
 		Clip *nc = createClip( clip->getSource(), pts, clip->start() + newLength, oldLength - newLength );
+		FilterCollection *fc = FilterCollection::getGlobalInstance();
+		for ( int i = 0; i < clip->videoFilters.count(); ++i ) {
+			GLFilter *f = clip->videoFilters.at( i );
+			for ( int j = 0; j < fc->videoFilters.count(); ++j ) {
+				if ( fc->videoFilters[ j ].identifier == f->getIdentifier() ) {
+					GLFilter *nf = (GLFilter*)fc->videoFilters[ j ].create();
+					f->splitParameters( nf, newLength );
+					nf->setPosition( nc->position() );
+					nf->setLength( nc->length() );
+					nc->videoFilters.append( nf );
+				}
+			}
+		}
+		resize( clip, newLength, track );
 		addClip( nc, track );
 		return nc;
 	}
