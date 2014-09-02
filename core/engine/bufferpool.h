@@ -19,7 +19,7 @@ public:
 	
 private:
 	friend class BufferPool;
-	Buffer( int size ) {
+	explicit Buffer( int size ) {
 		bufSize = size;
 		buf = (uint8_t*)malloc( bufSize );
 		refCount = 1;
