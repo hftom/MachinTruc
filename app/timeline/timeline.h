@@ -46,9 +46,9 @@ public:
 	Timeline( TopWindow *parent );
 	~Timeline();
 	
-	void clipItemCanMove( ClipViewItem *clip, QPointF mouse, double clipStartPos, QPointF clipStartMouse );
+	void clipItemCanMove( ClipViewItem *clip, QPointF mouse, double clipStartPos, QPointF clipStartMouse, bool unsnap );
 	void clipItemMoved( ClipViewItem *clip, QPointF clipMouseStart );
-	void clipItemCanResize( ClipViewItem *clip, int way, QPointF mouse, double clipStartPos, double clipStartLen, QPointF clipStartMouse );
+	void clipItemCanResize( ClipViewItem *clip, int way, QPointF mouse, double clipStartPos, double clipStartLen, QPointF clipStartMouse, bool unsnap );
 	void clipItemResized( ClipViewItem *clip, int way );
 	void addFilter( ClipViewItem *clip, QString fx );
 	

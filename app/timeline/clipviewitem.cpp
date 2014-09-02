@@ -128,14 +128,15 @@ void ClipViewItem::mousePressEvent( QGraphicsSceneMouseEvent *event )
 
 void ClipViewItem::mouseMoveEvent( QGraphicsSceneMouseEvent *event )
 {
-	if ( firstMove && fabs( event->scenePos().x() - moveStartMouse.x() ) < SNAPWIDTH )
+	bool unsnap = event->modifiers() & Qt::ControlModifier;
+	if ( firstMove && !unsnap && fabs( event->scenePos().x() - moveStartMouse.x() ) < SNAPWIDTH )
 		return;
 	firstMove = false;
 	Timeline* t = (Timeline*)scene();
 	if ( moveResize )
-		t->clipItemCanResize( this, moveResize, event->scenePos(), moveStartPosition, moveStartLength, moveStartMouse );
+		t->clipItemCanResize( this, moveResize, event->scenePos(), moveStartPosition, moveStartLength, moveStartMouse, unsnap );
 	else
-		t->clipItemCanMove( this, event->scenePos(), moveStartPosition, moveStartMouse );
+		t->clipItemCanMove( this, event->scenePos(), moveStartPosition, moveStartMouse, unsnap );
 }
 
 

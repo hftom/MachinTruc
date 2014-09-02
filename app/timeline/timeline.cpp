@@ -112,11 +112,12 @@ void Timeline::trackPressed( QPointF p )
 
 
 
-void Timeline::clipItemCanMove( ClipViewItem *clip, QPointF mouse, double clipStartPos, QPointF clipStartMouse )
+void Timeline::clipItemCanMove( ClipViewItem *clip, QPointF mouse, double clipStartPos, QPointF clipStartMouse, bool unsnap )
 {
 	double newPos = ( mouse.x() * zoom ) - ( (clipStartMouse.x() * zoom) - clipStartPos );
 		
-	snapMove( clip, newPos, mouse.x(), ( clipStartMouse.x() - (clipStartPos / zoom) ) );
+	if ( !unsnap )
+		snapMove( clip, newPos, mouse.x(), ( clipStartMouse.x() - (clipStartPos / zoom) ) );
 		
 	int itemTrack = getTrack( clip->sceneBoundingRect().topLeft() );
 	if ( newPos < 0 )
@@ -141,19 +142,21 @@ void Timeline::clipItemMoved( ClipViewItem *clip, QPointF clipStartMouse )
 
 
 
-void Timeline::clipItemCanResize( ClipViewItem *clip, int way, QPointF mouse, double clipStartPos, double clipStartLen, QPointF clipStartMouse )
+void Timeline::clipItemCanResize( ClipViewItem *clip, int way, QPointF mouse, double clipStartPos, double clipStartLen, QPointF clipStartMouse, bool unsnap )
 {
 	int track = getTrack( clip->sceneBoundingRect().topLeft() );
 	
 	if ( way == 2 ) {
 		double newLength = clipStartLen + ( mouse.x() * zoom ) - ( clipStartMouse.x() * zoom);
-		snapResize( clip, way, newLength, mouse.x(), ( clipStartMouse.x() - ((clip->getPosition() + clipStartLen) / zoom) ) );
+		if ( !unsnap )
+			snapResize( clip, way, newLength, mouse.x(), ( clipStartMouse.x() - ((clip->getPosition() + clipStartLen) / zoom) ) );
 		if ( scene->canResize( clip->getClip(), newLength, track ) )
 			clip->setLength( newLength, zoom );
 	}
 	else {
 		double newPos = ( mouse.x() * zoom ) - ( (clipStartMouse.x() * zoom) - clipStartPos );
-		snapResize( clip, way, newPos, mouse.x(), ( clipStartMouse.x() - ( clipStartPos / zoom ) ) );
+		if ( !unsnap )
+			snapResize( clip, way, newPos, mouse.x(), ( clipStartMouse.x() - ( clipStartPos / zoom ) ) );
 		if ( newPos < 0 )
 			newPos = 0;
 		double endPos = clipStartPos + clipStartLen;

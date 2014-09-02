@@ -11,7 +11,7 @@ SOURCES += main.cpp \
 HEADERS += AutoTest.h \
 	testinputff.h
 
-LIBS = ../core/libcore.a
+LIBS = ../build/core/libcore.a
 
 INCLUDEPATH = ../core
 
