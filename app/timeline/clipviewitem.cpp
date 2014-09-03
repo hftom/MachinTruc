@@ -33,12 +33,14 @@ ClipViewItem::ClipViewItem( Clip *c, double scale ) : AbstractViewItem( VIDEOCUT
 
 	QLinearGradient grad( QPointF(0, 0), QPointF(0, 1) );
 	grad.setCoordinateMode( QGradient::ObjectBoundingMode );
-	grad.setColorAt( 0, "lightskyblue" );
-	grad.setColorAt( 1, "darkblue" );
+	//grad.setColorAt( 0, "lightskyblue" );
+	//grad.setColorAt( 1, "darkblue" );
+	grad.setColorAt( 0, QColor(135,206,250,180) );
+	grad.setColorAt( 1, QColor(0,0,89,180) );
 	normalBrush = QBrush( grad );
 	
-	grad.setColorAt( 0, "lightpink" );
-	grad.setColorAt( 1, "maroon" );
+	grad.setColorAt( 0, QColor(255,182,193,180) );
+	grad.setColorAt( 1, QColor(89,0,0,180) );
 	selectionBrush = QBrush( grad );
 	
 	grad.setColorAt( 1, "#2A2AA5" );

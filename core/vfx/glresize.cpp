@@ -27,7 +27,6 @@ void GLResize::preProcess( Frame *src, Profile *p )
 	if ( src->glHeight < 1 )
 		src->glHeight = 1;
 	src->glSAR = p->getVideoSAR();
-	src->resizeAuto = false;
 }
 
 

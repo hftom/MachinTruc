@@ -22,7 +22,9 @@ GLSize::~GLSize()
 
 QString GLSize::getDescriptor( Frame *src, Profile *p )
 {
-	return resize->getDescriptor( src, p ) + padding->getDescriptor( src, p );
+	QString s = resize->getDescriptor( src, p );
+	s += padding->getDescriptor( src, p );
+	return s;
 }
 
 

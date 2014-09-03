@@ -310,9 +310,7 @@ void Composer::movitRender( Frame *dst, bool update )
 	i = start;
 	QStringList currentDescriptor;
 	while ( (f = getNextFrame( dst, i )) ) {
-		bool paddingAuto = false;
-		bool resizeAuto = false;
-		f->paddingAuto = f->resizeAuto = true;
+		f->paddingAuto = f->resizeAuto = false;
 		f->glWidth = f->profile.getVideoWidth();
 		f->glHeight = f->profile.getVideoHeight();
 		f->glSAR = f->profile.getVideoSAR();
@@ -329,18 +327,18 @@ void Composer::movitRender( Frame *dst, bool update )
 		}
 		
 		// resize to match destination aspect ratio
-		if ( f->resizeAuto && fabs( projectProfile.getVideoSAR() - f->profile.getVideoSAR() ) > 1e-3 ) {
+		if ( fabs( projectProfile.getVideoSAR() - f->glSAR ) > 1e-3 ) {
 			GLResize resize;
 			currentDescriptor.append( resize.getDescriptor( f, &projectProfile ) );
-			resizeAuto = true;
+			f->resizeAuto = true;
 		}
 
 		// padding
-		if ( f->paddingAuto && !sampler->previewMode() ) {
+		if ( !sampler->previewMode() ) {
 			if ( f->glWidth != projectProfile.getVideoWidth() || f->glHeight != projectProfile.getVideoHeight() ) {
 				GLPadding padding;
 				currentDescriptor.append( padding.getDescriptor( f, &projectProfile ) );
-				paddingAuto = true;
+				f->paddingAuto = true;
 			}
 		}
 		
@@ -354,9 +352,6 @@ void Composer::movitRender( Frame *dst, bool update )
 				currentDescriptor.append( dst->sample->frames[i - 1]->composition->getDescriptor() );
 			}
 		}
-		
-		f->paddingAuto = paddingAuto;
-		f->resizeAuto = resizeAuto;
 	}
 
 	// rebuild the chain if neccessary
