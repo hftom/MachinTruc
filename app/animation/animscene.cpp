@@ -8,14 +8,13 @@
 
 
 
-AnimScene::AnimScene( AnimItem *a ) : QGraphicsScene()
+AnimScene::AnimScene( AnimItem *a ) : QGraphicsScene(),
+	anim( a )
 {
 	//zoom = DEFAULTZOOM;
 	//viewWidth = 0;
 	
 	setBackgroundBrush( QBrush( QColor(255,255,255) ) );
-	
-	anim = a;
 	addItem( anim );
 }
 

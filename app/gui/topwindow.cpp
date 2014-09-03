@@ -3,10 +3,9 @@
 
 
 TopWindow::TopWindow()
+	: activeSource( NULL )
 {
 	setupUi( this );
-
-	activeSource = NULL;
 
 	seekSlider = new SeekSlider( baseVideoWidget );
 	seekSlider->setObjectName(QString::fromUtf8("seekSlider"));
@@ -127,7 +126,7 @@ void TopWindow::modeSwitched()
 void TopWindow::setInPoint()
 {
 	if ( activeSource ) {
-		double pts;
+		//double pts;
 		//QImage img = vw->getThumb( THUMBHEIGHT, &pts, false );
 		//if ( !img.isNull() )
 			//activeSource->setInPoint( img, pts );
@@ -139,7 +138,7 @@ void TopWindow::setInPoint()
 void TopWindow::setOutPoint()
 {
 	if ( activeSource ) {
-		double pts;
+		//double pts;
 		//QImage img = vw->getThumb( THUMBHEIGHT, &pts, true );
 		//if ( !img.isNull() ) {
 			//activeSource->setOutPoint( img, pts );

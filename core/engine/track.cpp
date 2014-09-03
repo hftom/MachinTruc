@@ -5,9 +5,10 @@
 
 
 Track::Track()
+	: clipIndex( 0 ),
+	clipIndexAudio( 0 ),
+	compositionIndex( 0 )
 {
-	clipIndex = clipIndexAudio = 0;
-	compositionIndex = 0;
 }
 
 

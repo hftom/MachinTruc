@@ -10,14 +10,14 @@
 
 
 
-AnimItem::AnimItem() : QGraphicsRectItem()
+AnimItem::AnimItem() : QGraphicsRectItem(),
+	currentParamWidget( NULL ),
+	currentFilterWidget( NULL )
 {
 	setRect( 0, 0, 10, 10 );
 	setPen( QPen( QColor("silver") ) );
 	setBrush( QBrush( QColor(255,255,200) ) );
 	
-	currentFilterWidget = NULL;
-	currentParamWidget = NULL;
 	reset();
 }
 
@@ -139,6 +139,8 @@ void AnimItem::setCurrentParam( FilterWidget *f, ParameterWidget *pw, Parameter 
 
 bool AnimItem::filterDeleted( Clip *c, Filter *f )
 {
+	Q_UNUSED( c );
+	
 	if ( currentFilterWidget && currentFilterWidget->getFilter() == f ) {
 		setCurrentParam( NULL, NULL, NULL );
 		return true;
@@ -175,7 +177,7 @@ void AnimItem::setSize( const QSize &size )
 
 void AnimItem::itemSelected( KeyItem *it )
 {
-	int i, index;
+	int i;
 	
 	for ( i = 0; i < keys.count(); ++i ) {
 		if ( keys[i] == it ) {

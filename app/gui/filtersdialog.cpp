@@ -4,14 +4,13 @@
 
 
 
-FiltersDialog::FiltersDialog( QWidget *parent, Source *src, Sampler *samp ) : QDialog( parent ) 
+FiltersDialog::FiltersDialog( QWidget *parent, Source *src, Sampler *samp ) : QDialog( parent ),
+	source( src ),
+	sampler( samp ),
+	currentVideoWidget( NULL ),
+	currentAudioWidget( NULL )
 {
 	setupUi( this );
-	currentVideoWidget = NULL;
-	currentAudioWidget = NULL;
-		
-	source = src;
-	sampler = samp;
 	
 	QWidget *videoWidget = new QWidget();
 	videoWidgetLayout = new QGridLayout( videoWidget );
@@ -192,10 +191,9 @@ void FiltersDialog::removeCurrentAudioFilter()
 
 
 
-FiltersListDlg::FiltersListDlg( int m, QWidget *parent ) : QDialog( parent )
+FiltersListDlg::FiltersListDlg( int m, QWidget *parent ) : QDialog( parent ),
+	mode( m )
 {
-	mode = m;
-	
 	FilterCollection *fc = FilterCollection::getGlobalInstance();
 	int i;
 	

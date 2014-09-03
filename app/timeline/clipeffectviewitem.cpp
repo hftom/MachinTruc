@@ -25,6 +25,8 @@ ClipEffectViewItem::ClipEffectViewItem() : TypeRectItem( UNDEF )
 
 void ClipEffectViewItem::mousePressEvent( QGraphicsSceneMouseEvent *event )
 {
+	Q_UNUSED( event );
+	
 	/*firstMove = true;
 	if ( event->pos().x() < SNAPWIDTH ) {
 		moveResize = 1;
@@ -49,6 +51,8 @@ void ClipEffectViewItem::mousePressEvent( QGraphicsSceneMouseEvent *event )
 
 void ClipEffectViewItem::mouseMoveEvent( QGraphicsSceneMouseEvent *event )
 {
+	Q_UNUSED( event );
+	
 	/*if ( firstMove && fabs( event->scenePos().x() - moveStartMouse.x() ) < SNAPWIDTH )
 		return;
 	firstMove = false;
@@ -63,6 +67,8 @@ void ClipEffectViewItem::mouseMoveEvent( QGraphicsSceneMouseEvent *event )
 
 void ClipEffectViewItem::mouseReleaseEvent( QGraphicsSceneMouseEvent *event )
 {
+	Q_UNUSED( event );
+	
 	/*if ( firstMove )
 		return;
 	Timeline* t = (Timeline*)scene();
@@ -76,6 +82,8 @@ void ClipEffectViewItem::mouseReleaseEvent( QGraphicsSceneMouseEvent *event )
 
 void ClipEffectViewItem::hoverMoveEvent( QGraphicsSceneHoverEvent *event )
 {
+	Q_UNUSED( event );
+	
 	/*if ( event->pos().x() < SNAPWIDTH || event->pos().x() > rect().width() - SNAPWIDTH ) {
 		setCursor( Qt::SplitHCursor );
 	}

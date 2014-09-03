@@ -13,21 +13,19 @@
 
 
 
-Timeline::Timeline( TopWindow *parent ) : QGraphicsScene()
+Timeline::Timeline( TopWindow *parent ) : QGraphicsScene(),
+	zoom( DEFAULTZOOM ),
+	viewWidth( 0 ),
+	moveItem( NULL ),
+	selectedItem( NULL ),
+	topParent( parent )
 {
-	topParent = parent;
-	zoom = DEFAULTZOOM;
-	viewWidth = 0;
-	
 	setBackgroundBrush( QBrush( QColor(20,20,20) ) );
 	
 	cursor = new CursorViewItem();
 	addItem( cursor );
 	cursor->setZValue( 100 );
-	cursor->setPos( 0, 0 );
-
-	moveItem = NULL;
-	selectedItem = NULL;
+	cursor->setPos( 0, 0 );	
 }
 
 

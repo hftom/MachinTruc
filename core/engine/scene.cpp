@@ -5,10 +5,11 @@
 
 
 Scene::Scene( Profile p )
+	: update( true ),
+	currentPTS( 0 ),
+	currentPTSAudio( 0 ),
+	profile( p )
 {
-	profile = p;
-	currentPTS = currentPTSAudio = 0;
-	update = true;
 }
 	
 

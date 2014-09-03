@@ -33,10 +33,11 @@ class ParameterWidget : public QWidget
 {
 	Q_OBJECT
 public:
-	ParameterWidget( QWidget *parent, Parameter *p ) : QWidget( parent ) {
-		param = p;
-		animBtn = NULL;
-		animActive = false;
+	ParameterWidget( QWidget *parent, Parameter *p ) : QWidget( parent ),
+		param( p ),
+		animBtn( NULL ),
+		animActive( false )
+	{
 	}
 	
 	virtual QLayout *getLayout() = 0;

@@ -123,10 +123,7 @@ private:
 class FrameSample
 {
 public:
-	FrameSample() {
-		frame = NULL;
-		composition = NULL;
-	}
+	FrameSample() : frame(NULL), composition(NULL) {}
 	~FrameSample() {}
 	void clear( bool releaseFrame = true );
 

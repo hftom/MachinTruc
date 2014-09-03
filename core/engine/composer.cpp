@@ -15,11 +15,12 @@
 
 
 Composer::Composer( Sampler *samp )
+	: running( false ),
+	oneShot( false ),
+	skipFrame( 0 ),
+	sampler( samp ),
+	audioSampleDelta( 0 )
 {
-	running = false;
-	oneShot = false;
-	audioSampleDelta = 0;
-	sampler = samp;
 }
 
 
@@ -45,7 +46,9 @@ void Composer::setSharedContext( QGLWidget *shared )
 	else
 		assert(false);
 	
-	bool ok = init_movit( movitPath.toLocal8Bit().data(), MOVIT_DEBUG_ON );
+	bool ok = init_movit( movitPath.toLocal8Bit().data(), MOVIT_DEBUG_OFF );
+	
+	Q_UNUSED( ok );
 	
 	movitPool = new ResourcePool( 100, 300 << 20, 100 );
 

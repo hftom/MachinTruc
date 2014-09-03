@@ -2,7 +2,7 @@
 
 
 
-TypeRectItem::TypeRectItem( int t ) : QGraphicsRectItem()
+TypeRectItem::TypeRectItem( int t ) : QGraphicsRectItem(),
+	type( t )
 {
-	type = t;
 }

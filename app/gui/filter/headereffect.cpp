@@ -30,6 +30,7 @@ void HeaderEffect::buttonClicked()
 
 void HeaderEffect::mousePressEvent( QMouseEvent *event )
 {
+	Q_UNUSED( event );
 	qDebug() << "HeaderEffect::mousePressEvent";
 }
 
@@ -37,6 +38,7 @@ void HeaderEffect::mousePressEvent( QMouseEvent *event )
 
 void HeaderEffect::mouseMoveEvent( QMouseEvent *event )
 {
+	Q_UNUSED( event );
 	qDebug() << "HeaderEffect::mouseMoveEvent";
 }
 
@@ -44,5 +46,6 @@ void HeaderEffect::mouseMoveEvent( QMouseEvent *event )
 
 void HeaderEffect::mouseReleaseEvent( QMouseEvent *event )
 {
+	Q_UNUSED( event );
 	qDebug() << "HeaderEffect::mouseReleaseEvent";
 }

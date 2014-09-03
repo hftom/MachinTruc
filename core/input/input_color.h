@@ -18,7 +18,7 @@ static const char *inputColorShader=
 class InputColor : public Input
 {
 public:
-	InputColor() : needs_mipmaps(false) {
+	InputColor() : needs_mipmaps( false ) {
 		register_int("needs_mipmaps", &needs_mipmaps);
 	}
 	

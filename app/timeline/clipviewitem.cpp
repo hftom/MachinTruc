@@ -145,6 +145,8 @@ void ClipViewItem::mouseMoveEvent( QGraphicsSceneMouseEvent *event )
 
 void ClipViewItem::mouseReleaseEvent( QGraphicsSceneMouseEvent *event )
 {
+	Q_UNUSED( event );
+	
 	if ( firstMove )
 		return;
 	Timeline* t = (Timeline*)scene();

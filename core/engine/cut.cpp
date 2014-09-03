@@ -3,10 +3,10 @@
 
 
 Cut::Cut( Source *src, double st, double len )
+	: source( src ),
+	start( st ),
+	length( len )
 {
-	source = src;
-	start = st;
-	length = len;
 }
 
 

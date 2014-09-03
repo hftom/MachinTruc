@@ -21,6 +21,8 @@ GLCrop::~GLCrop()
 
 void GLCrop::preProcess( Frame *src, Profile *p )
 {
+	Q_UNUSED( p );
+	
 	double pts = src->pts();
 	pleft = getParamValue( left, pts ).toDouble() * src->glWidth / 100.0;
 	double r = getParamValue( right, pts ).toDouble() * src->glWidth / 100.0;

@@ -13,11 +13,13 @@ class InputBase : public QThread
 public:
 	enum InputType{ UNDEF, FFMPEG, OPENGL, IMAGE };
 
-	InputBase() {
-		haveAudio = haveVideo = false;
-		usedByClip = false;
-		inputType = UNDEF;
-		mmi = 0;
+	InputBase()
+		: haveAudio( false ),
+		haveVideo( false ),
+		usedByClip( false ),
+		inputType( UNDEF ),
+		mmi( 0 )
+	{
 	}
 	virtual ~InputBase() {}
 	virtual bool probe( QString fn, Profile *prof ) = 0;

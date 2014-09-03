@@ -32,6 +32,7 @@ public:
 	}
 	
 	virtual void set_gl_state( GLuint glsl_program_num, const std::string &prefix, unsigned *sampler_num ) {
+		Q_UNUSED( sampler_num );
 		float border[2] = { 1.0f / iwidth * borderSize, 1.0f / iheight * borderSize };
 		set_uniform_vec2( glsl_program_num, prefix, "border", border );
 	}

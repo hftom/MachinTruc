@@ -5,11 +5,10 @@
 
 
 Filter::Filter( QString id, QString name )
+	: identifier( id ),
+	filterName( name ),
+	refCount( 1 )
 {
-	identifier = id;
-	filterName = name;
-	refCount = 0;
-	use();
 }
 
 

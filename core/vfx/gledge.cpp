@@ -37,7 +37,8 @@ QList<Effect*> GLEdge::getMovitEffects()
 {
 	QList<Effect*> list;
 	BlurEffect* blur = new BlurEffect();
-	blur->set_int( "num_taps", 6 );
+	bool ok = blur->set_int( "num_taps", 6 );
+	Q_UNUSED( ok );
 	list.append( blur );
 	list.append( new EdgeEffect() );
 	return list;

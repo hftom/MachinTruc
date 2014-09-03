@@ -80,7 +80,7 @@ INCLUDEPATH = ../core
 
 RESOURCES = resources.qrc
 
-CONFIG += debug
+#CONFIG += debug
 unix {
 	CONFIG += link_pkgconfig
 	PKGCONFIG += movit

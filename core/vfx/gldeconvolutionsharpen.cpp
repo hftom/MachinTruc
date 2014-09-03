@@ -36,7 +36,8 @@ bool GLDeconvolutionSharpen::process( const QList<Effect*> &el, Frame *src, Prof
 QList<Effect*> GLDeconvolutionSharpen::getMovitEffects()
 {
 	Effect *e = new DeconvolutionSharpenEffect();
-	e->set_int( "matrix_size", getParamValue( R ).toInt() );
+	bool ok = e->set_int( "matrix_size", getParamValue( R ).toInt() );
+	Q_UNUSED( ok );
 	QList<Effect*> list;
 	list.append( e );
 	return list;

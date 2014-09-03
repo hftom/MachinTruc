@@ -9,15 +9,15 @@
 
 
 Frame::Frame( MQueue<Frame*> *origin, bool makeSample )
+	: mmi( 0 ),
+	pType( Frame::NONE ),
+	fb( NULL ),
+	pb( NULL ),
+	glfence( NULL ),
+	pPTS( 0 ),
+	buffer( NULL ),
+	originQueue( origin )
 {
-	fb = NULL;
-	pb = NULL;
-	glfence = NULL;
-	mmi = 0;
-	buffer = NULL;
-	pType = Frame::NONE;
-	pPTS = 0;
-	originQueue = origin;
 	if ( makeSample )
 		sample = new ProjectSample();
 	else

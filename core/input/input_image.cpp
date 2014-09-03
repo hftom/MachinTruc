@@ -10,12 +10,12 @@
 
 
 
-InputImage::InputImage() : InputBase()
+InputImage::InputImage() : InputBase(),
+	fps( 30 ),
+	currentVideoPTS( 0 ),
+	buffer( NULL )
 {
-	buffer = NULL;
 	inputType = IMAGE;
-	currentVideoPTS = 0;
-	fps = 30;
 
 	int i;
 	for ( i = 0; i < NUMINPUTFRAMES; ++i )

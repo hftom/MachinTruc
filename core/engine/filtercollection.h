@@ -50,11 +50,11 @@ public:
 class FilterEntry
 {
 public:
-	FilterEntry( QString id, QString n, Filter* (*p)(QString,QString) ) {
-		identifier = id;
-		name = n;
-		makeFilter = p;
-	}
+	FilterEntry( QString id, QString n, Filter* (*p)(QString,QString) )
+		: identifier( id ),
+		name( n ),
+		makeFilter( p )
+	{}
 	
 	Filter* create() { return makeFilter( identifier, name ); }
 

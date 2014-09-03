@@ -14,6 +14,7 @@ GLBackgroundColor::GLBackgroundColor( QString id, QString name ) : GLFilter( id,
 bool GLBackgroundColor::process( const QList<Effect*> &el, Frame *src, Profile *p )
 {
 	Q_UNUSED( p );
+	Q_UNUSED( src );
 	QColor c = getParamValue( color ).value<QColor>();
 	// convert gamma and premultiply
 	sRgbColorToPremultipliedLinear( c );

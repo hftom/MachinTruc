@@ -7,12 +7,12 @@
 
 
 AudioOutSDL::AudioOutSDL()
+	: bufferSize( 1024 ),
+	bufferLen( 0 ),
+	bufferOffset( 0 ),
+	readData( NULL ),
+	readUserData( NULL )
 {
-	readData = NULL;
-	readUserData = NULL;
-
-	bufferLen = bufferOffset = 0;
-	bufferSize = 1024;
 	buffer = (uint8_t*)malloc( bufferSize );
 
 	SDL_Init( SDL_INIT_AUDIO );
@@ -31,6 +31,13 @@ AudioOutSDL::AudioOutSDL()
 	
 	printf("SDL audio obtained : freq=%d format=%d channels=%d\n", obt.freq, obt.format, obt.channels);
 }
+
+uint8_t *buffer;
+	int bufferSize, bufferLen, bufferOffset;
+	int bytesPerSample, sampleRate;
+
+	READDATACALLBACK readData;
+	void *readUserData;
 
 
 

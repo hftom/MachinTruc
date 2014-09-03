@@ -4,13 +4,13 @@
 
 
 Clip::Clip( Source *src, double posInTrackPTS, double strt, double len )
+	: source( src ),
+	posInTrack( posInTrackPTS ),
+	clipStart( strt ),
+	clipLength( len ),
+	frameDuration( MICROSECOND / 25.0 ),
+	in( NULL )
 {
-	source = src;
-	posInTrack = posInTrackPTS;
-	clipStart = strt;
-	clipLength = len;
-	frameDuration = MICROSECOND / 25.0;
-	in = NULL;
 }
 
 

@@ -6,6 +6,8 @@
 
 ColorChooser::ColorChooser( QWidget *parent, Parameter *p, bool keyframeable ) : ParameterWidget( parent, p )
 {
+	Q_UNUSED( keyframeable );
+	
 	QBoxLayout *b1 = new QBoxLayout( QBoxLayout::LeftToRight );
 	b1->setContentsMargins( 0, 0, 0, 0 );
 	widgets.append( label = new QLabel( p->name, parent ) );
@@ -48,4 +50,5 @@ void ColorChooser::colorChanged( const QColor &col )
 
 void ColorChooser::animValueChanged( double val )
 {
+	Q_UNUSED( val );
 }

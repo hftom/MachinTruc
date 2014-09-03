@@ -2,11 +2,12 @@
 
 
 
-AbstractViewItem::AbstractViewItem( int t) : TypeRectItem( t )
+AbstractViewItem::AbstractViewItem( int t) : TypeRectItem( t ),
+	position( 0 ),
+	length( 0 ),
+	selected( false )
 {
-	position = length = 0;
-	selected = false;
-};
+}
 
 
 

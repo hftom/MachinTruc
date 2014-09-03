@@ -3,10 +3,10 @@
 
 
 Source::Source( InputBase::InputType t, QString path, Profile prof ) 
+	: fileName( path ),
+	profile( prof ),
+	type( t )
 {
-	type = t;
-	fileName = path;
-	profile = prof;
 }
 
 

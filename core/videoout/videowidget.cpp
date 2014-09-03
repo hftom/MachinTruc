@@ -13,12 +13,14 @@
 
 
 
-VideoWidget::VideoWidget( QWidget *parent ) : QGLWidget( parent )
+VideoWidget::VideoWidget( QWidget *parent ) : QGLWidget( parent ),
+	hidden( NULL ),
+	thumb( NULL ),
+	fences( NULL ),
+	lastFrameRatio( 16./9. ),
+	lastFrame( NULL )
 {
 	setAutoFillBackground( false );
-	lastFrameRatio = 16./9.;
-	hidden = thumb = fences = NULL;
-	lastFrame = NULL;
 }
 
 
@@ -276,6 +278,7 @@ void VideoWidget::wheelEvent( QWheelEvent * event )
 
 void VideoWidget::mouseMoveEvent( QMouseEvent * event )
 {
+	Q_UNUSED( event );
 	//if ( event->button() == Qt::LeftButton )
 		//emit move( event->x(), event->y() );
 }

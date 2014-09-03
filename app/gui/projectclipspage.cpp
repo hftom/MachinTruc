@@ -18,9 +18,8 @@
 
 
 ProjectSourcesPage::ProjectSourcesPage( Sampler *samp )
-{
-	sampler = samp;
-	
+	: sampler( samp )
+{	
 	setupUi( this );
 	
 	cutListView->setModel( &model );
@@ -42,6 +41,7 @@ ProjectSourcesPage::ProjectSourcesPage( Sampler *samp )
 
 Source* ProjectSourcesPage::getSource( int index, const QString &filename )
 {
+	Q_UNUSED( filename );
 	if ( index < 0 || index > sourceListWidget->count() - 1 )
 		return NULL;
 	SourceListItem *it = (SourceListItem*)sourceListWidget->item( index );

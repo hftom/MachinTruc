@@ -24,10 +24,10 @@ class CutListItem
 {
 public:
 	CutListItem( Cut *c, QImage img )
+		: cut( c ),
+		thumb( img )
 	{
-		cut = c;
 		currentPts = cut->getStart();
-		thumb = img;
 	}
 	
 	const QImage & getThumb() { return thumb; }
@@ -45,9 +45,9 @@ private:
 class SourceListItem : public QListWidgetItem
 {
 public:
-	SourceListItem( QPixmap pix, Source *src ) : QListWidgetItem() {
-		// takes ownership of src.
-		source = src;
+	SourceListItem( QPixmap pix, Source *src ) : QListWidgetItem(),
+		source( src ) // takes ownership of src.
+	{
 		Profile p = source->getProfile();
 		int hours, mins, secs;
 		secs = p.getStreamDuration() / MICROSECOND;
@@ -110,7 +110,10 @@ class CutListModel : public QAbstractListModel
 {
 	Q_OBJECT
 public:
-	CutListModel() : QAbstractListModel() { source = NULL; }
+	CutListModel() : QAbstractListModel(),
+		source( NULL )
+	{
+	}
 	int rowCount( const QModelIndex &parent = QModelIndex() ) const {
 		Q_UNUSED( parent );
 		return source ? source->getCutList()->count() : 0;

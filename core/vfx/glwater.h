@@ -47,16 +47,17 @@ static const char *WaterEffect_frag=
 
 class WaterEffect : public Effect {
 public:
-	WaterEffect() {
-		time = 0.0;
-		inwidth = 1280;
-		inheight = 720;
-		speed = 0.1;
-		emboss = 0.4;
-		intensity = 3.0;
-		frequency = 4.0;
-		delta = 220.0;
-		intence = 700.0;
+	WaterEffect() 
+		: time(0.0),
+		inwidth(1280),
+		inheight(720),
+		speed(0.1),
+		emboss(0.4),
+		intensity(3.0),
+		frequency(4.0),
+		delta(220.0),
+		intence(700.0)
+	{
 		register_float( "time", &time );
 		register_float( "speed", &speed );
 		register_float( "emboss", &emboss );

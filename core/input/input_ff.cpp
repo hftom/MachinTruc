@@ -48,19 +48,24 @@ static const double CommonFrameRates[NCFR][2] = {
 
 
 
-InputFF::InputFF() : InputBase()
+InputFF::InputFF() : InputBase(),
+	formatCtx( NULL ),
+	videoCodecCtx( NULL ),
+	audioCodecCtx( NULL ),
+	swr( NULL ),
+	videoCodec( NULL ),
+	audioCodec( NULL ),
+	videoStream( -1 ),
+	audioStream( -1 ),
+	duration( 0 ),
+	startTime( 0 ),
+	seekAndPlay( false ),
+	arb( NULL ),
+	endOfFile( 0 ),
+	running( false ),
+	oneShot( false )
 {
 	inputType = FFMPEG;
-
-	videoStream = -1;
-	audioStream = -1;
-	formatCtx = NULL;
-	videoCodecCtx = NULL;
-	videoCodec = NULL;
-	audioCodecCtx = NULL;
-	audioCodec = NULL;
-	swr = NULL;
-	arb = NULL;
 
 	if ( !lockManagerRegistered ) {
 		av_lockmgr_register( lockManager );
@@ -71,20 +76,12 @@ InputFF::InputFF() : InputBase()
 
 	videoAvframe = av_frame_alloc();
 	audioAvframe = av_frame_alloc();
-	seekAndPlay = false;
-
-	duration = startTime = 0;
-
-	endOfFile = 0;
 
 	int i;
 	for ( i = 0; i < NUMINPUTFRAMES; ++i ) {
 		freeAudioFrames.enqueue( new Frame( &freeAudioFrames ) );
 		freeVideoFrames.enqueue( new Frame( &freeVideoFrames ) );
 	}
-
-	running = false;
-	oneShot = false;
 
 	semaphore = new QSemaphore( 1 );
 }
@@ -1200,14 +1197,15 @@ Frame* InputFF::getAudioFrame( int nSamples )
 
 ////////////////////////////////////////////////////////////////////
 AudioRingBuffer::AudioRingBuffer()
+	: reader(0),
+	writer(0),
+	size(25),
+	channels(DEFAULTCHANNELS),
+	bytesPerChannel(2),
+	bytesPerSample(channels * bytesPerChannel),
+	sampleRate(DEFAULTSAMPLERATE)
 {
-	size = 25;
 	chunks = new AudioChunk[size];
-	reader = writer = 0;
-	bytesPerChannel = 2;
-	channels = DEFAULTCHANNELS;
-	bytesPerSample = channels * bytesPerChannel;
-	sampleRate = DEFAULTSAMPLERATE;
 }
 
 

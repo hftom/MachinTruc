@@ -8,8 +8,8 @@
 
 
 MovitInput::MovitInput()
+	: mmi( -1 )
 {
-	mmi = -1;
 }
 
 
@@ -213,10 +213,10 @@ QString MovitInput::getDescriptor( Frame *src )
 
 
 MovitFilter::MovitFilter( const QList<Effect*> &el, GLFilter *f, bool owns )
+	: effects( el ),
+	filter( f ),
+	ownsFilter( owns )
 {
-	effects = el;
-	filter = f;
-	ownsFilter = owns;
 }
 	
 MovitFilter::~MovitFilter()
@@ -226,10 +226,10 @@ MovitFilter::~MovitFilter()
 }
 
 MovitComposition::MovitComposition( Effect *e, GLComposition *c, bool owns )
+	: effect( e ),
+	composition( c ),
+	ownsComposition( owns )
 {
-	effect = e;
-	composition = c;
-	ownsComposition = owns;
 }
 	
 MovitComposition::~MovitComposition()
@@ -239,9 +239,9 @@ MovitComposition::~MovitComposition()
 }
 
 MovitBranch::MovitBranch( MovitInput *in )
+	: input( in ),
+	composition( NULL )
 {
-	input = in;
-	composition = NULL;
 }
 	
 MovitBranch::~MovitBranch() 
@@ -254,8 +254,8 @@ MovitBranch::~MovitBranch()
 }
 
 MovitChain::MovitChain()
+	: chain( NULL )
 {
-	chain = NULL;
 }
 	
 MovitChain::~MovitChain() 

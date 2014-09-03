@@ -7,21 +7,17 @@
 
 
 Metronom::Metronom()
+	: running( false ),
+	fencesContext( NULL ),
+	lastFrame( NULL )
 {
-	int i;
-
-	for ( i = 0; i < NUMOUTPUTFRAMES; ++i ) {
+	for ( int i = 0; i < NUMOUTPUTFRAMES; ++i ) {
 		freeVideoFrames.enqueue( new Frame( &freeVideoFrames, true ) );
 		freeAudioFrames.enqueue( new Frame( &freeAudioFrames, true ) );
 	}
 
-
-	running = false;
 	ao.setReadCallback( (void*)readData, (void*)this );
 	//ao.go();
-
-	lastFrame = NULL;
-	fencesContext = NULL;
 }
 
 

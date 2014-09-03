@@ -34,7 +34,7 @@ protected:
 	
 private:
 	QList<Parameter*> parameters;
-	QString filterName, identifier;
+	QString identifier, filterName;
 	double posInTrack, length;
 	
 	int refCount;

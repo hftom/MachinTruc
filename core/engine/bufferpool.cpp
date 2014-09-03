@@ -11,9 +11,9 @@ static BufferPool globalBufferPool;
 
 
 BufferPool::BufferPool()
+	: totalBytes( 0 ),
+	totalBuffers( 0 )
 {
-	totalBytes = 0;
-	totalBuffers = 0;
 }
 
 

@@ -2,9 +2,9 @@
 
 
 
-KeyItem::KeyItem( AnimItem *parent ) : QGraphicsRectItem( parent )
+KeyItem::KeyItem( AnimItem *parent ) : QGraphicsRectItem( parent ),
+	anim( parent )
 {
-	anim = parent;
 	setRect( 0, 0, HALFKEYSIZE * 2, HALFKEYSIZE * 2 );
 
 	normalPen.setColor( QColor("black") );
@@ -63,11 +63,14 @@ void KeyItem::mouseMoveEvent( QGraphicsSceneMouseEvent *event )
 
 void KeyItem::mouseReleaseEvent( QGraphicsSceneMouseEvent *event )
 {
+	Q_UNUSED( event );
 }
 
 
 
 void KeyItem::mouseDoubleClickEvent( QGraphicsSceneMouseEvent *event )
 {
+	Q_UNUSED( event );
+	
 	anim->keyDoubleClicked( this );
 }

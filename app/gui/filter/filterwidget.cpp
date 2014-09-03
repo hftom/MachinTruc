@@ -8,11 +8,10 @@
 
 
 
-FilterWidget::FilterWidget( QWidget *parent, Clip *c, Filter *f ) : QWidget( parent )
-{
-	clip = c;
-	filter = f;
-	
+FilterWidget::FilterWidget( QWidget *parent, Clip *c, Filter *f ) : QWidget( parent ),
+	clip( c ),
+	filter( f )
+{	
 	QList<Parameter*> parameters = filter->getParameters();
 	
 	QBoxLayout* box = new QBoxLayout( QBoxLayout::TopToBottom, this );

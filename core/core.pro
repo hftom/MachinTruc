@@ -117,7 +117,7 @@ TEMPLATE = lib
 
 QT += opengl
 
-CONFIG += staticlib debug
+CONFIG += staticlib #debug
 unix {
 	CONFIG += link_pkgconfig
 	PKGCONFIG += movit

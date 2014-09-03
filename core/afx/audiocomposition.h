@@ -9,10 +9,11 @@ class AudioComposition : public QObject
 {
 	Q_OBJECT
 public:
-	AudioComposition() {
-		valid = false;
-		posInTrack = 0;
-		len = 0;
+	AudioComposition()
+		: valid( false ),
+		posInTrack( 0 ),
+		len( 0 )
+	{
 	}
 	virtual ~AudioComposition() {}
 

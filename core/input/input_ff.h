@@ -24,12 +24,13 @@ extern "C" {
 class AudioChunk
 {
 public:
-	AudioChunk() {
-		bytes = NULL;
-		bufSize = 0;
-		bufOffset = 0;
-		available = 0;
-		pts = 0;
+	AudioChunk()
+		: pts( 0 ),
+		bytes( NULL ),
+		bufSize( 0 ),
+		bufOffset( 0 ),
+		available( 0 )
+	{
 	}
 	~AudioChunk() {
 		if ( bytes )
@@ -70,10 +71,10 @@ private:
 	AudioChunk *chunks;
 	int reader, writer;
 	int size;
-	int bytesPerSample;
-	int bytesPerChannel;
-	int sampleRate;
 	int channels;
+	int bytesPerChannel;
+	int bytesPerSample;
+	int sampleRate;
 
 	QMutex mutex;
 };
@@ -114,8 +115,9 @@ public:
 class VideoResampler
 {
 public:
-	VideoResampler() {
-		repeatBuffer = NULL;
+	VideoResampler()
+		: repeatBuffer( NULL )
+	{
 		reset( 40000 );
 	}
 	~VideoResampler() {}

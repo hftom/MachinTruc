@@ -6,11 +6,11 @@
 
 
 
-InputGL::InputGL() : InputBase()
+InputGL::InputGL() : InputBase(),
+	fps( 30 ),
+	currentVideoPTS( 0 )
 {
 	inputType = OPENGL;
-	currentVideoPTS = 0;
-	fps = 30;
 
 	int i;
 	for ( i = 0; i < NUMINPUTFRAMES; ++i )
@@ -30,6 +30,8 @@ InputGL::~InputGL()
 
 bool InputGL::probe( QString fn, Profile *prof )
 {
+	Q_UNUSED( fn );
+	Q_UNUSED( prof );
 	return false;
 }
 
@@ -70,6 +72,7 @@ double InputGL::seekTo( double p )
 
 bool InputGL::process( Frame *f )
 {
+	Q_UNUSED( f );
 	return false;
 }
 

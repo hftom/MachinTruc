@@ -6,10 +6,9 @@
 
 
 FxPage::FxPage()
+	: currentEffectsWidget( NULL )
 {
 	setupUi( this );
-	
-	currentEffectsWidget = NULL;
 	
 	FilterCollection *fc = FilterCollection::getGlobalInstance();
 	int i;
@@ -32,7 +31,7 @@ void FxPage::clipSelected( Clip *clip )
 	}
 	
 	if ( clip ) {
-		int i, j = 0;
+		int i;
 		currentEffectsWidget = new QWidget();
 		currentEffectsWidget->setMinimumWidth( 150 );
 		QGridLayout *effectsWidgetLayout = new QGridLayout( currentEffectsWidget );
