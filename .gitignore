@@ -1,2 +1,6 @@
 .directory
 build
+tests/moc_*
+tests/*.o
+tests/Makefile
+tests/tests

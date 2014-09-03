@@ -310,6 +310,9 @@ bool InputFF::probe( QString fn, Profile *prof )
 				fps = cfps;
 		}
 
+		prof->setVideoFrameRate( fps );
+		prof->setVideoFrameDuration( MICROSECOND / fps );
+
 		// a probed first frame pts before startTime
 		// may cause problem
 		double start = startTime;
@@ -320,26 +323,22 @@ bool InputFF::probe( QString fn, Profile *prof )
 		prof->setStreamStartTime( start );
 
 		// get last frame and set stream duration
-		prof->setStreamDuration( duration - (prof->getStreamStartTime() - startTime) );
-		if ( seek( startTime + duration ) ) {
+		prof->setStreamDuration( duration - (prof->getStreamStartTime() - startTime) + prof->getVideoFrameDuration() );
+		if ( seek( prof->getStreamStartTime() + prof->getStreamDuration() - MICROSECOND ) ) {
 			double p = AV_NOPTS_VALUE;
 			while ( seekDecodeNext( &f ) ) {
 				if ( f.pts() > p )
 					p = f.pts();
 			}
 			if ( p != AV_NOPTS_VALUE ) {
-				prof->setStreamDuration( p - start );
+				prof->setStreamDuration( p - start + prof->getVideoFrameDuration() );
 			}
-			else
-				prof->setStreamDuration( duration - (prof->getStreamStartTime() - startTime) );
 		}
 		if ( prof->getStreamDuration() <= 0 ) {
 			return haveAudio;
 		}
 
 		prof->setVideoCodecName( QString( av_codec_get_codec_descriptor( videoCodecCtx )->name ) );
-		prof->setVideoFrameRate( fps );
-		prof->setVideoFrameDuration( MICROSECOND / fps );
 		prof->setVideoWidth( f.profile.getVideoWidth() );
 		prof->setVideoHeight( f.profile.getVideoHeight() );
 		prof->setVideoSAR( f.profile.getVideoSAR() );
@@ -565,6 +564,7 @@ double InputFF::seekTo( double p )
 	int loop = 0, maxloop = 10;
 	int seekinc = MICROSECOND / inProfile.getVideoFrameDuration();
 	int timestampinc = 2, audiotimestampinc = 2;
+	double tail = inProfile.getStreamStartTime() + inProfile.getStreamDuration() - MICROSECOND;
 
 	if ( !haveVideo ) {
 		if ( haveAudio ) {
@@ -589,6 +589,11 @@ double InputFF::seekTo( double p )
 			before = false;
 			seek( timestamp );
 			if ( !seekDecodeNext( f ) ) {
+				if ( p > tail && timestamp > startTime ) {
+					timestamp -= MICROSECOND / 2.0;
+					++loop;
+					continue;
+				}
 				printf("seekTo !decodeVideo\n");
 				f->release();
 				return p;
@@ -603,7 +608,12 @@ double InputFF::seekTo( double p )
 			if ( cur == lastpts )
 				++loop;
 
-			if ( cur > p ) {
+			// If p is near the end, we can get funky negative pts with some formats;
+			// if so, seek back.
+			if ( p >= 0 && cur < 0 ) {
+				timestamp -= seekinc * hdur;
+			}
+			else if ( cur > p ) {
 				if ( delta > hdur && !before )
 					timestamp -= (timestampinc++ * (cur - p));
 				else if ( haveAudio && !decodeAudio( DECODEAUDIOSYNC, &cur ) )
