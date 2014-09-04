@@ -1,6 +1,7 @@
 #ifndef PROFILE_H
 #define PROFILE_H
 
+#include <QObject>
 #include <QString>
 
 #define MILLISECOND 1000.0
@@ -17,13 +18,16 @@ class Profile
 public:
 	enum SampleFormat{ SAMPLE_FMT_NATIVE, SAMPLE_FMT_S16, SAMPLE_FMT_32F };
 	enum AudioLayout{ LAYOUT_NATIVE, LAYOUT_STEREO, LAYOUT_51 };
-	enum ColorSpace{ SPC_UNDEF, SPC_709, SPC_601_625, SPC_601_525 };
-	enum ColorPrimaries{ PRI_UNDEF, PRI_709, PRI_601_625, PRI_601_525 };
+	enum ColorSpace{ SPC_UNDEF, SPC_709, SPC_601_625, SPC_601_525, SPC_SRGB };
+	enum ColorPrimaries{ PRI_UNDEF, PRI_709, PRI_SRGB, PRI_601_625, PRI_601_525 };
 	enum ChromaLocation{ LOC_UNDEF, LOC_LEFT, LOC_CENTER, LOC_TOPLEFT };
 	enum GammaCurve{ GAMMA_UNDEF, GAMMA_709, GAMMA_601, GAMMA_SRGB };
 
 	Profile();
 	static int bytesPerChannel( Profile *prof );
+	QString colorPrimariesName();
+	QString gammaCurveName();	
+	QString colorSpaceName();
 
 	void setVideoFrameRate( double fr ) { videoFrameRate = fr; }
 	void setVideoFrameDuration( double d ) { videoFrameDuration = d; }

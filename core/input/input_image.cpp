@@ -52,7 +52,8 @@ bool InputImage::probe( QString fn, Profile *prof )
 	prof->setVideoFrameDuration( MICROSECOND / fps );
 	prof->setStreamStartTime( 0 );
 	prof->setStreamDuration( DEFAULTLENGTH );
-	prof->setVideoColorPrimaries( Profile::PRI_709 );
+	prof->setVideoColorSpace( Profile::SPC_SRGB );
+	prof->setVideoColorPrimaries( Profile::PRI_SRGB );
 	prof->setVideoGammaCurve( Profile::GAMMA_SRGB );
 	prof->setVideoCodecName( "image" );
 	prof->setHasVideo( true );

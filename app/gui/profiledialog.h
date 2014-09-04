@@ -27,6 +27,18 @@ public:
 			videoCodec->setText( p.getVideoCodecName() );
 			fpsLab->setText( QString::number( p.getVideoFrameRate(), 'f', 2 ) );
 			fullRangeBox->setChecked( p.getVideoColorFullRange() );
+			primCombo->insertItem( 0, p.colorPrimariesName() );
+			gammaCombo->insertItem( 0, p.gammaCurveName() );
+			spcCombo->insertItem( 0, p.colorSpaceName() );
+			if ( p.getVideoInterlaced() ) {
+				if ( p.getVideoTopFieldFirst() )
+					interlaceCombo->insertItem( 0, tr("TFF") );
+				else
+					interlaceCombo->insertItem( 0, tr("BFF") );
+			}
+			else
+				interlaceCombo->insertItem( 0, tr("No") );
+			sarSpin->setValue( p.getVideoSAR() );
 		}
 		if ( p.hasAudio() ) {
 			audioCodec->setText( p.getAudioCodecName() );

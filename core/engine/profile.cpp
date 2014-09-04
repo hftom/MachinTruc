@@ -28,6 +28,44 @@ Profile::Profile()
 
 
 
+QString Profile::colorPrimariesName()
+{
+	switch ( videoColorPrimaries ) {
+		case PRI_601_625 : return QObject::tr( "BT.470BG" );
+		case PRI_601_525 : return QObject::tr( "SMPTE-240M" );
+		case PRI_SRGB : return QObject::tr( "sRGB" );
+		case PRI_709 :
+		default : return QObject::tr( "BT.709" );
+	}
+}
+
+
+
+QString Profile::gammaCurveName()
+{
+	switch ( videoGammaCurve ) {
+		case GAMMA_601 : return QObject::tr( "SMPTE-170M" );
+		case GAMMA_SRGB : return QObject::tr( "sRGB" );
+		case GAMMA_709 : 
+		default : return QObject::tr( "BT.709" );
+	}
+}
+
+
+
+QString Profile::colorSpaceName()
+{
+	switch ( videoColorSpace ) {
+		case SPC_601_625 : return QObject::tr( "BT.470BG" );
+		case SPC_601_525 : return QObject::tr( "SMPTE-170M" );
+		case SPC_SRGB : return QObject::tr( "sRGB" );
+		case SPC_709 : 
+		default : return QObject::tr( "BT.709" );
+	}
+}
+
+
+
 int Profile::bytesPerChannel( Profile *prof )
 {
 	if ( prof->getAudioFormat() == SAMPLE_FMT_32F )
