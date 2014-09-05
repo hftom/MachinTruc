@@ -25,6 +25,7 @@ public:
 private:
 	GLPadding *padding;
 	GLResize *resize;
+	bool resizeActive;
 };
 
 #endif //GLSIZE_H
