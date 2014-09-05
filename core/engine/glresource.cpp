@@ -41,22 +41,14 @@ PBO* GLResource::getPBO( int size )
 			}
 			if ( p->size() > size ) {
 				int d = p->size() - size;
-				if ( supindex == -1 ) {
-					supdelta = d;
-					supindex = i;
-				}
-				else if ( d < supdelta ) {
+				if ( supindex == -1 || d < supdelta ) {
 					supdelta = d;
 					supindex = i;
 				}
 			}
 			else {
 				int d = size - p->size();
-				if ( infindex == -1 ) {
-					infdelta = d;
-					infindex = i;
-				}
-				else if ( d < infdelta ) {
+				if ( infindex == -1 || d < infdelta ) {
 					infdelta = d;
 					infindex = i;
 				}
