@@ -381,7 +381,7 @@ void Composer::movitRender( Frame *dst, bool update )
 			if ( f->profile.getVideoInterlaced() ) {
 				GLDeinterlace *deint = new GLDeinterlace();
 				QList<Effect*> el = deint->getMovitEffects();
-				branch->filters.append( new MovitFilter( el, deint, true ) );
+				branch->filters.append( new MovitFilter( el, deint ) );
 				for ( l = 0; l < el.count(); ++l )
 					current = movitChain.chain->add_effect( el.at( l ) );
 			}
@@ -389,7 +389,7 @@ void Composer::movitRender( Frame *dst, bool update )
 			// apply filters
 			for ( k = 0; k < dst->sample->frames[i - 1]->videoFilters.count(); ++k ) {
 				QList<Effect*> el = dst->sample->frames[i - 1]->videoFilters[k]->getMovitEffects();
-				branch->filters.append( new MovitFilter( el, dst->sample->frames[i - 1]->videoFilters[k] ) );
+				branch->filters.append( new MovitFilter( el ) );
 				for ( l = 0; l < el.count(); ++l )
 					current = movitChain.chain->add_effect( el.at( l ) );
 			}
@@ -398,7 +398,7 @@ void Composer::movitRender( Frame *dst, bool update )
 			if ( f->resizeAuto ) {
 				GLResize *resize = new GLResize();
 				QList<Effect*> el = resize->getMovitEffects();
-				branch->filters.append( new MovitFilter( el, resize, true ) );
+				branch->filters.append( new MovitFilter( el, resize ) );
 				for ( l = 0; l < el.count(); ++l )
 					current = movitChain.chain->add_effect( el.at( l ) );
 			}
@@ -407,7 +407,7 @@ void Composer::movitRender( Frame *dst, bool update )
 			if ( f->paddingAuto ) {
 				GLPadding *padding = new GLPadding();
 				QList<Effect*> el = padding->getMovitEffects();
-				branch->filters.append( new MovitFilter( el, padding, true ) );
+				branch->filters.append( new MovitFilter( el, padding ) );
 				for ( l = 0; l < el.count(); ++l )
 					current = movitChain.chain->add_effect( el.at( l ) );
 			}
@@ -449,9 +449,10 @@ void Composer::movitRender( Frame *dst, bool update )
 		branch->input->process( f, &gl );
 		int vf = 0;
 		for ( k = 0; k < branch->filters.count(); ++k ) { 
-			if ( !branch->filters[k]->ownsFilter )
-				branch->filters[k]->filter = dst->sample->frames[i - 1]->videoFilters[vf++];
-			branch->filters[k]->filter->process( branch->filters[k]->effects, f, &projectProfile );
+			if ( !branch->filters[k]->filter )
+				dst->sample->frames[i - 1]->videoFilters[vf++]->process( branch->filters[k]->effects, f, &projectProfile );
+			else
+				branch->filters[k]->filter->process( branch->filters[k]->effects, f, &projectProfile );
 		}
 		if ( branch->composition )
 			branch->composition->composition->process( branch->composition->effect, f, f, &projectProfile );

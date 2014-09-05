@@ -212,16 +212,15 @@ QString MovitInput::getDescriptor( Frame *src )
 
 
 
-MovitFilter::MovitFilter( const QList<Effect*> &el, GLFilter *f, bool owns )
+MovitFilter::MovitFilter( const QList<Effect*> &el, GLFilter *f )
 	: effects( el ),
-	filter( f ),
-	ownsFilter( owns )
+	filter( f )
 {
 }
 	
 MovitFilter::~MovitFilter()
 {
-	if ( ownsFilter )
+	if ( filter )
 		filter->release();
 }
 
