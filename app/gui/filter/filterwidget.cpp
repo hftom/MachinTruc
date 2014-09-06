@@ -14,12 +14,14 @@ FilterWidget::FilterWidget( QWidget *parent, Clip *c, Filter *f ) : QWidget( par
 {	
 	QList<Parameter*> parameters = filter->getParameters();
 	
-	QBoxLayout* box = new QBoxLayout( QBoxLayout::TopToBottom, this );
+	QBoxLayout* box = new QBoxLayout( QBoxLayout::TopToBottom );
 	box->setContentsMargins( 0, 0, 0, 0 );
 	
-	HeaderEffect *header = new HeaderEffect( this, filter->getFilterName() );
+	HeaderEffect *header = new HeaderEffect( filter->getFilterName(), clip!=NULL ? true : false );
 	box->addWidget( header );
 	connect( header, SIGNAL(deleteFilter()), this, SLOT(deleteFilter()) );
+	connect( header, SIGNAL(moveUp()), this, SLOT(moveUp()) );
+	connect( header, SIGNAL(moveDown()), this, SLOT(moveDown()) );
 	
 	int i;
 	for ( i = 0; i < parameters.count(); ++i ) {
@@ -50,6 +52,8 @@ FilterWidget::FilterWidget( QWidget *parent, Clip *c, Filter *f ) : QWidget( par
 			box->addLayout( pw->getLayout() );
 		}
 	}
+	
+	setLayout( box );
 }
 
 
@@ -76,6 +80,22 @@ void FilterWidget::deleteFilter()
 		emit filterDeleted( clip, filter );
 	else
 		emit filterSourceDeleted();
+}
+
+
+
+void FilterWidget::moveUp()
+{
+	if ( clip )
+		emit filterMoveUp( clip, filter );
+}
+
+
+
+void FilterWidget::moveDown()
+{
+	if ( clip )
+		emit filterMoveDown( clip, filter );
 }
 
 

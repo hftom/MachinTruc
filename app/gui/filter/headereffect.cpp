@@ -4,7 +4,7 @@
 
 
 
-HeaderEffect::HeaderEffect( QWidget *parent, QString name ) : QWidget( parent )
+HeaderEffect::HeaderEffect( QString name, bool move )
 {
 	setupUi( this );
 	
@@ -14,38 +14,14 @@ HeaderEffect::HeaderEffect( QWidget *parent, QString name ) : QWidget( parent )
 	//QColor button = deleteBtn->palette().color( QPalette::Normal, QPalette::Button );
 	//deleteBtn->setStyleSheet( QString( "background-color: rgb(%1,%2,%3)" ).arg( button.red() ).arg( button.green() ).arg( button.blue() ) );
 	
+	if ( !move ) {
+		upBtn->hide();
+		downBtn->hide();
+	}
+	
 	label->setText( name );
 	
-	connect( deleteBtn, SIGNAL(clicked()), this, SLOT(buttonClicked()) );
-}
-
-
-
-void HeaderEffect::buttonClicked()
-{
-	emit deleteFilter();
-}
-
-
-
-void HeaderEffect::mousePressEvent( QMouseEvent *event )
-{
-	Q_UNUSED( event );
-	qDebug() << "HeaderEffect::mousePressEvent";
-}
-
-
-
-void HeaderEffect::mouseMoveEvent( QMouseEvent *event )
-{
-	Q_UNUSED( event );
-	qDebug() << "HeaderEffect::mouseMoveEvent";
-}
-
-
-
-void HeaderEffect::mouseReleaseEvent( QMouseEvent *event )
-{
-	Q_UNUSED( event );
-	qDebug() << "HeaderEffect::mouseReleaseEvent";
+	connect( deleteBtn, SIGNAL(clicked()), this, SIGNAL(deleteFilter()) );
+	connect( upBtn, SIGNAL(clicked()), this, SIGNAL(moveUp()) );
+	connect( downBtn, SIGNAL(clicked()), this, SIGNAL(moveDown()) );
 }

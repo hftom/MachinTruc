@@ -34,6 +34,11 @@ public:
 		return ok;
 	}
 	
+	void swap( int i, int j ) {
+		QMutexLocker ml( &mutex );
+		list.swap( i, j );
+	}
+	
 	int count() {
 		QMutexLocker ml( &mutex );
 		return list.count();

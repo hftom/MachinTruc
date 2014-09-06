@@ -20,9 +20,12 @@ public slots:
 	
 private slots:
 	void deletedFilter( Clip *c, Filter *f );
+	void filterMoveUp( Clip *c, Filter *f );
+	void filterMoveDown( Clip *c, Filter *f );
 
 private:
 	QWidget *currentEffectsWidget;
+	QGridLayout *effectsWidgetLayout;
 	QList<FilterWidget*> filterWidgets;
 	
 signals:

@@ -19,6 +19,8 @@ public:
 	
 private slots:
 	void deleteFilter();
+	void moveUp();
+	void moveDown();
 	void valueChanged( Parameter *p, QVariant val );
 	void showAnimation( ParameterWidget *pw, Parameter *p ) {
 		emit editAnimation( this, pw, p );
@@ -32,6 +34,8 @@ private:
 signals:
 	void filterDeleted( Clip*, Filter* );
 	void filterSourceDeleted();
+	void filterMoveUp( Clip*, Filter* );
+	void filterMoveDown( Clip*, Filter* );
 	void editAnimation( FilterWidget*, ParameterWidget*, Parameter* );
 	void updateFrame();
 };

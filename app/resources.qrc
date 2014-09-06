@@ -1,5 +1,7 @@
 <RCC>
   <qresource prefix="toolbar">
+    <file>icons/arrow-down.png</file>
+    <file>icons/arrow-up.png</file>
     <file>icons/lines-connector-active.png</file>
     <file>icons/trash-empty.png</file>
     <file>icons/system-shutdown.png</file>

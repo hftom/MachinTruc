@@ -7,22 +7,16 @@
 
 
 
-class HeaderEffect : public QWidget, private Ui::EffectHeader
+class HeaderEffect : public QWidget, public Ui::EffectHeader
 {
 	Q_OBJECT
 public:
-	HeaderEffect( QWidget *parent, QString name );
-	
-protected:
-	void mousePressEvent( QMouseEvent *event );
-	void mouseMoveEvent( QMouseEvent *event );
-	void mouseReleaseEvent( QMouseEvent *event );
-	
-private slots:
-	void buttonClicked();
+	HeaderEffect( QString name, bool move = true );
 	
 signals:
 	void deleteFilter();
+	void moveUp();
+	void moveDown();
 };
 
 #endif // HEADEREFFECT_H
