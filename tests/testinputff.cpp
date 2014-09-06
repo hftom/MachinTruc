@@ -6,6 +6,7 @@
 
 // test.mp4 : 720x576@25p, 14 frames.
 #define VIDEOTEST "test.mp4"
+#define VIDEOTESTNFRAMES 14
 
 
 
@@ -37,7 +38,7 @@ void TestInputFF::streamDurationCorrectlyDetected()
 	Profile prof;
 	bool b = in->probe( VIDEOTEST, &prof );
 	delete in;
-    QVERIFY( b == true && prof.getStreamDuration() == prof.getVideoFrameDuration() * 14 );
+    QVERIFY( b == true && prof.getStreamDuration() == prof.getVideoFrameDuration() * VIDEOTESTNFRAMES );
 }
 
 
@@ -48,7 +49,7 @@ void TestInputFF::allFramesDecoded()
 	Profile prof;
 	in->probe( VIDEOTEST, &prof );
 	in->setProfile( prof, prof );
-	in->openSeekPlay( VIDEOTEST, 0 );
+	in->openSeekPlay( VIDEOTEST, prof.getStreamStartTime() );
 	int i = 0;
 	Frame *f;
 	while ( (f = in->getVideoFrame()) ) {
@@ -57,7 +58,7 @@ void TestInputFF::allFramesDecoded()
 	}
 	in->play( false );
 	delete in;
-    QVERIFY( i == 14 );
+    QVERIFY( i == VIDEOTESTNFRAMES );
 }
 
 
@@ -68,7 +69,7 @@ void TestInputFF::seekBackOneFrameFromEnd()
 	Profile prof;
 	in->probe( VIDEOTEST, &prof );
 	in->setProfile( prof, prof );
-	in->openSeekPlay( VIDEOTEST, 0 );
+	in->openSeekPlay( VIDEOTEST, prof.getStreamStartTime() );
 	double pts = 0, duration = 0;
 	Frame *f;
 	while ( (f = in->getVideoFrame()) ) {
@@ -82,7 +83,7 @@ void TestInputFF::seekBackOneFrameFromEnd()
 	f->release();
 	in->play( false );
 	delete in;
-    QVERIFY( pts == 480000 );
+    QVERIFY( pts == prof.getStreamStartTime() + prof.getStreamDuration() - (prof.getVideoFrameDuration() * 2.0) );
 }
 
 
@@ -93,18 +94,18 @@ void TestInputFF::seekStart()
 	Profile prof;
 	in->probe( VIDEOTEST, &prof );
 	in->setProfile( prof, prof );
-	in->openSeekPlay( VIDEOTEST, 0 );
+	in->openSeekPlay( VIDEOTEST, prof.getStreamStartTime() );
 	Frame *f;
 	while ( (f = in->getVideoFrame()) ) {
 		f->release();
 	}
-	in->openSeekPlay( VIDEOTEST, 0 );
+	in->openSeekPlay( VIDEOTEST, prof.getStreamStartTime() );
 	f = in->getVideoFrame();
 	double pts = f->pts();
 	f->release();
 	in->play( false );
 	delete in;
-    QVERIFY( pts == 0 );
+    QVERIFY( pts == prof.getStreamStartTime() );
 }
 
 
@@ -115,10 +116,10 @@ void TestInputFF::resampleDoubleFrameRate()
 	Profile prof, outProf;
 	in->probe( VIDEOTEST, &prof );
 	outProf = prof;
-	outProf.setVideoFrameRate( 50 );
+	outProf.setVideoFrameRate( 2.0 * prof.getVideoFrameRate() );
 	outProf.setVideoFrameDuration( MICROSECOND / outProf.getVideoFrameRate() );
 	in->setProfile( prof, outProf );
-	in->openSeekPlay( VIDEOTEST, 0 );
+	in->openSeekPlay( VIDEOTEST, prof.getStreamStartTime() );
 	Frame *f;
 	int i = 0;
 	while ( (f = in->getVideoFrame()) ) {
@@ -127,7 +128,7 @@ void TestInputFF::resampleDoubleFrameRate()
 	}
 	in->play( false );
 	delete in;
-    QVERIFY( i == 28 );
+    QVERIFY( i == 2 * VIDEOTESTNFRAMES );
 }
 
 
@@ -138,10 +139,10 @@ void TestInputFF::resampleTripleFrameRate()
 	Profile prof, outProf;
 	in->probe( VIDEOTEST, &prof );
 	outProf = prof;
-	outProf.setVideoFrameRate( 75 );
+	outProf.setVideoFrameRate( 3.0 * prof.getVideoFrameRate() );
 	outProf.setVideoFrameDuration( MICROSECOND / outProf.getVideoFrameRate() );
 	in->setProfile( prof, outProf );
-	in->openSeekPlay( VIDEOTEST, 0 );
+	in->openSeekPlay( VIDEOTEST, prof.getStreamStartTime() );
 	Frame *f;
 	int i = 0;
 	while ( (f = in->getVideoFrame()) ) {
@@ -150,7 +151,7 @@ void TestInputFF::resampleTripleFrameRate()
 	}
 	in->play( false );
 	delete in;
-    QVERIFY( i == 42 );
+    QVERIFY( i == 3 * VIDEOTESTNFRAMES );
 }
 
 
@@ -161,10 +162,10 @@ void TestInputFF::resampleHalfFrameRate()
 	Profile prof, outProf;
 	in->probe( VIDEOTEST, &prof );
 	outProf = prof;
-	outProf.setVideoFrameRate( 25.0 / 2.0 );
+	outProf.setVideoFrameRate( prof.getVideoFrameRate() / 2.0 );
 	outProf.setVideoFrameDuration( MICROSECOND / outProf.getVideoFrameRate() );
 	in->setProfile( prof, outProf );
-	in->openSeekPlay( VIDEOTEST, 0 );
+	in->openSeekPlay( VIDEOTEST, prof.getStreamStartTime() );
 	Frame *f;
 	int i = 0;
 	while ( (f = in->getVideoFrame()) ) {
@@ -173,5 +174,5 @@ void TestInputFF::resampleHalfFrameRate()
 	}
 	in->play( false );
 	delete in;
-    QVERIFY( i == 7 );
+    QVERIFY( i == VIDEOTESTNFRAMES / 2 );
 }
