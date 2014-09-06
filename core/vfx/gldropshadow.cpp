@@ -1,11 +1,13 @@
 #include <vector>
 
+#include "engine/util.h"
 #include "vfx/gldropshadow.h"
 
 
 
 GLDropShadow::GLDropShadow( QString id, QString name ) : GLFilter( id, name )
 {
+	color = addParameter( tr("Shadow color:"), Parameter::PRGBCOLOR, QColor::fromRgbF( 0, 0, 0 ), QColor::fromRgbF( 0, 0, 0 ), QColor::fromRgbF( 1, 1, 1 ), false );
 	xoffset = addParameter( tr("X offset:"), Parameter::PDOUBLE, 10.0, -100.0, 100.0, true );
 	yoffset = addParameter( tr("Y offset:"), Parameter::PDOUBLE, 10.0, -100.0, 100.0, true );
 	opacity = addParameter( tr("Opacity:"), Parameter::PDOUBLE, 0.8, 0.0, 1.0, true );
@@ -24,11 +26,16 @@ bool GLDropShadow::process( const QList<Effect*> &el, Frame *src, Profile *p )
 {
 	Q_UNUSED( p );
 	double pts = src->pts();
+	QColor c = getParamValue( color ).value<QColor>();
+	// convert gamma and premultiply
+	sRgbColorToLinear( c );
+	RGBTriplet col = RGBTriplet( c.redF(), c.greenF(), c.blueF() );
 	Effect *e = el[0];
 	return e->set_float( "xoffset", getParamValue( xoffset, pts ).toFloat() )
 		&& e->set_float( "yoffset", getParamValue( yoffset, pts ).toFloat() )
 		&& e->set_float( "opacity", getParamValue( opacity, pts ).toFloat() )
-		&& e->set_float( "radius", getParamValue( radius, pts ).toFloat() );
+		&& e->set_float( "radius", getParamValue( radius, pts ).toFloat() )
+		&& e->set_vec3( "color", (float*)&col );
 }
 
 
@@ -70,7 +77,8 @@ void MyDropShadowEffect::rewrite_graph(EffectChain *graph, Node *self)
 
 
 
-bool MyDropShadowEffect::set_float(const std::string &key, float value) {
+bool MyDropShadowEffect::set_float(const std::string &key, float value)
+{
 	if (key == "radius")
 		return blur->set_float("radius", value);
 	if (key == "xoffset")
@@ -83,12 +91,24 @@ bool MyDropShadowEffect::set_float(const std::string &key, float value) {
 
 
 
+bool MyDropShadowEffect::set_vec3(const std::string &key, const float *values)
+{
+	if (key == "color")
+		return shadow->set_vec3("color", values);
+	
+	return false;
+}
+
+
+
 MyShadowMapEffect::MyShadowMapEffect()
-	: xoffset(10.0),
-	yoffset(10.0),
-	opacity(0.9)
+	: xoffset(10.0f),
+	yoffset(10.0f),
+	opacity(0.9f),
+	color(0.0f,0.0f,0.0f)
 {
 	register_float("xoffset", &xoffset);
 	register_float("yoffset", &yoffset);
 	register_float("opacity", &opacity);
+	register_vec3("color", (float*)&color);
 }

@@ -4,9 +4,10 @@
 
 
 
-ColorChooser::ColorChooser( QWidget *parent, Parameter *p, bool keyframeable ) : ParameterWidget( parent, p )
+ColorChooser::ColorChooser( bool rgba, QWidget *parent, Parameter *p, bool keyframeable ) : ParameterWidget( parent, p )
 {
 	Q_UNUSED( keyframeable );
+	hasAlpha = rgba;
 	
 	QBoxLayout *b1 = new QBoxLayout( QBoxLayout::LeftToRight );
 	b1->setContentsMargins( 0, 0, 0, 0 );
@@ -32,7 +33,8 @@ void ColorChooser::showDialog()
 {
 	QColorDialog dlg;
 	//dlg.setParent( this );
-	dlg.setOption( QColorDialog::ShowAlphaChannel );
+	if ( hasAlpha )
+		dlg.setOption( QColorDialog::ShowAlphaChannel );
 	dlg.setOption( QColorDialog::NoButtons );
 	dlg.setCurrentColor( param->value.value<QColor>() );
 	connect( &dlg, SIGNAL(currentColorChanged(const QColor&)), this, SLOT(colorChanged(const QColor&)) );

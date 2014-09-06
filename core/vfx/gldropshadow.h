@@ -14,7 +14,7 @@ static const char *MyShadowMapEffect_frag=
 "uniform vec2 PREFIX(offset);\n"
 "vec4 FUNCNAME(vec2 tc) {\n"
 "	float a = INPUT( tc - PREFIX(offset) ).a;\n"
-"	return vec4(0.0, 0.0, 0.0, PREFIX(opacity)) * a;\n"
+"	return vec4(PREFIX(color) * PREFIX(opacity), PREFIX(opacity)) * a;\n"
 "}\n";
 
 
@@ -40,6 +40,7 @@ private:
 	float iwidth, iheight;
 	float xoffset, yoffset;
 	float opacity;
+	RGBTriplet color;
 };
 
 
@@ -51,6 +52,7 @@ public:
 
 	virtual void rewrite_graph(EffectChain *graph, Node *self);
 	virtual bool set_float(const std::string &key, float value);
+	virtual bool set_vec3(const std::string &key, const float *values);
 
 	virtual std::string output_fragment_shader() {
 		assert(false);
@@ -79,6 +81,7 @@ public:
 	
 private:
 	Parameter *radius, *opacity, *xoffset, *yoffset;
+	Parameter *color;
 };
 
 #endif // GLDROPSHADOW_H

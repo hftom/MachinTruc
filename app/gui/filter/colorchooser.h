@@ -13,7 +13,7 @@ class ColorChooser : public ParameterWidget
 {
 	Q_OBJECT
 public:
-	ColorChooser( QWidget *parent, Parameter *p, bool keyframeable );
+	ColorChooser( bool rgba, QWidget *parent, Parameter *p, bool keyframeable );
 	QLayout *getLayout() { return box; }
 	
 	void animValueChanged( double val );
@@ -26,6 +26,8 @@ private:
 	QPushButton *btn;
 	QLabel *label;
 	QBoxLayout *box;
+	
+	bool hasAlpha;
 };
 
 #endif // COLORCHOOSER_H

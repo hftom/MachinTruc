@@ -34,8 +34,12 @@ FilterWidget::FilterWidget( QWidget *parent, Clip *c, Filter *f ) : QWidget( par
 				pw = new SliderInt( this, p, clip != 0 );
 				break;
 			}
-			case Parameter::PCOLOR: {
-				pw = new ColorChooser( this, p, clip != 0 );
+			case Parameter::PRGBCOLOR: {
+				pw = new ColorChooser( false, this, p, clip != 0 );
+				break;
+			}
+			case Parameter::PRGBACOLOR: {
+				pw = new ColorChooser( true, this, p, clip != 0 );
 				break;
 			}
 		}

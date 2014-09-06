@@ -32,7 +32,7 @@ public:
 class Parameter
 {
 public:
-	enum ParameterType{ PDOUBLE, PINT, PCOLOR };
+	enum ParameterType{ PDOUBLE, PINT, PRGBCOLOR, PRGBACOLOR };
 	
 	QString name;
 	int type;
