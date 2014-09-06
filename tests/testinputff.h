@@ -12,7 +12,13 @@ class TestInputFF : public QObject
 private slots:
     void probeReturnsTrue();
 	void probeReturnsFalse();
-    void test2();
+	void streamDurationCorrectlyDetected();
+	void allFramesDecoded();
+	void seekBackOneFrameFromEnd();
+	void seekStart();
+	void resampleDoubleFrameRate();
+	void resampleTripleFrameRate();
+	void resampleHalfFrameRate();
 };
 
 DECLARE_TEST(TestInputFF)

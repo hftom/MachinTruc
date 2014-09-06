@@ -197,6 +197,7 @@ private:
 	bool getPacket();
 	void freePacket( AVPacket *packet );
 	bool decodeVideo( Frame *f );
+	void resample( Frame *f );
 	bool makeFrame( Frame *f, double ratio, double pts, double dur );
 	bool decodeAudio( int sync=0, double *pts=NULL );
 	void freeCurrentAudioPacket();
@@ -241,7 +242,7 @@ private:
 	MQueue<Frame*> videoFrames;
 	MQueue<Frame*> freeVideoFrames;
 
-	enum EofMode{ EofPacket=1, EofAudioPacket=2, EofVideoPacket=4, EofAudio=8, EofVideo=16 };
+	enum EofMode{ EofPacket=1, EofAudioPacket=2, EofVideoPacket=4, EofAudio=8, EofVideoFrame=16, EofVideo=32 };
 	int endOfFile;
 
 	bool running, oneShot;

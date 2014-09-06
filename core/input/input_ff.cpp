@@ -649,8 +649,9 @@ double InputFF::seekTo( double p )
 			lastpts = cur;
 		}
 		p = videoResampler.outputPts = f->pts();
-		videoResampler.outputPts += videoResampler.outputDuration;
-		videoFrames.enqueue( f );
+		resample( f );
+		//videoResampler.outputPts += videoResampler.outputDuration;
+		//videoFrames.enqueue( f );
 	}
 
 	return p;
@@ -732,36 +733,21 @@ void InputFF::run()
 					// duplicate previous frame
 					videoResampler.duplicate( f );
 					f->mmi = mmi;
+					if ( !videoResampler.repeat )
+						mmiIncrement();
 					videoFrames.enqueue( f );
 				}
 				else {
 					f->mmi = mmi;
 					mmiIncrement();
 					if ( decodeVideo( f ) ) {
-						double delta = f->pts() - videoResampler.outputPts;
-						if ( outProfile.getVideoFrameRate() == inProfile.getVideoFrameRate() ) { // no resampling
-							videoFrames.enqueue( f );
-						}
-						else if ( delta >= videoResampler.outputDuration ) {
-							// this frame will be duplicated (delta / videoResampler.outputDuration) times
-							printf("duplicate, delta=%f, f->pts=%f, outputPts=%f\n", delta, f->pts(), videoResampler.outputPts);
-							videoResampler.setRepeat( f, delta / videoResampler.outputDuration );
-							videoFrames.enqueue( f );
-							videoResampler.outputPts += videoResampler.outputDuration;
-						}
-						else if ( delta <= -videoResampler.outputDuration ) {
-							// skip
-							printf("skip frame delta=%f, f->pts=%f, outputPts=%f\n", delta, f->pts(), videoResampler.outputPts);
-							f->release();
-						}
-						else {
-							videoFrames.enqueue( f );
-							videoResampler.outputPts += videoResampler.outputDuration;
-						}
+						resample ( f );
 					}
 					else
 						f->release();
 				}
+				if ( (endOfFile & EofVideoFrame) && !videoResampler.repeat )
+					endOfFile |= EofVideo;
 				doWait = 0;
 			}
 		}
@@ -773,14 +759,54 @@ void InputFF::run()
 			}
 		}
 
-		if ( (endOfFile & EofAudio) && (endOfFile & EofVideo) ) {
-			printf("ff.run break\n");
-			break;
+		if ( haveVideo && haveAudio ) {
+			if ( (endOfFile & EofAudio) && (endOfFile & EofVideo) ) {
+				printf("ff.run break\n");
+				break;
+			}
+		}
+		else if ( haveVideo ) {
+			if ( endOfFile & EofVideo ) {
+				printf("ff.run break\n");
+				break;
+			}
+		}
+		else if ( haveAudio ) {
+			if ( endOfFile & EofAudio ) {
+				printf("ff.run break\n");
+				break;
+			}
 		}
 
 		if ( doWait ) {
 			usleep( 1000 );
 		}
+	}
+}
+
+
+
+void InputFF::resample( Frame *f )
+{
+	double delta = ( f->pts() + f->profile.getVideoFrameDuration() ) - ( videoResampler.outputPts + videoResampler.outputDuration );
+	if ( outProfile.getVideoFrameRate() == inProfile.getVideoFrameRate() ) { // no resampling
+		videoFrames.enqueue( f );
+	}
+	else if ( delta >= videoResampler.outputDuration ) {
+		// this frame will be duplicated (delta / videoResampler.outputDuration) times
+		printf("duplicate, delta=%f, f->pts=%f, outputPts=%f\n", delta, f->pts(), videoResampler.outputPts);
+		videoResampler.setRepeat( f, delta / videoResampler.outputDuration );
+		videoFrames.enqueue( f );
+		videoResampler.outputPts += videoResampler.outputDuration;
+	}
+	else if ( delta <= -videoResampler.outputDuration ) {
+		// skip
+		printf("skip frame delta=%f, f->pts=%f, outputPts=%f\n", delta, f->pts(), videoResampler.outputPts);
+		f->release();
+	}
+	else {
+		videoFrames.enqueue( f );
+		videoResampler.outputPts += videoResampler.outputDuration;
 	}
 }
 
@@ -838,7 +864,7 @@ bool InputFF::decodeVideo( Frame *f )
 
 		freePacket( packet );
 		if ( endOfFile & EofVideoPacket ) {
-			endOfFile |= EofVideo;
+			endOfFile |= EofVideoFrame;
 			return false;
 		}
 	}
