@@ -650,8 +650,6 @@ double InputFF::seekTo( double p )
 		}
 		p = videoResampler.outputPts = f->pts();
 		resample( f );
-		//videoResampler.outputPts += videoResampler.outputDuration;
-		//videoFrames.enqueue( f );
 	}
 
 	return p;
