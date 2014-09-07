@@ -14,7 +14,7 @@ public:
 	bool process( const QList<Effect*> &el, Frame *src, Profile *p );
 
 	QList<Effect*> getMovitEffects();
-	QString getDescriptor();
+	QString getDescriptor(  Frame *src, Profile *p  );
 	
 private:
 	Parameter *R;

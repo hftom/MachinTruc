@@ -45,7 +45,9 @@ QList<Effect*> GLDeconvolutionSharpen::getMovitEffects()
 
 
 
-QString GLDeconvolutionSharpen::getDescriptor()
+QString GLDeconvolutionSharpen::getDescriptor(  Frame *src, Profile *p  )
 {
+	Q_UNUSED( src );
+	Q_UNUSED( p );
 	return QString("%1 %2").arg( getIdentifier() ).arg( getParamValue( R ).toInt() );
 }
