@@ -82,6 +82,7 @@ HEADERS = \
 	afx/audiocopy.h \
 	afx/audiomix.h \
 	afx/audiovolume.h \
+	afx/audiocrossfade.h \
 	\
 	vfx/gltest.h \
 	vfx/glfilter.h \

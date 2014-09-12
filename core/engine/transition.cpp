@@ -6,6 +6,8 @@ Transition::Transition( double posInTrackPTS, double len )
 	: posInTrack( posInTrackPTS ),
 	transitionLength( len )
 {
+	videoFilter = FilterCollection::getGlobalInstance()->videoTransitions.first().create().staticCast<GLFilter>();
+	audioFilter = FilterCollection::getGlobalInstance()->audioTransitions.first().create().staticCast<AudioFilter>();
 }
 
 

@@ -9,6 +9,7 @@ static FilterCollection globalFilterCollection;
 
 FilterCollection::FilterCollection()
 {
+	// video filters
 	videoFilters.append( FilterEntry( "GLTest", QObject::tr("Test"), &Maker<GLTest>::make ) );
 	
 	videoFilters.append( FilterEntry( "GLSaturation", QObject::tr("Saturation"), &Maker<GLSaturation>::make ) );
@@ -37,7 +38,18 @@ FilterCollection::FilterCollection()
 	
 	
 	
+	// audio filters
 	audioFilters.append( FilterEntry( "AudioVolume", QObject::tr("Volume"), &Maker<AudioVolume>::make ) );
+	
+	
+	
+	// video transitions
+	videoTransitions.append( FilterEntry( "GLMix", QObject::tr("Mix"), &Maker<GLMix>::make ) );
+	
+	
+	
+	// audio transitions
+	audioFilters.append( FilterEntry( "AudioCrossFade", QObject::tr("Crossfade"), &Maker<AudioCrossFade>::make ) );
 };
 
 

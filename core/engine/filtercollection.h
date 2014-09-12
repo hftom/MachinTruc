@@ -35,6 +35,7 @@
 // audio compositions
 #include "afx/audiocopy.h"
 #include "afx/audiomix.h"
+#include "afx/audiocrossfade.h"
 
 
 
@@ -74,7 +75,9 @@ public:
 	static FilterCollection* getGlobalInstance();
 	
 	QList<FilterEntry> videoFilters;
+	QList<FilterEntry> videoTransitions;
 	QList<FilterEntry> audioFilters;
+	QList<FilterEntry> audioTransitions;
 };
 
 #endif // FILTERCOLLECTION_H

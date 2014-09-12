@@ -2,8 +2,7 @@
 #define TRANSITION_H
 
 
-#include "vfx/glfilter.h"
-#include "afx/audiofilter.h"
+#include "filtercollection.h"
 
 
 
