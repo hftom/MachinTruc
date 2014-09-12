@@ -1,23 +1,20 @@
 #ifndef GLMIX_H
 #define GLMIX_H
 
-#include "vfx/glcomposition.h"
+#include "vfx/glfilter.h"
 
 
 
-class GLMix : public GLComposition
+class GLMix : public GLFilter
 {
 public:
-	GLMix();
-	~GLMix();
+	GLMix( QString id, QString name );
 
-	bool process( Effect *e, Frame *src, Frame *dst, Profile *p );
-	Effect* getMovitEffect();
+	bool process( const QList<Effect*>&, Frame *src, Frame *dst, Profile *p );
+	QList<Effect*> getMovitEffects();
 
 private:
-	float strength_first;
-	float strength_second;
-
+	Parameter *mix;
 };
 
 #endif //GLMIX_H

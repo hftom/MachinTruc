@@ -347,12 +347,12 @@ void Composer::movitRender( Frame *dst, bool update )
 		
 		// compose
 		if ( (i - 1) > start ) {
-			if ( !dst->sample->frames[i - 1]->composition ) {
+			if ( !dst->sample->frames[i - 1]->transition ) {
 				// overlay is the default
-				currentDescriptor.append( GLOverlay().getDescriptor() );
+				currentDescriptor.append( GLOverlay().getDescriptor( f, &projectProfile ) );
 			}	
 			else {
-				currentDescriptor.append( dst->sample->frames[i - 1]->composition->getDescriptor() );
+				currentDescriptor.append( dst->sample->frames[i - 1]->transition->getVideoFilter()->getDescriptor( f, &projectProfile ) );
 			}
 		}
 	}
@@ -414,16 +414,18 @@ void Composer::movitRender( Frame *dst, bool update )
 					
 			// compose
 			if ( last ) {
-				if ( !dst->sample->frames[i - 1]->composition ) {
+				if ( !dst->sample->frames[i - 1]->transition ) {
 					GLOverlay *overlay = new GLOverlay();
-					Effect *e = overlay->getMovitEffect();
-					branch->composition = new MovitComposition( e, overlay, true );
-					current = movitChain.chain->add_effect( e, last, current );
+					QList<Effect*> el = overlay->getMovitEffects();
+					branch->transition = new MovitFilter( el, overlay );
+					for ( l = 0; l < el.count(); ++l )
+						current = movitChain.chain->add_effect( el.at( l ), last, current );
 				}
 				else {
-					Effect *e = dst->sample->frames[i - 1]->composition->getMovitEffect();
-					branch->composition = new MovitComposition( e, dst->sample->frames[i - 1]->composition );
-					current = movitChain.chain->add_effect( e, last, current );
+					QList<Effect*> el = dst->sample->frames[i - 1]->transition->getVideoFilter()->getMovitEffects();
+					branch->transition = new MovitFilter( el );
+					for ( l = 0; l < el.count(); ++l )
+						current = movitChain.chain->add_effect( el.at( l ), last, current );
 				}
 			}
 		}
@@ -454,8 +456,12 @@ void Composer::movitRender( Frame *dst, bool update )
 			else
 				branch->filters[k]->filter->process( branch->filters[k]->effects, f, &projectProfile );
 		}
-		if ( branch->composition )
-			branch->composition->composition->process( branch->composition->effect, f, f, &projectProfile );
+		if ( branch->transition ) {
+			if ( branch->transition->filter )
+				branch->transition->filter->process( branch->transition->effects, f, f, &projectProfile );
+			else
+				dst->sample->frames[i - 1]->transition->getVideoFilter()->process( branch->transition->effects, f, f, &projectProfile );
+		}
 		
 		w = f->glWidth;
 		h = f->glHeight;
@@ -486,10 +492,11 @@ bool Composer::renderAudioFrame( Frame *dst, int nSamples )
 {
 	int i = 0, k;
 	Frame *f;
+	
+	Profile profile = sampler->getProfile();
 
 	if ( !sampler->getAudioTracks( dst, nSamples ) ) {
 		// make silence
-		Profile profile = sampler->getProfile();
 		int bps = profile.getAudioChannels() * profile.bytesPerChannel( &profile );
 		dst->setAudioFrame( profile.getAudioChannels(), profile.getAudioSampleRate(), profile.bytesPerChannel( &profile ), nSamples, sampler->currentPTSAudio() );
 		memset( dst->data(), 0, nSamples * bps );
@@ -499,18 +506,18 @@ bool Composer::renderAudioFrame( Frame *dst, int nSamples )
 	// process first frame
 	f = getNextFrame( dst, i );
 	for ( k = 0; k < dst->sample->frames[i - 1]->audioFilters.count(); ++k )
-		dst->sample->frames[i - 1]->audioFilters[k]->process( f );
+		dst->sample->frames[i - 1]->audioFilters[k]->process( f, &profile );
 	// copy in dst
 	AudioCopy ac;
-	ac.process( f, dst );
+	ac.process( f, dst, &profile );
 
 	// process remaining frames
 	while ( (f = getNextFrame( dst, i )) ) {
 		for ( k = 0; k < dst->sample->frames[i - 1]->audioFilters.count(); ++k )
-			dst->sample->frames[i - 1]->audioFilters[k]->process( f );
+			dst->sample->frames[i - 1]->audioFilters[k]->process( f, &profile );
 		// mix
 		AudioMix am;
-		am.process( f, dst );
+		am.process( f, dst, &profile );
 	}
 
 	return true;

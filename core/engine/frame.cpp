@@ -172,7 +172,7 @@ void FrameSample::clear( bool releaseFrame )
 		videoFilters.takeFirst()->release();
 	while ( !audioFilters.isEmpty() )
 		audioFilters.takeFirst()->release();
-	composition = NULL;
+	transition = NULL;
 	if ( frame && releaseFrame ) {
 		frame->release();
 		frame = NULL;

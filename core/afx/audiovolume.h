@@ -12,13 +12,14 @@ public:
 		volume = addParameter( tr("Volume:"), Parameter::PDOUBLE, 1.0, 0.0, 2.0, true );
 	}
 
-	bool process( Frame *src ) {
-		int i, j, samples = src->audioSamples(), channels = src->profile.getAudioChannels();
+	bool process( Frame *src, Profile *p ) {
+		Q_UNUSED( p );
+		int samples = src->audioSamples(), channels = src->profile.getAudioChannels();
 		int16_t *in = (int16_t*)src->data();
 		double vol = getParamValue( volume, src->pts() ).toDouble();
 
-		for ( i = 0; i < samples; ++i ) {
-			for ( j = 0; j < channels; ++j )
+		for ( int i = 0; i < samples; ++i ) {
+			for ( int j = 0; j < channels; ++j )
 				in[(i * channels) + j] = (float)in[(i * channels) + j] * vol;
 		}
 		return true;

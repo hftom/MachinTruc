@@ -215,7 +215,7 @@ void Sampler::seekTo( double p )
 				scene->tracks[j]->clipAt( i )->setInput( NULL );
 			scene->tracks[j]->setCurrentClipIndex( 0 );
 			scene->tracks[j]->setCurrentClipIndexAudio( 0 );
-			scene->tracks[j]->setCurrentCompositionIndex( 0 );
+			scene->tracks[j]->setCurrentTransitionIndex( 0 );
 		}
 		scene->currentPTS = p;
 		scene->currentPTSAudio = p;
@@ -388,17 +388,17 @@ InputBase* Sampler::getClipInput( Clip *c, double pts )
 
 
 
-GLComposition* Sampler::getComposition( int track, double pts )
+Transition* Sampler::getTransition( int track, double pts )
 {
 	int i;
-	GLComposition *gc;
+	Transition *trans;
 	Track *t = scene->tracks[track];
 
-	for ( i = t->currentCompositionIndex() ; i < t->compositionCount(); ++i ) {
-		gc = t->compositionAt( i );
-		if ( gc->position() <= pts && (gc->position() + gc->length()) > pts ) {
-			t->setCurrentCompositionIndex( i );
-			return gc;
+	for ( i = t->currentTransitionIndex() ; i < t->transitionCount(); ++i ) {
+		trans = t->transitionAt( i );
+		if ( trans->position() <= pts && (trans->position() + trans->length()) > pts ) {
+			t->setCurrentTransitionIndex( i );
+			return trans;
 		}
 	}
 
@@ -411,7 +411,7 @@ int Sampler::updateLastFrame( Frame *dst )
 {
 	int i, j;
 	Clip *c = NULL;
-	GLComposition *gc;
+	Transition *trans;
 	int nframes = 0;
 	
 	if ( playMode == PlaySource ) {
@@ -460,8 +460,8 @@ int Sampler::updateLastFrame( Frame *dst )
 			fs->clear( false );
 			c->getSource()->videoFilters.copy( &fs->videoFilters );
 			c->videoFilters.copy( &fs->videoFilters );
-			if ( (gc = getComposition( j, dst->pts() )) )
-				fs->composition = gc;
+			if ( (trans = getTransition( j, dst->pts() )) )
+				fs->transition = trans;
 		}
 	}
 
@@ -476,7 +476,7 @@ int Sampler::getVideoTracks( Frame *dst )
 	Frame *f;
 	Clip *c = NULL;
 	InputBase *in = NULL;
-	GLComposition *gc;
+	Transition *trans;
 	int nFrames = 0;
 	
 	if ( playMode == PlaySource ) {
@@ -526,8 +526,8 @@ int Sampler::getVideoTracks( Frame *dst )
 				fs->frame = f;
 				c->getSource()->videoFilters.copy( &fs->videoFilters );
 				c->videoFilters.copy( &fs->videoFilters );
-				if ( (gc = getComposition( j, scene->currentPTS )) )
-					fs->composition = gc;
+				if ( (trans = getTransition( j, scene->currentPTS )) )
+					fs->transition = trans;
 			}
 		}
 	}

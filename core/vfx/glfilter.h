@@ -18,7 +18,11 @@ public:
 	GLFilter( QString id, QString name ) : Filter( id, name ) {}
 	virtual ~GLFilter() {}
 
+	// single input effects
 	virtual bool process( const QList<Effect*>&, Frame*, Profile* ) { return true; }
+	// multi input effects
+	virtual bool process( const QList<Effect*>&, Frame* /*src*/, Frame* /*dst*/, Profile* ) { return true; }
+	
 	virtual QList<Effect*> getMovitEffects() = 0;
 
 	virtual QString getDescriptor( Frame*, Profile* ) { return getIdentifier(); }

@@ -10,7 +10,6 @@
 
 #include "engine/frame.h"
 #include "vfx/glfilter.h"
-#include "vfx/glcomposition.h"
 
 
 
@@ -49,19 +48,6 @@ public:
 
 
 
-class MovitComposition
-{
-public:
-	MovitComposition( Effect *e, GLComposition *c, bool owns = false );
-	~MovitComposition();
-	
-	Effect *effect;
-	GLComposition *composition;
-	bool ownsComposition;
-};
-
-
-
 class MovitBranch
 {
 public:
@@ -70,7 +56,7 @@ public:
 	
 	MovitInput *input;
 	QList<MovitFilter*> filters;
-	MovitComposition *composition;
+	MovitFilter *transition;
 };
 
 

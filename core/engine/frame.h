@@ -20,7 +20,7 @@
 
 
 class ProjectSample;
-class GLComposition;
+class Transition;
 class GLFilter;
 class AudioFilter;
 
@@ -123,12 +123,12 @@ private:
 class FrameSample
 {
 public:
-	FrameSample() : frame(NULL), composition(NULL) {}
+	FrameSample() : frame(NULL), transition(NULL) {}
 	~FrameSample() {}
 	void clear( bool releaseFrame = true );
 
-	Frame* frame;
-	GLComposition* composition;
+	Frame *frame;
+	Transition *transition;
 	QList<GLFilter*> videoFilters;
 	QList<AudioFilter*> audioFilters;
 };

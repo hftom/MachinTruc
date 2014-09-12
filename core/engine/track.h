@@ -4,9 +4,9 @@
 #include <QList>
 
 #include "vfx/glfilter.h"
-#include "vfx/glcomposition.h"
 #include "input/input.h"
 #include "engine/clip.h"
+#include "engine/transition.h"
 
 
 
@@ -20,23 +20,24 @@ public:
 	bool insertClipAt( Clip *c, int idx );
 	Clip* removeClip( int idx );
 	bool removeClip( Clip *c );
-	bool insertComposition( GLComposition *c );
-	GLComposition* removeComposition();
 	int clipCount();
 	Clip* clipAt( int i );
 	int currentClipIndex();
 	void setCurrentClipIndex( int i );
 	int currentClipIndexAudio();
 	void setCurrentClipIndexAudio( int i );
-	int compositionCount();
-	GLComposition* compositionAt( int i );
-	int currentCompositionIndex();
-	void setCurrentCompositionIndex( int i );
+	
+	bool insertTransition( Transition *t );
+	bool removeTransition( Transition *t );
+	int transitionCount();
+	Transition* transitionAt( int i );
+	int currentTransitionIndex();
+	void setCurrentTransitionIndex( int i );
 	void resetIndexes();
 
 private:
 	QList<Clip*> clips;
-	QList<GLComposition*> compositions;
-	int clipIndex, clipIndexAudio, compositionIndex;
+	QList<Transition*> transitions;
+	int clipIndex, clipIndexAudio, transitionIndex;
 };
 #endif //TRACK_H

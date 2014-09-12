@@ -7,7 +7,7 @@
 Track::Track()
 	: clipIndex( 0 ),
 	clipIndexAudio( 0 ),
-	compositionIndex( 0 )
+	transitionIndex( 0 )
 {
 }
 
@@ -45,21 +45,6 @@ Clip* Track::removeClip( int idx )
 bool Track::removeClip( Clip *c )
 {
 	return clips.removeOne( c );
-}
-
-
-
-bool Track::insertComposition( GLComposition *c )
-{
-	compositions.append( c );
-	return true;
-}
-
-
-
-GLComposition* Track::removeComposition()
-{
-	return NULL;
 }
 
 
@@ -106,35 +91,50 @@ void Track::setCurrentClipIndexAudio( int i )
 
 
 
-int Track::compositionCount()
+bool Track::insertTransition( Transition *t )
 {
-	return compositions.count();
+	transitions.append( t );
+	return true;
 }
 
 
 
-GLComposition* Track::compositionAt( int i )
+bool Track::removeTransition( Transition *t )
 {
-	return compositions.at( i );
+	return transitions.removeOne( t );
 }
 
 
 
-int Track::currentCompositionIndex()
+int Track::transitionCount()
 {
-	return compositionIndex;
+	return transitions.count();
 }
 
 
 
-void Track::setCurrentCompositionIndex( int i )
+Transition* Track::transitionAt( int i )
 {
-	compositionIndex = i;
+	return transitions.at( i );
+}
+
+
+
+int Track::currentTransitionIndex()
+{
+	return transitionIndex;
+}
+
+
+
+void Track::setCurrentTransitionIndex( int i )
+{
+	transitionIndex = i;
 }
 
 
 void Track::resetIndexes()
 
 {
-	clipIndex = clipIndexAudio = compositionIndex = 0;
+	clipIndex = clipIndexAudio = transitionIndex = 0;
 }

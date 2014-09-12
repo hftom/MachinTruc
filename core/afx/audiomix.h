@@ -3,18 +3,17 @@
 
 #include <math.h>
 
-#include "afx/audiocomposition.h"
+#include "afx/audiofilter.h"
 
 
 
-class AudioMix : public AudioComposition
+class AudioMix : public AudioFilter
 {
-	Q_OBJECT
 public:
-	AudioMix() {}
-	~AudioMix() {}
+	AudioMix( QString id = "AudioMix", QString name = "AudioMix" ) : AudioFilter( id, name ) {}
 
-	bool process( Frame *src, Frame *dst ) {
+	bool process( Frame *src, Frame *dst, Profile *p ) {
+		Q_UNUSED( p );
 		int i, j, samples = src->audioSamples(), channels = src->profile.getAudioChannels();
 		int16_t *in = (int16_t*)src->data();
 		int16_t *out = (int16_t*)dst->data();

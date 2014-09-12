@@ -1,18 +1,16 @@
 #ifndef GLOVERLAY_H
 #define GLOVERLAY_H
 
-#include "vfx/glcomposition.h"
+#include "vfx/glfilter.h"
 
 
 
-class GLOverlay : public GLComposition
+class GLOverlay : public GLFilter
 {
 public:
-	GLOverlay();
-	~GLOverlay();
+	GLOverlay( QString id = "OverlayAuto", QString name = "OverlayAuto" );
 
-	bool process( Effect *e, Frame *src, Frame *dst, Profile *p );
-	Effect* getMovitEffect();
+	QList<Effect*> getMovitEffects();
 };
 
 #endif //GLOVERLAY_H

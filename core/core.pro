@@ -16,6 +16,7 @@ SOURCES = \
 	engine/metronom.cpp \
 	engine/glresource.cpp \
 	engine/movitchain.cpp \
+	engine/transition.cpp \
 	\
 	input/input_ff.cpp \
 	input/input_gl.cpp \
@@ -68,6 +69,7 @@ HEADERS = \
 	engine/metronom.h \
 	engine/glresource.h \
 	engine/movitchain.h \
+	engine/transition.h \
 	\
 	input/input.h \
 	input/input_ff.h \
@@ -80,11 +82,9 @@ HEADERS = \
 	afx/audiocopy.h \
 	afx/audiomix.h \
 	afx/audiovolume.h \
-	afx/audiocomposition.h \
 	\
 	vfx/gltest.h \
 	vfx/glfilter.h \
-	vfx/glcomposition.h \
 	vfx/glmix.h \
 	vfx/gloverlay.h \
 	vfx/glsaturation.h \

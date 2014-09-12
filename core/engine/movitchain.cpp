@@ -217,40 +217,35 @@ MovitFilter::MovitFilter( const QList<Effect*> &el, GLFilter *f )
 	filter( f )
 {
 }
-	
+
+
+
 MovitFilter::~MovitFilter()
 {
 	if ( filter )
 		filter->release();
 }
 
-MovitComposition::MovitComposition( Effect *e, GLComposition *c, bool owns )
-	: effect( e ),
-	composition( c ),
-	ownsComposition( owns )
-{
-}
-	
-MovitComposition::~MovitComposition()
-{
-	if ( ownsComposition )
-		delete composition;
-}
+
 
 MovitBranch::MovitBranch( MovitInput *in )
 	: input( in ),
-	composition( NULL )
+	transition( NULL )
 {
 }
-	
+
+
+
 MovitBranch::~MovitBranch() 
 {
 	delete input;
 	while ( !filters.isEmpty() )
 		delete filters.takeFirst();
-	if ( composition )
-		delete composition;
+	if ( transition )
+		delete transition;
 }
+
+
 
 MovitChain::MovitChain()
 	: chain( NULL )

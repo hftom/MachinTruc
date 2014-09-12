@@ -3,32 +3,15 @@
 
 
 
-GLOverlay::GLOverlay() : GLComposition()
-{
-	compositionName = "OverlayEffect";
-	invert = 0;
-}
-
-
-
-GLOverlay::~GLOverlay()
+GLOverlay::GLOverlay( QString id, QString name ) : GLFilter( id, name )
 {
 }
 
 
 
-bool GLOverlay::process( Effect *e, Frame *src, Frame *dst, Profile *p )
+QList<Effect*> GLOverlay::getMovitEffects()
 {
-	Q_UNUSED( e );
-	Q_UNUSED( src );
-	Q_UNUSED( dst );
-	Q_UNUSED( p );
-	return true;
-}
-
-
-
-Effect* GLOverlay::getMovitEffect()
-{
-	return new OverlayEffect();
+	QList<Effect*> list;
+	list.append( new OverlayEffect() );
+	return list;
 }

@@ -139,7 +139,7 @@ private:
 	int updateLastFrame( Frame *dst );
 	InputBase* getInput( QString fn, InputBase::InputType type );
 	InputBase* getClipInput( Clip *c, double pts );
-	GLComposition* getComposition( int track, double pts );
+	Transition* getTransition( int track, double pts );
 	double samplerDuration();
 
 	QList<Scene*> sceneList;

@@ -2,6 +2,7 @@
 
 #include <QFileInfo>
 #include <QMimeData>
+#include <QCursor>
 
 #include "gui/mimetypes.h"
 #include "timeline.h"
@@ -161,10 +162,10 @@ void ClipViewItem::mouseReleaseEvent( QGraphicsSceneMouseEvent *event )
 void ClipViewItem::hoverMoveEvent( QGraphicsSceneHoverEvent *event )
 {
 	if ( event->pos().x() < SNAPWIDTH || event->pos().x() > rect().width() - SNAPWIDTH ) {
-		setCursor( Qt::SplitHCursor );
+		setCursor( QCursor(Qt::SplitHCursor) );
 	}
 	else {
-		setCursor( Qt::PointingHandCursor );
+		setCursor( QCursor(Qt::PointingHandCursor) );
 	}
 }
 

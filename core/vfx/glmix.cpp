@@ -3,33 +3,28 @@
 
 
 
-GLMix::GLMix() : GLComposition()
+GLMix::GLMix( QString id, QString name ) : GLFilter( id, name )
 {
-	compositionName = "MixEffect";
-	strength_first = 0.5;
-	strength_second = 0.5;
+	mix = addParameter( tr("Mix:"), Parameter::PDOUBLE, 0.5, 0.0, 1.0, true );
 }
 
 
 
-GLMix::~GLMix()
-{
-}
-
-
-
-bool GLMix::process( Effect *e, Frame *src, Frame *dst, Profile *p )
+bool GLMix::process( const QList<Effect*> &el, Frame *src, Frame *dst, Profile *p )
 {
 	Q_UNUSED( src );
 	Q_UNUSED( dst );
 	Q_UNUSED( p );
-	return e->set_float( "strength_first", strength_first )
-		&& e->set_float( "strength_second", strength_second );
+	float m = getParamValue( mix, src->pts() ).toFloat();
+	return el[0]->set_float( "strength_first", m )
+		&& el[0]->set_float( "strength_second", 1.0f - m );
 }
 
 
 
-Effect* GLMix::getMovitEffect()
+QList<Effect*> GLMix::getMovitEffects()
 {
-	return new MixEffect();
+	QList<Effect*> list;
+	list.append( new MixEffect() );
+	return list;
 }

@@ -1,3 +1,5 @@
+#include <QPainter>
+
 #include "timeline.h"
 #include "trackviewitem.h"
 
