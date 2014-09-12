@@ -433,10 +433,10 @@ void Timeline::addFilter( ClipViewItem *clip, QString fx )
 	FilterCollection *fc = FilterCollection::getGlobalInstance();
 	for ( i = 0; i < fc->videoFilters.count(); ++i ) {
 		if ( fc->videoFilters[ i ].identifier == fx ) {
-			GLFilter *f = (GLFilter*)fc->videoFilters[ i ].create();
+			QSharedPointer<Filter> f = fc->videoFilters[ i ].create();
 			f->setPosition( clip->getClip()->position() );
 			f->setLength( clip->getClip()->length() );
-			clip->getClip()->videoFilters.append( f );
+			clip->getClip()->videoFilters.append( f.staticCast<GLFilter>() );
 			itemSelected( clip );
 			emit updateFrame();
 			break;
@@ -446,10 +446,10 @@ void Timeline::addFilter( ClipViewItem *clip, QString fx )
 
 
 
-void Timeline::filterDeleted( Clip *c, Filter *f )
+void Timeline::filterDeleted( Clip *c, QSharedPointer<Filter> f )
 {
-	if ( !c->videoFilters.remove( (GLFilter*)f ) )
-		c->audioFilters.remove( (AudioFilter*)f );
+	if ( !c->videoFilters.remove( f.staticCast<GLFilter>() ) )
+		c->audioFilters.remove( f.staticCast<AudioFilter>() );
 
 	emit updateFrame();
 }

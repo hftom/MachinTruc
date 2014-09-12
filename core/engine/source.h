@@ -16,8 +16,8 @@ public:
 	const Profile & getProfile() const;
 	InputBase::InputType getType() const;
 
-	FList<GLFilter*> videoFilters;
-	FList<AudioFilter*> audioFilters;
+	FList< QSharedPointer<GLFilter> > videoFilters;
+	FList< QSharedPointer<AudioFilter> > audioFilters;
 
 private:
 	QString fileName;

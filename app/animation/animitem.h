@@ -23,7 +23,7 @@ public:
 	
 	void setCurrentParam( FilterWidget *f, ParameterWidget *pw, Parameter *p );
 	void removeGraph();
-	bool filterDeleted( Clip *c, Filter *f );
+	bool filterDeleted( Clip *c, QSharedPointer<Filter> f );
 	void quitEditor();
 	
 protected:

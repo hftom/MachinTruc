@@ -19,9 +19,9 @@ public slots:
 	void clipSelected( Clip *clip );
 	
 private slots:
-	void deletedFilter( Clip *c, Filter *f );
-	void filterMoveUp( Clip *c, Filter *f );
-	void filterMoveDown( Clip *c, Filter *f );
+	void deletedFilter( Clip *c, QSharedPointer<Filter> f );
+	void filterMoveUp( Clip *c, QSharedPointer<Filter> f );
+	void filterMoveDown( Clip *c, QSharedPointer<Filter> f );
 
 private:
 	QWidget *currentEffectsWidget;
@@ -29,7 +29,7 @@ private:
 	QList<FilterWidget*> filterWidgets;
 	
 signals:
-	void filterDeleted( Clip*, Filter* );
+	void filterDeleted( Clip*, QSharedPointer<Filter> );
 	void editAnimation( FilterWidget*, ParameterWidget*, Parameter* );
 	void updateFrame();
 };

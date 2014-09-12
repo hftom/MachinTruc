@@ -220,14 +220,6 @@ MovitFilter::MovitFilter( const QList<Effect*> &el, GLFilter *f )
 
 
 
-MovitFilter::~MovitFilter()
-{
-	if ( filter )
-		filter->release();
-}
-
-
-
 MovitBranch::MovitBranch( MovitInput *in )
 	: input( in ),
 	transition( NULL )

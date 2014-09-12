@@ -6,8 +6,7 @@
 
 Filter::Filter( QString id, QString name )
 	: identifier( id ),
-	filterName( name ),
-	refCount( 1 )
+	filterName( name )
 {
 }
 
@@ -17,30 +16,6 @@ Filter::~Filter()
 {
 	while ( !parameters.isEmpty() )
 		delete parameters.takeFirst();
-}
-
-
-
-void Filter::use()
-{
-	rcMutex.lock();
-	++refCount;
-	rcMutex.unlock();
-}
-
-
-
-void Filter::release()
-{
-	rcMutex.lock();
-	--refCount;
-	//qDebug() << "Filter::release" << refCount << filterName << this;
-	rcMutex.unlock();
-	
-	if ( !refCount ) {
-		//qDebug() << filterName << "delete";
-		delete this;
-	}
 }
 
 

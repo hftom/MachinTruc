@@ -9,10 +9,13 @@
 #include <QMutex>
 #include <QDebug>
 #include <QStringList>
+#include <QSharedPointer>
 
 #include "bufferpool.h"
 #include "profile.h"
 #include "glresource.h"
+#include "afx/audiofilter.h"
+#include "vfx/glfilter.h"
 
 #define NUMINPUTFRAMES 5
 #define NUMOUTPUTFRAMES 4
@@ -124,13 +127,12 @@ class FrameSample
 {
 public:
 	FrameSample() : frame(NULL), transition(NULL) {}
-	~FrameSample() {}
 	void clear( bool releaseFrame = true );
 
 	Frame *frame;
 	Transition *transition;
-	QList<GLFilter*> videoFilters;
-	QList<AudioFilter*> audioFilters;
+	QList< QSharedPointer<GLFilter> > videoFilters;
+	QList< QSharedPointer<AudioFilter> > audioFilters;
 };
 
 

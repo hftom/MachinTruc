@@ -52,7 +52,7 @@ void AnimEditor::setCurrentParam( FilterWidget *f, ParameterWidget *pw, Paramete
 
 
 
-void AnimEditor::filterDeleted( Clip *c, Filter *f )
+void AnimEditor::filterDeleted( Clip *c, QSharedPointer<Filter> f )
 {
 	if ( animItem->filterDeleted( c, f ) )
 		emit quitEditor();

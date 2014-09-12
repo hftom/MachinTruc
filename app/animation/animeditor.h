@@ -17,7 +17,7 @@ public:
 	void setCurrentParam( FilterWidget *f, ParameterWidget *pw, Parameter *p );
 	
 public slots:
-	void filterDeleted( Clip *c, Filter *f );
+	void filterDeleted( Clip *c, QSharedPointer<Filter> f );
 
 private slots:
 	void removeGraph();

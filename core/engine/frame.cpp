@@ -2,8 +2,6 @@
 
 #include <stdio.h>
 
-#include "vfx/glfilter.h"
-#include "afx/audiofilter.h"
 #include "engine/frame.h"
 
 
@@ -168,10 +166,8 @@ void Frame::setAudioFrame( int c, int r, int bpc, int samples, double p )
 
 void FrameSample::clear( bool releaseFrame )
 {
-	while ( !videoFilters.isEmpty() )
-		videoFilters.takeFirst()->release();
-	while ( !audioFilters.isEmpty() )
-		audioFilters.takeFirst()->release();
+	videoFilters.clear();
+	audioFilters.clear();
 	transition = NULL;
 	if ( frame && releaseFrame ) {
 		frame->release();

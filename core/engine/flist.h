@@ -9,17 +9,14 @@
 
 
 
-// template constrained to Filter based objects
+// template constrained to QSharedPointer<Filter based objects>
 template <class T>
 class FList
 {
 public:
 	~FList() {
 		QMutexLocker ml( &mutex );
-		while ( !list.isEmpty() ) {
-			Filter *t = (Filter*)list.takeFirst();
-			t->release();
-		}
+		list.clear();
 	}
 	
 	void append( T t ) {
@@ -27,11 +24,14 @@ public:
 		list.append( t );
 	}
 	
+	void removeAt( int i ) {
+		QMutexLocker ml( &mutex );
+		return list.removeAt( i );
+	}
+	
 	bool remove( T t ) {
 		QMutexLocker ml( &mutex );
-		bool ok = list.removeOne( t );
-		((Filter*)t)->release();
-		return ok;
+		return list.removeOne( t );
 	}
 	
 	void swap( int i, int j ) {
@@ -49,44 +49,17 @@ public:
 		return list.at( index );
 	}
 	
-	void copy( QList<GLFilter*> *clist ) {
+	QList<T> copy() {
 		QMutexLocker ml( &mutex );
-		int i, j = list.count();
-		for ( i = 0; i < j; ++i ) {
-			GLFilter *f = (GLFilter*)list.at( i );
-			f->use();
-			clist->append( f );
-		}
+		return list;
 	}
 	
-	void copy( QList<AudioFilter*> *clist ) {
-		QMutexLocker ml( &mutex );
-		int i, j = list.count();
-		for ( i = 0; i < j; ++i ) {
-			AudioFilter *f = (AudioFilter*)list.at( i );
-			f->use();
-			clist->append( f );
-		}
-	}
-	
-	QStringList videoFiltersNames() {
+	QStringList filtersNames() {
 		QMutexLocker ml( &mutex );
 		QStringList s;
 		int i;
 		for ( i = 0; i < list.count(); ++i ) {
-			GLFilter *f = (GLFilter*)list.at( i );
-			s.append( f->getFilterName() );
-		}
-		return s;
-	}
-	
-	QStringList audioFiltersNames() {
-		QMutexLocker ml( &mutex );
-		QStringList s;
-		int i;
-		for ( i = 0; i < list.count(); ++i ) {
-			AudioFilter *a = (AudioFilter*)list.at( i );
-			s.append( a->getFilterName() );
+			s.append( list[i]->getFilterName() );
 		}
 		return s;
 	}

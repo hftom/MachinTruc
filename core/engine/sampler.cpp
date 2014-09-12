@@ -421,7 +421,7 @@ int Sampler::updateLastFrame( Frame *dst )
 		if ( !fs->frame )
 			return 0;
 		fs->clear( false );
-		preview.getSource()->videoFilters.copy( &fs->videoFilters );
+		fs->videoFilters = preview.getSource()->videoFilters.copy();
 		return 1;
 	}
 
@@ -458,8 +458,8 @@ int Sampler::updateLastFrame( Frame *dst )
 				return 0;
 			++nframes;
 			fs->clear( false );
-			c->getSource()->videoFilters.copy( &fs->videoFilters );
-			c->videoFilters.copy( &fs->videoFilters );
+			fs->videoFilters = c->getSource()->videoFilters.copy();
+			fs->videoFilters.append( c->videoFilters.copy() );
 			if ( (trans = getTransition( j, dst->pts() )) )
 				fs->transition = trans;
 		}
@@ -486,7 +486,7 @@ int Sampler::getVideoTracks( Frame *dst )
 		dst->sample->frames.append( fs );
 		f = preview.getInput()->getVideoFrame();
 		fs->frame = f;
-		preview.getSource()->videoFilters.copy( &fs->videoFilters );
+		fs->videoFilters = preview.getSource()->videoFilters.copy();
 		return ( f ? 1 : 0 );
 	}
 
@@ -524,8 +524,8 @@ int Sampler::getVideoTracks( Frame *dst )
 				++nFrames;
 				f->setPts( scene->currentPTS );
 				fs->frame = f;
-				c->getSource()->videoFilters.copy( &fs->videoFilters );
-				c->videoFilters.copy( &fs->videoFilters );
+				fs->videoFilters = c->getSource()->videoFilters.copy();
+				fs->videoFilters.append( c->videoFilters.copy() );
 				if ( (trans = getTransition( j, scene->currentPTS )) )
 					fs->transition = trans;
 			}
@@ -553,7 +553,7 @@ int Sampler::getAudioTracks( Frame *dst, int nSamples )
 		dst->sample->frames.append( fs );
 		Frame *f = preview.getInput()->getAudioFrame( nSamples );
 		fs->frame = f;
-		preview.getSource()->audioFilters.copy( &fs->audioFilters );
+		fs->audioFilters = preview.getSource()->audioFilters.copy();
 		return ( f ? 1 : 0 );
 	}
 
@@ -592,8 +592,8 @@ int Sampler::getAudioTracks( Frame *dst, int nSamples )
 				++nFrames;
 				f->setPts( scene->currentPTSAudio );
 				fs->frame = f;
-				c->getSource()->audioFilters.copy( &fs->audioFilters );
-				c->audioFilters.copy( &fs->audioFilters );
+				fs->audioFilters = c->getSource()->audioFilters.copy();
+				fs->audioFilters.append( c->audioFilters.copy() );
 			}
 		}
 	}

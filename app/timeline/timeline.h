@@ -64,7 +64,7 @@ public slots:
 	void deleteClip();
 	void splitCurrentClip();
 	
-	void filterDeleted( Clip *c, Filter *f );
+	void filterDeleted( Clip *c, QSharedPointer<Filter> f );
 	
 protected:
 	/*void mousePressEvent ( QGraphicsSceneMouseEvent *e );

@@ -4,6 +4,7 @@
 #include <QMutex>
 #include <QString>
 #include <QList>
+#include <QSharedPointer>
 
 #include "parameter.h"
 
@@ -14,8 +15,6 @@ class Filter : public QObject // for easier translations
 public:
 	Filter( QString id, QString name );
 	virtual ~Filter();
-	void use();
-	void release();
 	
 	virtual QList<Parameter*> getParameters() { return parameters; }
 	void splitParameters( Filter *second, double posPts );
@@ -36,9 +35,6 @@ private:
 	QList<Parameter*> parameters;
 	QString identifier, filterName;
 	double posInTrack, length;
-	
-	int refCount;
-	QMutex rcMutex;
 };
 
 #endif // FILTER_H

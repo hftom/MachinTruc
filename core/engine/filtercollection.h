@@ -56,10 +56,12 @@ public:
 		makeFilter( p )
 	{}
 	
-	Filter* create() { return makeFilter( identifier, name ); }
+	QSharedPointer<Filter> create() { return QSharedPointer<Filter>( makeFilter( identifier, name ) ); }
 
 	QString identifier; // must be unique
 	QString name; // translated UI name
+
+private:
 	Filter* (*makeFilter)(QString,QString);
 };
 

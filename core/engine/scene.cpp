@@ -39,14 +39,15 @@ Clip* Scene::sceneSplitClip( Clip *clip, int track, double pts )
 		Clip *nc = createClip( clip->getSource(), pts, clip->start() + newLength, oldLength - newLength );
 		FilterCollection *fc = FilterCollection::getGlobalInstance();
 		for ( int i = 0; i < clip->videoFilters.count(); ++i ) {
-			GLFilter *f = clip->videoFilters.at( i );
+			QSharedPointer<GLFilter> f = clip->videoFilters.at( i );
 			for ( int j = 0; j < fc->videoFilters.count(); ++j ) {
 				if ( fc->videoFilters[ j ].identifier == f->getIdentifier() ) {
-					GLFilter *nf = (GLFilter*)fc->videoFilters[ j ].create();
-					f->splitParameters( nf, newLength );
+					QSharedPointer<Filter> nf = fc->videoFilters[ j ].create();
+					GLFilter *gf = (GLFilter*)nf.data();
+					f->splitParameters( gf, newLength );
 					nf->setPosition( nc->position() );
 					nf->setLength( nc->length() );
-					nc->videoFilters.append( nf );
+					nc->videoFilters.append( nf.staticCast<GLFilter>() );
 				}
 			}
 		}

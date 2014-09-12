@@ -47,8 +47,8 @@ TopWindow::TopWindow()
 	
 	fxPage = new FxPage();
 	connect( timeline, SIGNAL(clipSelected(Clip*)), fxPage, SLOT(clipSelected(Clip*)) );
-	connect( fxPage, SIGNAL(filterDeleted(Clip*,Filter*)), timeline, SLOT(filterDeleted(Clip*,Filter*)) );
-	connect( fxPage, SIGNAL(filterDeleted(Clip*,Filter*)), animEditor, SLOT(filterDeleted(Clip*,Filter*)) );
+	connect( fxPage, SIGNAL(filterDeleted(Clip*,QSharedPointer<Filter>)), timeline, SLOT(filterDeleted(Clip*,QSharedPointer<Filter>)) );
+	connect( fxPage, SIGNAL(filterDeleted(Clip*,QSharedPointer<Filter>)), animEditor, SLOT(filterDeleted(Clip*,QSharedPointer<Filter>)) );
 	connect( fxPage, SIGNAL(updateFrame()), sampler, SLOT(updateFrame()) );
 	connect( fxPage, SIGNAL(editAnimation(FilterWidget*,ParameterWidget*,Parameter*)), this, SLOT(editAnimation(FilterWidget*,ParameterWidget*,Parameter*)) );
 	

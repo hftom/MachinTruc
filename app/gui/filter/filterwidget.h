@@ -13,8 +13,8 @@ class FilterWidget : public QWidget
 {
 	Q_OBJECT
 public:
-	FilterWidget( QWidget *parent, Clip *c, Filter *f );
-	Filter* getFilter() { return filter; }
+	FilterWidget( QWidget *parent, Clip *c, QSharedPointer<Filter> f );
+	QSharedPointer<Filter> getFilter() { return filter; }
 	void setAnimActive( Parameter *p );
 	
 private slots:
@@ -28,14 +28,14 @@ private slots:
 	
 private:
 	Clip *clip;
-	Filter *filter;
+	QSharedPointer<Filter> filter;
 	QList<ParameterWidget*> paramWidgets;
 	
 signals:
-	void filterDeleted( Clip*, Filter* );
+	void filterDeleted( Clip*, QSharedPointer<Filter> );
 	void filterSourceDeleted();
-	void filterMoveUp( Clip*, Filter* );
-	void filterMoveDown( Clip*, Filter* );
+	void filterMoveUp( Clip*, QSharedPointer<Filter>);
+	void filterMoveDown( Clip*, QSharedPointer<Filter> );
 	void editAnimation( FilterWidget*, ParameterWidget*, Parameter* );
 	void updateFrame();
 };

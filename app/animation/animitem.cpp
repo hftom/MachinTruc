@@ -137,7 +137,7 @@ void AnimItem::setCurrentParam( FilterWidget *f, ParameterWidget *pw, Parameter 
 
 
 
-bool AnimItem::filterDeleted( Clip *c, Filter *f )
+bool AnimItem::filterDeleted( Clip *c, QSharedPointer<Filter> f )
 {
 	Q_UNUSED( c );
 	

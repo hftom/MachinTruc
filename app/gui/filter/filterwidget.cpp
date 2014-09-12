@@ -8,7 +8,7 @@
 
 
 
-FilterWidget::FilterWidget( QWidget *parent, Clip *c, Filter *f ) : QWidget( parent ),
+FilterWidget::FilterWidget( QWidget *parent, Clip *c, QSharedPointer<Filter> f ) : QWidget( parent ),
 	clip( c ),
 	filter( f )
 {	

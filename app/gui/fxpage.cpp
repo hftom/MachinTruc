@@ -40,9 +40,9 @@ void FxPage::clipSelected( Clip *clip )
 		effectsWidgetLayout->setContentsMargins( 0, 0, 0, 0 );
 		for ( i = 0; i < clip->videoFilters.count(); ++i ) {
 			FilterWidget *fw = new FilterWidget( currentEffectsWidget, clip, clip->videoFilters.at( i ) );
-			connect( fw, SIGNAL(filterDeleted(Clip*,Filter*)), this, SLOT(deletedFilter(Clip*,Filter*)) );
-			connect( fw, SIGNAL(filterMoveUp(Clip*,Filter*)), this, SLOT(filterMoveUp(Clip*,Filter*)) );
-			connect( fw, SIGNAL(filterMoveDown(Clip*,Filter*)), this, SLOT(filterMoveDown(Clip*,Filter*)) );
+			connect( fw, SIGNAL(filterDeleted(Clip*,QSharedPointer<Filter>)), this, SLOT(deletedFilter(Clip*,QSharedPointer<Filter>)) );
+			connect( fw, SIGNAL(filterMoveUp(Clip*,QSharedPointer<Filter>)), this, SLOT(filterMoveUp(Clip*,QSharedPointer<Filter>)) );
+			connect( fw, SIGNAL(filterMoveDown(Clip*,QSharedPointer<Filter>)), this, SLOT(filterMoveDown(Clip*,QSharedPointer<Filter>)) );
 			connect( fw, SIGNAL(updateFrame()), this, SIGNAL(updateFrame()) );
 			connect( fw, SIGNAL(editAnimation(FilterWidget*,ParameterWidget*,Parameter*)), this, SIGNAL(editAnimation(FilterWidget*,ParameterWidget*,Parameter*)) );
 			effectsWidgetLayout->addWidget( fw, i, 1 );
@@ -55,7 +55,7 @@ void FxPage::clipSelected( Clip *clip )
 
 
 
-void FxPage::deletedFilter( Clip *c, Filter *f )
+void FxPage::deletedFilter( Clip *c, QSharedPointer<Filter> f )
 {
 	int i;
 	for ( i = 0; i < filterWidgets.count(); ++i ) {
@@ -69,7 +69,7 @@ void FxPage::deletedFilter( Clip *c, Filter *f )
 
 
 
-void FxPage::filterMoveUp( Clip *c, Filter *f )
+void FxPage::filterMoveUp( Clip *c, QSharedPointer<Filter> f )
 {
 	for ( int i = 0; i < filterWidgets.count(); ++i ) {
 		if ( filterWidgets[i]->getFilter() == f ) {
@@ -89,7 +89,7 @@ void FxPage::filterMoveUp( Clip *c, Filter *f )
 
 
 
-void FxPage::filterMoveDown( Clip *c, Filter *f )
+void FxPage::filterMoveDown( Clip *c, QSharedPointer<Filter> f )
 {
 	for ( int i = 0; i < filterWidgets.count(); ++i ) {
 		if ( filterWidgets[i]->getFilter() == f ) {

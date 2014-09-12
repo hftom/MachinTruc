@@ -40,10 +40,9 @@ class MovitFilter
 {
 public:
 	MovitFilter( const QList<Effect*> &el, GLFilter *f = NULL );
-	~MovitFilter();
 	
 	QList<Effect*> effects;
-	GLFilter *filter;
+	QSharedPointer<GLFilter> filter;
 };
 
 

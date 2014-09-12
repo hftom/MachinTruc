@@ -14,9 +14,9 @@ public:
 	~Transition();
 
 	void setVideoFilter( GLFilter *f );
-	GLFilter* getVideoFilter() { return videoFilter; }
+	QSharedPointer<GLFilter> getVideoFilter() { return videoFilter; }
 	void setAudioFilter( AudioFilter *f );
-	AudioFilter* getAudioFilter() { return audioFilter; }
+	QSharedPointer<AudioFilter> getAudioFilter() { return audioFilter; }
 	
 	double position() { return posInTrack; }
 	void setPosition( double p );
@@ -26,8 +26,8 @@ public:
 	void setFrameDuration( double d ) { frameDuration = d; }
 
 private:
-	GLFilter *videoFilter;
-	AudioFilter *audioFilter;
+	QSharedPointer<GLFilter> videoFilter;
+	QSharedPointer<AudioFilter> audioFilter;
 
 	double posInTrack;
 	double transitionLength;

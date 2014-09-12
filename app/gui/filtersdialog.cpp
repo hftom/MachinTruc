@@ -21,7 +21,7 @@ FiltersDialog::FiltersDialog( QWidget *parent, Source *src, Sampler *samp ) : QD
 	audioParamWidget->setWidget( audioWidget );
 	
 	if ( source->getProfile().hasVideo() ) {
-		videoList->addItems( source->videoFilters.videoFiltersNames() );	
+		videoList->addItems( source->videoFilters.filtersNames() );	
 		connect( videoList, SIGNAL(currentRowChanged(int)), this, SLOT(videoFilterActivated(int)) );
 		connect( videoAddBtn, SIGNAL(clicked()), this, SLOT(showVideoFiltersList()) );
 		connect( videoRemoveBtn, SIGNAL(clicked()), this, SLOT(removeCurrentVideoFilter()) );
@@ -32,7 +32,7 @@ FiltersDialog::FiltersDialog( QWidget *parent, Source *src, Sampler *samp ) : QD
 	}
 	
 	if ( source->getProfile().hasAudio() ) {
-		audioList->addItems( source->audioFilters.audioFiltersNames() );
+		audioList->addItems( source->audioFilters.filtersNames() );
 		connect( audioList, SIGNAL(currentRowChanged(int)), this, SLOT(audioFilterActivated(int)) );
 		connect( audioAddBtn, SIGNAL(clicked()), this, SLOT(showAudioFiltersList()) );
 		connect( audioRemoveBtn, SIGNAL(clicked()), this, SLOT(removeCurrentAudioFilter()) );
@@ -88,10 +88,10 @@ void FiltersDialog::addVideoFilter( int i )
 {
 	FilterCollection *fc = FilterCollection::getGlobalInstance();
 	
-	GLFilter *f = (GLFilter*)fc->videoFilters[ i ].create();
-	source->videoFilters.append( f );
+	QSharedPointer<Filter> f = fc->videoFilters[ i ].create();
+	source->videoFilters.append( f.staticCast<GLFilter>() );
 	videoList->clear();
-	videoList->addItems( source->videoFilters.videoFiltersNames() );
+	videoList->addItems( source->videoFilters.filtersNames() );
 	videoList->setCurrentRow( videoList->count() - 1 );
 	sampler->updateFrame();
 }
@@ -106,11 +106,10 @@ void FiltersDialog::removeCurrentVideoFilter()
 	int row = videoList->row( it );
 	if ( row < 0 || row >= source->videoFilters.count() )
 		return;
-	GLFilter *f = source->videoFilters.at( row );
-	source->videoFilters.remove( f );
+	source->videoFilters.removeAt( row );
 	
 	videoList->clear();
-	videoList->addItems( source->videoFilters.videoFiltersNames() );
+	videoList->addItems( source->videoFilters.filtersNames() );
 	if ( videoList->count() )
 		videoList->setCurrentRow( videoList->count() - 1 );
 	else if ( currentVideoWidget ) {
@@ -156,10 +155,10 @@ void FiltersDialog::addAudioFilter( int i )
 {
 	FilterCollection *fc = FilterCollection::getGlobalInstance();
 	
-	AudioFilter *f = (AudioFilter*)fc->audioFilters[ i ].create();
-	source->audioFilters.append( f );
+	QSharedPointer<Filter> f = fc->audioFilters[ i ].create();
+	source->audioFilters.append( f.staticCast<AudioFilter>() );
 	audioList->clear();
-	audioList->addItems( source->audioFilters.audioFiltersNames() );
+	audioList->addItems( source->audioFilters.filtersNames() );
 	audioList->setCurrentRow( audioList->count() - 1 );
 }
 
@@ -173,11 +172,10 @@ void FiltersDialog::removeCurrentAudioFilter()
 	int row = audioList->row( it );
 	if ( row < 0 || row >= source->audioFilters.count() )
 		return;
-	AudioFilter *f = source->audioFilters.at( row );
-	source->audioFilters.remove( f );
+	source->audioFilters.removeAt( row );
 	
 	audioList->clear();
-	audioList->addItems( source->audioFilters.audioFiltersNames() );
+	audioList->addItems( source->audioFilters.filtersNames() );
 	if ( audioList->count() )
 		audioList->setCurrentRow( audioList->count() - 1 );
 	else if ( currentAudioWidget ) {

@@ -17,8 +17,8 @@ public:
 	Clip( Source *src, double posInTrackPTS, double strt, double len );
 	~Clip();
 
-	FList<GLFilter*> videoFilters;
-	FList<AudioFilter*> audioFilters;
+	FList< QSharedPointer<GLFilter> > videoFilters;
+	FList< QSharedPointer<AudioFilter> > audioFilters;
 
 	QString sourcePath() { return source->getFileName(); }
 	const Profile & getProfile() const { return source->getProfile(); }
