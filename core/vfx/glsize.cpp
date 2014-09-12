@@ -25,8 +25,9 @@ QString GLSize::getDescriptor( Frame *src, Profile *p )
 {
 	QString s;
 	QList<Parameter*> params = resize->getParameters();
+	bool samesar = qAbs( p->getVideoSAR() - src->glSAR ) < 1e-3;
 
-	if ( !params[0]->graph.keys.count() && 100.0 == getParamValue( params[0], src->pts() ).toDouble() ) {
+	if ( samesar && !params[0]->graph.keys.count() && 100.0 == getParamValue( params[0] ).toDouble() ) {
 		resizeActive = false;
 	}
 	else {
