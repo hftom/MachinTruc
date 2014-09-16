@@ -23,7 +23,6 @@
 
 
 class ProjectSample;
-class Transition;
 class GLFilter;
 class AudioFilter;
 
@@ -123,14 +122,39 @@ private:
 
 
 
+class TransitionSample
+{
+public:
+	TransitionSample() : frame(NULL) {}
+	void clear( bool releaseFrame ) {
+		videoFilters.clear();
+		audioFilters.clear();
+		if ( frame && releaseFrame ) {
+			frame->release();
+			frame = NULL;
+		}
+		videoTransitionFilter.clear();
+		audioTransitionFilter.clear();
+	}
+
+	Frame *frame;
+	QList< QSharedPointer<GLFilter> > videoFilters;
+	QList< QSharedPointer<AudioFilter> > audioFilters;
+
+	QSharedPointer<GLFilter> videoTransitionFilter;
+	QSharedPointer<AudioFilter> audioTransitionFilter;
+};
+
+
+
 class FrameSample
 {
 public:
-	FrameSample() : frame(NULL), transition(NULL) {}
+	FrameSample() : frame(NULL) {}
 	void clear( bool releaseFrame = true );
 
 	Frame *frame;
-	Transition *transition;
+	TransitionSample transitionFrame;
 	QList< QSharedPointer<GLFilter> > videoFilters;
 	QList< QSharedPointer<AudioFilter> > audioFilters;
 };

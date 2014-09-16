@@ -46,7 +46,7 @@ void Composer::setSharedContext( QGLWidget *shared )
 	else
 		assert(false);
 	
-	bool ok = init_movit( movitPath.toLocal8Bit().data(), MOVIT_DEBUG_OFF );
+	bool ok = init_movit( movitPath.toLocal8Bit().data(), MOVIT_DEBUG_ON );
 	
 	Q_UNUSED( ok );
 	
@@ -291,9 +291,96 @@ bool Composer::renderVideoFrame( Frame *dst )
 
 
 
+void Composer::movitFrameDescriptor( QString prefix, Frame *f, QList< QSharedPointer<GLFilter> > *filters, QStringList &desc, Profile *projectProfile )
+{
+	f->paddingAuto = f->resizeAuto = false;
+	f->glWidth = f->profile.getVideoWidth();
+	f->glHeight = f->profile.getVideoHeight();
+	f->glSAR = f->profile.getVideoSAR();
+		
+	desc.append( prefix + MovitInput::getDescriptor( f ) );
+	
+	// deinterlace
+	if ( f->profile.getVideoInterlaced() ) {
+		desc.append( prefix + GLDeinterlace().getDescriptor( f, projectProfile ) );
+	}
+		
+	for ( int k = 0; k < filters->count(); ++k ) {
+		desc.append( prefix + filters->at(k)->getDescriptor( f, projectProfile ) );
+	}
+
+	// resize to match destination aspect ratio
+	if ( fabs( projectProfile->getVideoSAR() - f->glSAR ) > 1e-3 ) {
+		GLResize resize;
+		desc.append( prefix + resize.getDescriptor( f, projectProfile ) );
+		f->resizeAuto = true;
+	}
+
+	// padding
+	if ( !sampler->previewMode() ) {
+		if ( f->glWidth != projectProfile->getVideoWidth() || f->glHeight != projectProfile->getVideoHeight() ) {
+			GLPadding padding;
+			desc.append( prefix + padding.getDescriptor( f, projectProfile ) );
+			f->paddingAuto = true;
+		}
+	}
+}
+
+
+
+Effect* Composer::movitFrameBuild( Frame *f, QList< QSharedPointer<GLFilter> > *filters, MovitBranch **newBranch )
+{
+	Effect *current = NULL;
+
+	MovitInput *in = new MovitInput();
+	MovitBranch *branch = new MovitBranch( in );
+	*newBranch = branch;
+	movitChain.branches.append( branch );
+	current = movitChain.chain->add_input( in->getMovitInput( f ) );
+	
+	// deinterlace
+	if ( f->profile.getVideoInterlaced() ) {
+		GLDeinterlace *deint = new GLDeinterlace();
+		QList<Effect*> el = deint->getMovitEffects();
+		branch->filters.append( new MovitFilter( el, deint ) );
+		for ( int l = 0; l < el.count(); ++l )
+			current = movitChain.chain->add_effect( el.at( l ) );
+	}
+	
+	// apply filters
+	for ( int k = 0; k < filters->count(); ++k ) {
+		QList<Effect*> el = filters->at(k)->getMovitEffects();
+		branch->filters.append( new MovitFilter( el ) );
+		for ( int l = 0; l < el.count(); ++l )
+			current = movitChain.chain->add_effect( el.at( l ) );
+	}
+	
+	// auto resize to match destination aspect ratio
+	if ( f->resizeAuto ) {
+		GLResize *resize = new GLResize();
+		QList<Effect*> el = resize->getMovitEffects();
+		branch->filters.append( new MovitFilter( el, resize ) );
+		for ( int l = 0; l < el.count(); ++l )
+			current = movitChain.chain->add_effect( el.at( l ) );
+	}
+
+	// padding
+	if ( f->paddingAuto ) {
+		GLPadding *padding = new GLPadding();
+		QList<Effect*> el = padding->getMovitEffects();
+		branch->filters.append( new MovitFilter( el, padding ) );
+		for ( int l = 0; l < el.count(); ++l )
+			current = movitChain.chain->add_effect( el.at( l ) );
+	}
+	
+	return current;
+}
+
+
+
 void Composer::movitRender( Frame *dst, bool update )
 {
-	int i, j, k, l, start=0;
+	int i, j, start=0;
 	Frame *f;
 	//QTime time;
 	//time.start();
@@ -313,53 +400,22 @@ void Composer::movitRender( Frame *dst, bool update )
 	i = start;
 	QStringList currentDescriptor;
 	while ( (f = getNextFrame( dst, i )) ) {
-		f->paddingAuto = f->resizeAuto = false;
-		f->glWidth = f->profile.getVideoWidth();
-		f->glHeight = f->profile.getVideoHeight();
-		f->glSAR = f->profile.getVideoSAR();
-		
-		currentDescriptor.append( MovitInput::getDescriptor( f ) );
-		
-		// deinterlace
-		if ( f->profile.getVideoInterlaced() ) {
-			currentDescriptor.append( GLDeinterlace().getDescriptor( f, &projectProfile ) );
+		FrameSample *sample = dst->sample->frames[i - 1];
+		// input and filters
+		movitFrameDescriptor( "-", f, &sample->videoFilters, currentDescriptor, &projectProfile );
+		// transition
+		if ( sample->transitionFrame.frame && !sample->transitionFrame.videoTransitionFilter.isNull() ) {
+			movitFrameDescriptor( "->", sample->transitionFrame.frame, &sample->transitionFrame.videoFilters, currentDescriptor, &projectProfile );
+			currentDescriptor.append( "-<" + sample->transitionFrame.videoTransitionFilter->getDescriptor( sample->transitionFrame.frame, &projectProfile ) );
 		}
-		
-		for ( k = 0; k < dst->sample->frames[i - 1]->videoFilters.count(); ++k ) {
-			currentDescriptor.append( dst->sample->frames[i - 1]->videoFilters[k]->getDescriptor( f, &projectProfile ) );
-		}
-		
-		// resize to match destination aspect ratio
-		if ( fabs( projectProfile.getVideoSAR() - f->glSAR ) > 1e-3 ) {
-			GLResize resize;
-			currentDescriptor.append( resize.getDescriptor( f, &projectProfile ) );
-			f->resizeAuto = true;
-		}
-
-		// padding
-		if ( !sampler->previewMode() ) {
-			if ( f->glWidth != projectProfile.getVideoWidth() || f->glHeight != projectProfile.getVideoHeight() ) {
-				GLPadding padding;
-				currentDescriptor.append( padding.getDescriptor( f, &projectProfile ) );
-				f->paddingAuto = true;
-			}
-		}
-		
-		// compose
-		if ( (i - 1) > start ) {
-			if ( !dst->sample->frames[i - 1]->transition ) {
-				// overlay is the default
-				currentDescriptor.append( GLOverlay().getDescriptor( f, &projectProfile ) );
-			}	
-			else {
-				currentDescriptor.append( dst->sample->frames[i - 1]->transition->getVideoFilter()->getDescriptor( f, &projectProfile ) );
-			}
-		}
+		// overlay
+		if ( (i - 1) > start )
+			currentDescriptor.append( GLOverlay().getDescriptor( f, &projectProfile ) );
 	}
 
 	// rebuild the chain if neccessary
 	if ( currentDescriptor !=  movitDescriptor ) {
-		for ( k = 0; k < currentDescriptor.count(); k++ )
+		for ( int k = 0; k < currentDescriptor.count(); k++ )
 			printf("%s\n", currentDescriptor[k].toLocal8Bit().data());
 		movitDescriptor = currentDescriptor;
 		movitChain.reset();
@@ -372,61 +428,26 @@ void Composer::movitRender( Frame *dst, bool update )
 			
 		while ( (f = getNextFrame( dst, i )) ) {
 			last = current;
-			MovitInput *in = new MovitInput();
-			MovitBranch *branch = new MovitBranch( in );
-			movitChain.branches.append( branch );
-			current = movitChain.chain->add_input( in->getMovitInput( f ) );
-			
-			// deinterlace
-			if ( f->profile.getVideoInterlaced() ) {
-				GLDeinterlace *deint = new GLDeinterlace();
-				QList<Effect*> el = deint->getMovitEffects();
-				branch->filters.append( new MovitFilter( el, deint ) );
-				for ( l = 0; l < el.count(); ++l )
-					current = movitChain.chain->add_effect( el.at( l ) );
+			// input and filters
+			MovitBranch *branch;
+			FrameSample *sample = dst->sample->frames[i - 1];
+			current = movitFrameBuild( f, &sample->videoFilters, &branch );
+			// transition
+			if ( sample->transitionFrame.frame && !sample->transitionFrame.videoTransitionFilter.isNull() ) {
+				MovitBranch *branchTrans;
+				Effect *currentTrans = movitFrameBuild( sample->transitionFrame.frame, &sample->transitionFrame.videoFilters, &branchTrans );
+				QList<Effect*> el = sample->transitionFrame.videoTransitionFilter->getMovitEffects();
+				branchTrans->filters.append( new MovitFilter( el ) );
+				for ( int l = 0; l < el.count(); ++l )
+					current = movitChain.chain->add_effect( el.at( l ), current, currentTrans );
 			}
-			
-			// apply filters
-			for ( k = 0; k < dst->sample->frames[i - 1]->videoFilters.count(); ++k ) {
-				QList<Effect*> el = dst->sample->frames[i - 1]->videoFilters[k]->getMovitEffects();
-				branch->filters.append( new MovitFilter( el ) );
-				for ( l = 0; l < el.count(); ++l )
-					current = movitChain.chain->add_effect( el.at( l ) );
-			}
-			
-			// auto resize to match destination aspect ratio
-			if ( f->resizeAuto ) {
-				GLResize *resize = new GLResize();
-				QList<Effect*> el = resize->getMovitEffects();
-				branch->filters.append( new MovitFilter( el, resize ) );
-				for ( l = 0; l < el.count(); ++l )
-					current = movitChain.chain->add_effect( el.at( l ) );
-			}
-
-			// padding
-			if ( f->paddingAuto ) {
-				GLPadding *padding = new GLPadding();
-				QList<Effect*> el = padding->getMovitEffects();
-				branch->filters.append( new MovitFilter( el, padding ) );
-				for ( l = 0; l < el.count(); ++l )
-					current = movitChain.chain->add_effect( el.at( l ) );
-			}
-					
-			// compose
+			// overlay
 			if ( last ) {
-				if ( !dst->sample->frames[i - 1]->transition ) {
-					GLOverlay *overlay = new GLOverlay();
-					QList<Effect*> el = overlay->getMovitEffects();
-					branch->transition = new MovitFilter( el, overlay );
-					for ( l = 0; l < el.count(); ++l )
-						current = movitChain.chain->add_effect( el.at( l ), last, current );
-				}
-				else {
-					QList<Effect*> el = dst->sample->frames[i - 1]->transition->getVideoFilter()->getMovitEffects();
-					branch->transition = new MovitFilter( el );
-					for ( l = 0; l < el.count(); ++l )
-						current = movitChain.chain->add_effect( el.at( l ), last, current );
-				}
+				GLOverlay *overlay = new GLOverlay();
+				QList<Effect*> el = overlay->getMovitEffects();
+				branch->overlay = new MovitFilter( el, overlay );
+				for ( int l = 0; l < el.count(); ++l )
+					current = movitChain.chain->add_effect( el.at( l ), last, current );
 			}
 		}
 
@@ -447,21 +468,37 @@ void Composer::movitRender( Frame *dst, bool update )
 		f->glHeight = f->profile.getVideoHeight();
 		f->glSAR = f->profile.getVideoSAR();
 		
+		// input and filters
 		MovitBranch *branch = movitChain.branches[ j++ ];
 		branch->input->process( f, &gl );
 		int vf = 0;
-		for ( k = 0; k < branch->filters.count(); ++k ) { 
+		FrameSample *sample = dst->sample->frames[i - 1];
+		for ( int k = 0; k < branch->filters.count(); ++k ) { 
 			if ( !branch->filters[k]->filter )
-				dst->sample->frames[i - 1]->videoFilters[vf++]->process( branch->filters[k]->effects, f, &projectProfile );
+				sample->videoFilters[vf++]->process( branch->filters[k]->effects, f, &projectProfile );
 			else
 				branch->filters[k]->filter->process( branch->filters[k]->effects, f, &projectProfile );
 		}
-		if ( branch->transition ) {
-			if ( branch->transition->filter )
-				branch->transition->filter->process( branch->transition->effects, f, f, &projectProfile );
-			else
-				dst->sample->frames[i - 1]->transition->getVideoFilter()->process( branch->transition->effects, f, f, &projectProfile );
+		// transition
+		if ( sample->transitionFrame.frame && !sample->transitionFrame.videoTransitionFilter.isNull() ) {
+			sample->transitionFrame.frame->glWidth = sample->transitionFrame.frame->profile.getVideoWidth();
+			sample->transitionFrame.frame->glHeight = sample->transitionFrame.frame->profile.getVideoHeight();
+			sample->transitionFrame.frame->glSAR = sample->transitionFrame.frame->profile.getVideoSAR();
+			MovitBranch *branchTrans = movitChain.branches[ j++ ];
+			branchTrans->input->process( sample->transitionFrame.frame, &gl );
+			int tvf = 0;
+			int k;
+			for ( k = 0; k < branchTrans->filters.count() - 1; ++k ) { 
+				if ( !branchTrans->filters[k]->filter )
+					sample->transitionFrame.videoFilters[tvf++]->process( branchTrans->filters[k]->effects, sample->transitionFrame.frame, &projectProfile );
+				else
+					branchTrans->filters[k]->filter->process( branchTrans->filters[k]->effects, sample->transitionFrame.frame, &projectProfile );
+			}
+			sample->transitionFrame.videoTransitionFilter->process( branchTrans->filters[k]->effects, f, sample->transitionFrame.frame, &projectProfile );
 		}
+		// overlay
+		if ( branch->overlay && branch->overlay->filter )
+			branch->overlay->filter->process( branch->overlay->effects, f, f, &projectProfile );
 		
 		w = f->glWidth;
 		h = f->glHeight;
@@ -488,10 +525,26 @@ void Composer::movitRender( Frame *dst, bool update )
 
 
 
+void Composer::processAudioFrame( FrameSample *sample, Frame *f, Profile *profile )
+{
+	// filters
+	for ( int k = 0; k < sample->audioFilters.count(); ++k )
+		sample->audioFilters[k]->process( f, profile );
+	// transition
+	if ( sample->transitionFrame.frame && !sample->transitionFrame.audioTransitionFilter.isNull() ) {
+		for ( int k = 0; k < sample->transitionFrame.audioFilters.count(); ++k )
+			sample->transitionFrame.audioFilters[k]->process( sample->transitionFrame.frame, profile );
+		sample->transitionFrame.audioTransitionFilter->process( f, sample->transitionFrame.frame, profile );
+	}
+}
+
+
+
 bool Composer::renderAudioFrame( Frame *dst, int nSamples )
 {
-	int i = 0, k;
+	int i = 0;
 	Frame *f;
+	FrameSample *sample;
 	
 	Profile profile = sampler->getProfile();
 
@@ -505,18 +558,18 @@ bool Composer::renderAudioFrame( Frame *dst, int nSamples )
 	
 	// process first frame
 	f = getNextFrame( dst, i );
-	for ( k = 0; k < dst->sample->frames[i - 1]->audioFilters.count(); ++k )
-		dst->sample->frames[i - 1]->audioFilters[k]->process( f, &profile );
+	sample = dst->sample->frames[i - 1];
+	processAudioFrame( sample, f, &profile );
 	// copy in dst
 	AudioCopy ac;
 	ac.process( f, dst, &profile );
 
 	// process remaining frames
+	AudioMix am;
 	while ( (f = getNextFrame( dst, i )) ) {
-		for ( k = 0; k < dst->sample->frames[i - 1]->audioFilters.count(); ++k )
-			dst->sample->frames[i - 1]->audioFilters[k]->process( f, &profile );
+		sample = dst->sample->frames[i - 1];
+		processAudioFrame( sample, f, &profile );
 		// mix
-		AudioMix am;
 		am.process( f, dst, &profile );
 	}
 

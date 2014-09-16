@@ -7,7 +7,8 @@
 Track::Track()
 	: clipIndex( 0 ),
 	clipIndexAudio( 0 ),
-	transitionIndex( 0 )
+	transitionIndex( 0 ),
+	transitionIndexAudio( 0 )
 {
 }
 
@@ -133,8 +134,22 @@ void Track::setCurrentTransitionIndex( int i )
 }
 
 
+
+int Track::currentTransitionIndexAudio()
+{
+	return transitionIndexAudio;
+}
+
+
+
+void Track::setCurrentTransitionIndexAudio( int i )
+{
+	transitionIndexAudio = i;
+}
+
+
 void Track::resetIndexes()
 
 {
-	clipIndex = clipIndexAudio = transitionIndex = 0;
+	clipIndex = clipIndexAudio = transitionIndex = transitionIndexAudio = 0;
 }

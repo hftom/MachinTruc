@@ -55,7 +55,7 @@ public:
 	
 	MovitInput *input;
 	QList<MovitFilter*> filters;
-	MovitFilter *transition;
+	MovitFilter *overlay;
 };
 
 

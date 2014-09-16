@@ -222,7 +222,7 @@ MovitFilter::MovitFilter( const QList<Effect*> &el, GLFilter *f )
 
 MovitBranch::MovitBranch( MovitInput *in )
 	: input( in ),
-	transition( NULL )
+	overlay( NULL )
 {
 }
 
@@ -233,8 +233,8 @@ MovitBranch::~MovitBranch()
 	delete input;
 	while ( !filters.isEmpty() )
 		delete filters.takeFirst();
-	if ( transition )
-		delete transition;
+	if ( overlay )
+		delete overlay;
 }
 
 

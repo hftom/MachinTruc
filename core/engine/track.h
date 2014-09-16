@@ -33,11 +33,13 @@ public:
 	Transition* transitionAt( int i );
 	int currentTransitionIndex();
 	void setCurrentTransitionIndex( int i );
+	int currentTransitionIndexAudio();
+	void setCurrentTransitionIndexAudio( int i );
 	void resetIndexes();
 
 private:
 	QList<Clip*> clips;
 	QList<Transition*> transitions;
-	int clipIndex, clipIndexAudio, transitionIndex;
+	int clipIndex, clipIndexAudio, transitionIndex, transitionIndexAudio;
 };
 #endif //TRACK_H

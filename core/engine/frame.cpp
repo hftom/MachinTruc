@@ -2,7 +2,7 @@
 
 #include <stdio.h>
 
-#include "engine/frame.h"
+#include "frame.h"
 
 
 
@@ -168,9 +168,9 @@ void FrameSample::clear( bool releaseFrame )
 {
 	videoFilters.clear();
 	audioFilters.clear();
-	transition = NULL;
 	if ( frame && releaseFrame ) {
 		frame->release();
 		frame = NULL;
 	}
+	transitionFrame.clear( releaseFrame );
 }

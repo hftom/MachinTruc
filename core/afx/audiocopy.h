@@ -11,11 +11,11 @@ class AudioCopy : public AudioFilter
 public:
 	AudioCopy( QString id = "AudioCopy", QString name = "AudioCopy" ) : AudioFilter( id, name ) {}
 
-	bool process( Frame *src, Frame *dst, Profile *p ) {
+	bool process( Frame *first, Frame *second, Profile *p ) {
 		Q_UNUSED( p );
-		int bps = src->profile.getAudioChannels() * src->profile.bytesPerChannel( &src->profile );
-		dst->setAudioFrame( src->profile.getAudioChannels(), src->profile.getAudioSampleRate(), src->profile.bytesPerChannel( &src->profile ), src->audioSamples(), src->pts() );
-		mempcpy( dst->data(), src->data(), src->audioSamples() * bps );
+		int bps = first->profile.getAudioChannels() * first->profile.bytesPerChannel( &first->profile );
+		second->setAudioFrame( first->profile.getAudioChannels(), first->profile.getAudioSampleRate(), first->profile.bytesPerChannel( &first->profile ), first->audioSamples(), first->pts() );
+		mempcpy( second->data(), first->data(), first->audioSamples() * bps );
 		return true;
 	}
 };

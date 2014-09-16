@@ -49,7 +49,7 @@ FilterCollection::FilterCollection()
 	
 	
 	// audio transitions
-	audioFilters.append( FilterEntry( "AudioCrossFade", QObject::tr("Crossfade"), &Maker<AudioCrossFade>::make ) );
+	audioTransitions.append( FilterEntry( "AudioCrossFade", QObject::tr("Crossfade"), &Maker<AudioCrossFade>::make ) );
 };
 
 

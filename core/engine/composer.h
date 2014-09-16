@@ -35,7 +35,10 @@ private:
 	int process( Frame **frame );
 	Frame* getNextFrame( Frame *dst, int &track );
 	bool renderVideoFrame( Frame *dst );
+	void movitFrameDescriptor( QString prefix, Frame *f, QList< QSharedPointer<GLFilter> > *filters, QStringList &desc, Profile *projectProfile );
+	Effect* movitFrameBuild( Frame *f, QList< QSharedPointer<GLFilter> > *filters, MovitBranch **newBranch );
 	void movitRender( Frame *dst, bool update = false );
+	void processAudioFrame( FrameSample *sample, Frame *f, Profile *profile );
 	bool renderAudioFrame( Frame *dst, int nSamples );
 
 	bool running;

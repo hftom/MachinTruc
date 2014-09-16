@@ -200,19 +200,30 @@ bool Scene::canMove( Clip *clip, double clipLength, double &newPos, int newTrack
 	double margin = profile.getVideoFrameDuration() / 4.0;
 	newPos = nearestPTS( newPos, profile.getVideoFrameDuration() );
 
-	int i;
 	Track *t = tracks[newTrack];
-	for ( i = 0; i < t->clipCount(); ++i ) {
+	int count = t->clipCount();
+	if ( !count )
+		return true;
+	if ( count == 1 && clip )
+		return true;
+	
+	for ( int i = 0; i < count; ++i ) {
 		Clip *c = t->clipAt( i );
 		if ( clip && c == clip ) {
 			continue;
 		}
+		if ( qAbs( c->position() - newPos ) < margin )
+			return false;
+		if ( newPos < c->position() 
+			
+			
+			
 		if ( clipLessThan( margin, newPos, clipLength, c->position() ) ) {
 			break;
 		}
-		if ( collidesWith( margin, newPos, c->position(), c->length() ) ) {
+		/*if ( collidesWith( margin, newPos, c->position(), c->length() ) ) {
 			return false;
-		}
+		}*/
 	}
 
 	return true;

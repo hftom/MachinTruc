@@ -17,10 +17,14 @@ public:
 		int samples = src->audioSamples(), channels = src->profile.getAudioChannels();
 		int16_t *in = (int16_t*)src->data();
 		double vol = getParamValue( volume, src->pts() ).toDouble();
+		double d = (double)samples * MICROSECOND / (double)src->profile.getAudioSampleRate();
+		double vol2 = getParamValue( volume, src->pts() + d ).toDouble();
+		d = (vol2 - vol) / samples;
 
 		for ( int i = 0; i < samples; ++i ) {
 			for ( int j = 0; j < channels; ++j )
-				in[(i * channels) + j] = (float)in[(i * channels) + j] * vol;
+				in[(i * channels) + j] = (double)in[(i * channels) + j] * vol;
+			vol += d;
 		}
 		return true;
 	}

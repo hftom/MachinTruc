@@ -9,33 +9,36 @@ class AudioCrossFade : public AudioFilter
 {
 public:
 	AudioCrossFade( QString id, QString name ) : AudioFilter( id, name ) {
-		first = new AudioVolume( "AudioVolume", "AudioVolume" );
-		Parameter* p = first->getParameters().at( 0 );
-		p->graph.keys.append( AnimationKey( AnimationKey::CURVE, 0, 1 ) );
+		firstVol = new AudioVolume( "AudioVolume", "AudioVolume" );
+		Parameter* p = firstVol->getParameters().first();
+		double one = p->defValue.toDouble() / p->max.toDouble();
+		p->name = tr( "Volume 1:" );
+		p->graph.keys.append( AnimationKey( AnimationKey::CURVE, 0, one ) );
 		p->graph.keys.append( AnimationKey( AnimationKey::CURVE, 1, 0 ) );
 		
-		second = new AudioVolume( "AudioVolume", "AudioVolume" );
-		p = second->getParameters().at( 0 );
+		secondVol = new AudioVolume( "AudioVolume", "AudioVolume" );
+		p = secondVol->getParameters().first();
+		p->name = tr( "Volume 2:" );
 		p->graph.keys.append( AnimationKey( AnimationKey::CURVE, 0, 0 ) );
-		p->graph.keys.append( AnimationKey( AnimationKey::CURVE, 1, 1 ) );
+		p->graph.keys.append( AnimationKey( AnimationKey::CURVE, 1, one ) );
 	}
 
 	~AudioCrossFade() {
-		delete first;
-		delete second;
+		delete firstVol;
+		delete secondVol;
 	}
 
-	bool process( Frame *src, Frame *dst, Profile *p ) {
-		first->process( src, p );
-		second->process( dst, p );
+	bool process( Frame *first, Frame *second, Profile *p ) {
+		firstVol->process( first, p );
+		secondVol->process( second, p );
 		
-		int samples = src->audioSamples(), channels = src->profile.getAudioChannels();
-		int16_t *in = (int16_t*)src->data();
-		int16_t *out = (int16_t*)dst->data();
+		int samples = first->audioSamples(), channels = first->profile.getAudioChannels();
+		int16_t *in = (int16_t*)first->data();
+		int16_t *out = (int16_t*)second->data();
 
 		for ( int i = 0; i < samples; ++i ) {
 			for ( int j = 0; j < channels; ++j )
-				out[(i * channels) + j] += in[(i * channels) + j];
+				in[(i * channels) + j] += out[(i * channels) + j];
 		}
 		return true;
 	}
@@ -43,22 +46,22 @@ public:
 	// Filter virtuals
 	void setPosition( double p ) {
 		Filter::setPosition( p );
-		first->setPosition( p );
-		second->setPosition( p );
+		firstVol->setPosition( p );
+		secondVol->setPosition( p );
 	}
 
 	void setLength( double len ) {
 		Filter::setLength( len );
-		first->setLength( len );
-		second->setLength( len );
+		firstVol->setLength( len );
+		secondVol->setLength( len );
 	}
 
 	QList<Parameter*> getParameters() {
-		return first->getParameters() + second->getParameters();
+		return firstVol->getParameters() + secondVol->getParameters();
 	}
 
 private:
-	AudioVolume *first, *second;
+	AudioVolume *firstVol, *secondVol;
 };
 
 #endif //AUDIOCROSSFADE_H
