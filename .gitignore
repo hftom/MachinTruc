@@ -1,3 +1,4 @@
+*-swp
 .directory
 build
 tests/moc_*
