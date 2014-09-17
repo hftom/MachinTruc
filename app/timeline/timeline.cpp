@@ -134,7 +134,7 @@ void Timeline::clipItemCanMove( ClipViewItem *clip, QPointF mouse, double clipSt
 void Timeline::clipItemMoved( ClipViewItem *clip, QPointF clipStartMouse )
 {
 	scene->move( clip->getClip(), getTrack( clipStartMouse ), clip->getPosition(), getTrack( clip->sceneBoundingRect().topLeft() ) );
-	emit updateFrame();
+	QTimer::singleShot ( 1, this, SIGNAL(updateFrame()) );
 	QTimer::singleShot ( 1, this, SLOT(updateLength()) );
 }
 
@@ -173,7 +173,7 @@ void Timeline::clipItemResized( ClipViewItem *clip, int way )
 		scene->resize( clip->getClip(), clip->getLength(), getTrack( clip->sceneBoundingRect().topLeft() ) );
 	else
 		scene->resizeStart( clip->getClip(), clip->getPosition(), clip->getLength(), getTrack( clip->sceneBoundingRect().topLeft() ) );
-	emit updateFrame();
+	QTimer::singleShot ( 1, this, SIGNAL(updateFrame()) );
 	QTimer::singleShot ( 1, this, SLOT(updateLength()) );
 }
 

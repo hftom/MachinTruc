@@ -9,7 +9,8 @@ Clip::Clip( Source *src, double posInTrackPTS, double strt, double len )
 	clipStart( strt ),
 	clipLength( len ),
 	frameDuration( MICROSECOND / 25.0 ),
-	in( NULL )
+	in( NULL ),
+	transition( NULL )
 {
 }
 
@@ -29,7 +30,9 @@ void Clip::setPosition( double p )
 	
 	int i;
 	for ( i = 0; i< videoFilters.count(); ++i )
-		videoFilters.at( i )->setPosition( p );
+		videoFilters.at( i )->setPosition( posInTrack );
+	if ( transition )
+		transition->setPosition( posInTrack );
 }
 
 
@@ -52,6 +55,15 @@ double Clip::length()
 
 
 
+void Clip::setFrameDuration( double d )
+{
+	frameDuration = d;
+	if ( transition )
+		transition->setFrameDuration( frameDuration );
+}
+
+
+
 void Clip::setInput( InputBase *i )
 {
 	if ( in && i != in )
@@ -59,4 +71,24 @@ void Clip::setInput( InputBase *i )
 	in = i;
 	if ( in )
 		in->setUsed( true );
+}
+
+
+
+void Clip::setTransition( double len )
+{
+	if ( !transition )
+		transition = new Transition( posInTrack, len );
+	transition->setPosition( posInTrack );
+	transition->setLength( len );
+	transition->setFrameDuration( frameDuration );
+}
+
+
+
+void Clip::removeTransition()
+{
+	if ( transition )
+		delete transition;
+	transition = NULL;
 }

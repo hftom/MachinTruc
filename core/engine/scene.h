@@ -35,6 +35,8 @@ public:
 	QMutex mutex;
 	
 private:
+	void removeTransitions( Clip *clip, int oldTrack, int newTrack, int newIndex, double newPos, double margin );
+	void updateTransitions( Clip *clip, int newTrack, double margin );
 	bool clipLessThan( double margin, double cpos, double clen, double pos );	
 	bool collidesWith( double margin, double cpos, double pos, double len );
 	bool updateCurrentPosition( double begin, double end );

@@ -31,36 +31,7 @@ Sampler::Sampler()
 	scene->tracks.append( new Track() );
 	scene->tracks.append( new Track() );
 	//scene->tracks.append( new Track() );
-	
-	InputFF *in = new InputFF();
-	Profile prof;
-	QString path = "/partage/SD66/2012-04-21-20ans_amandine/00001.mkv";
-	in->probe( path, &prof );
-	Source *source = new Source( InputBase::FFMPEG, path, prof );
-	Clip *clip = scene->createClip( source, 0, prof.getStreamStartTime(), prof.getStreamDuration() );
-	scene->addClip( clip, 0 );
-	scene->tracks.first()->insertTransition( new Transition( 8 * MICROSECOND, prof.getStreamDuration() - (8 * MICROSECOND) ) );
-	path = "/partage/Films/burn_after_reading.vob";//"/partage/SD66/2012-04-21-20ans_amandine/00005.mkv";
-	in->probe( path, &prof );
-	delete in;
-	source = new Source( InputBase::FFMPEG, path, prof );
-	clip = scene->createClip( source, 8 * MICROSECOND, prof.getStreamStartTime(), prof.getStreamDuration() );
-	scene->addClip( clip, 0 );
-	
-	InputImage *im = new InputImage();
-	path = "/home/cris/title.png";
-	im->probe( path, &prof );
-	source = new Source( InputBase::IMAGE, path, prof );
-	clip = scene->createClip( source, 0, 0, 40000 * 3 );
-	scene->addClip( clip, 2 );
-	path = "/home/cris/titre.png";
-	im->probe( path, &prof );
-	delete im;
-	source = new Source( InputBase::IMAGE, path, prof );
-	clip = scene->createClip( source, 40000, 0, 40000 * 3 );
-	scene->addClip( clip, 2 );
-	scene->tracks.at( 2 )->insertTransition( new Transition( clip->position(), 40000 * 2 ) );
-	
+
 	metronom = new Metronom();
 	composer = new Composer( this );
 	connect( composer, SIGNAL(newFrame(Frame*)), this, SIGNAL(newFrame(Frame*)) );
@@ -415,59 +386,10 @@ InputBase* Sampler::getClipInput( Clip *c, double pts )
 
 
 
-Transition* Sampler::getVideoTransition( int track, double pts )
-{
-	int i;
-	Transition *trans;
-	Track *t = scene->tracks[track];
-	double margin = projectProfile.getVideoFrameDuration() / 4.0;
-
-	for ( i = t->currentTransitionIndex() ; i < t->transitionCount(); ++i ) {
-		trans = t->transitionAt( i );
-		if ( trans->position() - margin <= pts ) {
-			if ( trans->position() + trans->length() - margin > pts ) {
-				t->setCurrentTransitionIndex( i );
-				return trans;
-			}
-		}
-		else
-			break;
-	}
-
-	return NULL;
-}
-
-
-
-Transition* Sampler::getAudioTransition( int track, double pts )
-{
-	int i;
-	Transition *trans;
-	Track *t = scene->tracks[track];
-	double margin = projectProfile.getVideoFrameDuration() / 4.0;
-
-	for ( i = t->currentTransitionIndexAudio() ; i < t->transitionCount(); ++i ) {
-		trans = t->transitionAt( i );
-		if ( trans->position() - margin <= pts ) {
-			if ( trans->position() + trans->length() - margin > pts ) {
-				t->setCurrentTransitionIndexAudio( i );
-				return trans;
-			}
-		}
-		else
-			break;
-	}
-
-	return NULL;
-}
-
-
-
 int Sampler::updateLastFrame( Frame *dst )
 {
 	int i, j;
 	Clip *c = NULL;
-	Transition *trans;
 	int nframes = 0;
 	double margin = projectProfile.getVideoFrameDuration() / 4.0;
 	
@@ -525,8 +447,11 @@ int Sampler::updateLastFrame( Frame *dst )
 						return 0;
 					fs->transitionFrame.videoFilters = c->getSource()->videoFilters.copy();
 					fs->transitionFrame.videoFilters.append( c->videoFilters.copy() );
-					if ( (trans = getVideoTransition( j, dst->pts() )) )
-						fs->transitionFrame.videoTransitionFilter = trans->getVideoFilter();
+					Transition *trans;
+					if ( (trans = c->getTransition()) ) {
+						if ( c->position() + trans->length() + margin > dst->pts() )
+							fs->transitionFrame.videoTransitionFilter = trans->getVideoFilter();
+					}
 				}
 			}
 		}
@@ -543,7 +468,6 @@ int Sampler::getVideoTracks( Frame *dst )
 	Frame *f;
 	Clip *c = NULL;
 	InputBase *in = NULL;
-	Transition *trans;
 	int nFrames = 0;
 	double margin = projectProfile.getVideoFrameDuration() / 4.0;
 	
@@ -607,8 +531,11 @@ int Sampler::getVideoTracks( Frame *dst )
 						fs->transitionFrame.frame = f;
 						fs->transitionFrame.videoFilters = c->getSource()->videoFilters.copy();
 						fs->transitionFrame.videoFilters.append( c->videoFilters.copy() );
-						if ( (trans = getVideoTransition( j, scene->currentPTS )) )
-							fs->transitionFrame.videoTransitionFilter = trans->getVideoFilter();
+						Transition *trans;
+						if ( (trans = c->getTransition()) ) {
+							if ( c->position() + trans->length() + margin > scene->currentPTS )
+								fs->transitionFrame.videoTransitionFilter = trans->getVideoFilter();
+						}
 					}
 				}
 			}
@@ -627,7 +554,6 @@ int Sampler::getAudioTracks( Frame *dst, int nSamples )
 	Frame *f;
 	Clip *c = NULL;
 	InputBase *in = NULL;
-	Transition *trans;
 	int nFrames = 0;
 	double margin = projectProfile.getVideoFrameDuration() / 4.0;
 	
@@ -692,8 +618,11 @@ int Sampler::getAudioTracks( Frame *dst, int nSamples )
 						fs->transitionFrame.frame = f;
 						fs->transitionFrame.audioFilters = c->getSource()->audioFilters.copy();
 						fs->transitionFrame.audioFilters.append( c->audioFilters.copy() );
-						if ( (trans = getAudioTransition( j, scene->currentPTSAudio )) )
-							fs->transitionFrame.audioTransitionFilter = trans->getAudioFilter();
+						Transition *trans;
+						if ( (trans = c->getTransition()) ) {
+							if ( c->position() + trans->length() + margin > scene->currentPTSAudio )
+								fs->transitionFrame.audioTransitionFilter = trans->getAudioFilter();
+						}
 					}
 				}
 			}

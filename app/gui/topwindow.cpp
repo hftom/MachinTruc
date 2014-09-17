@@ -196,7 +196,8 @@ void TopWindow::currentFramePts( double d )
 
 void TopWindow::ensureVisible( const QGraphicsItem *it )
 {
-	timelineView->ensureVisible( it, 100, 100 );
+	if ( playToolButton->isChecked() )
+		timelineView->ensureVisible( it, 100, 100 );
 }
 
 

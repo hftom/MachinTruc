@@ -139,8 +139,6 @@ private:
 	int updateLastFrame( Frame *dst );
 	InputBase* getInput( QString fn, InputBase::InputType type );
 	InputBase* getClipInput( Clip *c, double pts );
-	Transition* getVideoTransition( int track, double pts );
-	Transition* getAudioTransition( int track, double pts );
 	double samplerDuration();
 
 	QList<Scene*> sceneList;

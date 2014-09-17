@@ -6,9 +6,7 @@
 
 Track::Track()
 	: clipIndex( 0 ),
-	clipIndexAudio( 0 ),
-	transitionIndex( 0 ),
-	transitionIndexAudio( 0 )
+	clipIndexAudio( 0 )
 {
 }
 
@@ -32,6 +30,13 @@ bool Track::insertClipAt( Clip *c, int idx )
 {
 	clips.insert( idx, c );
 	return true;
+}
+
+
+
+int Track::indexOf( Clip *c )
+{
+	return clips.indexOf( c );
 }
 
 
@@ -92,64 +97,8 @@ void Track::setCurrentClipIndexAudio( int i )
 
 
 
-bool Track::insertTransition( Transition *t )
-{
-	transitions.append( t );
-	return true;
-}
-
-
-
-bool Track::removeTransition( Transition *t )
-{
-	return transitions.removeOne( t );
-}
-
-
-
-int Track::transitionCount()
-{
-	return transitions.count();
-}
-
-
-
-Transition* Track::transitionAt( int i )
-{
-	return transitions.at( i );
-}
-
-
-
-int Track::currentTransitionIndex()
-{
-	return transitionIndex;
-}
-
-
-
-void Track::setCurrentTransitionIndex( int i )
-{
-	transitionIndex = i;
-}
-
-
-
-int Track::currentTransitionIndexAudio()
-{
-	return transitionIndexAudio;
-}
-
-
-
-void Track::setCurrentTransitionIndexAudio( int i )
-{
-	transitionIndexAudio = i;
-}
-
-
 void Track::resetIndexes()
 
 {
-	clipIndex = clipIndexAudio = transitionIndex = transitionIndexAudio = 0;
+	clipIndex = clipIndexAudio = 0;
 }

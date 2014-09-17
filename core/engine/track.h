@@ -6,7 +6,6 @@
 #include "vfx/glfilter.h"
 #include "input/input.h"
 #include "engine/clip.h"
-#include "engine/transition.h"
 
 
 
@@ -18,6 +17,7 @@ public:
 
 	bool insertClip( Clip *c );
 	bool insertClipAt( Clip *c, int idx );
+	int indexOf( Clip *c );
 	Clip* removeClip( int idx );
 	bool removeClip( Clip *c );
 	int clipCount();
@@ -26,20 +26,11 @@ public:
 	void setCurrentClipIndex( int i );
 	int currentClipIndexAudio();
 	void setCurrentClipIndexAudio( int i );
-	
-	bool insertTransition( Transition *t );
-	bool removeTransition( Transition *t );
-	int transitionCount();
-	Transition* transitionAt( int i );
-	int currentTransitionIndex();
-	void setCurrentTransitionIndex( int i );
-	int currentTransitionIndexAudio();
-	void setCurrentTransitionIndexAudio( int i );
+
 	void resetIndexes();
 
 private:
 	QList<Clip*> clips;
-	QList<Transition*> transitions;
-	int clipIndex, clipIndexAudio, transitionIndex, transitionIndexAudio;
+	int clipIndex, clipIndexAudio;
 };
 #endif //TRACK_H

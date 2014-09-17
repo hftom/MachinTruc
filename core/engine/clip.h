@@ -4,6 +4,7 @@
 #include <QList>
 
 #include "engine/cut.h"
+#include "transition.h"
 
 #include "vfx/glfilter.h"
 #include "afx/audiofilter.h"
@@ -35,8 +36,11 @@ public:
 	InputBase::InputType getType() { return source->getType(); }
 	
 	Source * getSource() { return source; }
+	Transition * getTransition() { return transition; }
+	void removeTransition();
+	void setTransition( double len );
 	
-	void setFrameDuration( double d ) { frameDuration = d; }
+	void setFrameDuration( double d );
 
 private:
 	Source *source;
@@ -45,6 +49,7 @@ private:
 	double clipLength;
 	double frameDuration;
 	InputBase *in;
+	Transition *transition;
 };
 
 #endif //CLIP_H

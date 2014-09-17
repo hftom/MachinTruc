@@ -1,5 +1,6 @@
-#include "filtercollection.h"
+#include "util.h"
 
+#include "filtercollection.h"
 #include "transition.h"
 
 
@@ -19,12 +20,6 @@ Transition::Transition( double posInTrackPTS, double len )
 
 
 
-Transition::~Transition()
-{
-}
-
-
-
 void Transition::setVideoFilter( GLFilter *f )
 {
 }
@@ -39,17 +34,23 @@ void Transition::setAudioFilter( AudioFilter *f )
 
 void Transition::setPosition( double p )
 {
+	posInTrack = p;
+	videoFilter->setPosition( posInTrack );
+	audioFilter->setPosition( posInTrack );
 }
 
 
 
 double Transition::length()
 {
-	return transitionLength;
+	return nearestPTS( transitionLength, frameDuration );
 }
 
 
 
 void Transition::setLength( double len )
 {
+	transitionLength = len;
+	videoFilter->setLength( transitionLength );
+	audioFilter->setLength( transitionLength );
 }
