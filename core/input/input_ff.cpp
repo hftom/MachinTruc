@@ -731,12 +731,14 @@ void InputFF::run()
 					// duplicate previous frame
 					videoResampler.duplicate( f );
 					f->mmi = mmi;
+					f->mmiProvider = mmiProvider;
 					if ( !videoResampler.repeat )
 						mmiIncrement();
 					videoFrames.enqueue( f );
 				}
 				else {
 					f->mmi = mmi;
+					f->mmiProvider = mmiProvider;
 					mmiIncrement();
 					if ( decodeVideo( f ) ) {
 						resample ( f );

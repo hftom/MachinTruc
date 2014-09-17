@@ -91,6 +91,7 @@ public:
 
 	// memory management indicator. See input.h
 	quint32 mmi;
+	QString mmiProvider;
 	// video or audio data
 	Buffer* getBuffer() { return buffer; }
 	void setSharedBuffer( Buffer *b );

@@ -32,6 +32,7 @@ private:
 	bool setBuffer( PBO *p, Frame *src, int size );
 	Input *input;
 	qint64 mmi;
+	QString mmiProvider;
 };
 
 

@@ -142,6 +142,7 @@ bool InputImage::upload( Frame *f )
 	}
 	f->setSharedBuffer( buffer );
 	f->mmi = mmi;
+	f->mmiProvider = mmiProvider;
 	f->setVideoFrame( (image.depth() == 24) ? Frame::RGB : Frame::RGBA, image.width(), image.height(), 1.0, false, false, currentVideoPTS, outProfile.getVideoFrameDuration() );
 
 	mmiDuplicate();

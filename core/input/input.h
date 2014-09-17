@@ -20,6 +20,7 @@ public:
 		inputType( UNDEF ),
 		mmi( 0 )
 	{
+		mmiProvider = QString().sprintf("%p", this);
 	}
 	virtual ~InputBase() {}
 	virtual bool probe( QString fn, Profile *prof ) = 0;
@@ -63,6 +64,7 @@ protected:
 	QString sourceName;
 	InputType inputType;
 	quint32 mmi;
+	QString mmiProvider;
 
 	Profile inProfile, outProfile;
 };
