@@ -63,7 +63,6 @@ Clip* Scene::sceneSplitClip( Clip *clip, int track, double pts )
 
 bool Scene::canResizeStart( Clip *clip, double &newPos, double endPos, int track ) {
 	QMutexLocker ml( &mutex );
-	double margin = profile.getVideoFrameDuration() / 4.0;
 	newPos = nearestPTS( newPos, profile.getVideoFrameDuration() );
 	double newLength = endPos - newPos;
 	double start = clip->getSource()->getProfile().getStreamStartTime();
@@ -71,23 +70,8 @@ bool Scene::canResizeStart( Clip *clip, double &newPos, double endPos, int track
 		return false;
 	if ( clip->getSource()->getType() == InputBase::FFMPEG && clip->start() + newPos - clip->position() < start )
 		return false;
-
-	int i;
-	Track *t = tracks[track];
-	for ( i = 0; i < t->clipCount(); ++i ) {
-		Clip *c = t->clipAt( i );
-		if ( clip && c == clip ) {
-			continue;
-		}
-		if ( clipLessThan( margin, newPos, newLength, c->position() ) ) {
-			break;
-		}
-		if ( collidesWith( margin, newPos, c->position(), c->length() ) ) {
-			return false;
-		}
-	}
-
-	return true;
+	
+	return checkPlacement( clip, track, newPos, newLength );
 }
 
 
@@ -109,7 +93,7 @@ void Scene::resizeStart( Clip *clip, double newPos, double newLength, int track 
 			++self;
 			continue;
 		}
-		if ( clipLessThan( margin, newPos, newLength, c->position() ) ) {
+		if ( newPos < c->position() ) {
 			insert = i;
 			break;
 		}
@@ -117,12 +101,14 @@ void Scene::resizeStart( Clip *clip, double newPos, double newLength, int track 
 				
 	insert -= self;
 	double old = clip->position();
+	removeTransitions( clip, track, track, insert, newPos, newLength, margin );
 	t->removeClip( clip );
 	t->insertClipAt( clip, insert );
 	if ( clip->getSource()->getType() == InputBase::FFMPEG )
 		clip->setStart( clip->start() + clip->length() - newLength );
 	clip->setLength( newLength );
 	clip->setPosition( newPos );
+	updateTransitions( clip, track, margin );
 	clip->setInput( NULL );
 	update = updateCurrentPosition( qMin( old, clip->position() ), qMax( old, clip->position() )  );
 }
@@ -131,31 +117,14 @@ void Scene::resizeStart( Clip *clip, double newPos, double newLength, int track 
 
 bool Scene::canResize( Clip *clip, double &newLength, int track )
 {
-	QMutexLocker ml( &mutex );
-	double margin = profile.getVideoFrameDuration() / 4.0;
 	newLength = nearestPTS( newLength, profile.getVideoFrameDuration() );
 	double end = clip->getSource()->getProfile().getStreamStartTime() + clip->getSource()->getProfile().getStreamDuration();
 	if ( newLength < profile.getVideoFrameDuration() )
 		return false;
 	if ( clip->getSource()->getType() == InputBase::FFMPEG && clip->start() + newLength > end )
 		return false;
-
-	int i;
-	Track *t = tracks[track];
-	for ( i = 0; i < t->clipCount(); ++i ) {
-		Clip *c = t->clipAt( i );
-		if ( clip && c == clip ) {
-			continue;
-		}
-		if ( clipLessThan( margin, clip->position(), newLength, c->position() ) ) {
-			break;
-		}
-		if ( collidesWith( margin, clip->position(), c->position(), c->length() ) ) {
-			return false;
-		}
-	}
-
-	return true;
+	
+	return checkPlacement( clip, track, clip->position(), newLength );
 }
 
 
@@ -168,26 +137,10 @@ void Scene::resize( Clip *clip, double newLength, int track )
 		return;
 	
 	double margin = profile.getVideoFrameDuration() / 4.0;
-	int i, insert, self = 0;
-	Track *t = tracks[track];
-	insert = t->clipCount();
-	for ( i = 0; i < t->clipCount(); ++i ) {
-		Clip *c = t->clipAt( i );
-		if ( clip && c == clip ) {
-			++self;
-			continue;
-		}
-		if ( clipLessThan( margin, clip->position(), newLength, c->position() ) ) {
-			insert = i;
-			break;
-		}
-	}
-				
-	insert -= self;
+	removeTransitions( clip, track, track, tracks[track]->indexOf( clip ), clip->position(), newLength, margin );
 	double old = clip->position() + clip->length();
-	t->removeClip( clip );
-	t->insertClipAt( clip, insert );
 	clip->setLength( newLength );
+	updateTransitions( clip, track, margin );
 	clip->setInput( NULL );
 	update = updateCurrentPosition( qMin( old, clip->position() + clip->length() ), qMax( old, clip->position() + clip->length() )  );
 }
@@ -196,78 +149,12 @@ void Scene::resize( Clip *clip, double newLength, int track )
 
 bool Scene::canMove( Clip *clip, double clipLength, double &newPos, int newTrack )
 {
-	QMutexLocker ml( &mutex );
-	double margin = profile.getVideoFrameDuration() / 4.0;
 	newPos = nearestPTS( newPos, profile.getVideoFrameDuration() );
-
-	Track *t = tracks[newTrack];
-	int count = t->clipCount();
-	// no clip in track yet
-	if ( !count )
-		return true;
-	if ( count == 1 && t->clipAt( 0 ) == clip )
-		return true;
-	
-	Clip *c;
-	int k = 0;
-	while ( k < count ) {
-		c = t->clipAt( k );
-		// obviously, don't check clip against itself
-		if ( clip && c == clip ) {
-			++k;
-			continue;
-		}
-		// Track is ordered by Clip::position()
-		// so 2 clips can't start at same pts on the same track.
-		if ( qAbs( c->position() - newPos ) < margin )
-			return false;
-		if ( !clipLessThan( margin, c->position(), c->length(), newPos ) )
-			break;
-		++k;
-	}
-	// we are the last clip in track and don't overlap with anything
-	if ( k == count )
-		return true;
-	// we are clipA
-	if ( newPos < c->position() ) {
-		// we can't end after clipB
-		if ( c->position() + c->length() < newPos + clipLength - margin )
-			return false;
-		// and we can't overlap with clipC
-		int j = k + 1;
-		while ( j < count ) {
-			Clip *next = t->clipAt( j++ );
-			if ( clip && next == clip )
-				continue;
-			if ( next->position() < newPos + clipLength - margin )
-				return false;
-			break;
-		}
-	}
-	else {
-		// we are clipB, we can't end before clipA
-		if ( newPos + clipLength < c->position() + c->length() - margin )
-			return false;
-		int j = k + 1;
-		while ( j < count ) {
-			Clip *next = t->clipAt( j++ );
-			if ( clip && next == clip )
-				continue;
-			// clipC can't overlap with clipA
-			if ( next->position() < c->position() + c->length() - margin )
-				return false;
-			// and we can't end after clipC
-			if ( next->position() + next->length() < newPos + clipLength - margin )
-				return false;
-			break;
-		}
-	}
-
-	return true;
+	return checkPlacement( clip, newTrack, newPos, clipLength );
 }
 
 
-	
+
 void Scene::move( Clip *clip, int clipTrack, double newPos, int newTrack )
 {
 	QMutexLocker ml( &mutex );
@@ -292,7 +179,7 @@ void Scene::move( Clip *clip, int clipTrack, double newPos, int newTrack )
 	}
 			
 	insert -= self;
-	removeTransitions( clip, clipTrack, newTrack, insert, newPos, margin );
+	removeTransitions( clip, clipTrack, newTrack, insert, newPos, clip->length(), margin );
 	tracks[clipTrack]->removeClip( clip );
 	t->insertClipAt( clip, insert );
 	clip->setPosition( newPos );
@@ -300,12 +187,84 @@ void Scene::move( Clip *clip, int clipTrack, double newPos, int newTrack )
 	clip->setInput( NULL );
 	update = true;
 }
-
-
-
-void Scene::updateTransitions( Clip *clip, int newTrack, double margin )
+	
+	
+	
+bool Scene::checkPlacement( Clip *clip, int track, double clipPos, double clipLength )
 {
-	Track *t = tracks[newTrack];
+	double margin = profile.getVideoFrameDuration() / 4.0;
+	Track *t = tracks[track];
+	int count = t->clipCount();
+	
+	// no clip in track yet
+	if ( !count )
+		return true;
+	if ( count == 1 && t->clipAt( 0 ) == clip )
+		return true;
+	
+	Clip *c;
+	int k = 0;
+	while ( k < count ) {
+		c = t->clipAt( k );
+		// obviously, don't check clip against itself
+		if ( clip && c == clip ) {
+			++k;
+			continue;
+		}
+		// Track is ordered by Clip::position()
+		// so 2 clips can't start at same pts on the same track.
+		if ( qAbs( c->position() - clipPos ) < margin )
+			return false;
+		if ( !clipLessThan( margin, c->position(), c->length(), clipPos ) )
+			break;
+		++k;
+	}
+	// we are the last clip in track and don't overlap with anything
+	if ( k == count )
+		return true;
+	// we are clipA
+	if ( clipPos < c->position() ) {
+		// we can't end after clipB
+		if ( c->position() + c->length() < clipPos + clipLength - margin )
+			return false;
+		// and we can't overlap with clipC
+		int j = k + 1;
+		while ( j < count ) {
+			Clip *next = t->clipAt( j++ );
+			if ( clip && next == clip )
+				continue;
+			if ( next->position() < clipPos + clipLength - margin )
+				return false;
+			break;
+		}
+	}
+	else {
+		// we are clipB, we can't end before clipA
+		if ( clipPos + clipLength < c->position() + c->length() - margin )
+			return false;
+		int j = k + 1;
+		while ( j < count ) {
+			Clip *next = t->clipAt( j++ );
+			if ( clip && next == clip )
+				continue;
+			// clipC can't overlap with clipA
+			if ( next->position() < c->position() + c->length() - margin )
+				return false;
+			// and we can't end after clipC
+			if ( next->position() + next->length() < clipPos + clipLength - margin )
+				return false;
+			break;
+		}
+	}
+
+	return true;
+}
+
+
+
+void Scene::updateTransitions( Clip *clip, int track, double margin )
+{
+	Track *t = tracks[track];
 	int index = t->indexOf( clip );
 	
 	if ( index > 0 ) {
@@ -322,7 +281,7 @@ void Scene::updateTransitions( Clip *clip, int newTrack, double margin )
 
 
 
-void Scene::removeTransitions( Clip *clip, int oldTrack, int newTrack, int newIndex, double newPos, double margin )
+void Scene::removeTransitions( Clip *clip, int oldTrack, int newTrack, int newIndex, double clipPos, double clipLength, double margin )
 {
 	Track *ot = tracks[oldTrack];
 
@@ -337,12 +296,12 @@ void Scene::removeTransitions( Clip *clip, int oldTrack, int newTrack, int newIn
 	else {
 		if ( index < ot->clipCount() - 1 ) {
 			Clip *c = ot->clipAt( index + 1 );
-			if ( newPos + clip->length() - margin < c->position() )
+			if ( clipPos + clipLength - margin < c->position() )
 				c->removeTransition();
 		}
 		if ( index > 0 ) {
 			Clip *c = ot->clipAt( index - 1 );
-			if ( c->position() + c->length() - margin < newPos )
+			if ( c->position() + c->length() - margin < clipPos )
 				clip->removeTransition();
 		}
 	}
