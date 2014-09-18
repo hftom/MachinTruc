@@ -168,9 +168,9 @@ void Metronom::run()
 						skipped = -1;
 						predict = 0;
 					}
-					show = false;
+					//show = false;
 					emit discardFrame();
-					f->release();
+					//f->release();
 				}
 				else {
 					skipped = 0;
