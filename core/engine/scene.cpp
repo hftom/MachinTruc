@@ -37,23 +37,29 @@ Clip* Scene::sceneSplitClip( Clip *clip, int track, double pts )
 	double newLength = pts - clip->position();
 	if ( canResize( clip, newLength, track ) ) {
 		Clip *nc = createClip( clip->getSource(), pts, clip->start() + newLength, oldLength - newLength );
-		FilterCollection *fc = FilterCollection::getGlobalInstance();
-		for ( int i = 0; i < clip->videoFilters.count(); ++i ) {
-			QSharedPointer<GLFilter> f = clip->videoFilters.at( i );
-			for ( int j = 0; j < fc->videoFilters.count(); ++j ) {
-				if ( fc->videoFilters[ j ].identifier == f->getIdentifier() ) {
-					QSharedPointer<Filter> nf = fc->videoFilters[ j ].create();
-					GLFilter *gf = (GLFilter*)nf.data();
-					f->splitParameters( gf, newLength );
-					nf->setPosition( nc->position() );
-					nf->setLength( nc->length() );
-					nc->videoFilters.append( nf.staticCast<GLFilter>() );
+		double newPos = nc->position();
+		if ( canMove( nc, nc->length(), newPos, track ) ) {
+			nc->setPosition( newPos );
+			FilterCollection *fc = FilterCollection::getGlobalInstance();
+			for ( int i = 0; i < clip->videoFilters.count(); ++i ) {
+				QSharedPointer<GLFilter> f = clip->videoFilters.at( i );
+				for ( int j = 0; j < fc->videoFilters.count(); ++j ) {
+					if ( fc->videoFilters[ j ].identifier == f->getIdentifier() ) {
+						QSharedPointer<Filter> nf = fc->videoFilters[ j ].create();
+						GLFilter *gf = (GLFilter*)nf.data();
+						f->splitParameters( gf, newLength );
+						nf->setPosition( nc->position() );
+						nf->setLength( nc->length() );
+						nc->videoFilters.append( nf.staticCast<GLFilter>() );
+					}
 				}
 			}
+			resize( clip, newLength, track );
+			addClip( nc, track );
+			return nc;
 		}
-		resize( clip, newLength, track );
-		addClip( nc, track );
-		return nc;
+		else
+			delete nc;
 	}
 
 	return NULL;
