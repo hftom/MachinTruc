@@ -46,9 +46,7 @@ void Composer::setSharedContext( QGLWidget *shared )
 	else
 		assert(false);
 	
-	bool ok = init_movit( movitPath.toLocal8Bit().data(), MOVIT_DEBUG_OFF );
-	
-	Q_UNUSED( ok );
+	assert( init_movit( movitPath.toLocal8Bit().data(), MOVIT_DEBUG_OFF ) );
 	
 	movitPool = new ResourcePool( 100, 300 << 20, 100 );
 
