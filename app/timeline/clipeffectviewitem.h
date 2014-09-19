@@ -4,11 +4,11 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QPainter>
 
-#include "typerectitem.h"
+#include "abstractviewitem.h"
 
 
 
-class ClipEffectViewItem : public TypeRectItem
+class ClipEffectViewItem : public AbstractViewItem
 {
 public:
 	ClipEffectViewItem();

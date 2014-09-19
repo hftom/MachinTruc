@@ -2,43 +2,63 @@
 
 
 
-AbstractViewItem::AbstractViewItem( int t) : TypeRectItem( t ),
+AbstractViewItem::AbstractViewItem()
+	: selected( false ),
 	position( 0 ),
 	length( 0 ),
-	selected( false )
+	scaleFactor( 1 )
 {
 }
 
 
 
-void AbstractViewItem::setCuts( double pos, double len )
+void AbstractViewItem::setPosition( double pos )
+{
+	position = pos;
+	updateGeometry();
+}
+
+
+
+void AbstractViewItem::setLength( double len )
+{
+	length = len;
+	updateGeometry();
+}
+
+
+
+void AbstractViewItem::setGeometry( double pos, double len )
 {
 	position = pos;
 	length = len;
+	updateGeometry();
 }
 
 
 
-void AbstractViewItem::setPosition( double pos, double scale )
+void AbstractViewItem::setCuts( double pos, double len, double scale )
 {
 	position = pos;
-	setScale( scale );
-}
-
-
-
-void AbstractViewItem::setLength( double len, double scale )
-{
 	length = len;
-	setScale( scale );
+	scaleFactor = scale;
+	updateGeometry();
 }
 
 
 
-void AbstractViewItem::setScale( double d )
+void AbstractViewItem::setScale( double scale )
 {
-	double x = position / d;
-	double w = length / d;
+	scaleFactor = scale;
+	updateGeometry();
+}
+
+
+
+void AbstractViewItem::updateGeometry()
+{
+	double x = position / scaleFactor;
+	double w = length / scaleFactor;
 	double width = w - 1;
 	if ( width < 0 )
 		width = 0;

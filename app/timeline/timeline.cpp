@@ -24,7 +24,7 @@ Timeline::Timeline( TopWindow *parent ) : QGraphicsScene(),
 	
 	cursor = new CursorViewItem();
 	addItem( cursor );
-	cursor->setZValue( 100 );
+	cursor->setZValue( ZCURSOR );
 	cursor->setPos( 0, 0 );	
 }
 
@@ -87,7 +87,7 @@ void Timeline::itemSelected( AbstractViewItem *it )
 	if ( it ) {
 		it->setSelected (true );
 		selectedItem = it;
-		if ( it->getItemType() == TypeRectItem::VIDEOCUT ) {
+		if ( it->data( DATAITEMTYPE ).toInt() == TYPECLIP ) {
 			ClipViewItem *c = (ClipViewItem*)it;
 			emit clipSelected( c->getClip() );
 		}
@@ -110,6 +110,68 @@ void Timeline::trackPressed( QPointF p )
 
 
 
+void Timeline::removeEndTransition( ClipViewItem *clip )
+{
+	QList<QGraphicsItem*> list = items( clip->mapToScene( clip->rect().topRight() ), Qt::IntersectsItemBoundingRect, Qt::AscendingOrder );
+	for ( int i = 0; i < list.count(); ++i ) {
+		QGraphicsItem *it = list.at( i );
+		if ( it->data( DATAITEMTYPE ).toInt() == TYPECLIP ) {
+			ClipViewItem *cv = (ClipViewItem*)it;
+			if ( cv != clip ) {
+				cv->updateTransition( 0 );
+				break;
+			}
+		}
+	}
+}
+
+void Timeline::updateEndTransition( ClipViewItem *clip )
+{
+	QList<QGraphicsItem*> list = items( clip->mapToScene( clip->rect().topRight() ), Qt::IntersectsItemBoundingRect, Qt::AscendingOrder );
+	for ( int i = 0; i < list.count(); ++i ) {
+		QGraphicsItem *it = list.at( i );
+		if ( it->data( DATAITEMTYPE ).toInt() == TYPECLIP ) {
+			ClipViewItem *cv = (ClipViewItem*)it;
+			if ( cv != clip ) {
+				cv->updateTransition( clip->getPosition() + clip->getLength() - cv->getPosition() );
+				break;
+			}
+		}
+	}
+}
+
+void Timeline::removeStartTransition( ClipViewItem *clip )
+{
+	QList<QGraphicsItem*> list = items( clip->mapToScene( clip->rect().topLeft() ), Qt::IntersectsItemBoundingRect, Qt::AscendingOrder );
+	for ( int i = 0; i < list.count(); ++i ) {
+		QGraphicsItem *it = list.at( i );
+		if ( it->data( DATAITEMTYPE ).toInt() == TYPECLIP ) {
+			ClipViewItem *cv = (ClipViewItem*)it;
+			if ( cv != clip ) {
+				clip->updateTransition( 0 );
+				break;
+			}
+		}
+	}
+}
+
+void Timeline::updateStartTransition( ClipViewItem *clip )
+{
+	QList<QGraphicsItem*> list = items( clip->mapToScene( clip->rect().topLeft() ), Qt::IntersectsItemBoundingRect, Qt::AscendingOrder );
+	for ( int i = 0; i < list.count(); ++i ) {
+		QGraphicsItem *it = list.at( i );
+		if ( it->data( DATAITEMTYPE ).toInt() == TYPECLIP ) {
+			ClipViewItem *cv = (ClipViewItem*)it;
+			if ( cv != clip ) {
+				clip->updateTransition( cv->getPosition() + cv->getLength() - clip->getPosition() );
+				break;
+			}
+		}
+	}
+}
+
+
+
 void Timeline::clipItemCanMove( ClipViewItem *clip, QPointF mouse, double clipStartPos, QPointF clipStartMouse, bool unsnap )
 {
 	double newPos = ( mouse.x() * zoom ) - ( (clipStartMouse.x() * zoom) - clipStartPos );
@@ -124,8 +186,12 @@ void Timeline::clipItemCanMove( ClipViewItem *clip, QPointF mouse, double clipSt
 	if ( newTrack < 0 )
 		newTrack = itemTrack;
 	if ( scene->canMove( clip->getClip(), clip->getClip()->length(), newPos, newTrack ) ) {
+		removeStartTransition( clip );
+		removeEndTransition( clip );
 		clip->setParentItem( tracks.at( newTrack ) );
-		clip->setPosition( newPos, zoom );
+		clip->setPosition( newPos );
+		updateStartTransition( clip );
+		updateEndTransition( clip );
 	}
 }
 
@@ -149,7 +215,7 @@ void Timeline::clipItemCanResize( ClipViewItem *clip, int way, QPointF mouse, do
 		if ( !unsnap )
 			snapResize( clip, way, newLength, mouse.x(), ( clipStartMouse.x() - ((clip->getPosition() + clipStartLen) / zoom) ) );
 		if ( scene->canResize( clip->getClip(), newLength, track ) )
-			clip->setLength( newLength, zoom );
+			clip->setLength( newLength );
 	}
 	else {
 		double newPos = ( mouse.x() * zoom ) - ( (clipStartMouse.x() * zoom) - clipStartPos );
@@ -159,8 +225,7 @@ void Timeline::clipItemCanResize( ClipViewItem *clip, int way, QPointF mouse, do
 			newPos = 0;
 		double endPos = clipStartPos + clipStartLen;
 		if ( scene->canResizeStart( clip->getClip(), newPos, endPos, track ) ) {
-			clip->setPosition( newPos, zoom );
-			clip->setLength( endPos - newPos, zoom );
+			clip->setGeometry( newPos, endPos - newPos );
 		}
 	}
 }
@@ -188,8 +253,8 @@ void Timeline::snapResize( ClipViewItem *item, int way, double &poslen, double m
 	QList<QGraphicsItem*> snapItems = items( src.left() - SNAPWIDTH, 0, src.right() + SNAPWIDTH, cursor->rect().height(), Qt::IntersectsItemBoundingRect, Qt::AscendingOrder );
 	int i;
 	for ( i = 0; i < snapItems.count(); ++i ) {
-		TypeRectItem* it = (TypeRectItem*)snapItems.at( i );
-		if ( it->getItemType() == TypeRectItem::VIDEOCUT ) {
+		QGraphicsItem *it = snapItems.at( i );
+		if ( it->data( DATAITEMTYPE ).toInt() == TYPECLIP ) {
 			ClipViewItem *cv = (ClipViewItem*)it;
 			if ( cv != item ) {
 				QRectF dst = cv->mapRectToScene( cv->rect() );
@@ -215,7 +280,7 @@ void Timeline::snapResize( ClipViewItem *item, int way, double &poslen, double m
 				}
 			}
 		}
-		else if ( it->getItemType() == TypeRectItem::CURSOR ) {
+		else if ( it->data( DATAITEMTYPE ).toInt() == TYPECURSOR ) {
 			QRectF dst = cursor->mapRectToScene( cursor->rect() );
 			if ( way == 2 ) {
 				if ( (dst.left() > src.right() - SNAPWIDTH) && (dst.left() < src.right() + SNAPWIDTH) ) {
@@ -244,8 +309,8 @@ void Timeline::snapMove( ClipViewItem *item, double &pos, double mouseX, double 
 	QList<QGraphicsItem*> snapItems = items( src.left() - SNAPWIDTH, 0, src.right() + SNAPWIDTH, cursor->rect().height(), Qt::IntersectsItemBoundingRect, Qt::AscendingOrder );
 	int i;
 	for ( i = 0; i < snapItems.count(); ++i ) {
-		TypeRectItem* it = (TypeRectItem*)snapItems.at( i );
-		if ( it->getItemType() == TypeRectItem::VIDEOCUT ) {
+		QGraphicsItem *it = snapItems.at( i );
+		if ( it->data( DATAITEMTYPE ).toInt() == TYPECLIP ) {
 			ClipViewItem *cv = (ClipViewItem*)it;
 			if ( cv != item ) {
 				QRectF dst = cv->mapRectToScene( cv->rect() );
@@ -267,7 +332,7 @@ void Timeline::snapMove( ClipViewItem *item, double &pos, double mouseX, double 
 				}				
 			}
 		}
-		else if ( it->getItemType() == TypeRectItem::CURSOR ) {
+		else if ( it->data( DATAITEMTYPE ).toInt() == TYPECURSOR ) {
 			QRectF dst = cursor->mapRectToScene( cursor->rect() );
 			if ( (dst.left() > src.left() - SNAPWIDTH) && (dst.left() < src.left() + SNAPWIDTH) ) {
 				pos = (dst.left() * zoom) + (scene->profile.getVideoFrameDuration() / 4.0);
@@ -408,7 +473,7 @@ void Timeline::deleteClip()
 
 void Timeline::splitCurrentClip()
 {
-	if ( selectedItem && selectedItem->getItemType() == TypeRectItem:: VIDEOCUT ) {
+	if ( selectedItem && selectedItem->data( DATAITEMTYPE ).toInt() == TYPECLIP ) {
 		ClipViewItem *cv = (ClipViewItem*)selectedItem;
 		double cursor_pts = cursor->mapRectToScene( cursor->rect() ).left() * zoom ;
 		int t = getTrack( cv->sceneBoundingRect().topLeft() );
@@ -418,7 +483,7 @@ void Timeline::splitCurrentClip()
 			QGraphicsItem *it = new ClipViewItem( c, zoom );
 			addItem( it );
 			it->setParentItem( tracks.at( t ) );
-			cv->setLength( current_clip->length(), zoom );
+			cv->setLength( current_clip->length() );
 			itemSelected( (ClipViewItem*)it );
 			emit updateFrame();
 		}
@@ -493,7 +558,7 @@ void Timeline::dragEnterEvent( QGraphicsSceneDragDropEvent *event )
 						itemSelected( droppedCut.clipItem );
 						droppedCut.shown = true;
 						droppedCut.clipItem->setParentItem( tracks.at( newTrack ) );
-						droppedCut.clipItem->setPosition( newPos, zoom );
+						droppedCut.clipItem->setPosition( newPos );
 						droppedCut.clip->setPosition( newPos );
 					}
 				}
@@ -531,7 +596,7 @@ void Timeline::dragMoveEvent( QGraphicsSceneDragDropEvent *event )
 				itemSelected( droppedCut.clipItem );
 			}
 			droppedCut.clipItem->setParentItem( tracks.at( newTrack ) );
-			droppedCut.clipItem->setPosition( newPos, zoom );
+			droppedCut.clipItem->setPosition( newPos );
 			droppedCut.clip->setPosition( newPos );
 		}
 	}

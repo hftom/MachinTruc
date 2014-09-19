@@ -1,12 +1,14 @@
 #include <QPainter>
 
 #include "timeline.h"
+#include "typeitem.h"
 #include "trackviewitem.h"
 
 
 
-TrackViewItem::TrackViewItem() : TypeRectItem( UNDEF )
+TrackViewItem::TrackViewItem()
 {
+	setData( DATAITEMTYPE, TYPETRACK );
 	setRect( 0, 0, 1, TRACKVIEWITEMHEIGHT );
 	
 	QLinearGradient grad( QPointF(0, 0), QPointF(0, 1) );

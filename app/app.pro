@@ -17,9 +17,9 @@ SOURCES = \
 	gui/filter/filterwidget.cpp \
 	\
 	timeline/timeline.cpp \
-	timeline/typerectitem.cpp \
 	timeline/abstractviewitem.cpp \
 	timeline/clipviewitem.cpp \
+	timeline/transitionviewitem.cpp \
 	timeline/clipeffectviewitem.cpp \
 	timeline/cursorviewitem.cpp \
 	timeline/trackviewitem.cpp \
@@ -48,9 +48,10 @@ HEADERS = \
 	\
 	timeline/timelinegraphicsview.h \
 	timeline/timeline.h \
-	timeline/typerectitem.h \
+	timeline/typeitem.h \
 	timeline/abstractviewitem.h \
 	timeline/clipviewitem.h \
+	timeline/transitionviewitem.h \
 	timeline/clipeffectviewitem.h \
 	timeline/cursorviewitem.h \
 	timeline/trackviewitem.h \

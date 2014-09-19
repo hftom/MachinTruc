@@ -1,11 +1,11 @@
 #ifndef TRACKVIEWITEM_H
 #define TRACKVIEWITEM_H
 
-#include "typerectitem.h"
+#include <QGraphicsRectItem>
 
 
 
-class TrackViewItem : public TypeRectItem
+class TrackViewItem : public QGraphicsRectItem
 {
 public:
 	TrackViewItem();

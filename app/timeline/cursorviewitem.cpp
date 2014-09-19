@@ -1,12 +1,14 @@
 #include <QPainter>
 #include <QDebug>
 
+#include "typeitem.h"
 #include "cursorviewitem.h"
 
 
 
-CursorViewItem::CursorViewItem() : TypeRectItem( CURSOR )
+CursorViewItem::CursorViewItem()
 {
+	setData( DATAITEMTYPE, TYPECURSOR );
 	setRect( 0, 0, 8, TRACKVIEWITEMHEIGHT - 2 );
 	
 	setPen( QColor(0, 255, 0, 128) );

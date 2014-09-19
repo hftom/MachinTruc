@@ -4,8 +4,10 @@
 
 
 
-ClipEffectViewItem::ClipEffectViewItem() : TypeRectItem( UNDEF )
+ClipEffectViewItem::ClipEffectViewItem()
 {
+	setData( DATAITEMTYPE, TYPEFILTER );
+	
 	setAcceptHoverEvents(true);
 
 	normalPen.setJoinStyle( Qt::MiterJoin );

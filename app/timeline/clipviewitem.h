@@ -4,7 +4,7 @@
 #include <QGraphicsSceneMouseEvent>
 
 #include "engine/clip.h"
-#include "abstractviewitem.h"
+#include "transitionviewitem.h"
 
 #define SNAPWIDTH 8
 
@@ -14,6 +14,7 @@ class ClipViewItem : public AbstractViewItem
 {
 public:
 	ClipViewItem( Clip *c, double scale );
+	void updateTransition( double len );
 
 	void paint( QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget );
 	void setSelected( bool b );
@@ -42,6 +43,8 @@ private:
 	QPointF moveStartMouse;
 	int moveResize;
 	bool firstMove;
+	
+	TransitionViewItem *transition;
 };
 
 #endif // CLIPVIEWITEM_H

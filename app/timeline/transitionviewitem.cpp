@@ -1,57 +1,29 @@
 #include <math.h>
 
-#include <QFileInfo>
-#include <QMimeData>
 #include <QCursor>
 
-#include "gui/mimetypes.h"
-#include "timeline.h"
-#include "clipviewitem.h"
-
-#include "clipeffectviewitem.h"
+#include "transitionviewitem.h"
 
 
 
-ClipViewItem::ClipViewItem( Clip *c, double scale ) : AbstractViewItem(),
-	transition( NULL )
+TransitionViewItem::TransitionViewItem( QGraphicsItem *parent, double pos, double len, double scale )
 {
-	setData( DATAITEMTYPE, TYPECLIP );
-	//setFlag( QGraphicsItem::ItemIsMovable, true );
-	//setFlag(QGraphicsItem::ItemIsSelectable, true);
-	//setFlag(QGraphicsItem::ItemIsFocusable, true);
-	setAcceptHoverEvents(true);
-	setAcceptDrops( true );
-	 
-	setClip( c );
-	filename = clip->sourcePath();
-	
-	setCuts( clip->position(), clip->length(), scale );
+	setData( DATAITEMTYPE, TYPETRANSITION );	
+	setParentItem( parent );
+	setZValue( ZTRANSITION );
 
-	normalPen.setJoinStyle( Qt::MiterJoin );
-	normalPen.setColor( "blue" );
+	//setAcceptHoverEvents(true);
 	
-	selectionPen.setJoinStyle( Qt::MiterJoin );
-	selectionPen.setColor( "red" );
+	setCuts( pos, len, scale );
+	
+	normalPen.setJoinStyle( Qt::MiterJoin );
+	normalPen.setColor( "lime" );
 
 	QLinearGradient grad( QPointF(0, 0), QPointF(0, 1) );
 	grad.setCoordinateMode( QGradient::ObjectBoundingMode );
-	//grad.setColorAt( 0, "lightskyblue" );
-	//grad.setColorAt( 1, "darkblue" );
-	grad.setColorAt( 0, QColor(135,206,250,180) );
-	grad.setColorAt( 1, QColor(0,0,89,180) );
+	grad.setColorAt( 0, QColor(200,255,0,180) );
+	grad.setColorAt( 1, QColor(128,178,0,180) );
 	normalBrush = QBrush( grad );
-	
-	grad.setColorAt( 0, QColor(255,182,193,180) );
-	grad.setColorAt( 1, QColor(89,0,0,180) );
-	selectionBrush = QBrush( grad );
-	
-	grad.setColorAt( 1, "#2A2AA5" );
-	grad.setColorAt( 0, "#000060" );
-	titleNormalBrush = QBrush( grad );
-	
-	grad.setColorAt( 1, "brown" );
-	grad.setColorAt( 0, "#600000" );
-	titleSelectionBrush = QBrush( grad );
 	
 	setPen( normalPen );
 	setBrush( normalBrush );
@@ -59,29 +31,11 @@ ClipViewItem::ClipViewItem( Clip *c, double scale ) : AbstractViewItem(),
 
 
 
-void ClipViewItem::updateTransition( double len )
-{
-	if ( len == 0 ) {
-		if ( transition ) {
-			delete transition;
-			transition = NULL;
-		}
-	}
-	else {
-		if ( !transition )
-			transition = new TransitionViewItem( parentItem(), position, len, scaleFactor );
-		else
-			transition->setGeometry( position, len );
-	}
-}
-
-
-
-void ClipViewItem::paint( QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget )
+void TransitionViewItem::paint( QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget )
 {
 	QGraphicsRectItem::paint( painter, option, widget );
 		
-	QRectF inside = rect();
+	/*QRectF inside = rect();
 	inside.moveLeft( inside.x() + 1 );
 	inside.moveTop( inside.y() + 1 );
 	inside.setWidth( inside.width() - 2 );
@@ -103,12 +57,12 @@ void ClipViewItem::paint( QPainter *painter, const QStyleOptionGraphicsItem *opt
 		painter->setPen( QColor(255,255,255) );
 		painter->setFont( QFont( "Sans", 8 ) );
 		painter->drawText( r, Qt::AlignHCenter, QFileInfo(filename).fileName() );
-	}
+	}*/
 }
 
 
 
-void ClipViewItem::setSelected( bool b )
+/*void TransitionViewItem::setSelected( bool b )
 {
 	selected = b;
 	if ( selected ) {
@@ -124,7 +78,7 @@ void ClipViewItem::setSelected( bool b )
 
 
 
-void ClipViewItem::mousePressEvent( QGraphicsSceneMouseEvent *event )
+void TransitionViewItem::mousePressEvent( QGraphicsSceneMouseEvent *event )
 {
 	firstMove = true;
 	if ( event->pos().x() < SNAPWIDTH ) {
@@ -148,7 +102,7 @@ void ClipViewItem::mousePressEvent( QGraphicsSceneMouseEvent *event )
 
 
 
-void ClipViewItem::mouseMoveEvent( QGraphicsSceneMouseEvent *event )
+void TransitionViewItem::mouseMoveEvent( QGraphicsSceneMouseEvent *event )
 {
 	bool unsnap = event->modifiers() & Qt::ControlModifier;
 	if ( firstMove && !unsnap && fabs( event->scenePos().x() - moveStartMouse.x() ) < SNAPWIDTH )
@@ -163,7 +117,7 @@ void ClipViewItem::mouseMoveEvent( QGraphicsSceneMouseEvent *event )
 
 
 
-void ClipViewItem::mouseReleaseEvent( QGraphicsSceneMouseEvent *event )
+void TransitionViewItem::mouseReleaseEvent( QGraphicsSceneMouseEvent *event )
 {
 	Q_UNUSED( event );
 	
@@ -178,7 +132,7 @@ void ClipViewItem::mouseReleaseEvent( QGraphicsSceneMouseEvent *event )
 
 
 
-void ClipViewItem::hoverMoveEvent( QGraphicsSceneHoverEvent *event )
+void TransitionViewItem::hoverMoveEvent( QGraphicsSceneHoverEvent *event )
 {
 	if ( event->pos().x() < SNAPWIDTH || event->pos().x() > rect().width() - SNAPWIDTH ) {
 		setCursor( QCursor(Qt::SplitHCursor) );
@@ -190,7 +144,7 @@ void ClipViewItem::hoverMoveEvent( QGraphicsSceneHoverEvent *event )
 
 
 
-void ClipViewItem::dragEnterEvent( QGraphicsSceneDragDropEvent *event )
+void TransitionViewItem::dragEnterEvent( QGraphicsSceneDragDropEvent *event )
 {
 	const QMimeData *mimeData = event->mimeData();
 	if ( mimeData->formats().contains( MIMETYPEEFFECT ) ) {
@@ -203,7 +157,7 @@ void ClipViewItem::dragEnterEvent( QGraphicsSceneDragDropEvent *event )
 
 
 
-void ClipViewItem::dropEvent( QGraphicsSceneDragDropEvent *event )
+void TransitionViewItem::dropEvent( QGraphicsSceneDragDropEvent *event )
 {
 	const QMimeData *mimeData = event->mimeData();
 	if ( mimeData->formats().contains( MIMETYPEEFFECT ) ) {
@@ -212,4 +166,4 @@ void ClipViewItem::dropEvent( QGraphicsSceneDragDropEvent *event )
 		tm->addFilter( this, t );
 		event->accept();
 	}
-}
+}*/

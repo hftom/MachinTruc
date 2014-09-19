@@ -1,11 +1,11 @@
 #ifndef CURSORVIEWITEM_H
 #define CURSORVIEWITEM_H
 
-#include "typerectitem.h"
+#include <QGraphicsRectItem>
 
 
 
-class CursorViewItem : public TypeRectItem
+class CursorViewItem : public QGraphicsRectItem
 {
 public:
 	CursorViewItem();

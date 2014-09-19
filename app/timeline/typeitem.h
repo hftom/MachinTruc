@@ -1,0 +1,19 @@
+#ifndef TYPEITEM_H
+#define TYPEITEM_H
+
+#define DATAITEMTYPE 100
+
+#define TYPETRACK 1
+#define TYPECURSOR 2
+#define TYPECLIP 3
+#define TYPETRANSITION 4
+#define TYPEFILTER 5
+
+#define ZTRANSITION 1
+#define ZCURSOR 10
+
+#define TRACKVIEWITEMHEIGHT 37
+
+
+
+#endif // TYPEITEM_H

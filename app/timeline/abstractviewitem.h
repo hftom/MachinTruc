@@ -1,29 +1,35 @@
 #ifndef ABSTRACTVIEWITEM_H
 #define ABSTRACTVIEWITEM_H
 
-#include "typerectitem.h"
+#include <QGraphicsRectItem>
+
+#include "typeitem.h"
 
 
 
-class AbstractViewItem : public TypeRectItem
+class AbstractViewItem : public QGraphicsRectItem
 {
 public:
-	AbstractViewItem( int t);
+	AbstractViewItem();
 	
-	void setCuts( double pos, double len );
-	
+	void setPosition( double pos );
 	double getPosition() { return position; }
+	void setLength( double len );
 	double getLength() { return length; }
-	void setPosition( double pos, double scale );
-	void setLength( double len, double scale );
-	void setScale( double d );
+	void setGeometry( double pos, double len );
+	void setCuts( double pos, double len, double scale );
+	void setScale( double scale );
 	
 	virtual void setSelected( bool b ) = 0;		
 	
 protected:
+	bool selected;
 	double position;
 	double length;
-	bool selected;
+	double scaleFactor;
+	
+private:
+	void updateGeometry();
 };
 
 #endif // ABSTRACTVIEWITEM_H
