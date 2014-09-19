@@ -59,6 +59,14 @@ ClipViewItem::ClipViewItem( Clip *c, double scale ) : AbstractViewItem(),
 
 
 
+ClipViewItem::~ClipViewItem()
+{
+	if ( transition )
+		delete transition;
+}
+
+
+
 void ClipViewItem::updateTransition( double len )
 {
 	if ( len == 0 ) {

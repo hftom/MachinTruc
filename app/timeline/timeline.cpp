@@ -110,60 +110,30 @@ void Timeline::trackPressed( QPointF p )
 
 
 
-void Timeline::removeEndTransition( ClipViewItem *clip )
+void Timeline::updateTransitions( ClipViewItem *clip, bool remove )
 {
-	QList<QGraphicsItem*> list = items( clip->mapToScene( clip->rect().topRight() ), Qt::IntersectsItemBoundingRect, Qt::AscendingOrder );
+	// end
+	QPointF p = clip->mapToScene( clip->rect().topRight() );
+	p.rx() -= scene->profile.getVideoFrameDuration() / 2.0 / zoom;
+	QList<QGraphicsItem*> list = items( p, Qt::IntersectsItemBoundingRect, Qt::AscendingOrder );
 	for ( int i = 0; i < list.count(); ++i ) {
 		QGraphicsItem *it = list.at( i );
 		if ( it->data( DATAITEMTYPE ).toInt() == TYPECLIP ) {
 			ClipViewItem *cv = (ClipViewItem*)it;
 			if ( cv != clip ) {
-				cv->updateTransition( 0 );
+				cv->updateTransition( remove ? 0 : clip->getPosition() + clip->getLength() - cv->getPosition() );
 				break;
 			}
 		}
 	}
-}
-
-void Timeline::updateEndTransition( ClipViewItem *clip )
-{
-	QList<QGraphicsItem*> list = items( clip->mapToScene( clip->rect().topRight() ), Qt::IntersectsItemBoundingRect, Qt::AscendingOrder );
+	// begin
+	list = items( clip->mapToScene( clip->rect().topLeft() ), Qt::IntersectsItemBoundingRect, Qt::AscendingOrder );
 	for ( int i = 0; i < list.count(); ++i ) {
 		QGraphicsItem *it = list.at( i );
 		if ( it->data( DATAITEMTYPE ).toInt() == TYPECLIP ) {
 			ClipViewItem *cv = (ClipViewItem*)it;
 			if ( cv != clip ) {
-				cv->updateTransition( clip->getPosition() + clip->getLength() - cv->getPosition() );
-				break;
-			}
-		}
-	}
-}
-
-void Timeline::removeStartTransition( ClipViewItem *clip )
-{
-	QList<QGraphicsItem*> list = items( clip->mapToScene( clip->rect().topLeft() ), Qt::IntersectsItemBoundingRect, Qt::AscendingOrder );
-	for ( int i = 0; i < list.count(); ++i ) {
-		QGraphicsItem *it = list.at( i );
-		if ( it->data( DATAITEMTYPE ).toInt() == TYPECLIP ) {
-			ClipViewItem *cv = (ClipViewItem*)it;
-			if ( cv != clip ) {
-				clip->updateTransition( 0 );
-				break;
-			}
-		}
-	}
-}
-
-void Timeline::updateStartTransition( ClipViewItem *clip )
-{
-	QList<QGraphicsItem*> list = items( clip->mapToScene( clip->rect().topLeft() ), Qt::IntersectsItemBoundingRect, Qt::AscendingOrder );
-	for ( int i = 0; i < list.count(); ++i ) {
-		QGraphicsItem *it = list.at( i );
-		if ( it->data( DATAITEMTYPE ).toInt() == TYPECLIP ) {
-			ClipViewItem *cv = (ClipViewItem*)it;
-			if ( cv != clip ) {
-				clip->updateTransition( cv->getPosition() + cv->getLength() - clip->getPosition() );
+				clip->updateTransition( remove ? 0 : cv->getPosition() + cv->getLength() - clip->getPosition() );
 				break;
 			}
 		}
@@ -186,12 +156,10 @@ void Timeline::clipItemCanMove( ClipViewItem *clip, QPointF mouse, double clipSt
 	if ( newTrack < 0 )
 		newTrack = itemTrack;
 	if ( scene->canMove( clip->getClip(), clip->getClip()->length(), newPos, newTrack ) ) {
-		removeStartTransition( clip );
-		removeEndTransition( clip );
+		updateTransitions( clip, true );
 		clip->setParentItem( tracks.at( newTrack ) );
 		clip->setPosition( newPos );
-		updateStartTransition( clip );
-		updateEndTransition( clip );
+		updateTransitions( clip, false );
 	}
 }
 
@@ -214,8 +182,11 @@ void Timeline::clipItemCanResize( ClipViewItem *clip, int way, QPointF mouse, do
 		double newLength = clipStartLen + ( mouse.x() * zoom ) - ( clipStartMouse.x() * zoom);
 		if ( !unsnap )
 			snapResize( clip, way, newLength, mouse.x(), ( clipStartMouse.x() - ((clip->getPosition() + clipStartLen) / zoom) ) );
-		if ( scene->canResize( clip->getClip(), newLength, track ) )
+		if ( scene->canResize( clip->getClip(), newLength, track ) ) {
+			updateTransitions( clip, true );
 			clip->setLength( newLength );
+			updateTransitions( clip, false );
+		}
 	}
 	else {
 		double newPos = ( mouse.x() * zoom ) - ( (clipStartMouse.x() * zoom) - clipStartPos );
@@ -225,7 +196,9 @@ void Timeline::clipItemCanResize( ClipViewItem *clip, int way, QPointF mouse, do
 			newPos = 0;
 		double endPos = clipStartPos + clipStartLen;
 		if ( scene->canResizeStart( clip->getClip(), newPos, endPos, track ) ) {
+			updateTransitions( clip, true );
 			clip->setGeometry( newPos, endPos - newPos );
+			updateTransitions( clip, false );
 		}
 	}
 }
@@ -427,6 +400,8 @@ void Timeline::setScene( Scene *s )
 		QList<QGraphicsItem*> list = track->childItems();
 		while ( list.count() ) {
 			QGraphicsItem *it = list.takeFirst();
+			if ( it->data( DATAITEMTYPE ).toInt() == TYPECLIP )
+				updateTransitions( (ClipViewItem*)it, true );
 			removeItem( it );
 			delete it;
 		}
@@ -442,9 +417,10 @@ void Timeline::setScene( Scene *s )
 		Track *t = s->tracks[i];
 		for ( j = 0; j < t->clipCount(); ++j ) {
 			Clip *c = t->clipAt( j );
-			QGraphicsItem *it = new ClipViewItem( c, zoom );
+			ClipViewItem *it = new ClipViewItem( c, zoom );
 			addItem( it );
 			it->setParentItem( tracks.at( i ) );
+			updateTransitions( it, false );
 		}
 	}
 	
@@ -459,6 +435,7 @@ void Timeline::deleteClip()
 {
 	if ( selectedItem ) {
 		if ( scene->removeClip( ((ClipViewItem*)selectedItem)->getClip() ) ) {
+			updateTransitions( (ClipViewItem*)selectedItem, true );
 			removeItem( selectedItem );
 			delete selectedItem;
 			selectedItem = NULL;
@@ -560,6 +537,7 @@ void Timeline::dragEnterEvent( QGraphicsSceneDragDropEvent *event )
 						droppedCut.clipItem->setParentItem( tracks.at( newTrack ) );
 						droppedCut.clipItem->setPosition( newPos );
 						droppedCut.clip->setPosition( newPos );
+						updateTransitions( droppedCut.clipItem, false );
 					}
 				}
 				event->accept();
@@ -595,9 +573,11 @@ void Timeline::dragMoveEvent( QGraphicsSceneDragDropEvent *event )
 				droppedCut.shown = true;
 				itemSelected( droppedCut.clipItem );
 			}
+			updateTransitions( droppedCut.clipItem, true );
 			droppedCut.clipItem->setParentItem( tracks.at( newTrack ) );
 			droppedCut.clipItem->setPosition( newPos );
 			droppedCut.clip->setPosition( newPos );
+			updateTransitions( droppedCut.clipItem, false );
 		}
 	}
 	else
@@ -612,6 +592,7 @@ void Timeline::dragLeaveEvent( QGraphicsSceneDragDropEvent *event )
 		if ( droppedCut.shown ) {
 			selectedItem = NULL;
 			itemSelected( NULL );
+			updateTransitions( droppedCut.clipItem, true );
 			removeItem( droppedCut.clipItem );
 		}
 		droppedCut.destroy();

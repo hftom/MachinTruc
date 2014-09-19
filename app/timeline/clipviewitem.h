@@ -14,6 +14,7 @@ class ClipViewItem : public AbstractViewItem
 {
 public:
 	ClipViewItem( Clip *c, double scale );
+	~ClipViewItem();
 	void updateTransition( double len );
 
 	void paint( QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget );

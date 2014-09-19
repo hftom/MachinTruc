@@ -11,6 +11,7 @@ class AbstractViewItem : public QGraphicsRectItem
 {
 public:
 	AbstractViewItem();
+	virtual ~AbstractViewItem() {}
 	
 	void setPosition( double pos );
 	double getPosition() { return position; }

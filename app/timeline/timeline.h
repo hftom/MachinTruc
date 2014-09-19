@@ -84,11 +84,8 @@ private:
 	int getTrack( const QPointF &p );
 	void snapMove( ClipViewItem *item, double &pos, double mouseX, double itemScenePos );
 	void snapResize( ClipViewItem *item, int way, double &len, double mouseX, double itemScenePos );
-	
-	void removeEndTransition( ClipViewItem *clip );
-	void updateEndTransition( ClipViewItem *clip );
-	void removeStartTransition( ClipViewItem *clip );
-	void updateStartTransition( ClipViewItem *clip );
+
+	void updateTransitions( ClipViewItem *clip, bool remove );
 	
 	CursorViewItem *cursor;
 	double zoom;
