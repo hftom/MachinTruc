@@ -863,7 +863,8 @@ bool InputFF::decodeVideo( Frame *f )
 			bool ok = makeFrame( f, ratio, vpts, dur );
 			
 			freePacket( packet );
-			lastFrame.set( f );
+			if ( ok )
+				lastFrame.set( f );
 			return ok;
 		}
 
