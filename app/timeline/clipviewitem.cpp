@@ -16,6 +16,7 @@ ClipViewItem::ClipViewItem( Clip *c, double scale ) : AbstractViewItem(),
 	transition( NULL )
 {
 	setData( DATAITEMTYPE, TYPECLIP );
+	setZValue( ZCLIP );
 	//setFlag( QGraphicsItem::ItemIsMovable, true );
 	//setFlag(QGraphicsItem::ItemIsSelectable, true);
 	//setFlag(QGraphicsItem::ItemIsFocusable, true);
@@ -120,10 +121,12 @@ void ClipViewItem::setSelected( bool b )
 {
 	selected = b;
 	if ( selected ) {
+		setZValue( ZCLIPSELECTED );
 		setBrush( selectionBrush );
 		setPen( selectionPen );
 	}
 	else {
+		setZValue( ZCLIP );
 		setPen( normalPen );
 		setBrush( normalBrush );
 	}

@@ -256,9 +256,15 @@ bool Scene::checkPlacement( Clip *clip, int track, double clipPos, double clipLe
 			// clipC can't overlap with clipA
 			if ( next->position() < c->position() + c->length() - margin )
 				return false;
-			// and we can't end after clipC
+			// we can't end after clipC
 			if ( next->position() + next->length() < clipPos + clipLength - margin )
 				return false;
+			// and we can't overlap with clipD
+			if ( j < count ) {
+				Clip *d = t->clipAt( j );
+				if ( d->position() < clipPos + clipLength - margin )
+					return false;
+			}
 			break;
 		}
 	}

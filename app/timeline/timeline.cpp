@@ -112,28 +112,30 @@ void Timeline::trackPressed( QPointF p )
 
 void Timeline::updateTransitions( ClipViewItem *clip, bool remove )
 {
-	// end
-	QPointF p = clip->mapToScene( clip->rect().topRight() );
-	p.rx() -= scene->profile.getVideoFrameDuration() / 2.0 / zoom;
-	QList<QGraphicsItem*> list = items( p, Qt::IntersectsItemBoundingRect, Qt::AscendingOrder );
-	for ( int i = 0; i < list.count(); ++i ) {
-		QGraphicsItem *it = list.at( i );
-		if ( it->data( DATAITEMTYPE ).toInt() == TYPECLIP ) {
-			ClipViewItem *cv = (ClipViewItem*)it;
-			if ( cv != clip ) {
-				cv->updateTransition( remove ? 0 : clip->getPosition() + clip->getLength() - cv->getPosition() );
-				break;
-			}
-		}
-	}
 	// begin
-	list = items( clip->mapToScene( clip->rect().topLeft() ), Qt::IntersectsItemBoundingRect, Qt::AscendingOrder );
+	ClipViewItem *begin = NULL;
+	QList<QGraphicsItem*> list = items( clip->mapToScene( clip->rect().topLeft() ), Qt::IntersectsItemBoundingRect, Qt::AscendingOrder );
 	for ( int i = 0; i < list.count(); ++i ) {
 		QGraphicsItem *it = list.at( i );
 		if ( it->data( DATAITEMTYPE ).toInt() == TYPECLIP ) {
 			ClipViewItem *cv = (ClipViewItem*)it;
 			if ( cv != clip ) {
 				clip->updateTransition( remove ? 0 : cv->getPosition() + cv->getLength() - clip->getPosition() );
+				begin = cv;
+				break;
+			}
+		}
+	}
+	// end
+	QPointF p = clip->mapToScene( clip->rect().topRight() );
+	p.rx() -= scene->profile.getVideoFrameDuration() / 2.0 / zoom;
+	list = items( p, Qt::IntersectsItemBoundingRect, Qt::AscendingOrder );
+	for ( int i = 0; i < list.count(); ++i ) {
+		QGraphicsItem *it = list.at( i );
+		if ( it->data( DATAITEMTYPE ).toInt() == TYPECLIP ) {
+			ClipViewItem *cv = (ClipViewItem*)it;
+			if ( cv != clip && cv != begin ) {
+				cv->updateTransition( remove ? 0 : clip->getPosition() + clip->getLength() - cv->getPosition() );
 				break;
 			}
 		}

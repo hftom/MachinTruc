@@ -9,7 +9,9 @@
 #define TYPETRANSITION 4
 #define TYPEFILTER 5
 
-#define ZTRANSITION 1
+#define ZCLIP 1
+#define ZCLIPSELECTED 2
+#define ZTRANSITION 3
 #define ZCURSOR 10
 
 #define TRACKVIEWITEMHEIGHT 37
