@@ -396,6 +396,8 @@ void Timeline::updateLength()
 void Timeline::setScene( Scene *s )
 {
 	int i, j;
+
+	scene = s;
 	
 	for ( i = 0; i < tracks.count(); ++i ) {
 		QGraphicsItem *track = tracks.at( i );
@@ -425,8 +427,6 @@ void Timeline::setScene( Scene *s )
 			updateTransitions( it, false );
 		}
 	}
-	
-	scene = s;
 
 	QTimer::singleShot ( 1, this, SLOT(updateLength()) );
 }
