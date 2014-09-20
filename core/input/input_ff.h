@@ -112,6 +112,45 @@ public:
 
 
 
+class LastDecodedFrame
+{
+public:
+	LastDecodedFrame() : buffer( NULL ) {}
+	~LastDecodedFrame() {
+		if ( buffer )
+			BufferPool::globalInstance()->releaseBuffer( buffer );
+	}
+	void set( Frame *f ) {
+		if ( buffer )
+			BufferPool::globalInstance()->releaseBuffer( buffer );
+		buffer = NULL;
+		if ( f ) {
+			buffer = f->getBuffer();
+			BufferPool::globalInstance()->useBuffer( buffer );
+			profile = f->profile;
+			type = f->type();
+			pts = f->pts() + f->profile.getVideoFrameDuration();
+		}
+	}
+	void get( Frame *f ) {
+		if ( buffer )
+			f->setSharedBuffer( buffer );
+		f->setVideoFrame( (Frame::DataType)type, profile.getVideoWidth(), profile.getVideoHeight(), profile.getVideoSAR(),
+						  profile.getVideoInterlaced(), profile.getVideoTopFieldFirst(), pts, profile.getVideoFrameDuration() );
+		f->profile = profile;
+		pts += profile.getVideoFrameDuration();
+	}
+	bool valid() { return buffer != NULL; }
+
+private:
+	Buffer *buffer;
+	int type;
+	double pts;
+	Profile profile;
+};
+
+
+
 class VideoResampler
 {
 public:
@@ -120,7 +159,11 @@ public:
 	{
 		reset( 40000 );
 	}
-	~VideoResampler() {}
+	~VideoResampler() {
+		if ( repeatBuffer )
+			BufferPool::globalInstance()->releaseBuffer( repeatBuffer );
+
+	}
 	void reset( double dur ) {
 		outputPts = 0;
 		outputDuration = dur;
@@ -232,6 +275,7 @@ private:
 	AudioRingBuffer *arb;
 	AudioPacket currentAudioPacket;
 
+	LastDecodedFrame lastFrame;
 	VideoResampler videoResampler;
 
 	QQueue<AVPacket*> audioPackets, videoPackets;

@@ -151,6 +151,7 @@ void InputFF::close()
 bool InputFF::open( QString fn )
 {
 	close();
+
 	if ( !ffOpen( fn ) )
 		return false;
 
@@ -405,6 +406,7 @@ bool InputFF::ffOpen( QString fn )
 	}
 
 	endOfFile = 0;
+	lastFrame.set( NULL );
 
 	return true;
 }
@@ -506,6 +508,7 @@ bool InputFF::seek( double t )
 	}
 
 	endOfFile = 0;
+	lastFrame.set( NULL );
 	return true;
 }
 
@@ -688,6 +691,7 @@ void InputFF::openSeekPlay( QString fn, double p )
 	seekAndPlayPath = fn;
 	seekAndPlay = true;
 	endOfFile = 0;
+	lastFrame.set( NULL );
 	start();
 }
 
@@ -859,6 +863,7 @@ bool InputFF::decodeVideo( Frame *f )
 			bool ok = makeFrame( f, ratio, vpts, dur );
 			
 			freePacket( packet );
+			lastFrame.set( f );
 			return ok;
 		}
 
@@ -1174,6 +1179,15 @@ Frame* InputFF::getVideoFrame()
 
 	while ( videoFrames.queueEmpty() ) {
 		if ( endOfFile & EofVideo ) {
+			if ( lastFrame.valid() ) {
+				while ( freeVideoFrames.queueEmpty() )
+					usleep( 1000 );
+				Frame *f = freeVideoFrames.dequeue();
+				lastFrame.get( f );
+				f->mmi = mmi;
+				f->mmiProvider = mmiProvider;
+				return f;
+			}
 			return NULL;
 		}
 		usleep( 1000 );
