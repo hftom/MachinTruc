@@ -46,8 +46,8 @@ public:
 	Timeline( TopWindow *parent );
 	~Timeline();
 	
-	void clipItemCanMove( ClipViewItem *clip, QPointF mouse, double clipStartPos, QPointF clipStartMouse, bool unsnap );
-	void clipItemMoved( ClipViewItem *clip, QPointF clipMouseStart );
+	void clipItemCanMove( ClipViewItem *clip, QPointF mouse, double clipStartPos, QPointF clipStartMouse, bool unsnap, bool multiMove );
+	void clipItemMoved( ClipViewItem *clip, QPointF clipMouseStart, bool multiMove );
 	void clipItemCanResize( ClipViewItem *clip, int way, QPointF mouse, double clipStartPos, double clipStartLen, QPointF clipStartMouse, bool unsnap );
 	void clipItemResized( ClipViewItem *clip, int way );
 	void addFilter( ClipViewItem *clip, QString fx );
@@ -82,7 +82,7 @@ private slots:
 	
 private:
 	int getTrack( const QPointF &p );
-	void snapMove( ClipViewItem *item, double &pos, double mouseX, double itemScenePos );
+	void snapMove( ClipViewItem *item, double &pos, double mouseX, double itemScenePos, bool limit = false );
 	void snapResize( ClipViewItem *item, int way, double &len, double mouseX, double itemScenePos );
 
 	void updateTransitions( ClipViewItem *clip, bool remove );

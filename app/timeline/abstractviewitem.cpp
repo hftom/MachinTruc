@@ -20,6 +20,14 @@ void AbstractViewItem::setPosition( double pos )
 
 
 
+void AbstractViewItem::moveDelta( double d )
+{
+	position += d;
+	updateGeometry();
+}
+
+
+
 void AbstractViewItem::setLength( double len )
 {
 	length = len;

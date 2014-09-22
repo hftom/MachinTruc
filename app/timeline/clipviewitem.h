@@ -44,6 +44,7 @@ private:
 	QPointF moveStartMouse;
 	int moveResize;
 	bool firstMove;
+	bool multiMove;
 	
 	TransitionViewItem *transition;
 };

@@ -138,6 +138,7 @@ void ClipViewItem::setSelected( bool b )
 void ClipViewItem::mousePressEvent( QGraphicsSceneMouseEvent *event )
 {
 	firstMove = true;
+	multiMove = event->modifiers() & Qt::ShiftModifier;
 	if ( event->pos().x() < SNAPWIDTH ) {
 		moveResize = 1;
 		moveStartLength = length;
@@ -169,7 +170,7 @@ void ClipViewItem::mouseMoveEvent( QGraphicsSceneMouseEvent *event )
 	if ( moveResize )
 		t->clipItemCanResize( this, moveResize, event->scenePos(), moveStartPosition, moveStartLength, moveStartMouse, unsnap );
 	else
-		t->clipItemCanMove( this, event->scenePos(), moveStartPosition, moveStartMouse, unsnap );
+		t->clipItemCanMove( this, event->scenePos(), moveStartPosition, moveStartMouse, unsnap, multiMove );
 }
 
 
@@ -184,7 +185,7 @@ void ClipViewItem::mouseReleaseEvent( QGraphicsSceneMouseEvent *event )
 	if ( moveResize )
 		t->clipItemResized( this, moveResize );
 	else
-		t->clipItemMoved( this, moveStartMouse );
+		t->clipItemMoved( this, moveStartMouse, multiMove );
 }
 
 

@@ -144,12 +144,12 @@ void Timeline::updateTransitions( ClipViewItem *clip, bool remove )
 
 
 
-void Timeline::clipItemCanMove( ClipViewItem *clip, QPointF mouse, double clipStartPos, QPointF clipStartMouse, bool unsnap )
+void Timeline::clipItemCanMove( ClipViewItem *clip, QPointF mouse, double clipStartPos, QPointF clipStartMouse, bool unsnap, bool multiMove )
 {
 	double newPos = ( mouse.x() * zoom ) - ( (clipStartMouse.x() * zoom) - clipStartPos );
 		
 	if ( !unsnap )
-		snapMove( clip, newPos, mouse.x(), ( clipStartMouse.x() - (clipStartPos / zoom) ) );
+		snapMove( clip, newPos, mouse.x(), ( clipStartMouse.x() - (clipStartPos / zoom) ), multiMove );
 		
 	int itemTrack = getTrack( clip->sceneBoundingRect().topLeft() );
 	if ( newPos < 0 )
@@ -157,19 +157,44 @@ void Timeline::clipItemCanMove( ClipViewItem *clip, QPointF mouse, double clipSt
 	int newTrack = getTrack( mouse );
 	if ( newTrack < 0 )
 		newTrack = itemTrack;
-	if ( scene->canMove( clip->getClip(), clip->getClip()->length(), newPos, newTrack ) ) {
-		updateTransitions( clip, true );
-		clip->setParentItem( tracks.at( newTrack ) );
-		clip->setPosition( newPos );
-		updateTransitions( clip, false );
+	if ( multiMove ) {
+		if ( scene->canMoveMulti( clip->getClip(), clip->getClip()->length(), newPos, itemTrack ) ) {
+			double start = clip->getPosition();
+			double delta = newPos - start;
+			updateTransitions( clip, true );
+			QList<QGraphicsItem*> list = tracks.at( itemTrack )->childItems();
+			for ( int i = 0; i < list.count(); ++i ) {
+				QGraphicsItem *it = list.at( i );
+				if ( it->data( DATAITEMTYPE ).toInt() >= TYPECLIP ) {
+					AbstractViewItem *av = (AbstractViewItem*)it;
+					if ( av->getPosition() < start )
+						continue;
+					av->moveDelta( delta );
+				}
+			}
+			updateTransitions( clip, false );
+		}
+	}
+	else {
+		if ( scene->canMove( clip->getClip(), clip->getClip()->length(), newPos, newTrack ) ) {
+			updateTransitions( clip, true );
+			clip->setParentItem( tracks.at( newTrack ) );
+			clip->setPosition( newPos );
+			updateTransitions( clip, false );
+		}
 	}
 }
 
 
 
-void Timeline::clipItemMoved( ClipViewItem *clip, QPointF clipStartMouse )
+void Timeline::clipItemMoved( ClipViewItem *clip, QPointF clipStartMouse, bool multiMove )
 {
-	scene->move( clip->getClip(), getTrack( clipStartMouse ), clip->getPosition(), getTrack( clip->sceneBoundingRect().topLeft() ) );
+	if ( multiMove ) {
+		scene->moveMulti( clip->getClip(), getTrack( clip->sceneBoundingRect().topLeft() ), clip->getPosition() );
+	}
+	else {
+		scene->move( clip->getClip(), getTrack( clipStartMouse ), clip->getPosition(), getTrack( clip->sceneBoundingRect().topLeft() ) );
+	}
 	QTimer::singleShot ( 1, this, SIGNAL(updateFrame()) );
 	QTimer::singleShot ( 1, this, SLOT(updateLength()) );
 }
@@ -275,7 +300,7 @@ void Timeline::snapResize( ClipViewItem *item, int way, double &poslen, double m
 
 
 
-void Timeline::snapMove( ClipViewItem *item, double &pos, double mouseX, double itemScenePos )
+void Timeline::snapMove( ClipViewItem *item, double &pos, double mouseX, double itemScenePos, bool limit )
 {
 	QRectF src = item->mapRectToScene( item->rect() );
 	double delta = fabs( itemScenePos - ( mouseX - src.left() ) );
@@ -283,10 +308,13 @@ void Timeline::snapMove( ClipViewItem *item, double &pos, double mouseX, double 
 		return;
 	QList<QGraphicsItem*> snapItems = items( src.left() - SNAPWIDTH, 0, src.right() + SNAPWIDTH, cursor->rect().height(), Qt::IntersectsItemBoundingRect, Qt::AscendingOrder );
 	int i;
+	double posLimit = item->getPosition() + item->getLength();
 	for ( i = 0; i < snapItems.count(); ++i ) {
 		QGraphicsItem *it = snapItems.at( i );
 		if ( it->data( DATAITEMTYPE ).toInt() == TYPECLIP ) {
 			ClipViewItem *cv = (ClipViewItem*)it;
+			if ( limit && cv->getPosition() >= posLimit )
+				continue;
 			if ( cv != item ) {
 				QRectF dst = cv->mapRectToScene( cv->rect() );
 				if ( (dst.left() > src.left() - SNAPWIDTH) && (dst.left() < src.left() + SNAPWIDTH) ) {

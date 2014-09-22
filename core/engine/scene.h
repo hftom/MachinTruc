@@ -24,6 +24,8 @@ public:
 	void resize( Clip *clip, double newLength, int track );
 	bool canMove( Clip *clip, double clipLength, double &newPos, int newTrack );
 	void move( Clip *clip, int clipTrack, double newPos, int newTrack );
+	bool canMoveMulti( Clip *clip, double clipLength, double &newPos, int track );
+	void moveMulti( Clip *clip, int clipTrack, double newPos );
 	void addClip( Clip *clip, int track );
 	bool removeClip( Clip *clip );
 	Clip* sceneSplitClip( Clip *clip, int track, double pts );

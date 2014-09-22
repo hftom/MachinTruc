@@ -15,6 +15,7 @@ public:
 	
 	void setPosition( double pos );
 	double getPosition() { return position; }
+	void moveDelta( double d );
 	void setLength( double len );
 	double getLength() { return length; }
 	void setGeometry( double pos, double len );
