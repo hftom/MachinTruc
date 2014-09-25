@@ -799,7 +799,8 @@ void InputFF::resample( Frame *f )
 	else if ( delta >= videoResampler.outputDuration ) {
 		// this frame will be duplicated (delta / videoResampler.outputDuration) times
 		printf("duplicate, delta=%f, f->pts=%f, outputPts=%f\n", delta, f->pts(), videoResampler.outputPts);
-		videoResampler.setRepeat( f, delta / videoResampler.outputDuration );
+		// add some to delta to prevent subduplicate
+		videoResampler.setRepeat( f, (delta + 1) / videoResampler.outputDuration );
 		videoFrames.enqueue( f );
 		videoResampler.outputPts += videoResampler.outputDuration;
 	}
