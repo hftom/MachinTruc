@@ -11,9 +11,10 @@ SOURCES += main.cpp \
 HEADERS += AutoTest.h \
 	testinputff.h
 
-LIBS = ../build/core/libcore.a
-
-INCLUDEPATH = ../core
+LIBS += ../build/core/libcore.a
+INCLUDEPATH += ../core
+DEPENDPATH += ../core
+PRE_TARGETDEPS += ../build/core/libcore.a
 
 CONFIG += debug
 unix {
