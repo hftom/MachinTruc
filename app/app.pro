@@ -71,13 +71,12 @@ FORMS = \
 	ui/effectheader.ui \
 	ui/animeditor.ui
 
-LIBS = ../core/libcore.a
-
 TARGET = ../machintruc
 
+LIBS += ../core/libcore.a
+INCLUDEPATH += ../core
+DEPENDPATH += ../core
 PRE_TARGETDEPS += ../core/libcore.a
-
-INCLUDEPATH = ../core
 
 RESOURCES = resources.qrc
 
