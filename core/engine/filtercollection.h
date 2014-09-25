@@ -1,29 +1,33 @@
 #ifndef FILTERCOLLECTION_H
 #define FILTERCOLLECTION_H
 
+// auto filters
+#include "vfx/gldeinterlace.h"
+#include "vfx/glpadding.h"
+#include "vfx/glresize.h"
+
 // video filters
-#include "vfx/gltest.h"
+#include "vfx/glbackgroundcolor.h"
 #include "vfx/glblur.h"
+#include "vfx/glborder.h"
+#include "vfx/glcrop.h"
 #include "vfx/glcut.h"
 #include "vfx/gldeconvolutionsharpen.h"
-#include "vfx/gldeinterlace.h"
 #include "vfx/gldiffusion.h"
+#include "vfx/gldropshadow.h"
 #include "vfx/gledge.h"
 #include "vfx/glglow.h"
 #include "vfx/glliftgammagain.h"
 #include "vfx/glopacity.h"
-#include "vfx/glcrop.h"
-#include "vfx/glresize.h"
+#include "vfx/glpixelize.h"
+#include "vfx/glrotate.h"
 #include "vfx/glsaturation.h"
 #include "vfx/glsharpen.h"
+#include "vfx/glsize.h"
+#include "vfx/glsoftborder.h"
 #include "vfx/glvignette.h"
 #include "vfx/glwater.h"
-#include "vfx/glsize.h"
-#include "vfx/gldropshadow.h"
-#include "vfx/glpixelize.h"
-#include "vfx/glsoftborder.h"
-#include "vfx/glborder.h"
-#include "vfx/glbackgroundcolor.h"
+#include "vfx/gltest.h"
 
 // video compositions
 #include "vfx/glmix.h"
