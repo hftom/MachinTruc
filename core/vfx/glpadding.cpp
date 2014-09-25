@@ -5,8 +5,6 @@
 
 GLPadding::GLPadding( QString id, QString name ) : GLFilter( id, name )
 {
-	xoffsetpercent = addParameter( tr("X:"), Parameter::PDOUBLE, 0.0, -100.0, 100.0, true, "%" );
-	yoffsetpercent = addParameter( tr("Y:"), Parameter::PDOUBLE, 0.0, -100.0, 100.0, true, "%" );
 }
 
 
@@ -23,9 +21,6 @@ void GLPadding::preProcess( Frame *src, Profile *p )
 	top = (p->getVideoHeight() - src->glHeight) / 2.0;
 	src->glWidth = p->getVideoWidth();
 	src->glHeight = p->getVideoHeight();
-	double pts = src->pts();
-	left += getParamValue( xoffsetpercent, pts ).toDouble() * src->glWidth / 100.0;
-	top += getParamValue( yoffsetpercent, pts ).toDouble() * src->glHeight / 100.0;
 }
 
 

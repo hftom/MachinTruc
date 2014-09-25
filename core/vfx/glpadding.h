@@ -19,7 +19,6 @@ public:
 private:
 	void preProcess( Frame *src, Profile *p );
 
-	Parameter *xoffsetpercent, *yoffsetpercent;
 	double left, top;
 };
 

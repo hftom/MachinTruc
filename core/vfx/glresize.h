@@ -18,8 +18,6 @@ public:
 	
 private:
 	void preProcess( Frame *src, Profile *p );
-
-	Parameter *percent;
 };
 
 #endif //GLRESIZE_H

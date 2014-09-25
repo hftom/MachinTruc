@@ -1,8 +1,7 @@
 #ifndef GLSIZE_H
 #define GLSIZE_H
 
-#include "vfx/glpadding.h"
-#include "vfx/glresize.h"
+#include "glfilter.h"
 
 
 
@@ -16,15 +15,14 @@ public:
 	bool process( const QList<Effect*> &el, Frame *src, Profile *p );
 
 	QList<Effect*> getMovitEffects();
-	
-	// Filter virtuals
-	void setPosition( double p );
-	void setLength( double len );
-	QList<Parameter*> getParameters();
+
 		
 private:
-	GLPadding *padding;
-	GLResize *resize;
+	void preProcessResize( Frame *src, Profile *p );
+	void preProcessPadding( Frame *src, Profile *p );
+
+	Parameter *sizePercent, *xOffsetPercent, *yOffsetPercent;
+	double left, top;
 	bool resizeActive;
 };
 
