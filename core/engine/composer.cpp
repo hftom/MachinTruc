@@ -5,11 +5,6 @@
 #include <movit/init.h>
 
 #include "engine/composer.h"
-
-#include "afx/audiocopy.h"
-#include "afx/audiomix.h"
-#include "afx/audiovolume.h"
-
 #include "input/input_color.h"
 
 
@@ -46,7 +41,7 @@ void Composer::setSharedContext( QGLWidget *shared )
 	else
 		assert(false);
 	
-	assert( init_movit( movitPath.toLocal8Bit().data(), MOVIT_DEBUG_OFF ) );
+	assert( init_movit( movitPath.toLocal8Bit().data(), MOVIT_DEBUG_ON ) );
 	
 	movitPool = new ResourcePool( 100, 300 << 20, 100 );
 
