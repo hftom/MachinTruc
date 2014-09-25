@@ -8,12 +8,18 @@
 
 
 static const char *MyDeinterlaceEffect_frag=
-"uniform float PREFIX(one_div_height);\n"
+"uniform vec2 PREFIX(one_div_size);\n"
 "vec4 FUNCNAME( vec2 tc ) {\n"
-"	vec4 blend = 2.0 * INPUT( tc );\n"
-"	blend += INPUT( vec2( tc.x, tc.y - PREFIX(one_div_height) ) );\n"
-"	blend += INPUT( vec2( tc.x, tc.y + PREFIX(one_div_height) ) );\n"
-"	return blend / 4.0;\n"
+"	float parity = mod( floor( tc.y / PREFIX(one_div_size).y ), 2.0 );\n"
+"\n"
+"	// Keep even lines and interpolate odd ones.\n"
+"	// Movit flips y, so parity is inversed.\n"
+"	if ( parity == 0.0 ) {\n"
+"		vec4 ret = INPUT( vec2( tc.x, tc.y - PREFIX(one_div_size).y ) );\n"
+"		ret += INPUT( vec2( tc.x, tc.y + PREFIX(one_div_size).y ) );\n"
+"		return INPUT( vec2( tc.x, tc.y - PREFIX(one_div_size).y ) );//ret / 2.0;\n"
+"	}\n"
+"	return INPUT( tc );\n"
 "}\n";
 
 
@@ -31,13 +37,17 @@ public:
 		iheight = height;
 	}
 	
+	virtual void inform_added( EffectChain *chain ) { this->chain = chain; }
+	
 	virtual void set_gl_state( GLuint glsl_program_num, const std::string &prefix, unsigned *sampler_num ) {
 		Effect::set_gl_state( glsl_program_num, prefix, sampler_num );
-		set_uniform_float( glsl_program_num, prefix, "one_div_height", 1.0f / iheight );
+		float one_div_size[2] = { 1.0f / iwidth, 1.0f / iheight };
+		set_uniform_vec2( glsl_program_num, prefix, "one_div_size", one_div_size );
 	}
 	
 private:
 	float iwidth, iheight;
+	EffectChain *chain;
 };
 
 
