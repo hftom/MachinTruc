@@ -17,7 +17,7 @@ static const char *MyDeinterlaceEffect_frag=
 "	if ( parity == 0.0 ) {\n"
 "		vec4 ret = INPUT( vec2( tc.x, tc.y - PREFIX(one_div_size).y ) );\n"
 "		ret += INPUT( vec2( tc.x, tc.y + PREFIX(one_div_size).y ) );\n"
-"		return INPUT( vec2( tc.x, tc.y - PREFIX(one_div_size).y ) );//ret / 2.0;\n"
+"		return ret / 2.0;\n"
 "	}\n"
 "	return INPUT( tc );\n"
 "}\n";

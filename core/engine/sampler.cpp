@@ -13,7 +13,7 @@ Sampler::Sampler()
 	projectProfile.setVideoFrameDuration( MICROSECOND / projectProfile.getVideoFrameRate() );
 	projectProfile.setVideoWidth( 1920 );
 	projectProfile.setVideoHeight( 1080 );
-	projectProfile.setVideoSAR( 1 );
+	projectProfile.setVideoSAR( 1. );
 	projectProfile.setVideoInterlaced( false );
 	projectProfile.setVideoTopFieldFirst( true );
 	projectProfile.setAudioSampleRate( DEFAULTSAMPLERATE );

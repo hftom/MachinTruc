@@ -9,12 +9,17 @@
 
 static const char *MySoftBorderEffect_shader=
 "uniform vec2 PREFIX(border);\n"
+"uniform vec2 PREFIX(half_texel);\n"
 "vec4 FUNCNAME(vec2 tc) {\n"
-"	float a = tc.x / PREFIX(border.x);\n"
-"	a = min( a, tc.y / PREFIX(border.y) );\n"
-"	a = min( a, ( 1.0 - tc.x ) / PREFIX(border.x) );\n"
-"	a = min( a, ( 1.0 - tc.y ) / PREFIX(border.y) );\n"
-"\n"
+"	float a = 1.0;\n"
+"	if ( any( greaterThan( PREFIX(border), vec2(0.0) ) ) ) {\n"
+"		vec2 coord = tc - PREFIX(half_texel);\n"
+"		a = coord.x / PREFIX(border.x);\n"
+"		a = min( a, coord.y / PREFIX(border.y) );\n"
+"		coord = tc + PREFIX(half_texel);\n"
+"		a = min( a, ( 1.0 - coord.x ) / PREFIX(border.x) );\n"
+"		a = min( a, ( 1.0 - coord.y ) / PREFIX(border.y) );\n"
+"	}\n"
 "	return INPUT( tc ) * clamp( a, 0.0, 1.0 );\n"
 "}\n";
 
@@ -35,6 +40,8 @@ public:
 		Q_UNUSED( sampler_num );
 		float border[2] = { 1.0f / iwidth * borderSize, 1.0f / iheight * borderSize };
 		set_uniform_vec2( glsl_program_num, prefix, "border", border );
+		float half_texel[2] = { 1.0f / iwidth / 2.0f, 1.0f / iheight / 2.0f };
+		set_uniform_vec2( glsl_program_num, prefix, "half_texel", half_texel );
 	}
 
 private:
