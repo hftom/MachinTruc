@@ -50,7 +50,6 @@ SOURCES = \
 	vfx/glsoftborder.cpp \
 	vfx/glborder.cpp \
 	vfx/glbackgroundcolor.cpp \
-	vfx/glrotate.cpp \
 	\
 	videoout/videowidget.cpp
 
@@ -112,7 +111,6 @@ HEADERS = \
 	vfx/glsoftborder.h \
 	vfx/glborder.h \
 	vfx/glbackgroundcolor.h \
-	vfx/glrotate.h \
 	\
 	videoout/videowidget.h
 

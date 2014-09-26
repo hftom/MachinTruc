@@ -20,7 +20,6 @@
 #include "vfx/glliftgammagain.h"
 #include "vfx/glopacity.h"
 #include "vfx/glpixelize.h"
-#include "vfx/glrotate.h"
 #include "vfx/glsaturation.h"
 #include "vfx/glsharpen.h"
 #include "vfx/glsize.h"
