@@ -28,8 +28,6 @@ Buffer* BufferPool::getBuffer( int size )
 {
 	QMutexLocker ml( &mutex );
 	int i, index = -1, indexDiff = 0;
-	
-	//qDebug() << "total buffers:" << totalBuffers << "total bytes:" << totalBytes;
 
 	for ( i = 0; i < freeBuffers.count(); ++i ) {
 		Buffer *b = freeBuffers[i];
@@ -57,6 +55,7 @@ Buffer* BufferPool::getBuffer( int size )
 
 	totalBytes += size;
 	++totalBuffers;
+	//qDebug() << "total buffers:" << totalBuffers << "total bytes:" << totalBytes;
 	return new Buffer( size );
 }
 
