@@ -84,7 +84,7 @@ private:
 class AudioPacket
 {
 public:
-	AudioPacket() {
+	AudioPacket() : orgData(NULL), orgSize(0), pts(0) {
 		free();
 	}
 	~AudioPacket() {}
@@ -115,7 +115,7 @@ public:
 class LastDecodedFrame
 {
 public:
-	LastDecodedFrame() : buffer( NULL ) {}
+	LastDecodedFrame() : buffer(NULL), type(0), pts(0) {}
 	~LastDecodedFrame() {
 		if ( buffer )
 			BufferPool::globalInstance()->releaseBuffer( buffer );
@@ -155,7 +155,9 @@ class VideoResampler
 {
 public:
 	VideoResampler()
-		: repeatBuffer( NULL )
+		: repeatBuffer( NULL ),
+		repeatType( 0 ),
+		repeatPTS( 0 )
 	{
 		reset( 40000 );
 	}

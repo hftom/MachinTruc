@@ -34,7 +34,7 @@ static const char *EdgeEffect_frag=
 
 class EdgeEffect : public Effect {
 public:
-	EdgeEffect() : amp(3.0), depth(0.3), opacity(1.0) {
+	EdgeEffect() : amp(3.0), depth(0.3), opacity(1.0), iwidth(1), iheight(1) {
 		register_float("amp", &amp);
 		register_float("depth", &depth);
 		register_float("opacity", &opacity);

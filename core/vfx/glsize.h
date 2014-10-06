@@ -25,7 +25,7 @@ static const char *MyRotateEffect_shader=
 
 class MyRotateEffect : public Effect {
 public:
-	MyRotateEffect() : angle(0.0), SAR(1.0) {
+	MyRotateEffect() : iwidth(1), iheight(1), angle(0.0), SAR(1.0) {
 		register_float("angle", &angle);
 		register_float("SAR", &SAR);
 	}

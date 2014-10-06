@@ -17,7 +17,7 @@ class TopWindow;
 class DroppedCut
 {
 public:
-	DroppedCut() {
+	DroppedCut() : enterPos(0) {
 		reset();
 	}
 	void destroy() {
@@ -90,10 +90,6 @@ private:
 	CursorViewItem *cursor;
 	double zoom;
 	int viewWidth;
-	
-	AbstractViewItem *moveItem;
-	double moveItemPos, moveItemScenePos;
-	int moveItemTrack;
 	
 	QList<TrackViewItem*> tracks;
 	

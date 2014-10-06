@@ -26,7 +26,7 @@ static const char *MyDeinterlaceEffect_frag=
 
 class MyDeinterlaceEffect : public Effect {
 public:
-	MyDeinterlaceEffect() {}
+	MyDeinterlaceEffect() : iwidth(1), iheight(1) {}
 	virtual std::string effect_type_id() const { return "MyDeinterlaceEffect"; }
 	std::string output_fragment_shader() { return MyDeinterlaceEffect_frag; }
 	virtual bool needs_texture_bounce() const { return true; }
@@ -37,8 +37,6 @@ public:
 		iheight = height;
 	}
 	
-	virtual void inform_added( EffectChain *chain ) { this->chain = chain; }
-	
 	virtual void set_gl_state( GLuint glsl_program_num, const std::string &prefix, unsigned *sampler_num ) {
 		Effect::set_gl_state( glsl_program_num, prefix, sampler_num );
 		float one_div_size[2] = { 1.0f / iwidth, 1.0f / iheight };
@@ -47,7 +45,6 @@ public:
 	
 private:
 	float iwidth, iheight;
-	EffectChain *chain;
 };
 
 

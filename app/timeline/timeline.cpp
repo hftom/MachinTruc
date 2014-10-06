@@ -16,8 +16,8 @@
 Timeline::Timeline( TopWindow *parent ) : QGraphicsScene(),
 	zoom( DEFAULTZOOM ),
 	viewWidth( 0 ),
-	moveItem( NULL ),
 	selectedItem( NULL ),
+	scene( NULL ),
 	topParent( parent )
 {
 	setBackgroundBrush( QBrush( QColor(20,20,20) ) );

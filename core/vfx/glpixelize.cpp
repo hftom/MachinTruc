@@ -33,7 +33,9 @@ QList<Effect*> GLPixelize::getMovitEffects()
 
 
 MyPixelizeEffect::MyPixelizeEffect()
-	: pixelSize(2.0)
+	: iwidth(1),
+	iheight(1),
+	pixelSize(2.0)
 {
 	register_float("pixelSize", &pixelSize);
 }

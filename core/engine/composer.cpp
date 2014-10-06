@@ -13,6 +13,8 @@ Composer::Composer( Sampler *samp )
 	: running( false ),
 	oneShot( false ),
 	skipFrame( 0 ),
+	hiddenContext( NULL ),
+	movitPool( NULL ),
 	sampler( samp ),
 	audioSampleDelta( 0 )
 {

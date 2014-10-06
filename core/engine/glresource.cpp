@@ -141,7 +141,8 @@ FENCE* GLResource::getFence()
 // FBO
 FBO::FBO( int w, int h, GLint iformat )
 	: fb( 0 ),
-	tex( 0 )
+	tex( 0 ),
+	used( false )
 {
 	valid = init( w, h, iformat );
 }

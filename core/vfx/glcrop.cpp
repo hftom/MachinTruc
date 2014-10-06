@@ -3,7 +3,9 @@
 
 
 
-GLCrop::GLCrop( QString id, QString name ) : GLFilter( id, name )
+GLCrop::GLCrop( QString id, QString name ) : GLFilter( id, name ),
+	ptop( 0 ),
+	pleft( 0 )
 {
 	left = addParameter( "left", tr("Left:"), Parameter::PDOUBLE, 0.0, 0.0, 100.0, true, "%" );
 	right = addParameter( "right", tr("Right:"), Parameter::PDOUBLE, 0.0, 0.0, 100.0, true, "%" );

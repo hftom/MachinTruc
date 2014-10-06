@@ -8,6 +8,8 @@
 
 Metronom::Metronom()
 	: running( false ),
+	sclock( 0 ),
+	videoLate( 0 ),
 	fencesContext( NULL ),
 	lastFrame( NULL )
 {

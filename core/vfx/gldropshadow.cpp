@@ -102,7 +102,9 @@ bool MyDropShadowEffect::set_vec3(const std::string &key, const float *values)
 
 
 MyShadowMapEffect::MyShadowMapEffect()
-	: xoffset(10.0f),
+	: iwidth( 1 ),
+	iheight( 1 ),
+	xoffset(10.0f),
 	yoffset(10.0f),
 	opacity(0.9f),
 	color(0.0f,0.0f,0.0f)

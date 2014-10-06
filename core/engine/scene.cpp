@@ -104,7 +104,7 @@ void Scene::resizeStart( Clip *clip, double newPos, double newLength, int track 
 	insert = t->clipCount();
 	for ( int i = 0; i < t->clipCount(); ++i ) {
 		Clip *c = t->clipAt( i );
-		if ( clip && c == clip ) {
+		if ( c == clip ) {
 			++self;
 			continue;
 		}
@@ -183,7 +183,7 @@ void Scene::move( Clip *clip, int clipTrack, double newPos, int newTrack )
 	insert = t->clipCount();
 	for ( int i = 0; i < t->clipCount(); ++i ) {
 		Clip *c = t->clipAt( i );
-		if ( clip && c == clip ) {
+		if ( c == clip ) {
 			++self;
 			continue;
 		}

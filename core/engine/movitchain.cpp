@@ -8,7 +8,8 @@
 
 
 MovitInput::MovitInput()
-	: mmi( -1 )
+	: input( NULL ),
+	mmi( -1 )
 {
 }
 

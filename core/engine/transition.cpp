@@ -7,7 +7,8 @@
 
 Transition::Transition( double posInTrackPTS, double len )
 	: posInTrack( posInTrackPTS ),
-	transitionLength( len )
+	transitionLength( len ),
+	frameDuration( 40000 )
 {
 	videoFilter = FilterCollection::getGlobalInstance()->videoTransitions.first().create().staticCast<GLFilter>();
 	videoFilter->setPosition( posInTrack );

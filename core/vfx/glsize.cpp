@@ -5,15 +5,19 @@
 
 
 
-GLSize::GLSize( QString id, QString name ) : GLFilter( id, name )
+GLSize::GLSize( QString id, QString name ) : GLFilter( id, name ),
+	resizeActive( true ),
+	rotateActive( false ),
+	rotateLeft( 0 ),
+	rotateTop( 0 ),
+	left( 0 ),
+	top( 0 )
 {
 	sizePercent = addParameter( "sizePercent", tr("Size:"), Parameter::PDOUBLE, 100.0, 0.0, 500.0, true, "%" );
 	xOffsetPercent = addParameter( "xOffsetPercent", tr("X:"), Parameter::PDOUBLE, 0.0, -100.0, 100.0, true, "%" );
 	yOffsetPercent = addParameter( "yOffsetPercent", tr("Y:"), Parameter::PDOUBLE, 0.0, -100.0, 100.0, true, "%" );
 	rotateAngle = addParameter( "rotateAngle", tr("Rotation angle:"), Parameter::PDOUBLE, 0.0, -180.0, 180.0, true );
 	softBorder = addParameter( "softBorder", tr("Soft border:"), Parameter::PINT, 2.0, 0, 10, false );
-	resizeActive = true;
-	rotateActive = false;
 }
 
 
@@ -40,6 +44,7 @@ void GLSize::preProcessResize( Frame *src, Profile *p )
 
 void GLSize::preProcessRotate( Frame *src, Profile *p )
 {
+	Q_UNUSED( p );
 	int rotateSize = sqrt( src->glWidth * src->glWidth + src->glHeight * src->glHeight ) + 1;
 	rotateLeft = (rotateSize - src->glWidth) / 2.0;
 	rotateTop = (rotateSize - src->glHeight) / 2.0;

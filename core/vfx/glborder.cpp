@@ -35,8 +35,10 @@ QList<Effect*> GLBorder::getMovitEffects()
 
 
 MyBorderEffect::MyBorderEffect()
-	: borderSize(1.0),
-	  color( 1.0f, 1.0f, 1.0f, 1.0f )
+	: iwidth(1),
+	iheight(1),
+	borderSize(1.0),
+	color( 1.0f, 1.0f, 1.0f, 1.0f )
 {
 	register_float( "borderSize", &borderSize );
 	register_vec4( "color", (float *)&color );

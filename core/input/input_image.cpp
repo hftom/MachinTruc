@@ -13,7 +13,10 @@
 InputImage::InputImage() : InputBase(),
 	fps( 30 ),
 	currentVideoPTS( 0 ),
-	buffer( NULL )
+	buffer( NULL ),
+	width( 0 ),
+	height( 0 ),
+	rgba( false )
 {
 	inputType = IMAGE;
 

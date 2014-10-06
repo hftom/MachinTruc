@@ -22,7 +22,7 @@ static const char *MTestEffect_frag=
 
 class MTestEffect : public Effect {
 public:
-	MTestEffect() : loop(1.0) {
+	MTestEffect() : loop(1.0), iwidth(1), iheight(1) {
 		register_float("loop", &loop);
 	}
 	std::string effect_type_id() const { return "MTestEffect"; }

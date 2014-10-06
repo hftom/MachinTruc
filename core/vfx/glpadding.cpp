@@ -3,7 +3,9 @@
 
 
 
-GLPadding::GLPadding( QString id, QString name ) : GLFilter( id, name )
+GLPadding::GLPadding( QString id, QString name ) : GLFilter( id, name ),
+	left( 0 ),
+	top( 0 )
 {
 }
 

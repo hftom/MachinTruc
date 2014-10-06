@@ -13,6 +13,11 @@
 
 
 ClipViewItem::ClipViewItem( Clip *c, double scale ) : AbstractViewItem(),
+	moveStartPosition( 0 ),
+	moveStartLength( 0 ),
+	moveResize( 0 ),
+	firstMove( true ),
+	multiMove( false ),
 	transition( NULL )
 {
 	setData( DATAITEMTYPE, TYPECLIP );

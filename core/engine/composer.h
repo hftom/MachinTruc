@@ -47,7 +47,6 @@ private:
 
 	GLuint mask_texture;
 	
-	GLuint videoPBO;
 	QGLWidget *hiddenContext;
 	GLResource gl;
 
