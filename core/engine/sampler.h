@@ -121,7 +121,10 @@ public:
 	Metronom* getMetronom() { return metronom; }
 	void play( bool b );
 	
-	Scene* getScene() { return scene; }
+	void drainScenes();
+	QList<Scene*> getSceneList() { return sceneList; }
+	Scene* getCurrentScene() { return currentScene; }
+	void setSceneList( QList<Scene*> list );
 	bool previewMode() { return playMode == PlaySource; }
 
 public slots:
@@ -142,7 +145,7 @@ private:
 	double samplerDuration();
 
 	QList<Scene*> sceneList;
-	Scene *scene;
+	Scene *currentScene;
 	QList<InputBase*> inputs;
 
 	Profile projectProfile;

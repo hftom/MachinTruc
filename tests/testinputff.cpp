@@ -237,3 +237,78 @@ void TestInputFF::resampleHalfFrameRate()
     QVERIFY( i == VIDEOTESTNFRAMES / 2
 			&& checkEqual( colors, framecol, VIDEOTESTNFRAMES / 2 ) );
 }
+
+
+
+void TestInputFF::memLeakTest()
+{
+	/*int numInputs = 10;
+	QList<InputFF*> in;
+	QList<int> index;
+
+	Profile outProf;
+	outProf.setVideoFrameRate( 30000. / 1001. );
+	outProf.setVideoFrameDuration( MICROSECOND / outProf.getVideoFrameRate() );
+	outProf.setVideoWidth( 1280 );
+	outProf.setVideoHeight( 720 );
+	outProf.setVideoSAR( 1. );
+	outProf.setVideoInterlaced( false );
+	outProf.setVideoTopFieldFirst( true );
+	outProf.setAudioSampleRate( DEFAULTSAMPLERATE );
+	outProf.setAudioChannels( 6 );
+	outProf.setAudioLayout( Profile::LAYOUT_51 );
+	
+	for ( int i = 0; i < numInputs; ++i )
+		in.append( new InputFF() );
+
+	QStringList path;
+	QList<Profile*> prof;
+
+	path.append( "/partage/SD66/2013-10-05-amboise/00021.mkv" );
+	path.append( "/home/cris/praz_de_lys-2010.vob" );
+	path.append( "/home/cris/00116.mkv" );
+	path.append( "/home/cris/ama.mp4" );
+	path.append( "/home/cris/Devel/MachinTruc/build/big_buck_bunny_1080p_h264.mov" );
+	path.append( "/home/cris/CLIP0011.AVI");
+	path.append( "/home/cris/GRAVITY_TRAILER_5-2K-HDTN.mp4" );
+	path.append( "/home/cris/30fps.mpg" );
+	path.append( "/partage/SD66/2013-10-05-amboise/00021.mkv" );
+
+	for ( int i = 0; i < path.count(); ++i ) {
+		prof.append( new Profile() );
+		in.first()->probe( path[i], prof[i] );
+	}
+	
+	for ( int i = 0; i < numInputs; ++i )
+		index.append( i % path.count() );
+	
+	while ( 1 ) {
+		for ( int i = 0; i < numInputs; ++i ) {
+			in[i]->setProfile( *prof[ index[i] ], outProf );
+			in[i]->openSeekPlay( path[ index[i] ], prof[ index[i] ]->getStreamStartTime() );
+		}
+		Frame *f;
+		int j = 0;
+		int samples = outProf.getAudioSampleRate() * outProf.getVideoFrameDuration() / MICROSECOND;
+		while ( j++ < 20  ) {
+			for ( int i = 0; i < numInputs; ++i ) {
+				if ( (f = in[i]->getVideoFrame()) )
+					f->release();
+				if ( (f = in[i]->getAudioFrame( samples )) )
+					f->release();
+			}
+		}
+		for ( int i = 0; i < numInputs; ++i ) {
+			in[i]->play( false );
+			index[i] = index[i] > path.count() - 2 ? 0 : index[i] + 1;
+		}
+	}
+
+	for ( int i = 0; i < numInputs; ++i )
+		delete in[i];
+	for ( int i = 0; i < path.count(); ++i )
+		delete prof[i];*/
+	
+#define DONTCARE true
+    QVERIFY( DONTCARE );
+}

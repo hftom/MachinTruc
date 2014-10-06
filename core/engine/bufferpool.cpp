@@ -50,6 +50,7 @@ Buffer* BufferPool::getBuffer( int size )
 		b->resizeBuffer( size );
 		totalBytes += size;
 		b->use();
+		//qDebug() << "total buffers:" << totalBuffers << "total bytes:" << totalBytes;
 		return b;
 	}
 

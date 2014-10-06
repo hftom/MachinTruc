@@ -32,6 +32,11 @@ PBO* GLResource::getPBO( int size )
 	int supindex = -1, infindex = -1;
 	int supdelta = 0, infdelta = 0;
 
+	/*int total = 0;
+	for ( i = 0; i < pboList.count(); ++i )
+		total += pboList.at(i)->size();
+	qDebug() << "Tota PBO bytes :" << total;*/
+
 	for ( i = 0; i < pboList.count(); ++i ) {
 		PBO *p = pboList.at(i);
 		if ( p->isFree() ) {

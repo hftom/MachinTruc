@@ -20,14 +20,16 @@ Transition::Transition( double posInTrackPTS, double len )
 
 
 
-void Transition::setVideoFilter( GLFilter *f )
+void Transition::setVideoFilter( QSharedPointer<GLFilter> f )
 {
+	videoFilter = f;
 }
 
 
 
-void Transition::setAudioFilter( AudioFilter *f )
+void Transition::setAudioFilter( QSharedPointer<AudioFilter> f )
 {
+	audioFilter = f;
 }
 
 

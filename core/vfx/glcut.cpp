@@ -4,7 +4,7 @@
 
 GLCut::GLCut( QString id, QString name ) : GLFilter( id, name )
 {
-	opacity = addParameter( tr("Opacity:"), Parameter::PDOUBLE, 1.0, 0.0, 1.0, true );
+	opacity = addParameter( "opacity", tr("Opacity:"), Parameter::PDOUBLE, 1.0, 0.0, 1.0, true );
 }
 
 

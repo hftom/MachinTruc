@@ -584,6 +584,8 @@
     <property name="title">
      <string>File</string>
     </property>
+    <addaction name="actionOpen"/>
+    <addaction name="actionSave"/>
    </widget>
    <widget class="QMenu" name="menuTimeline">
     <property name="title">
@@ -596,6 +598,7 @@
     <property name="title">
      <string>Settings</string>
     </property>
+    <addaction name="actionProjectSettings"/>
     <addaction name="actionBlackBackground"/>
    </widget>
    <addaction name="menuFile"/>
@@ -634,6 +637,27 @@
    </property>
    <property name="shortcut">
     <string>Shift+R</string>
+   </property>
+  </action>
+  <action name="actionSave">
+   <property name="text">
+    <string>Save</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
+  </action>
+  <action name="actionOpen">
+   <property name="text">
+    <string>Open</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
+  </action>
+  <action name="actionProjectSettings">
+   <property name="text">
+    <string>Project settings</string>
    </property>
   </action>
  </widget>

@@ -1,9 +1,16 @@
+#include <QMessageBox>
+#include <QFileDialog>
+
 #include "gui/topwindow.h"
+#include "projectprofiledialog.h"
 
 
 
 TopWindow::TopWindow()
-	: activeSource( NULL )
+	: activeSource( NULL ),
+	openSourcesCounter( 0 ),
+	projectLoader( NULL ),
+	thumbnailer( new Thumbnailer() )
 {
 	setupUi( this );
 
@@ -44,6 +51,7 @@ TopWindow::TopWindow()
 	
 	sourcePage = new ProjectSourcesPage( sampler );
 	connect( sourcePage, SIGNAL(sourceActivated(SourceListItem*)), this, SLOT(sourceActivated(SourceListItem*)) );
+	connect( sourcePage, SIGNAL(openSourcesBtnClicked()), this, SLOT(openSources()) );
 	
 	fxPage = new FxPage();
 	connect( timeline, SIGNAL(clipSelected(Clip*)), fxPage, SLOT(clipSelected(Clip*)) );
@@ -66,7 +74,7 @@ TopWindow::TopWindow()
 	connect( vw, SIGNAL(wheelSeek(int)), sampler, SLOT(wheelSeek(int)) );
 	connect( vw, SIGNAL(newSharedContext(QGLWidget*)), sampler, SLOT(setSharedContext(QGLWidget*)) );
 	connect( vw, SIGNAL(newFencesContext(QGLWidget*)), sampler, SLOT(setFencesContext(QGLWidget*)) );
-	connect( vw, SIGNAL(newThumbContext(QGLWidget*)), sourcePage, SLOT(setSharedContext(QGLWidget*)) );
+	connect( vw, SIGNAL(newThumbContext(QGLWidget*)), this, SLOT(setThumbContext(QGLWidget*)) );
 	connect( sampler->getMetronom(), SIGNAL(newFrame(Frame*)), vw, SLOT(showFrame(Frame*)) );
 	connect( sampler->getMetronom(), SIGNAL(currentFramePts(double)), this, SLOT(currentFramePts(double)) );
 	connect( vw, SIGNAL(frameShown(Frame*)), sampler->getMetronom(), SLOT(setLastFrame(Frame*)) );
@@ -91,11 +99,24 @@ TopWindow::TopWindow()
 
 	connect( switchButton, SIGNAL(toggled(bool)), sampler, SLOT(switchMode(bool)) );
 	
-	timeline->setScene( sampler->getScene() );
+	timeline->setScene( sampler->getCurrentScene() );
 
+	connect( actionSave, SIGNAL(triggered()), this, SLOT(saveProject()) );
+	connect( actionOpen, SIGNAL(triggered()), this, SLOT(loadProject()) );
+	
+	connect( actionProjectSettings, SIGNAL(triggered()), this, SLOT(projectSettings()) );
 	connect( actionBlackBackground, SIGNAL(toggled(bool)), vw, SLOT(setBlackBackground(bool)) );
 	connect( actionDeleteClip, SIGNAL(triggered()), timeline, SLOT(deleteClip()) );
 	connect( actionSplitCurrentClip, SIGNAL(triggered()), timeline, SLOT(splitCurrentClip()) );
+}
+
+
+
+void TopWindow::projectSettings()
+{
+	Profile prof;
+	ProjectProfileDialog dlg( this, prof );
+	dlg.exec();
 }
 
 
@@ -303,4 +324,183 @@ void TopWindow:: timelineSeek( double pts )
 		switchButton->toggle();
 	
 	sampler->slideSeek( pts );
+}
+
+
+
+void TopWindow::setThumbContext( QGLWidget *context )
+{
+	thumbnailer->setSharedContext( context );
+	connect( thumbnailer, SIGNAL(resultReady()), thumbnailer, SLOT(gotResult()) );
+	connect( thumbnailer, SIGNAL(thumbReady(ThumbResult)), this, SLOT(thumbResultReady(ThumbResult)) );
+}
+
+
+
+void TopWindow::openSources()
+{
+	QStringList	list = QFileDialog::getOpenFileNames( this, tr("Open files"), openSourcesCurrentDir,
+		"Videos(*.dv *.m2t *.mts *.mkv *.mpg *.mpeg *.ts *.avi *.mov *.vob *.wmv *.mjpg *.mp4 *.ogg *.wav *.mp3 *.ac3 *.mp2 *.mpa *.mpc *.png *.jpg)" );
+
+	if ( !list.isEmpty() ) {
+		openSourcesCurrentDir = QFileInfo( list[0] ).absolutePath();
+		
+		for ( int i = 0; i < list.count(); ++i ) {
+			if ( sourcePage->exists( list[i] ) )
+				duplicateOpenSources.append( QFileInfo( list[i] ).fileName() );
+			else {
+				if ( thumbnailer->pushRequest( ThumbRequest( list[i] ) ) )
+					++openSourcesCounter;
+			}
+		}
+		if ( !openSourcesCounter )
+			unsupportedDuplicateMessage();
+	}
+}
+
+
+
+void TopWindow::unsupportedDuplicateMessage()
+{
+	QMessageBox msgBox;
+	msgBox.setText( tr("Some files are unsupported or already part of the project.") );
+	msgBox.setDetailedText( unsupportedOpenSources.join( "\n" ) + "\n" + duplicateOpenSources.join( "\n" ) );
+	msgBox.exec();
+	
+	unsupportedOpenSources.clear();
+	duplicateOpenSources.clear();
+}
+
+		
+
+void TopWindow::thumbResultReady( ThumbResult result )
+{
+	if ( projectLoader ) {
+		Source *source = NULL;
+		for ( int i = 0; i < projectLoader->sourcesList.count(); ++i ) {
+			if ( projectLoader->sourcesList[i]->getFileName() == result.path ) {
+				source = projectLoader->sourcesList.takeAt( i );
+				break;
+			}
+		}
+		
+		if ( !source ) // what happens???
+			return;
+		
+		if ( result.isValid ) {
+			source->setAfter( (InputBase::InputType)result.inputType, result.profile );
+			sourcePage->addSource( QPixmap::fromImage( result.thumb ), source );
+		}
+		else {
+			for ( int k = 0; k < projectLoader->sceneList.count(); ++k ) {
+				Scene *scene = projectLoader->sceneList[k];
+				for ( int i = 0; i < scene->tracks.count(); ++i ) {
+					Track *t = scene->tracks[i];
+					for ( int j = 0; j < t->clipCount(); ++j ) {
+						Clip *c = t->clipAt( j );
+						if ( c->sourcePath() == source->getFileName() ) {
+							t->removeClip( j-- );
+							delete c;
+						}
+					}
+				}
+			}
+			unsupportedOpenSources.append( source->getFileName() );
+			delete source;
+		}
+		
+		if ( !projectLoader->sourcesList.count() ) {
+			setEnabled( true );
+			sampler->setSceneList( projectLoader->sceneList );
+			timeline->setScene( sampler->getCurrentScene() );
+			timelineSeek( 0 );
+			
+			if ( projectLoader->readError ) {
+				QMessageBox msgBox;
+				msgBox.setText( tr("Some errors occured while reading the project file.\nCheck the timeline.") );
+				msgBox.exec();
+			}
+			else if ( unsupportedOpenSources.count() ) {
+				QMessageBox msgBox;
+				msgBox.setText( tr("Some sources are unsupported or missing.\nCorresponding clips have been removed.") );
+				msgBox.setDetailedText( unsupportedOpenSources.join( "\n" ) );
+				msgBox.exec();
+			}
+			delete projectLoader;
+			projectLoader = NULL;
+		}
+	}
+	else {
+		if ( result.isValid ) {
+			Source *source = new Source( (InputBase::InputType)result.inputType, result.path, result.profile );
+			sourcePage->addSource( QPixmap::fromImage( result.thumb ), source );
+		}
+		else
+			unsupportedOpenSources.append( QFileInfo( result.path ).fileName() );
+	
+		if ( --openSourcesCounter == 0 ) {
+			if ( unsupportedOpenSources.count() || duplicateOpenSources.count() )
+				unsupportedDuplicateMessage();
+		}
+	}
+}
+
+
+
+void TopWindow::saveProject()
+{
+	QString file = QFileDialog::getSaveFileName( this, tr("Save project"),
+						openSourcesCurrentDir, "MachinTruc(*.mct)" );
+
+	if ( file.isEmpty() )
+		return;
+	
+	ProjectFile xml;
+	xml.saveProject( sourcePage->getAllSources(), sampler, file );
+}
+
+
+
+void TopWindow::loadProject()
+{
+	if ( openSourcesCounter != 0 ) {
+		QMessageBox msgBox;
+		msgBox.setText( tr("We can't load a project while sources are being loaded.\nWait until the operation has completed.") );
+		msgBox.exec();
+		return;
+	}
+	
+	QString file = QFileDialog::getOpenFileName( this, tr("Open project"),
+						openSourcesCurrentDir, "MachinTruc(*.mct)" );
+
+	if ( file.isEmpty() )
+		return;
+	
+	sampler->drainScenes();
+	timeline->setScene( sampler->getCurrentScene() );
+	sourcePage->clearAllSources();
+
+	projectLoader = new ProjectFile();
+
+	if ( projectLoader->loadProject( file ) && projectLoader->sceneList.count() ) {
+		int i;
+		for ( i = 0; i < projectLoader->sourcesList.count(); ++i ) {
+			thumbnailer->pushRequest( ThumbRequest( projectLoader->sourcesList[i]->getFileName() ) );
+		}
+		if ( i > 0 )
+			setEnabled( false );
+	}
+	else {
+		while ( projectLoader->sourcesList.count() )
+			delete projectLoader->sourcesList.takeFirst();
+		
+		while ( projectLoader->sceneList.count() )
+			delete projectLoader->sceneList.takeFirst();
+			
+		QMessageBox msgBox;
+		msgBox.setText( tr("Project loading failed.\nThe project file is corrupted.") );
+		msgBox.exec();
+		delete projectLoader;
+		projectLoader = NULL;
+	}
 }

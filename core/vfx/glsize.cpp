@@ -7,11 +7,11 @@
 
 GLSize::GLSize( QString id, QString name ) : GLFilter( id, name )
 {
-	sizePercent = addParameter( tr("Size:"), Parameter::PDOUBLE, 100.0, 0.0, 500.0, true, "%" );
-	xOffsetPercent = addParameter( tr("X:"), Parameter::PDOUBLE, 0.0, -100.0, 100.0, true, "%" );
-	yOffsetPercent = addParameter( tr("Y:"), Parameter::PDOUBLE, 0.0, -100.0, 100.0, true, "%" );
-	rotateAngle = addParameter( tr("Rotation angle:"), Parameter::PDOUBLE, 0.0, -180.0, 180.0, true );
-	softBorder = addParameter( tr("Soft border:"), Parameter::PINT, 2.0, 0, 10, false );
+	sizePercent = addParameter( "sizePercent", tr("Size:"), Parameter::PDOUBLE, 100.0, 0.0, 500.0, true, "%" );
+	xOffsetPercent = addParameter( "xOffsetPercent", tr("X:"), Parameter::PDOUBLE, 0.0, -100.0, 100.0, true, "%" );
+	yOffsetPercent = addParameter( "yOffsetPercent", tr("Y:"), Parameter::PDOUBLE, 0.0, -100.0, 100.0, true, "%" );
+	rotateAngle = addParameter( "rotateAngle", tr("Rotation angle:"), Parameter::PDOUBLE, 0.0, -180.0, 180.0, true );
+	softBorder = addParameter( "softBorder", tr("Soft border:"), Parameter::PINT, 2.0, 0, 10, false );
 	resizeActive = true;
 	rotateActive = false;
 }

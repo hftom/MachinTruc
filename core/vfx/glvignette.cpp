@@ -5,10 +5,10 @@
 
 GLVignette::GLVignette( QString id, QString name ) : GLFilter( id, name )
 {
-	radius = addParameter( tr("Radius:"), Parameter::PDOUBLE, 1.0, 0.0, 2.0, true );
-	softness = addParameter( tr("Softness:"), Parameter::PDOUBLE, 0.01, 0.01, 0.5, false );
-	centerX = addParameter( tr("X center:"), Parameter::PDOUBLE, 0.5, 0.0, 1.0, true );
-	centerY = addParameter( tr("Y center:"), Parameter::PDOUBLE, 0.5, 0.0, 1.0, true );
+	radius = addParameter( "radius", tr("Radius:"), Parameter::PDOUBLE, 1.0, 0.0, 2.0, true );
+	softness = addParameter( "softness", tr("Softness:"), Parameter::PDOUBLE, 0.01, 0.01, 0.5, false );
+	centerX = addParameter( "centerX", tr("X center:"), Parameter::PDOUBLE, 0.5, 0.0, 1.0, true );
+	centerY = addParameter( "centerY", tr("Y center:"), Parameter::PDOUBLE, 0.5, 0.0, 1.0, true );
 }
 
 

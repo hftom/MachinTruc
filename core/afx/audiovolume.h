@@ -9,7 +9,7 @@ class AudioVolume : public AudioFilter
 {
 public:
 	AudioVolume( QString id, QString name ) : AudioFilter( id, name ) {
-		volume = addParameter( tr("Volume:"), Parameter::PDOUBLE, 1.0, 0.0, 2.0, true );
+		volume = addParameter( "volume", tr("Volume:"), Parameter::PDOUBLE, 1.0, 0.0, 2.0, true );
 	}
 
 	bool process( Frame *src, Profile *p ) {

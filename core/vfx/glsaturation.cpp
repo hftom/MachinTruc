@@ -9,7 +9,7 @@
 
 GLSaturation::GLSaturation( QString id, QString name ) : GLFilter( id, name )
 {
-	saturation = addParameter( tr("Saturation:"), Parameter::PDOUBLE, 1.0, 0.0, 5.0, true );
+	saturation = addParameter( "saturation", tr("Saturation:"), Parameter::PDOUBLE, 1.0, 0.0, 5.0, true );
 }
 
 

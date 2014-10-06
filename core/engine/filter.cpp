@@ -6,7 +6,9 @@
 
 Filter::Filter( QString id, QString name )
 	: identifier( id ),
-	filterName( name )
+	filterName( name ),
+	posInTrack( 0 ),
+	length( 0 )
 {
 }
 
@@ -20,9 +22,10 @@ Filter::~Filter()
 
 
 
-Parameter* Filter::addParameter( QString name, int type, QVariant def, QVariant min, QVariant max, bool keyframeable, const QString &suffix )
+Parameter* Filter::addParameter( QString id, QString name, int type, QVariant def, QVariant min, QVariant max, bool keyframeable, const QString &suffix )
 {
 	Parameter *param = new Parameter();
+	param->id = id;
 	param->name = name;
 	param->type = type;
 	param->defValue = def;

@@ -426,18 +426,8 @@ void Timeline::setScene( Scene *s )
 	int i, j;
 
 	scene = s;
-	
-	for ( i = 0; i < tracks.count(); ++i ) {
-		QGraphicsItem *track = tracks.at( i );
-		QList<QGraphicsItem*> list = track->childItems();
-		while ( list.count() ) {
-			QGraphicsItem *it = list.takeFirst();
-			if ( it->data( DATAITEMTYPE ).toInt() == TYPECLIP )
-				updateTransitions( (ClipViewItem*)it, true );
-			removeItem( it );
-			delete it;
-		}
-	}
+	selectedItem = NULL;
+
 	while ( tracks.count() ) {
 		QGraphicsItem *it = tracks.takeFirst();
 		removeItem( it );
@@ -450,7 +440,6 @@ void Timeline::setScene( Scene *s )
 		for ( j = 0; j < t->clipCount(); ++j ) {
 			Clip *c = t->clipAt( j );
 			ClipViewItem *it = new ClipViewItem( c, zoom );
-			addItem( it );
 			it->setParentItem( tracks.at( i ) );
 			updateTransitions( it, false );
 		}
@@ -488,7 +477,6 @@ void Timeline::splitCurrentClip()
 		Clip *c = scene->sceneSplitClip( current_clip, t, cursor_pts );
 		if ( c ) {
 			QGraphicsItem *it = new ClipViewItem( c, zoom );
-			addItem( it );
 			it->setParentItem( tracks.at( t ) );
 			cv->setLength( current_clip->length() );
 			itemSelected( (ClipViewItem*)it );
@@ -561,7 +549,6 @@ void Timeline::dragEnterEvent( QGraphicsSceneDragDropEvent *event )
 					if ( newTrack < 0 )
 						return;
 					if ( scene->canMove( droppedCut.clip, droppedCut.clip->length(), newPos, newTrack ) ) {
-						addItem( droppedCut.clipItem );
 						itemSelected( droppedCut.clipItem );
 						droppedCut.shown = true;
 						droppedCut.clipItem->setParentItem( tracks.at( newTrack ) );
@@ -599,11 +586,11 @@ void Timeline::dragMoveEvent( QGraphicsSceneDragDropEvent *event )
 		}
 		if ( scene->canMove( droppedCut.clip, droppedCut.clip->length(), newPos, newTrack ) ) {
 			if ( !droppedCut.shown ) {
-				addItem( droppedCut.clipItem );
 				droppedCut.shown = true;
 				itemSelected( droppedCut.clipItem );
 			}
-			updateTransitions( droppedCut.clipItem, true );
+			else
+				updateTransitions( droppedCut.clipItem, true );
 			droppedCut.clipItem->setParentItem( tracks.at( newTrack ) );
 			droppedCut.clipItem->setPosition( newPos );
 			droppedCut.clip->setPosition( newPos );

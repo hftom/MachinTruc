@@ -11,9 +11,9 @@ class Transition
 public:
 	Transition( double posInTrackPTS, double len );
 
-	void setVideoFilter( GLFilter *f );
+	void setVideoFilter( QSharedPointer<GLFilter> f );
 	QSharedPointer<GLFilter> getVideoFilter() { return videoFilter; }
-	void setAudioFilter( AudioFilter *f );
+	void setAudioFilter( QSharedPointer<AudioFilter> f );
 	QSharedPointer<AudioFilter> getAudioFilter() { return audioFilter; }
 	
 	double position() { return posInTrack; }

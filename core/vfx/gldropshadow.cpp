@@ -7,11 +7,11 @@
 
 GLDropShadow::GLDropShadow( QString id, QString name ) : GLFilter( id, name )
 {
-	color = addParameter( tr("Shadow color:"), Parameter::PRGBCOLOR, QColor::fromRgbF( 0, 0, 0 ), QColor::fromRgbF( 0, 0, 0 ), QColor::fromRgbF( 1, 1, 1 ), false );
-	xoffset = addParameter( tr("X offset:"), Parameter::PDOUBLE, 10.0, -100.0, 100.0, true );
-	yoffset = addParameter( tr("Y offset:"), Parameter::PDOUBLE, 10.0, -100.0, 100.0, true );
-	opacity = addParameter( tr("Opacity:"), Parameter::PDOUBLE, 0.8, 0.0, 1.0, true );
-	radius = addParameter( tr("Blur radius:"), Parameter::PDOUBLE, 4.0, 0.0, 50.0, true );
+	color = addParameter( "color", tr("Shadow color:"), Parameter::PRGBCOLOR, QColor::fromRgbF( 0, 0, 0 ), QColor::fromRgbF( 0, 0, 0 ), QColor::fromRgbF( 1, 1, 1 ), false );
+	xoffset = addParameter( "xoffset", tr("X offset:"), Parameter::PDOUBLE, 10.0, -100.0, 100.0, true );
+	yoffset = addParameter( "yoffset", tr("Y offset:"), Parameter::PDOUBLE, 10.0, -100.0, 100.0, true );
+	opacity = addParameter( "opacity", tr("Opacity:"), Parameter::PDOUBLE, 0.8, 0.0, 1.0, true );
+	radius = addParameter( "radius", tr("Blur radius:"), Parameter::PDOUBLE, 4.0, 0.0, 50.0, true );
 }
 
 

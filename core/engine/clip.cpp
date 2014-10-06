@@ -20,6 +20,8 @@ Clip::~Clip()
 {
 	if ( in )
 		in->setUsed( false );
+	if ( transition )
+		delete transition;
 }
 
 

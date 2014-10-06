@@ -4,7 +4,7 @@
 
 GLPixelize::GLPixelize( QString id, QString name ) : GLFilter( id, name )
 {
-	pixelSize = addParameter( tr("Pixel size:"), Parameter::PDOUBLE, 10.0, 1.0, 100.0, true );
+	pixelSize = addParameter( "pixelSize", tr("Pixel size:"), Parameter::PDOUBLE, 10.0, 1.0, 100.0, true );
 }
 
 

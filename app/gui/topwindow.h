@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QSlider>
+#include <QProgressDialog>
 
 #include "ui_mainwindow.h"
 
@@ -10,10 +11,12 @@
 #include "gui/fxpage.h"
 #include "gui/fxsettingspage.h"
 
+#include "engine/thumbnailer.h"
 #include "engine/composer.h"
 #include "videoout/videowidget.h"
 #include "timeline/timeline.h"
 #include "animation/animeditor.h"
+#include "projectfile.h"
 
 
 
@@ -36,6 +39,10 @@ private:
 
 
 
+class Thumbnailer;
+
+
+
 class TopWindow : public QMainWindow, protected Ui::MainWindow
 {
 	Q_OBJECT
@@ -46,12 +53,21 @@ public:
 	Sampler* getSampler() { return sampler; };
 
 private slots:
+	void openSources();
+	void thumbResultReady( ThumbResult result );
+	
+	void projectSettings();
+
+	void saveProject();
+	void loadProject();
+	
 	void ensureVisible( const QGraphicsItem *it );
 	void centerOn( const QGraphicsItem *it );
 	void showProjectClipsPage();
 	void showFxPage();
 	void showFxSettingsPage();
 
+	void setThumbContext( QGLWidget* );
 	void sourceActivated( SourceListItem *item );
 	void currentFramePts( double d );
 	void modeSwitched();
@@ -73,6 +89,8 @@ private slots:
 	void quitEditor();
 	
 private:
+	void unsupportedDuplicateMessage();
+	
 	ProjectSourcesPage *sourcePage;
 	FxPage *fxPage;
 	SourceListItem *activeSource;
@@ -85,6 +103,15 @@ private:
 	Sampler *sampler;
 
 	SeekSlider *seekSlider;	
+	
+	QString openSourcesCurrentDir;
+	QStringList unsupportedOpenSources;
+	QStringList duplicateOpenSources;
+	int openSourcesCounter;
+	
+	ProjectFile *projectLoader;
+
+	Thumbnailer *thumbnailer;
 	
 signals:
 	void setCursorPos( double );

@@ -8,6 +8,12 @@
 Sampler::Sampler()
 {	
 	playMode = PlaySource;
+	
+	metronom = new Metronom();
+	composer = new Composer( this );
+	connect( composer, SIGNAL(newFrame(Frame*)), this, SIGNAL(newFrame(Frame*)) );
+	connect( composer, SIGNAL(paused(bool)), this, SIGNAL(paused(bool)) );
+	connect( metronom, SIGNAL(discardFrame()), composer, SLOT(discardFrame()) );
 
 	projectProfile.setVideoFrameRate( 25 );
 	projectProfile.setVideoFrameDuration( MICROSECOND / projectProfile.getVideoFrameRate() );
@@ -22,27 +28,49 @@ Sampler::Sampler()
 	
 	setProfile( projectProfile );
 	
-	scene = new Scene( projectProfile );
-	sceneList.append( scene );
+	currentScene = new Scene( projectProfile );
+	sceneList.append( currentScene );
 	
-	scene->tracks.append( new Track() );
-	scene->tracks.append( new Track() );
-	scene->tracks.append( new Track() );
-	scene->tracks.append( new Track() );
-	scene->tracks.append( new Track() );
-	//scene->tracks.append( new Track() );
-
-	metronom = new Metronom();
-	composer = new Composer( this );
-	connect( composer, SIGNAL(newFrame(Frame*)), this, SIGNAL(newFrame(Frame*)) );
-	connect( composer, SIGNAL(paused(bool)), this, SIGNAL(paused(bool)) );
-	connect( metronom, SIGNAL(discardFrame()), composer, SLOT(discardFrame()) );
+	currentScene->tracks.append( new Track() );
+	currentScene->tracks.append( new Track() );
+	currentScene->tracks.append( new Track() );
 }
 
 
 
 Sampler::~Sampler()
 {
+}
+
+
+
+void Sampler::drainScenes()
+{
+	if ( composer->isRunning() ) {
+		composer->play( false );
+		emit paused( true );
+	}
+	
+	preview.setSource( NULL, NULL );
+
+	for ( int i = 0; i < sceneList.count(); ++i ) {
+		sceneList[i]->drain();
+	}
+}
+
+
+
+void Sampler::setSceneList( QList<Scene*> list )
+{
+	if ( !list.count() )
+		return;
+
+	while ( sceneList.count() ) {
+		delete sceneList.takeFirst();
+	}
+	sceneList = list;
+	currentScene = sceneList.first();
+	setProfile( currentScene->profile );
 }
 
 
@@ -206,17 +234,17 @@ void Sampler::seekTo( double p )
 	}
 	else {
 		if ( p < 0 ) {
-			if ( scene->currentPTS == 0 )
+			if ( currentScene->currentPTS == 0 )
 				return;
 			p = 0;
 		}
-		for ( j = 0; j < scene->tracks.count(); ++j ) {
-			for ( i = 0 ; i < scene->tracks[j]->clipCount(); ++i )
-				scene->tracks[j]->clipAt( i )->setInput( NULL );
-			scene->tracks[j]->resetIndexes();
+		for ( j = 0; j < currentScene->tracks.count(); ++j ) {
+			for ( i = 0 ; i < currentScene->tracks[j]->clipCount(); ++i )
+				currentScene->tracks[j]->clipAt( i )->setInput( NULL );
+			currentScene->tracks[j]->resetIndexes();
 		}
-		scene->currentPTS = p;
-		scene->currentPTSAudio = p;
+		currentScene->currentPTS = p;
+		currentScene->currentPTSAudio = p;
 	}
 	
 	composer->seeking();
@@ -248,10 +276,10 @@ double Sampler::samplerDuration()
 {
 	int i;
 	double duration = 0;
-	for ( i = 0; i < scene->tracks.count(); ++i ) {
-		if ( !scene->tracks[ i ]->clipCount() )
+	for ( i = 0; i < currentScene->tracks.count(); ++i ) {
+		if ( !currentScene->tracks[ i ]->clipCount() )
 			continue;
-		Clip *c = scene->tracks[ i ]->clipAt( scene->tracks[ i ]->clipCount() - 1 );
+		Clip *c = currentScene->tracks[ i ]->clipAt( currentScene->tracks[ i ]->clipCount() - 1 );
 		double d = c->position() + c->length();
 		if ( d > duration )
 			duration = d;
@@ -267,7 +295,7 @@ double Sampler::currentPTS()
 	if ( playMode == PlaySource )
 		return preview.currentPTS;
 
-	return scene->currentPTS;
+	return currentScene->currentPTS;
 }
 
 
@@ -277,7 +305,7 @@ double Sampler::currentPTSAudio()
 	if ( playMode == PlaySource )
 		return preview.currentPTSAudio;
 	
-	return scene->currentPTSAudio;
+	return currentScene->currentPTSAudio;
 }
 
 
@@ -291,7 +319,7 @@ void Sampler::shiftCurrentPTS( double d )
 			preview.currentPTS += preview.getProfile().getVideoFrameDuration();
 	}
 	else
-		scene->currentPTS +=  projectProfile.getVideoFrameDuration();
+		currentScene->currentPTS +=  projectProfile.getVideoFrameDuration();
 }
 
 
@@ -305,7 +333,7 @@ void Sampler::shiftCurrentPTSAudio( double d )
 			preview.currentPTSAudio += preview.getProfile().getVideoFrameDuration();
 	}
 	else
-		scene->currentPTSAudio +=  projectProfile.getVideoFrameDuration();
+		currentScene->currentPTSAudio +=  projectProfile.getVideoFrameDuration();
 }
 
 
@@ -317,10 +345,10 @@ void Sampler::rewardPTS()
 		preview.currentPTSAudio = preview.currentPTS;
 	}
 	else {
-		scene->currentPTS -=  projectProfile.getVideoFrameDuration();
-		if ( scene->currentPTS < 0 )
-			scene->currentPTS = 0;
-		scene->currentPTSAudio = scene->currentPTS;
+		currentScene->currentPTS -=  projectProfile.getVideoFrameDuration();
+		if ( currentScene->currentPTS < 0 )
+			currentScene->currentPTS = 0;
+		currentScene->currentPTSAudio = currentScene->currentPTS;
 	}
 }
 
@@ -404,12 +432,12 @@ int Sampler::updateLastFrame( Frame *dst )
 		return 1;
 	}
 
-	QMutexLocker ml( &scene->mutex );
+	QMutexLocker ml( &currentScene->mutex );
 	
-	for ( j = 0; j < scene->tracks.count(); ++j ) {
+	for ( j = 0; j < currentScene->tracks.count(); ++j ) {
 		c = NULL;
-		Track *t = scene->tracks[j];
-		if ( scene->update )
+		Track *t = currentScene->tracks[j];
+		if ( currentScene->update )
 			return 0;
 		
 		// find the clip at dst->pts
@@ -482,18 +510,18 @@ int Sampler::getVideoTracks( Frame *dst )
 		return ( f ? 1 : 0 );
 	}
 
-	QMutexLocker ml( &scene->mutex );
+	QMutexLocker ml( &currentScene->mutex );
 	
-	for ( j = 0; j < scene->tracks.count(); ++j ) {
+	for ( j = 0; j < currentScene->tracks.count(); ++j ) {
 		c = NULL;
-		Track *t = scene->tracks[j];
-		if ( scene->update )
+		Track *t = currentScene->tracks[j];
+		if ( currentScene->update )
 			t->resetIndexes();
-		// find the clip at scene->currentPTS
+		// find the clip at currentScene->currentPTS
 		for ( i = t->currentClipIndex(); i < t->clipCount(); ++i ) {
 			c = t->clipAt( i );
-			if ( (c->position() - margin) <= scene->currentPTS ) {
-				if ( (c->position() + c->length() - margin) > scene->currentPTS ) {
+			if ( (c->position() - margin) <= currentScene->currentPTS ) {
+				if ( (c->position() + c->length() - margin) > currentScene->currentPTS ) {
 					// we have one
 					t->setCurrentClipIndex( i );
 					break;
@@ -510,11 +538,11 @@ int Sampler::getVideoTracks( Frame *dst )
 		dst->sample->frames.append( fs );
 		if ( c ) {
 			if ( !(in = c->getInput()) )
-				in = getClipInput( c, scene->currentPTS );
+				in = getClipInput( c, currentScene->currentPTS );
 			f = in->getVideoFrame();
 			if ( f ) {
 				++nFrames;
-				f->setPts( scene->currentPTS );
+				f->setPts( currentScene->currentPTS );
 				fs->frame = f;
 				fs->videoFilters = c->getSource()->videoFilters.copy();
 				fs->videoFilters.append( c->videoFilters.copy() );
@@ -522,18 +550,18 @@ int Sampler::getVideoTracks( Frame *dst )
 			// Check for transition
 			if ( i < t->clipCount() - 1 ) {
 				c = t->clipAt( i + 1 );
-				if ( (c->position() - margin) <= scene->currentPTS && (c->position() + c->length() - margin) > scene->currentPTS ) {
+				if ( (c->position() - margin) <= currentScene->currentPTS && (c->position() + c->length() - margin) > currentScene->currentPTS ) {
 					if ( !(in = c->getInput()) )
-					in = getClipInput( c, scene->currentPTS );
+					in = getClipInput( c, currentScene->currentPTS );
 					f = in->getVideoFrame();
 					if ( f ) {
-						f->setPts( scene->currentPTS );
+						f->setPts( currentScene->currentPTS );
 						fs->transitionFrame.frame = f;
 						fs->transitionFrame.videoFilters = c->getSource()->videoFilters.copy();
 						fs->transitionFrame.videoFilters.append( c->videoFilters.copy() );
 						Transition *trans;
 						if ( (trans = c->getTransition()) ) {
-							if ( c->position() + trans->length() + margin > scene->currentPTS )
+							if ( c->position() + trans->length() + margin > currentScene->currentPTS )
 								fs->transitionFrame.videoTransitionFilter = trans->getVideoFilter();
 						}
 					}
@@ -542,7 +570,7 @@ int Sampler::getVideoTracks( Frame *dst )
 		}
 	}
 
-	scene->update = false;
+	currentScene->update = false;
 	return nFrames;
 }
 
@@ -568,18 +596,18 @@ int Sampler::getAudioTracks( Frame *dst, int nSamples )
 		return ( f ? 1 : 0 );
 	}
 
-	QMutexLocker ml( &scene->mutex );
+	QMutexLocker ml( &currentScene->mutex );
 	
-	for ( j = 0; j < scene->tracks.count(); ++j ) {
+	for ( j = 0; j < currentScene->tracks.count(); ++j ) {
 		c = NULL;
-		Track *t = scene->tracks[j];
-		if ( scene->update )
+		Track *t = currentScene->tracks[j];
+		if ( currentScene->update )
 			t->resetIndexes();
-		// find the clip at scene->currentPTSAudio
+		// find the clip at currentScene->currentPTSAudio
 		for ( i = t->currentClipIndexAudio() ; i < t->clipCount(); ++i ) {
 			c = t->clipAt( i );
-			if ( (c->position() - (projectProfile.getVideoFrameDuration() / 4.0)) <= scene->currentPTSAudio ) {
-				if ( (c->position() + c->length() - (projectProfile.getVideoFrameDuration() / 4.0)) > scene->currentPTSAudio ) {
+			if ( (c->position() - (projectProfile.getVideoFrameDuration() / 4.0)) <= currentScene->currentPTSAudio ) {
+				if ( (c->position() + c->length() - (projectProfile.getVideoFrameDuration() / 4.0)) > currentScene->currentPTSAudio ) {
 					// we have one
 					t->setCurrentClipIndexAudio( i );
 					break;
@@ -597,11 +625,11 @@ int Sampler::getAudioTracks( Frame *dst, int nSamples )
 		dst->sample->frames.append( fs );
 		if ( c ) {
 			if ( !(in = c->getInput()) )
-				in = getClipInput( c, scene->currentPTSAudio );
+				in = getClipInput( c, currentScene->currentPTSAudio );
 			f = in->getAudioFrame( nSamples );
 			if ( f ) {
 				++nFrames;
-				f->setPts( scene->currentPTSAudio );
+				f->setPts( currentScene->currentPTSAudio );
 				fs->frame = f;
 				fs->audioFilters = c->getSource()->audioFilters.copy();
 				fs->audioFilters.append( c->audioFilters.copy() );
@@ -609,18 +637,18 @@ int Sampler::getAudioTracks( Frame *dst, int nSamples )
 			// Check for transition
 			if ( i < t->clipCount() - 1 ) {
 				c = t->clipAt( i + 1 );
-				if ( (c->position() - margin) <= scene->currentPTSAudio && (c->position() + c->length() - margin) > scene->currentPTSAudio ) {
+				if ( (c->position() - margin) <= currentScene->currentPTSAudio && (c->position() + c->length() - margin) > currentScene->currentPTSAudio ) {
 					if ( !(in = c->getInput()) )
-						in = getClipInput( c, scene->currentPTSAudio );
+						in = getClipInput( c, currentScene->currentPTSAudio );
 					f = in->getAudioFrame( nSamples );
 					if ( f ) {
-						f->setPts( scene->currentPTSAudio );
+						f->setPts( currentScene->currentPTSAudio );
 						fs->transitionFrame.frame = f;
 						fs->transitionFrame.audioFilters = c->getSource()->audioFilters.copy();
 						fs->transitionFrame.audioFilters.append( c->audioFilters.copy() );
 						Transition *trans;
 						if ( (trans = c->getTransition()) ) {
-							if ( c->position() + trans->length() + margin > scene->currentPTSAudio )
+							if ( c->position() + trans->length() + margin > currentScene->currentPTSAudio )
 								fs->transitionFrame.audioTransitionFilter = trans->getAudioFilter();
 						}
 					}
@@ -629,7 +657,7 @@ int Sampler::getAudioTracks( Frame *dst, int nSamples )
 		}
 	}
 	
-	scene->update = false;
+	currentScene->update = false;
 	return nFrames;
 }
 
@@ -645,23 +673,23 @@ void Sampler::prepareInputs()
 	if ( playMode == PlaySource )
 		return;
 
-	if ( scene->currentPTS < scene->currentPTSAudio ) {
-		minPTS = scene->currentPTS;
-		maxPTS = scene->currentPTSAudio;
+	if ( currentScene->currentPTS < currentScene->currentPTSAudio ) {
+		minPTS = currentScene->currentPTS;
+		maxPTS = currentScene->currentPTSAudio;
 	}
 	else {
-		minPTS = scene->currentPTSAudio;
-		maxPTS = scene->currentPTS;
+		minPTS = currentScene->currentPTSAudio;
+		maxPTS = currentScene->currentPTS;
 	}
 	
-	QMutexLocker ml( &scene->mutex );
+	QMutexLocker ml( &currentScene->mutex );
 
-	for ( j = 0; j < scene->tracks.count(); ++j ) {
-		Track *t = scene->tracks[j];
-		if ( scene->update )
+	for ( j = 0; j < currentScene->tracks.count(); ++j ) {
+		Track *t = currentScene->tracks[j];
+		if ( currentScene->update )
 			t->resetIndexes();
 
-		if ( minPTS == scene->currentPTS )
+		if ( minPTS == currentScene->currentPTS )
 			i = qMax( 0, t->currentClipIndex() - 1 );
 		else
 			i = qMax( 0, t->currentClipIndexAudio() - 1 );
@@ -684,6 +712,6 @@ void Sampler::prepareInputs()
 		}
 	}
 	
-	scene->update = false;
+	currentScene->update = false;
 	//printf("******************************************** inputs=%d\n", inputs.count() );
 }

@@ -28,7 +28,7 @@ public:
 	QString getIdentifier() { return identifier; }
 
 protected:	
-	Parameter* addParameter( QString name, int type, QVariant def, QVariant min, QVariant max, bool keyframeable, const QString &suffix = QString() );
+	Parameter* addParameter( QString id, QString name, int type, QVariant def, QVariant min, QVariant max, bool keyframeable, const QString &suffix = QString() );
 	QVariant getParamValue( Parameter *param, double pts = 0 );
 	
 private:

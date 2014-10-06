@@ -6,10 +6,10 @@
 
 GLEdge::GLEdge( QString id, QString name ) : GLFilter( id, name )
 {
-	amp = addParameter( tr("Amount:"), Parameter::PDOUBLE, 5.0, 0.0, 20.0, true );
-	depth = addParameter( tr("Depth:"), Parameter::PDOUBLE, 1.0, 0.0, 1.0, true );
-	opacity = addParameter( tr("Opacity:"), Parameter::PDOUBLE, 1.0, 0.0, 1.0, true );
-	blur = addParameter( tr("Blur radius:"), Parameter::PDOUBLE, 1.0, 0.0, 4.0, false );
+	amp = addParameter( "amp", tr("Amount:"), Parameter::PDOUBLE, 5.0, 0.0, 20.0, true );
+	depth = addParameter( "depth", tr("Depth:"), Parameter::PDOUBLE, 1.0, 0.0, 1.0, true );
+	opacity = addParameter( "opacity", tr("Opacity:"), Parameter::PDOUBLE, 1.0, 0.0, 1.0, true );
+	blur = addParameter( "blur", tr("Blur radius:"), Parameter::PDOUBLE, 1.0, 0.0, 4.0, false );
 }
 
 

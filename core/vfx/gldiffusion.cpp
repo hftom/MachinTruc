@@ -5,8 +5,8 @@
 
 GLDiffusion::GLDiffusion( QString id, QString name ) : GLFilter( id, name )
 {
-	mixAmount = addParameter( tr("Amount:"), Parameter::PDOUBLE, 0.3, 0.0, 1.0, true );
-	blurRadius = addParameter( tr("Radius:"), Parameter::PDOUBLE, 3.0, 0.0, 10.0, true );
+	mixAmount = addParameter( "mixAmount", tr("Amount:"), Parameter::PDOUBLE, 0.3, 0.0, 1.0, true );
+	blurRadius = addParameter( "blurRadius", tr("Radius:"), Parameter::PDOUBLE, 3.0, 0.0, 10.0, true );
 }
 
 

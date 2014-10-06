@@ -19,6 +19,7 @@ private slots:
 	void resampleDoubleFrameRate();
 	void resampleTripleFrameRate();
 	void resampleHalfFrameRate();
+	void memLeakTest();
 };
 
 DECLARE_TEST(TestInputFF)

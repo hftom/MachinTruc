@@ -5,7 +5,7 @@
 
 GLBlur::GLBlur( QString id, QString name ) : GLFilter( id, name )
 {
-	amount = addParameter( tr("Amount:"), Parameter::PDOUBLE, 1.0, 0.0, 10.0, true, "%" );
+	amount = addParameter( "amount", tr("Amount:"), Parameter::PDOUBLE, 1.0, 0.0, 10.0, true, "%" );
 }
 
 

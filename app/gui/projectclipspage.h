@@ -182,14 +182,17 @@ class ProjectSourcesPage : public QWidget, private Ui::StackProjectClips
 	Q_OBJECT
 public:
 	ProjectSourcesPage( Sampler *samp );
+	
+	bool exists( QString name );
+	void clearAllSources();
+	QList<Source*> getAllSources();
 	Source* getSource( int index, const QString &filename );
+	void addSource( QPixmap pix, Source *src );
 	
 public slots:
 	void newCut( SourceListItem* );
-	void setSharedContext( QGLWidget *shared );
 
 private slots:
-	void openSources();
 	void sourceItemMenu( const QPoint &pos );
 	void sourceItemActivated( QListWidgetItem *item, QListWidgetItem *prev );
 	void showSourceProperties();
@@ -197,12 +200,9 @@ private slots:
 
 signals:
 	void sourceActivated( SourceListItem* );
+	void openSourcesBtnClicked();
 
 private:
-	QPixmap getSourceThumb( Frame *f );
-	
-	QString sourceCurrentDir;
-	QGLWidget *hidden;
 	CutListModel model;
 	Sampler *sampler;
 };

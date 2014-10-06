@@ -4,7 +4,7 @@
 
 GLTest::GLTest( QString id, QString name ) : GLFilter( id, name )
 {
-	loop = addParameter( tr("Loop:"), Parameter::PINT, 1.0, 1.0, 200.0, false );
+	loop = addParameter( "loop", tr("Loop:"), Parameter::PINT, 1.0, 1.0, 200.0, false );
 }
 
 

@@ -10,6 +10,7 @@
 class Source
 {
 public:
+	Source( QString path );
 	Source( InputBase::InputType t, QString path, Profile prof );
 	
 	const QString & getFileName() const;
@@ -18,6 +19,8 @@ public:
 
 	FList< QSharedPointer<GLFilter> > videoFilters;
 	FList< QSharedPointer<AudioFilter> > audioFilters;
+	
+	void setAfter( InputBase::InputType t, Profile prof );
 
 private:
 	QString fileName;

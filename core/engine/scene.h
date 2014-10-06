@@ -29,6 +29,8 @@ public:
 	void addClip( Clip *clip, int track );
 	bool removeClip( Clip *clip );
 	Clip* sceneSplitClip( Clip *clip, int track, double pts );
+	
+	void drain();
 
 	bool update;
 	QList<Track*> tracks;

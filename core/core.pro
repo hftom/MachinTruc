@@ -9,14 +9,15 @@ SOURCES = \
 	engine/source.cpp \
 	engine/cut.cpp \
 	engine/clip.cpp \
-	engine/scene.cpp \
 	engine/sampler.cpp \
+	engine/scene.cpp \
 	engine/composer.cpp \
 	engine/track.cpp \
 	engine/metronom.cpp \
 	engine/glresource.cpp \
 	engine/movitchain.cpp \
 	engine/transition.cpp \
+	engine/thumbnailer.cpp \
 	\
 	input/input_ff.cpp \
 	input/input_gl.cpp \
@@ -70,6 +71,7 @@ HEADERS = \
 	engine/glresource.h \
 	engine/movitchain.h \
 	engine/transition.h \
+	engine/thumbnailer.h \
 	\
 	input/input.h \
 	input/input_ff.h \

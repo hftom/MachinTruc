@@ -1,9 +1,12 @@
 TEMPLATE = app
 
 QT += opengl
+QT += xml
 
 SOURCES = \
 	main.cpp \
+	gui/projectprofiledialog.cpp \
+	gui/projectfile.cpp \
 	gui/topwindow.cpp \
 	gui/projectclipspage.cpp \
 	gui/fxpage.cpp \
@@ -30,6 +33,8 @@ SOURCES = \
 	animation/keyitem.cpp
 	
 HEADERS = \
+	gui/projectprofiledialog.h \
+	gui/projectfile.h \
 	gui/topwindow.h \
 	gui/projectclipspage.h \
 	gui/fxpage.h \
@@ -63,6 +68,7 @@ HEADERS = \
 	
 FORMS = \
 	ui/mainwindow.ui \
+	ui/projectprofile.ui \
 	ui/projectclipspage.ui \
 	ui/fxpage.ui \
 	ui/fxsettingspage.ui \

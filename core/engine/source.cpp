@@ -11,6 +11,22 @@ Source::Source( InputBase::InputType t, QString path, Profile prof )
 
 
 
+Source::Source( QString path )
+	: fileName( path ),
+	type( InputBase::UNDEF )
+{
+}
+
+
+
+void Source::setAfter( InputBase::InputType t, Profile prof )
+{
+	profile = prof;
+	type = t;
+}
+
+
+
 const QString & Source::getFileName() const
 {
 	return fileName;

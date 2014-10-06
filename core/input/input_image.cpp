@@ -45,8 +45,8 @@ bool InputImage::probe( QString fn, Profile *prof )
 	if ( !open( fn ) )
 		return false;
 
-	prof->setVideoWidth( image.width() );
-	prof->setVideoHeight( image.height() );
+	prof->setVideoWidth( width );
+	prof->setVideoHeight( height );
 	prof->setVideoSAR( 1.0 );
 	prof->setVideoFrameRate( fps );
 	prof->setVideoFrameDuration( MICROSECOND / fps );
@@ -81,6 +81,7 @@ bool InputImage::open( QString fn )
 		buffer = NULL;
 	}
 
+	QImage image;
 	if ( !image.load( sourceName ) )
 		return false;
 
@@ -90,14 +91,23 @@ bool InputImage::open( QString fn )
 	if ( image.width() > 1920 || image.height() > 1080 )
 		image = image.scaled( 1920, 1080, Qt::KeepAspectRatio, Qt::SmoothTransformation );
 
-	return !image.isNull();
+	if ( image.isNull() )
+		return false;
+
+	width = image.width();
+	height = image.height();
+	rgba = image.depth() == 32;
+	buffer = BufferPool::globalInstance()->getBuffer( image.byteCount() );
+	memcpy( buffer->data(), image.constBits(), image.byteCount() );
+
+	return true;
 }
 
 
 
 void InputImage::openSeekPlay( QString fn, double p )
 {
-	if ( fn != sourceName ) {
+	if ( fn != sourceName || !buffer ) {
 		wait();
 		semaphore->acquire();
 		sourceName = fn;
@@ -132,18 +142,15 @@ bool InputImage::upload( Frame *f )
 {
 	semaphore->acquire();
 
-	if ( image.isNull() || (image.depth()!=24 && image.depth()!=32) ) {
+	if ( !buffer ) {
 		semaphore->release();
 		return false;
 	}
-	if ( !buffer ) {
-		buffer = BufferPool::globalInstance()->getBuffer( image.byteCount() );
-		memcpy( buffer->data(), image.constBits(), image.byteCount() );
-	}
+
 	f->setSharedBuffer( buffer );
 	f->mmi = mmi;
 	f->mmiProvider = mmiProvider;
-	f->setVideoFrame( (image.depth() == 24) ? Frame::RGB : Frame::RGBA, image.width(), image.height(), 1.0, false, false, currentVideoPTS, outProfile.getVideoFrameDuration() );
+	f->setVideoFrame( rgba ? Frame::RGBA : Frame::RGB, width, height, 1.0, false, false, currentVideoPTS, outProfile.getVideoFrameDuration() );
 
 	mmiDuplicate();
 	currentVideoPTS += outProfile.getVideoFrameDuration();

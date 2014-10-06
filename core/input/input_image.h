@@ -40,8 +40,9 @@ private:
 
 	MQueue<Frame*> freeVideoFrames;
 
-	QImage image;
 	Buffer *buffer;
+	int width, height;
+	bool rgba;
 	QSemaphore *semaphore;
 };
 

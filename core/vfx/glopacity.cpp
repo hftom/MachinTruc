@@ -5,7 +5,7 @@
 
 GLOpacity::GLOpacity( QString id, QString name ) : GLFilter( id, name )
 {
-	factor = addParameter( tr("Opacity:"), Parameter::PDOUBLE, 0.5, 0.0, 1.0, true );
+	factor = addParameter( "factor", tr("Opacity:"), Parameter::PDOUBLE, 0.5, 0.0, 1.0, true );
 }
 
 

@@ -53,12 +53,15 @@ InputFF::InputFF() : InputBase(),
 	videoCodecCtx( NULL ),
 	audioCodecCtx( NULL ),
 	swr( NULL ),
+	lastChannels( 0 ),
+	lastLayout( 0 ),
 	videoCodec( NULL ),
 	audioCodec( NULL ),
 	videoStream( -1 ),
 	audioStream( -1 ),
 	duration( 0 ),
 	startTime( 0 ),
+	seekAndPlayPTS( 0 ),
 	seekAndPlay( false ),
 	arb( NULL ),
 	endOfFile( 0 ),
@@ -723,6 +726,13 @@ void InputFF::run()
 		seekAndPlay = false;
 		running = true;
 		semaphore->release();
+	}
+
+	// in case file has moved
+	if ( !formatCtx ) {
+		endOfFile = EofPacket | EofAudioPacket | EofVideoPacket | EofAudio | EofVideoFrame | EofVideo;
+		lastFrame.set( NULL );
+		running = false;
 	}
 
 	while ( running ) {
@@ -1405,8 +1415,11 @@ uint8_t* AudioRingBuffer::write( int writtenSamples, int moreSamples )
 		chunks[writer].bufSize = (writtenSamples + moreSamples) * bytesPerSample;
 		if ( !chunks[writer].bytes )
 			chunks[writer].bytes = (uint8_t*)malloc( chunks[writer].bufSize );
-		else
+		else {
 			chunks[writer].bytes = (uint8_t*)realloc( chunks[writer].bytes, chunks[writer].bufSize );
+			if ( !chunks[writer].bytes )
+				qDebug() << "FATAL! Realloc failed. Expect a crash very soon.";
+		}
 	}
 
 	return chunks[writer].bytes + (writtenSamples * bytesPerSample);

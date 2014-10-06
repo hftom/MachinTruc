@@ -8,10 +8,7 @@
 #include <QGLFramebufferObject>
 
 #include <QGLWidget>
-#include <QFile>
-#include <QTimer>
 #include <QWheelEvent>
-#include <QSlider>
 
 
 
@@ -43,8 +40,6 @@ private:
 	GLuint boardbg, blackbg, background;
 	double lastFrameRatio;
 	Frame *lastFrame;
-
-	QSlider *valSlider;
 
 signals:
 	void playPause();

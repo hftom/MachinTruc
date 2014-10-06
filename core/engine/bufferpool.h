@@ -33,6 +33,8 @@ private:
 	void resizeBuffer( int size ) {
 		bufSize = size;
 		buf = (uint8_t*)realloc( buf, bufSize );
+		if ( !buf )
+			qDebug() << "FATAL! Realloc failed. Expect a crash very soon.";
 	}
 	void use() {
 		++refCount;

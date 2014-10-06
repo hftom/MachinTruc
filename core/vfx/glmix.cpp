@@ -5,7 +5,7 @@
 
 GLMix::GLMix( QString id, QString name ) : GLFilter( id, name )
 {
-	mix = addParameter( tr("Mix:"), Parameter::PDOUBLE, 0.5, 0.0, 1.0, true );
+	mix = addParameter( "mix", tr("Mix:"), Parameter::PDOUBLE, 0.5, 0.0, 1.0, true );
 	mix->graph.keys.append( AnimationKey( AnimationKey::CURVE, 0, 1 ) );
 	mix->graph.keys.append( AnimationKey( AnimationKey::CURVE, 1, 0 ) );
 }

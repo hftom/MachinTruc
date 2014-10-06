@@ -34,7 +34,17 @@ class Parameter
 public:
 	enum ParameterType{ PDOUBLE, PINT, PRGBCOLOR, PRGBACOLOR };
 	
-	QString name;
+	double getUnnormalizedKeyValue( int keyIndex ) {
+		double range = qAbs( min.toDouble() + max.toDouble() );
+		return (range * graph.keys[keyIndex].y) + min.toDouble();
+	}
+	
+	double getNormalizedKeyValue( double val ) {
+		return (val - min.toDouble()) / (max.toDouble() - min.toDouble());
+	}
+
+	QString id; // unique per filter
+	QString name; // UI name
 	int type;
 	QVariant min;
 	QVariant defValue;

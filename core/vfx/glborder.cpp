@@ -6,8 +6,8 @@
 
 GLBorder::GLBorder( QString id, QString name ) : GLFilter( id, name )
 {
-	borderSize = addParameter( tr("Border size:"), Parameter::PDOUBLE, 1.0, 0.0, 100.0, false, "%" );
-	color = addParameter( tr("Color:"), Parameter::PRGBACOLOR, QColor::fromRgbF( 1, 1, 1 ), QColor::fromRgbF( 0, 0, 0, 0 ), QColor::fromRgbF( 1, 1, 1 ), false );
+	borderSize = addParameter( "borderSize", tr("Border size:"), Parameter::PDOUBLE, 1.0, 0.0, 100.0, false, "%" );
+	color = addParameter( "color", tr("Color:"), Parameter::PRGBACOLOR, QColor::fromRgbF( 1, 1, 1 ), QColor::fromRgbF( 0, 0, 0, 0 ), QColor::fromRgbF( 1, 1, 1 ), false );
 }
 
 

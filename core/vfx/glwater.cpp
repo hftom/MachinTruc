@@ -4,12 +4,12 @@
 
 GLWater::GLWater( QString id, QString name ) : GLFilter( id, name )
 {
-	speed = addParameter( tr("Speed:"), Parameter::PDOUBLE, 0.3, 0.01, 2.0, false );
-	emboss = addParameter( tr("Emboss:"), Parameter::PDOUBLE, 0.4, 0.01, 2.0, true );
-	intensity = addParameter( tr("Intensity:"), Parameter::PDOUBLE, 3.0, 0.01, 10.0, false );
-	frequency = addParameter( tr("Frequency:"), Parameter::PDOUBLE, 4.0, 0.01, 10.0, false );
-	delta = addParameter( tr("Delta:"), Parameter::PDOUBLE, 160.0, 10.0, 500.0, true );
-	intence = addParameter( tr("Intence:"), Parameter::PDOUBLE, 3000.0, 0.0, 10000.0, true );
+	speed = addParameter( "speed", tr("Speed:"), Parameter::PDOUBLE, 0.3, 0.01, 2.0, false );
+	emboss = addParameter( "emboss", tr("Emboss:"), Parameter::PDOUBLE, 0.4, 0.01, 2.0, true );
+	intensity = addParameter( "intensity", tr("Intensity:"), Parameter::PDOUBLE, 3.0, 0.01, 10.0, false );
+	frequency = addParameter( "frequency", tr("Frequency:"), Parameter::PDOUBLE, 4.0, 0.01, 10.0, false );
+	delta = addParameter( "delta", tr("Delta:"), Parameter::PDOUBLE, 160.0, 10.0, 500.0, true );
+	intence = addParameter( "intence", tr("Intence:"), Parameter::PDOUBLE, 3000.0, 0.0, 10000.0, true );
 }
 
 

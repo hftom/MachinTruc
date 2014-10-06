@@ -62,8 +62,9 @@ ClipViewItem::ClipViewItem( Clip *c, double scale ) : AbstractViewItem(),
 
 ClipViewItem::~ClipViewItem()
 {
-	if ( transition )
+	/*if ( transition ) {
 		delete transition;
+	}*/
 }
 
 
@@ -77,8 +78,9 @@ void ClipViewItem::updateTransition( double len )
 		}
 	}
 	else {
-		if ( !transition )
+		if ( !transition ) {
 			transition = new TransitionViewItem( parentItem(), position, len, scaleFactor );
+		}
 		else
 			transition->setGeometry( position, len );
 	}

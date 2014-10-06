@@ -5,11 +5,11 @@
 
 GLDeconvolutionSharpen::GLDeconvolutionSharpen( QString id, QString name ) : GLFilter( id, name )
 {
-	R = addParameter( tr("Deconvolution radius:"), Parameter::PINT, 3, 1, 5, false );
-	circleRadius = addParameter( tr("Circle radius:"), Parameter::PDOUBLE, 2.0, 0.0, 5.0, true );
-	gaussianRadius = addParameter( tr("Gaussian radius:"), Parameter::PDOUBLE, 0.0, 0.0, 5.0, true );
-	correlation = addParameter( tr("Correlation:"), Parameter::PDOUBLE, 0.95, 0.0, 0.99, true );
-	noise = addParameter( tr("Noise:"), Parameter::PDOUBLE, 0.01, 0.0, 0.1, true );
+	R = addParameter( "R", tr("Deconvolution radius:"), Parameter::PINT, 3, 1, 5, false );
+	circleRadius = addParameter( "circleRadius", tr("Circle radius:"), Parameter::PDOUBLE, 2.0, 0.0, 5.0, true );
+	gaussianRadius = addParameter( "gaussianRadius", tr("Gaussian radius:"), Parameter::PDOUBLE, 0.0, 0.0, 5.0, true );
+	correlation = addParameter( "correlation", tr("Correlation:"), Parameter::PDOUBLE, 0.95, 0.0, 0.99, true );
+	noise = addParameter( "noise", tr("Noise:"), Parameter::PDOUBLE, 0.01, 0.0, 0.1, true );
 }
 
 

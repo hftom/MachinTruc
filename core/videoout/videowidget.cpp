@@ -17,6 +17,9 @@ VideoWidget::VideoWidget( QWidget *parent ) : QGLWidget( parent ),
 	hidden( NULL ),
 	thumb( NULL ),
 	fences( NULL ),
+	boardbg( 0 ),
+	blackbg( 0 ),
+	background( 0 ),
 	lastFrameRatio( 16./9. ),
 	lastFrame( NULL )
 {

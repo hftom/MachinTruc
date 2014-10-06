@@ -11,6 +11,15 @@ Scene::Scene( Profile p )
 	profile( p )
 {
 }
+
+
+
+Scene::~Scene()
+{
+	drain();
+	while ( tracks.count() )
+		delete tracks.takeFirst();
+}
 	
 
 	
@@ -480,4 +489,18 @@ bool Scene::removeClip( Clip *clip )
 		}
 	}
 	return false;
+}
+
+
+
+void Scene::drain()
+{
+	QMutexLocker ml( &mutex );
+	for ( int i = 0; i < tracks.count(); ++i ) {
+		Track *t = tracks[ i ];
+		while ( t->clipCount() ) {
+			delete t->removeClip( 0 );
+		}
+	}
+	update = true;
 }

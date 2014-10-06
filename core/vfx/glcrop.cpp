@@ -5,10 +5,10 @@
 
 GLCrop::GLCrop( QString id, QString name ) : GLFilter( id, name )
 {
-	left = addParameter( tr("Left:"), Parameter::PDOUBLE, 0.0, 0.0, 100.0, true, "%" );
-	right = addParameter( tr("Right:"), Parameter::PDOUBLE, 0.0, 0.0, 100.0, true, "%" );
-	top = addParameter( tr("Top:"), Parameter::PDOUBLE, 0.0, 0.0, 100.0, true, "%" );
-	bottom = addParameter( tr("Bottom:"), Parameter::PDOUBLE, 0.0, 0.0, 100.0, true, "%" );
+	left = addParameter( "left", tr("Left:"), Parameter::PDOUBLE, 0.0, 0.0, 100.0, true, "%" );
+	right = addParameter( "right", tr("Right:"), Parameter::PDOUBLE, 0.0, 0.0, 100.0, true, "%" );
+	top = addParameter( "top", tr("Top:"), Parameter::PDOUBLE, 0.0, 0.0, 100.0, true, "%" );
+	bottom = addParameter( "bottom", tr("Bottom:"), Parameter::PDOUBLE, 0.0, 0.0, 100.0, true, "%" );
 }
 
 

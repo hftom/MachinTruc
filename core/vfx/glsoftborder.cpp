@@ -4,7 +4,7 @@
 
 GLSoftBorder::GLSoftBorder( QString id, QString name ) : GLFilter( id, name )
 {
-	borderSize = addParameter( tr("Border size:"), Parameter::PDOUBLE, 1.0, 0.0, 100.0, false, "%" );
+	borderSize = addParameter( "borderSize", tr("Border size:"), Parameter::PDOUBLE, 1.0, 0.0, 100.0, false, "%" );
 }
 
 
@@ -28,7 +28,9 @@ QList<Effect*> GLSoftBorder::getMovitEffects()
 
 
 MySoftBorderEffect::MySoftBorderEffect()
-	: borderSize(1.0)
+	: iwidth( 1 ),
+	iheight( 1 ),
+	borderSize(1.0)
 {
 	register_float("borderSize", &borderSize);
 }

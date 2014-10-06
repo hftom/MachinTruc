@@ -31,7 +31,7 @@ public:
 		for ( i = 0; i < samples; i++ ) {
 			for ( j = 0; j < channels; j++ ) {
 				v = (double)( 1.0 * in2[ i * channels + j ] + in1[ i * channels + j ] );
-				v = v < -32767 ? -32767 : v > 32768 ? 32768 : v;
+				v = v < -32767 ? -32767 : v > 32767 ? 32767 : v;
 				vp[ j ] = in2[ i * channels + j ] = (int16_t)( v * A + vp[ j ] * B );
 			}
 		}

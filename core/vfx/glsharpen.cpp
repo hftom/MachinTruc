@@ -5,8 +5,8 @@
 
 GLSharpen::GLSharpen( QString id, QString name ) : GLFilter( id, name )
 {
-	amount = addParameter( tr("Amount:"), Parameter::PDOUBLE, 0.5, 0.0, 2.0, true );
-	radius = addParameter( tr("Blur radius:"), Parameter::PDOUBLE, 3.0, 0.0, 10.0, true );
+	amount = addParameter( "amount", tr("Amount:"), Parameter::PDOUBLE, 0.5, 0.0, 2.0, true );
+	radius = addParameter( "radius", tr("Blur radius:"), Parameter::PDOUBLE, 3.0, 0.0, 10.0, true );
 }
 
 

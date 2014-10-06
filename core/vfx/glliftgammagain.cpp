@@ -6,15 +6,15 @@
 
 GLLiftGammaGain::GLLiftGammaGain( QString id, QString name ) : GLFilter( id, name )
 {
-	liftR = addParameter( tr("Lift red:"), Parameter::PDOUBLE, 0.0, 0.0, 1.0, true );
-	liftG = addParameter( tr("Lift green:"), Parameter::PDOUBLE, 0.0, 0.0, 1.0, true );
-	liftB = addParameter( tr("Lift blue:"), Parameter::PDOUBLE, 0.0, 0.0, 1.0, true );
-	gammaR = addParameter( tr("Gamma red:"), Parameter::PDOUBLE, 1.0, 0.0, 5.0, true );
-	gammaG = addParameter( tr("Gamma green:"), Parameter::PDOUBLE, 1.0, 0.0, 5.0, true );
-	gammaB = addParameter( tr("Gamma blue:"), Parameter::PDOUBLE, 1.0, 0.0, 5.0, true );
-	gainR = addParameter( tr("Gain red:"), Parameter::PDOUBLE, 1.0, 0.0, 5.0, true );
-	gainG = addParameter( tr("Gain green:"), Parameter::PDOUBLE, 1.0, 0.0, 5.0, true );
-	gainB = addParameter( tr("Gain blue:"), Parameter::PDOUBLE, 1.0, 0.0, 5.0, true );
+	liftR = addParameter( "liftR", tr("Lift red:"), Parameter::PDOUBLE, 0.0, 0.0, 1.0, true );
+	liftG = addParameter( "liftG", tr("Lift green:"), Parameter::PDOUBLE, 0.0, 0.0, 1.0, true );
+	liftB = addParameter( "liftB", tr("Lift blue:"), Parameter::PDOUBLE, 0.0, 0.0, 1.0, true );
+	gammaR = addParameter( "gammaR", tr("Gamma red:"), Parameter::PDOUBLE, 1.0, 0.0, 5.0, true );
+	gammaG = addParameter( "gammaG", tr("Gamma green:"), Parameter::PDOUBLE, 1.0, 0.0, 5.0, true );
+	gammaB = addParameter( "gammaB", tr("Gamma blue:"), Parameter::PDOUBLE, 1.0, 0.0, 5.0, true );
+	gainR = addParameter( "gainR", tr("Gain red:"), Parameter::PDOUBLE, 1.0, 0.0, 5.0, true );
+	gainG = addParameter( "gainG", tr("Gain green:"), Parameter::PDOUBLE, 1.0, 0.0, 5.0, true );
+	gainB = addParameter( "gainB", tr("Gain blue:"), Parameter::PDOUBLE, 1.0, 0.0, 5.0, true );
 }
 
 

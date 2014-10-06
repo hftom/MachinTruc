@@ -12,13 +12,15 @@ public:
 		firstVol = new AudioVolume( "AudioVolume", "AudioVolume" );
 		Parameter* p = firstVol->getParameters().first();
 		double one = p->defValue.toDouble() / p->max.toDouble();
-		p->name = tr( "Volume 1:" );
+		p->name = tr( "Volume A:" );
+		p->id = "volumeA";
 		p->graph.keys.append( AnimationKey( AnimationKey::CURVE, 0, one ) );
 		p->graph.keys.append( AnimationKey( AnimationKey::CURVE, 1, 0 ) );
 		
 		secondVol = new AudioVolume( "AudioVolume", "AudioVolume" );
 		p = secondVol->getParameters().first();
-		p->name = tr( "Volume 2:" );
+		p->name = tr( "Volume B:" );
+		p->id = "volumeB";
 		p->graph.keys.append( AnimationKey( AnimationKey::CURVE, 0, 0 ) );
 		p->graph.keys.append( AnimationKey( AnimationKey::CURVE, 1, one ) );
 	}

@@ -117,6 +117,8 @@ void AudioOutSDL::streamRequestCallback( void *userdata, uint8_t *stream, int le
 				if ( ao->bufferSize < s ) {
 					ao->bufferSize = s;
 					ao->buffer = (uint8_t*)realloc( ao->buffer, ao->bufferSize );
+					if ( !ao->buffer )
+						qDebug() << "FATAL! Realloc failed. Expect a crash very soon.";
 				}
 				memcpy( ao->buffer, data->data() + size, s );
 				ao->bufferLen += s;
