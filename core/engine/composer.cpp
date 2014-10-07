@@ -425,6 +425,7 @@ void Composer::movitRender( Frame *dst, bool update )
 		if ( (i - 1) > start )
 			currentDescriptor.append( GLOverlay().getDescriptor( f, &projectProfile ) );
 	}
+	currentDescriptor.append( QString("OUTPUT %1 %2").arg(projectProfile.getVideoWidth()).arg(projectProfile.getVideoHeight()) );
 
 	// rebuild the chain if neccessary
 	if ( currentDescriptor !=  movitDescriptor ) {

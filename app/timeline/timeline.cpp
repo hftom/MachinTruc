@@ -103,9 +103,9 @@ void Timeline::itemSelected( AbstractViewItem *it )
 void Timeline::trackPressed( QPointF p )
 {
 	double pts = p.x() * zoom;
-	qint64 i = pts / scene->profile.getVideoFrameDuration();
+	qint64 i = pts / scene->getProfile().getVideoFrameDuration();
 	pts = i;
-	emit seekTo( pts * scene->profile.getVideoFrameDuration() );
+	emit seekTo( pts * scene->getProfile().getVideoFrameDuration() );
 }
 
 
@@ -128,7 +128,7 @@ void Timeline::updateTransitions( ClipViewItem *clip, bool remove )
 	}
 	// end
 	QPointF p = clip->mapToScene( clip->rect().topRight() );
-	p.rx() -= scene->profile.getVideoFrameDuration() / 2.0 / zoom;
+	p.rx() -= scene->getProfile().getVideoFrameDuration() / 2.0 / zoom;
 	list = items( p, Qt::IntersectsItemBoundingRect, Qt::AscendingOrder );
 	for ( int i = 0; i < list.count(); ++i ) {
 		QGraphicsItem *it = list.at( i );
@@ -260,21 +260,21 @@ void Timeline::snapResize( ClipViewItem *item, int way, double &poslen, double m
 				QRectF dst = cv->mapRectToScene( cv->rect() );
 				if ( way == 2 ) {
 					if ( (dst.left() > src.right() - SNAPWIDTH) && (dst.left() < src.right() + SNAPWIDTH) ) {
-						poslen = cv->getPosition() - item->getPosition() + (scene->profile.getVideoFrameDuration() / 4.0);
+						poslen = cv->getPosition() - item->getPosition() + (scene->getProfile().getVideoFrameDuration() / 4.0);
 						return;
 					}
 					else if ( (dst.right() > src.right() - SNAPWIDTH) && (dst.right() < src.right() + SNAPWIDTH) ) {
-						poslen = cv->getPosition() + cv->getLength() - item->getPosition() + (scene->profile.getVideoFrameDuration() / 4.0);
+						poslen = cv->getPosition() + cv->getLength() - item->getPosition() + (scene->getProfile().getVideoFrameDuration() / 4.0);
 						return;
 					}				
 				}
 				else {
 					if ( (dst.left() > src.left() - SNAPWIDTH) && (dst.left() < src.left() + SNAPWIDTH) ) {
-						poslen = cv->getPosition() + (scene->profile.getVideoFrameDuration() / 4.0);
+						poslen = cv->getPosition() + (scene->getProfile().getVideoFrameDuration() / 4.0);
 						return;
 					}
 					else if ( (dst.right() > src.left() - SNAPWIDTH) && (dst.right() < src.left() + SNAPWIDTH) ) {
-						poslen = cv->getPosition() + cv->getLength() + (scene->profile.getVideoFrameDuration() / 4.0);
+						poslen = cv->getPosition() + cv->getLength() + (scene->getProfile().getVideoFrameDuration() / 4.0);
 						return;
 					}
 				}
@@ -284,13 +284,13 @@ void Timeline::snapResize( ClipViewItem *item, int way, double &poslen, double m
 			QRectF dst = cursor->mapRectToScene( cursor->rect() );
 			if ( way == 2 ) {
 				if ( (dst.left() > src.right() - SNAPWIDTH) && (dst.left() < src.right() + SNAPWIDTH) ) {
-					poslen = (dst.left() * zoom) - item->getPosition() + (scene->profile.getVideoFrameDuration() / 4.0);
+					poslen = (dst.left() * zoom) - item->getPosition() + (scene->getProfile().getVideoFrameDuration() / 4.0);
 					return;
 				}				
 			}
 			else {
 				if ( (dst.left() > src.left() - SNAPWIDTH) && (dst.left() < src.left() + SNAPWIDTH) ) {
-					poslen = (dst.left() * zoom) + (scene->profile.getVideoFrameDuration() / 4.0);
+					poslen = (dst.left() * zoom) + (scene->getProfile().getVideoFrameDuration() / 4.0);
 					return;
 				}
 			}
@@ -318,19 +318,19 @@ void Timeline::snapMove( ClipViewItem *item, double &pos, double mouseX, double 
 			if ( cv != item ) {
 				QRectF dst = cv->mapRectToScene( cv->rect() );
 				if ( (dst.left() > src.left() - SNAPWIDTH) && (dst.left() < src.left() + SNAPWIDTH) ) {
-					pos = cv->getPosition() + (scene->profile.getVideoFrameDuration() / 4.0);
+					pos = cv->getPosition() + (scene->getProfile().getVideoFrameDuration() / 4.0);
 					return;
 				}
 				else if ( (dst.right() > src.left() - SNAPWIDTH) && (dst.right() < src.left() + SNAPWIDTH) ) {
-					pos = cv->getPosition() + cv->getLength() + (scene->profile.getVideoFrameDuration() / 4.0);
+					pos = cv->getPosition() + cv->getLength() + (scene->getProfile().getVideoFrameDuration() / 4.0);
 					return;
 				}
 				else if ( (dst.left() > src.right() - SNAPWIDTH) && (dst.left() < src.right() + SNAPWIDTH) ) {
-					pos = cv->getPosition() - item->getLength() + (scene->profile.getVideoFrameDuration() / 4.0);
+					pos = cv->getPosition() - item->getLength() + (scene->getProfile().getVideoFrameDuration() / 4.0);
 					return;
 				}
 				else if ( (dst.right() > src.right() - SNAPWIDTH) && (dst.right() < src.right() + SNAPWIDTH) ) {
-					pos = cv->getPosition() + cv->getLength() - item->getLength() + (scene->profile.getVideoFrameDuration() / 4.0);
+					pos = cv->getPosition() + cv->getLength() - item->getLength() + (scene->getProfile().getVideoFrameDuration() / 4.0);
 					return;
 				}				
 			}
@@ -338,11 +338,11 @@ void Timeline::snapMove( ClipViewItem *item, double &pos, double mouseX, double 
 		else if ( it->data( DATAITEMTYPE ).toInt() == TYPECURSOR ) {
 			QRectF dst = cursor->mapRectToScene( cursor->rect() );
 			if ( (dst.left() > src.left() - SNAPWIDTH) && (dst.left() < src.left() + SNAPWIDTH) ) {
-				pos = (dst.left() * zoom) + (scene->profile.getVideoFrameDuration() / 4.0);
+				pos = (dst.left() * zoom) + (scene->getProfile().getVideoFrameDuration() / 4.0);
 				return;
 			}
 			else if ( (dst.left() > src.right() - SNAPWIDTH) && (dst.left() < src.right() + SNAPWIDTH) ) {
-				pos = (dst.left() * zoom) - item->getLength() + (scene->profile.getVideoFrameDuration() / 4.0);
+				pos = (dst.left() * zoom) - item->getLength() + (scene->getProfile().getVideoFrameDuration() / 4.0);
 				return;
 			}
 		}
@@ -367,7 +367,7 @@ int Timeline::getTrack( const QPointF &p )
 
 void Timeline::setCursorPos( double pts )
 {
-	double d = scene->profile.getVideoFrameDuration();
+	double d = scene->getProfile().getVideoFrameDuration();
 	qint64 i = ( pts + ( d / 2.0 ) ) / d;
 	pts = i * d;
 	cursor->setX( pts / zoom );
@@ -624,9 +624,13 @@ void Timeline::dropEvent( QGraphicsSceneDragDropEvent *event )
 {
 	if ( droppedCut.clip ) {
 		if ( droppedCut.shown ) {
+			bool empty = topParent->getSampler()->isProjectEmpty();
 			scene->addClip( droppedCut.clip, getTrack( droppedCut.clipItem->sceneBoundingRect().topLeft() ) );
 			emit updateFrame();
-			QTimer::singleShot ( 1, this, SLOT(updateLength()) );
+			QTimer::singleShot( 1, this, SLOT(updateLength()) );
+			if ( empty ) {
+				emit clipAddedToTimeline(droppedCut.clip->getProfile());
+			}
 			droppedCut.reset();
 		}
 		else {

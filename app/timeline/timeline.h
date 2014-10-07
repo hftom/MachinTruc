@@ -106,6 +106,7 @@ signals:
 	void seekTo( double );
 	void updateFrame();
 	void clipSelected( Clip* );
+	void clipAddedToTimeline( Profile );
 };
 
 #endif //TIMELINE_H

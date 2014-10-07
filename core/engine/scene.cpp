@@ -20,6 +20,18 @@ Scene::~Scene()
 	while ( tracks.count() )
 		delete tracks.takeFirst();
 }
+
+
+
+void Scene::setProfile( Profile &p )
+{
+	profile = p;
+	for ( int i = 0; i < tracks.count(); ++i ) {
+		Track *t = tracks[i];
+		for ( int j = 0; j < t->clipCount(); ++j ) 
+			t->clipAt( j )->setFrameDuration( p.getVideoFrameDuration() );
+	}
+}
 	
 
 	

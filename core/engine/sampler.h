@@ -102,8 +102,6 @@ class Sampler : public QObject
 public:
 	Sampler();
 	~Sampler();
-	
-	void setProfile( Profile p );
 
 	int getVideoTracks( Frame *dst );
 	int getAudioTracks( Frame *dst, int nSamples );
@@ -117,11 +115,13 @@ public:
 	void rewardPTS();
 	void seekTo( double p );
 	
+	void setProfile( Profile p );
 	Profile getProfile();
 	Metronom* getMetronom() { return metronom; }
 	void play( bool b );
 	
 	void drainScenes();
+	bool isProjectEmpty();
 	QList<Scene*> getSceneList() { return sceneList; }
 	Scene* getCurrentScene() { return currentScene; }
 	void setSceneList( QList<Scene*> list );

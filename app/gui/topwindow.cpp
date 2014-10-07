@@ -42,6 +42,7 @@ TopWindow::TopWindow()
 	connect( timeline, SIGNAL(ensureVisible(const QGraphicsItem*)), this, SLOT(ensureVisible(const QGraphicsItem*)) );
 	connect( timeline, SIGNAL(centerOn(const QGraphicsItem*)), this, SLOT(centerOn(const QGraphicsItem*)) );
 	connect( timeline, SIGNAL(updateFrame()), sampler, SLOT(updateFrame()) );
+	connect( timeline, SIGNAL(clipAddedToTimeline(Profile)), this, SLOT(clipAddedToTimeline(Profile)) );
 	connect( timelineView, SIGNAL(sizeChanged(const QSize&)), timeline, SLOT(viewSizeChanged(const QSize&)) );
 	
 	animEditor = new AnimEditor( 0 );
@@ -104,7 +105,7 @@ TopWindow::TopWindow()
 	connect( actionSave, SIGNAL(triggered()), this, SLOT(saveProject()) );
 	connect( actionOpen, SIGNAL(triggered()), this, SLOT(loadProject()) );
 	
-	connect( actionProjectSettings, SIGNAL(triggered()), this, SLOT(projectSettings()) );
+	connect( actionProjectSettings, SIGNAL(triggered()), this, SLOT(menuProjectSettings()) );
 	connect( actionBlackBackground, SIGNAL(toggled(bool)), vw, SLOT(setBlackBackground(bool)) );
 	connect( actionDeleteClip, SIGNAL(triggered()), timeline, SLOT(deleteClip()) );
 	connect( actionSplitCurrentClip, SIGNAL(triggered()), timeline, SLOT(splitCurrentClip()) );
@@ -112,10 +113,29 @@ TopWindow::TopWindow()
 
 
 
+void TopWindow::clipAddedToTimeline( Profile prof )
+{
+	tempProfile = prof;
+	QTimer::singleShot( 1, this, SLOT(projectSettings()) );
+}
+
+
+
+void TopWindow::menuProjectSettings()
+{
+	tempProfile = sampler->getCurrentScene()->getProfile();
+	projectSettings();
+}
+
+
+
 void TopWindow::projectSettings()
 {
-	ProjectProfileDialog dlg( this, sampler->getCurrentScene()->profile );
+	ProjectProfileDialog dlg( this, tempProfile );
 	dlg.exec();
+	if ( dlg.result() == QDialog::Accepted ) {
+		sampler->setProfile( dlg.getCurrentProfile() );
+	}
 }
 
 

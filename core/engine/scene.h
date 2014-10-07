@@ -16,6 +16,11 @@ public:
 	Scene( Profile p );
 	~Scene();
 	
+	void setProfile( Profile &p );
+	Profile & getProfile() { return profile; }
+	
+	void drain();
+	
 	Clip* createClip( Source *src, double posInTrackPTS, double strt, double len );
 	
 	bool canResizeStart( Clip *clip, double &newPos, double endPos, int track );
@@ -29,13 +34,10 @@ public:
 	void addClip( Clip *clip, int track );
 	bool removeClip( Clip *clip );
 	Clip* sceneSplitClip( Clip *clip, int track, double pts );
-	
-	void drain();
 
 	bool update;
 	QList<Track*> tracks;
 	double currentPTS, currentPTSAudio;
-	Profile profile;
 	QMutex mutex;
 	
 private:
@@ -45,6 +47,8 @@ private:
 	bool clipLessThan( double margin, double cpos, double clen, double pos );	
 	bool collidesWith( double margin, double cpos, double pos, double len );
 	bool updateCurrentPosition( double begin, double end );
+	
+	Profile profile;
 };
 
 #endif //SCENE_H

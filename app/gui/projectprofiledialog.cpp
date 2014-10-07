@@ -1,3 +1,4 @@
+#include <QDebug>
 #include "projectprofiledialog.h"
 
 
@@ -54,7 +55,7 @@ static const VideoPreset vPresets[ nvpresets ] = {
 
 
 
-ProjectProfileDialog::ProjectProfileDialog( QWidget *parent, Profile p ) : QDialog( parent )
+ProjectProfileDialog::ProjectProfileDialog( QWidget *parent, Profile &p ) : QDialog( parent )
 {
 	setupUi( this );
 
@@ -74,8 +75,10 @@ ProjectProfileDialog::ProjectProfileDialog( QWidget *parent, Profile p ) : QDial
 			.arg( QString::number( fpsPresets[ vPresets[i].framerate ], 'f', 2 )  ) );
 	}
 
-	widthSpinBox->setRange( 1, 1920 );
-	heightSpinBox->setRange( 1, 1080 );
+	widthSpinBox->setRange( 64, 1920 );
+	widthSpinBox->setSingleStep( 2 );
+	heightSpinBox->setRange( 64, 1080 );
+	heightSpinBox->setSingleStep( 2 );
 	
 	ratioCombo->addItem( "16:9" );
 	ratioCombo->addItem( "4:3" );
@@ -127,4 +130,25 @@ void ProjectProfileDialog::presetChanged( int index )
 		ratioCombo->setCurrentIndex( 1 );
 	
 	framerateCombo->setCurrentIndex( vPresets[index - 1].framerate );
+}
+
+
+
+Profile ProjectProfileDialog::getCurrentProfile()
+{
+	Profile p;
+	p.setVideoWidth( widthSpinBox->value() );
+	p.setVideoHeight( heightSpinBox->value() );
+	
+	double r = 1.0;
+	if ( ratioCombo->currentText() == "16:9" )
+		r = 16. / 9.;
+	else if ( ratioCombo->currentText() == "4:3" )
+		r = 4. / 3.;
+	p.setVideoSAR( (double)p.getVideoHeight() * r / (double)p.getVideoWidth() );
+	
+	p.setVideoFrameRate( fpsPresets[ framerateCombo->currentIndex() ] );
+	p.setVideoFrameDuration( MICROSECOND / p.getVideoFrameRate() );
+	
+	return p;
 }

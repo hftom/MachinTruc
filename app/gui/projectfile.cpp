@@ -53,15 +53,15 @@ bool ProjectFile::loadProject( QString filename )
 	s = rootElement.attribute( "samplerate" );
 	if ( s.isEmpty() || s.toInt() < 1000 || s.toInt() > 192000 )
 		return false;
-	projectProfile.setAudioSampleRate( s.toInt() );
+	//projectProfile.setAudioSampleRate( s.toInt() );
 	s = rootElement.attribute( "channels" );
 	if ( s.isEmpty() || s.toInt() < 2 || s.toInt() > 8 )
 		return false;
-	projectProfile.setAudioChannels( s.toInt() );
+	//projectProfile.setAudioChannels( s.toInt() );
 	s = rootElement.attribute( "layout" );
 	if ( s.isEmpty() )
 		return false;
-	projectProfile.setAudioLayout( s.toInt() );
+	//projectProfile.setAudioLayout( s.toInt() );
 	
 	QDomNodeList nodes = rootElement.childNodes();
 	
@@ -512,7 +512,7 @@ bool ProjectFile::saveProject( QList<Source*> sources, Sampler *sampler, QString
 	QDomElement root = document.createElement( "MachinTruc" );
 	document.appendChild( root );
 	
-	Profile prof = sampler->getCurrentScene()->profile;
+	Profile prof = sampler->getCurrentScene()->getProfile();
 	root.setAttribute( "width", QString::number( prof.getVideoWidth() ) );
 	root.setAttribute( "height", QString::number( prof.getVideoHeight() ) );
 	root.setAttribute( "sar", QString::number( prof.getVideoSAR(), 'e', 17 ) );

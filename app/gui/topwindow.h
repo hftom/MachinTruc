@@ -56,7 +56,9 @@ private slots:
 	void openSources();
 	void thumbResultReady( ThumbResult result );
 	
+	void clipAddedToTimeline( Profile );
 	void projectSettings();
+	void menuProjectSettings();
 
 	void saveProject();
 	void loadProject();
@@ -110,8 +112,9 @@ private:
 	int openSourcesCounter;
 	
 	ProjectFile *projectLoader;
-
 	Thumbnailer *thumbnailer;
+	
+	Profile tempProfile;
 	
 signals:
 	void setCursorPos( double );

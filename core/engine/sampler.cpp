@@ -15,7 +15,7 @@ Sampler::Sampler()
 	connect( composer, SIGNAL(paused(bool)), this, SIGNAL(paused(bool)) );
 	connect( metronom, SIGNAL(discardFrame()), composer, SLOT(discardFrame()) );
 
-	projectProfile.setVideoFrameRate( 25 );
+	/*projectProfile.setVideoFrameRate( 25 );
 	projectProfile.setVideoFrameDuration( MICROSECOND / projectProfile.getVideoFrameRate() );
 	projectProfile.setVideoWidth( 1920 );
 	projectProfile.setVideoHeight( 1080 );
@@ -24,9 +24,7 @@ Sampler::Sampler()
 	projectProfile.setVideoTopFieldFirst( true );
 	projectProfile.setAudioSampleRate( DEFAULTSAMPLERATE );
 	projectProfile.setAudioChannels( DEFAULTCHANNELS );
-	projectProfile.setAudioLayout( DEFAULTLAYOUT );
-	
-	setProfile( projectProfile );
+	projectProfile.setAudioLayout( DEFAULTLAYOUT );*/
 	
 	currentScene = new Scene( projectProfile );
 	sceneList.append( currentScene );
@@ -40,6 +38,20 @@ Sampler::Sampler()
 
 Sampler::~Sampler()
 {
+}
+
+
+
+bool Sampler::isProjectEmpty()
+{
+	for ( int i = 0; i < sceneList.count(); ++i ) {
+		Scene *s = sceneList[i];
+		for ( int j = 0; j < s->tracks.count(); ++j ) {
+			if ( s->tracks[j]->clipCount() )
+				return false;
+		}
+	}
+	return true;
 }
 
 
@@ -70,7 +82,7 @@ void Sampler::setSceneList( QList<Scene*> list )
 	}
 	sceneList = list;
 	currentScene = sceneList.first();
-	setProfile( currentScene->profile );
+	setProfile( currentScene->getProfile() );
 }
 
 
@@ -118,6 +130,16 @@ void Sampler::setSource( Source *source, double pts )
 void Sampler::setProfile( Profile p )
 {
 	projectProfile = p;
+	for ( int i = 0; i < sceneList.count(); ++i )
+		sceneList[i]->setProfile( p );
+	
+	if ( playMode != PlaySource ) {
+		if ( composer->isRunning() ) {
+			composer->play( false );
+			emit paused( true );
+		}
+		seekTo( currentPTS() );
+	}
 }
 
 
