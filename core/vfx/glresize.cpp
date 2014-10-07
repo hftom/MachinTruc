@@ -19,9 +19,20 @@ GLResize::~GLResize()
 void GLResize::preProcess( Frame *src, Profile *p )
 {
 	src->glWidth = (double)src->glWidth * src->glSAR  / p->getVideoSAR();
+	src->glSAR = p->getVideoSAR();
+	double r = (double)src->glWidth / (double)src->glHeight;
+	if ( r >= (double)p->getVideoWidth() / (double)p->getVideoHeight() ) {
+		src->glWidth = p->getVideoWidth();
+		src->glHeight = (double)src->glWidth / r;
+	}
+	else {
+		src->glHeight = p->getVideoHeight();
+		src->glWidth = r * (double)src->glHeight;
+	}
 	if ( src->glWidth < 1 )
 		src->glWidth = 1;
-	src->glSAR = p->getVideoSAR();
+	if ( src->glHeight < 1 )
+		src->glHeight = 1;
 }
 
 

@@ -114,8 +114,7 @@ TopWindow::TopWindow()
 
 void TopWindow::projectSettings()
 {
-	Profile prof;
-	ProjectProfileDialog dlg( this, prof );
+	ProjectProfileDialog dlg( this, sampler->getCurrentScene()->profile );
 	dlg.exec();
 }
 

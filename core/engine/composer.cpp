@@ -309,8 +309,11 @@ void Composer::movitFrameDescriptor( QString prefix, Frame *f, QList< QSharedPoi
 		desc.append( prefix + filters->at(k)->getDescriptor( f, projectProfile ) );
 	}
 
-	// resize to match destination aspect ratio
-	if ( fabs( projectProfile->getVideoSAR() - f->glSAR ) > 1e-3 ) {
+	// resize to match destination aspect ratio and/or output size
+	if ( fabs( projectProfile->getVideoSAR() - f->glSAR ) > 1e-3 ||
+		( f->glWidth != projectProfile->getVideoWidth() &&
+		f->glHeight != projectProfile->getVideoHeight() ) )
+	{		
 		GLResize resize;
 		desc.append( prefix + resize.getDescriptor( f, projectProfile ) );
 		f->resizeAuto = true;
