@@ -64,15 +64,15 @@ void VideoWidget::initializeGL()
 	blackbg = bindTexture( QImage(BOARDWIDTH, BOARDWIDTH, QImage::Format_Indexed8), GL_TEXTURE_2D, GL_LUMINANCE );
 	glTexImage2D( GL_TEXTURE_2D, 0, GL_LUMINANCE, BOARDWIDTH, BOARDWIDTH, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, img );
 	
-	background = boardbg;
+	background = blackbg;
 
-#define GL_GPU_MEM_INFO_TOTAL_AVAILABLE_MEM_NVX 0x9048
+/*#define GL_GPU_MEM_INFO_TOTAL_AVAILABLE_MEM_NVX 0x9048
 #define GL_GPU_MEM_INFO_CURRENT_AVAILABLE_MEM_NVX 0x9049
 	GLint total_mem_kb = 0;
 	glGetIntegerv(GL_GPU_MEM_INFO_TOTAL_AVAILABLE_MEM_NVX, &total_mem_kb);
 	GLint cur_avail_mem_kb = 0;
 	glGetIntegerv(GL_GPU_MEM_INFO_CURRENT_AVAILABLE_MEM_NVX, &cur_avail_mem_kb);
-	printf("Total GPU mem = %d MB, Available = %d MB\n", total_mem_kb/1024, cur_avail_mem_kb/1024);
+	printf("Total GPU mem = %d MB, Available = %d MB\n", total_mem_kb/1024, cur_avail_mem_kb/1024);*/
 
 	hidden = new QGLWidget( NULL, this );
 	if ( hidden ) {
@@ -211,17 +211,6 @@ QImage VideoWidget::lastImage()
 	glOrtho( 0.0, w, 0.0, h, -1.0, 1.0 );
 	glMatrixMode( GL_MODELVIEW );
 	glActiveTexture( GL_TEXTURE0 );
-	/*glBindTexture( GL_TEXTURE_2D, background );
-	glBegin( GL_QUADS );
-		glTexCoord2f( 0, 0 );
-		glVertex3f( 0, h, 0.);
-		glTexCoord2f( 0, h/BOARDWIDTH );
-		glVertex3f( 0, 0, 0.);
-		glTexCoord2f( w/BOARDWIDTH, h/BOARDWIDTH );
-		glVertex3f( w, 0, 0.);
-		glTexCoord2f( w/BOARDWIDTH, 0 );
-		glVertex3f( w, h, 0.);
-	glEnd();*/
 	glBindTexture( GL_TEXTURE_2D, lastFrame->fbo()->texture() );
 	glEnable( GL_BLEND );
 	glBegin( GL_QUADS );
@@ -256,9 +245,9 @@ void VideoWidget::shot()
 
 
 
-void VideoWidget::setBlackBackground( bool b )
+void VideoWidget::setTransparentBackground( bool b )
 {
-	background = b ? blackbg : boardbg;
+	background = b ? boardbg : blackbg;
 	updateGL();
 }
 

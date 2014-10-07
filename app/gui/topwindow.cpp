@@ -70,7 +70,6 @@ TopWindow::TopWindow()
 	layout->addWidget( vw );
 	glWidget->setLayout( layout );
 
-	connect( redoToolButton, SIGNAL(clicked()), vw, SLOT(shot()) );
 	connect( vw, SIGNAL(playPause()), this, SLOT(videoPlayPause()) );
 	connect( vw, SIGNAL(wheelSeek(int)), sampler, SLOT(wheelSeek(int)) );
 	connect( vw, SIGNAL(newSharedContext(QGLWidget*)), sampler, SLOT(setSharedContext(QGLWidget*)) );
@@ -106,9 +105,10 @@ TopWindow::TopWindow()
 	connect( actionOpen, SIGNAL(triggered()), this, SLOT(loadProject()) );
 	
 	connect( actionProjectSettings, SIGNAL(triggered()), this, SLOT(menuProjectSettings()) );
-	connect( actionBlackBackground, SIGNAL(toggled(bool)), vw, SLOT(setBlackBackground(bool)) );
+	connect( actionTransparentBackground, SIGNAL(toggled(bool)), vw, SLOT(setTransparentBackground(bool)) );
 	connect( actionDeleteClip, SIGNAL(triggered()), timeline, SLOT(deleteClip()) );
 	connect( actionSplitCurrentClip, SIGNAL(triggered()), timeline, SLOT(splitCurrentClip()) );
+	connect( actionSaveImage, SIGNAL(triggered()), vw, SLOT(shot()) );
 }
 
 

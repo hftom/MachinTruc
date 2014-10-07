@@ -165,7 +165,7 @@
                 <enum>Qt::NoFocus</enum>
                </property>
                <property name="toolTip">
-                <string>Project clips</string>
+                <string>Project sources</string>
                </property>
                <property name="whatsThis">
                 <string/>
@@ -200,7 +200,7 @@
                 <enum>Qt::NoFocus</enum>
                </property>
                <property name="toolTip">
-                <string>Effects</string>
+                <string>Effects settings</string>
                </property>
                <property name="whatsThis">
                 <string/>
@@ -232,7 +232,7 @@
                 <enum>Qt::NoFocus</enum>
                </property>
                <property name="toolTip">
-                <string>Effects settings</string>
+                <string>Transition settings</string>
                </property>
                <property name="whatsThis">
                 <string/>
@@ -354,6 +354,9 @@
                  </property>
                  <property name="focusPolicy">
                   <enum>Qt::NoFocus</enum>
+                 </property>
+                 <property name="toolTip">
+                  <string/>
                  </property>
                  <property name="text">
                   <string>...</string>
@@ -534,6 +537,9 @@
                  <property name="focusPolicy">
                   <enum>Qt::NoFocus</enum>
                  </property>
+                 <property name="toolTip">
+                  <string>Monitor switch</string>
+                 </property>
                  <property name="text">
                   <string>...</string>
                  </property>
@@ -599,11 +605,18 @@
      <string>Settings</string>
     </property>
     <addaction name="actionProjectSettings"/>
-    <addaction name="actionBlackBackground"/>
+    <addaction name="actionTransparentBackground"/>
+   </widget>
+   <widget class="QMenu" name="menuRender">
+    <property name="title">
+     <string>Render</string>
+    </property>
+    <addaction name="actionSaveImage"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuTimeline"/>
    <addaction name="menuSettings"/>
+   <addaction name="menuRender"/>
   </widget>
   <action name="action_New">
    <property name="text">
@@ -615,12 +628,12 @@
     <string>&amp;Open</string>
    </property>
   </action>
-  <action name="actionBlackBackground">
+  <action name="actionTransparentBackground">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Black background</string>
+    <string>Transparent background</string>
    </property>
   </action>
   <action name="actionDeleteClip">
@@ -658,6 +671,16 @@
   <action name="actionProjectSettings">
    <property name="text">
     <string>Project settings</string>
+   </property>
+  </action>
+  <action name="actionNot_yet">
+   <property name="text">
+    <string>Not yet ...</string>
+   </property>
+  </action>
+  <action name="actionSaveImage">
+   <property name="text">
+    <string>Save image</string>
    </property>
   </action>
  </widget>
