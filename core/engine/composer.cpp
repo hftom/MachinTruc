@@ -299,6 +299,11 @@ void Composer::movitFrameDescriptor( QString prefix, Frame *f, QList< QSharedPoi
 	if ( f->profile.getVideoInterlaced() ) {
 		desc.append( prefix + GLDeinterlace().getDescriptor( f, projectProfile ) );
 	}
+	
+	// correct orientation
+	if ( f->orientation() ) {
+		desc.append( prefix + GLOrientation().getDescriptor( f, projectProfile ) );
+	}
 		
 	for ( int k = 0; k < filters->count(); ++k ) {
 		desc.append( prefix + filters->at(k)->getDescriptor( f, projectProfile ) );
@@ -338,6 +343,16 @@ Effect* Composer::movitFrameBuild( Frame *f, QList< QSharedPointer<GLFilter> > *
 		GLDeinterlace *deint = new GLDeinterlace();
 		QList<Effect*> el = deint->getMovitEffects();
 		branch->filters.append( new MovitFilter( el, deint ) );
+		for ( int l = 0; l < el.count(); ++l )
+			current = movitChain.chain->add_effect( el.at( l ) );
+	}
+	
+	// correct orientation
+	if ( f->orientation() ) {
+		GLOrientation *orient = new GLOrientation();
+		orient->setOrientation( f->orientation() );
+		QList<Effect*> el = orient->getMovitEffects();
+		branch->filters.append( new MovitFilter( el, orient ) );
 		for ( int l = 0; l < el.count(); ++l )
 			current = movitChain.chain->add_effect( el.at( l ) );
 	}

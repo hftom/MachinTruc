@@ -5,6 +5,7 @@
 #include "vfx/gldeinterlace.h"
 #include "vfx/glpadding.h"
 #include "vfx/glresize.h"
+#include "vfx/glorientation.h"
 
 // video filters
 #include "vfx/glbackgroundcolor.h"

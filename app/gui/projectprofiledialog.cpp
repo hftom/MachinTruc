@@ -10,34 +10,46 @@ typedef struct VideoPreset_ {
 	int width;
 	int height;
 	QString ratio;
-	double framerate;
+	int framerate; /*fpsPresets index*/
 	int scanning;
 } VideoPreset;
 
+static const int nfpspresets = 8;
+static const double fpsPresets[ nfpspresets ] = {
+	24000. / 1001.,
+	24,
+	25,
+	30000. / 1001.,
+	30,
+	50,
+	60000. / 1001.,
+	60
+};
+
 static const int nvpresets = 20;
-static VideoPreset vpresets[ nvpresets ] = {
-	{ 1920, 1080, "16:9", 23.97, 0 },
-	{ 1920, 1080, "16:9", 24, 0 },
-	{ 1920, 1080, "16:9", 25, 0 },
-	{ 1920, 1080, "16:9", 29.97, 0 },
-	{ 1920, 1080, "16:9", 30, 0 },
-	{ 1920, 1080, "16:9", 50, 0 },
-	{ 1920, 1080, "16:9", 59.94, 0 },
-	{ 1920, 1080, "16:9", 60, 0 },
+static const VideoPreset vPresets[ nvpresets ] = {
+	{ 1920, 1080, "16:9", 0, 0 },
+	{ 1920, 1080, "16:9", 1, 0 },
+	{ 1920, 1080, "16:9", 2, 0 },
+	{ 1920, 1080, "16:9", 3, 0 },
+	{ 1920, 1080, "16:9", 4, 0 },
+	{ 1920, 1080, "16:9", 5, 0 },
+	{ 1920, 1080, "16:9", 6, 0 },
+	{ 1920, 1080, "16:9", 7, 0 },
 	
-	{ 1280, 720, "16:9", 23.97, 0 },
-	{ 1280, 720, "16:9", 24, 0 },
-	{ 1280, 720, "16:9", 25, 0 },
-	{ 1280, 720, "16:9", 29.97, 0 },
-	{ 1280, 720, "16:9", 30, 0 },
-	{ 1280, 720, "16:9", 50, 0 },
-	{ 1280, 720, "16:9", 59.94, 0 },
-	{ 1280, 720, "16:9", 60, 0 },
+	{ 1280, 720, "16:9", 0, 0 },
+	{ 1280, 720, "16:9", 1, 0 },
+	{ 1280, 720, "16:9", 2, 0 },
+	{ 1280, 720, "16:9", 3, 0 },
+	{ 1280, 720, "16:9", 4, 0 },
+	{ 1280, 720, "16:9", 5, 0 },
+	{ 1280, 720, "16:9", 6, 0 },
+	{ 1280, 720, "16:9", 7, 0 },
 	
-	{ 720, 576, "16:9", 25, 0 },
-	{ 720, 576, "4:3", 25, 0 },
-	{ 720, 480, "16:9", 29.97, 0 },
-	{ 720, 480, "4:3", 29.97, 0 }
+	{ 720, 576, "16:9", 2, 0 },
+	{ 720, 576, "4:3", 2, 0 },
+	{ 720, 480, "16:9", 3, 0 },
+	{ 720, 480, "4:3", 3, 0 }
 };
 
 
@@ -55,35 +67,64 @@ ProjectProfileDialog::ProjectProfileDialog( QWidget *parent, Profile p ) : QDial
 
 	videoPresetCombo->addItem( tr("Custom") );
 	for ( int i = 0; i < nvpresets; ++i ) {
-		videoPresetCombo->addItem( QString("%1x%2 - %3 - %4fps").arg(vpresets[i].width)
-															.arg(vpresets[i].height)
-															.arg(vpresets[i].ratio)
-															.arg(vpresets[i].framerate) );
+		videoPresetCombo->addItem( QString("%1x%2 - %3 - %4fps")
+			.arg(vPresets[i].width)
+			.arg(vPresets[i].height)
+			.arg(vPresets[i].ratio)
+			.arg( QString::number( fpsPresets[ vPresets[i].framerate ], 'f', 2 )  ) );
 	}
 
-	/*	if ( p.hasVideo() ) {
-			sizeLab->setText( QString("%1 x %2").arg( p.getVideoWidth() ).arg( p.getVideoHeight() ) );
-			videoCodec->setText( p.getVideoCodecName() );
-			fpsLab->setText( QString::number( p.getVideoFrameRate(), 'f', 2 ) );
-			fullRangeBox->setChecked( p.getVideoColorFullRange() );
-			primCombo->insertItem( 0, p.colorPrimariesName() );
-			gammaCombo->insertItem( 0, p.gammaCurveName() );
-			spcCombo->insertItem( 0, p.colorSpaceName() );
-			if ( p.getVideoInterlaced() ) {
-				if ( p.getVideoTopFieldFirst() )
-					interlaceCombo->insertItem( 0, tr("TFF") );
-				else
-					interlaceCombo->insertItem( 0, tr("BFF") );
-			}
-			else
-				interlaceCombo->insertItem( 0, tr("No") );
-			sarSpin->setValue( p.getVideoSAR() );
+	widthSpinBox->setRange( 1, 1920 );
+	heightSpinBox->setRange( 1, 1080 );
+	
+	ratioCombo->addItem( "16:9" );
+	ratioCombo->addItem( "4:3" );
+	ratioCombo->addItem( "Size" );
+	
+	for ( int i = 0; i < nfpspresets; ++i )
+		framerateCombo->addItem( QString::number( fpsPresets[i], 'f', 2 ) );
+	
+	scanningCombo->addItem( "Progressive" );
+	scanningCombo->addItem( "Top Field First" );
+	scanningCombo->addItem( "Bottom Field First" );
+	
+	widthSpinBox->setValue( p.getVideoWidth() );
+	heightSpinBox->setValue( p.getVideoHeight() );
+
+	double ar = p.getVideoWidth() * p.getVideoSAR() / p.getVideoHeight();
+	if ( qAbs( ar - 16./9. ) < 1e-3 )
+		ratioCombo->setCurrentIndex( 0 );
+	else if ( qAbs( ar - 4./3. ) < 1e-3 )
+		ratioCombo->setCurrentIndex( 1 );
+	else
+		ratioCombo->setCurrentIndex( 2 );
+	
+	for ( int i = 0; i < nfpspresets; ++i ) {
+		if ( qAbs( p.getVideoFrameRate() - fpsPresets[i] ) < 1e-3 ) {
+			framerateCombo->setCurrentIndex( i );
+			break;
 		}
-	if ( p.hasAudio() ) {
-		audioCodec->setText( p.getAudioCodecName() );
-		sampleRate->setText( QString::number( p.getAudioSampleRate() ) );
-		channels->setText( QString::number( p.getAudioChannels() ) );
-		layoutName->setText( p.getAudioLayoutName() );
-	}*/
+	}
+	
+	scanningCombo->setEnabled( false );
+	
+	connect( videoPresetCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(presetChanged(int)) );
 }
 
+
+
+void ProjectProfileDialog::presetChanged( int index )
+{
+	if ( index == 0 )
+		return;
+	
+	widthSpinBox->setValue( vPresets[index - 1].width );
+	heightSpinBox->setValue( vPresets[index - 1].height );
+	
+	if ( vPresets[index - 1].ratio == "16:9" )
+		ratioCombo->setCurrentIndex( 0 );
+	else if ( vPresets[index - 1].ratio == "4:3" )
+		ratioCombo->setCurrentIndex( 1 );
+	
+	framerateCombo->setCurrentIndex( vPresets[index - 1].framerate );
+}

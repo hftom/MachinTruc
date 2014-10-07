@@ -13,6 +13,7 @@ Frame::Frame( MQueue<Frame*> *origin, bool makeSample )
 	pb( NULL ),
 	glfence( NULL ),
 	pPTS( 0 ),
+	pOrientation( 0 ),
 	buffer( NULL ),
 	originQueue( origin )
 {
@@ -85,7 +86,7 @@ void Frame::setSharedBuffer( Buffer *b )
 
 
 
-void Frame::setVideoFrame( DataType t, int w, int h, double sar, bool il, bool tff, double p, double d )
+void Frame::setVideoFrame( DataType t, int w, int h, double sar, bool il, bool tff, double p, double d, int rot )
 {
 	pType = t;
 	profile.setVideoWidth( w );
@@ -95,6 +96,7 @@ void Frame::setVideoFrame( DataType t, int w, int h, double sar, bool il, bool t
 	profile.setVideoTopFieldFirst( tff );
 	profile.setVideoFrameDuration( d );
 	pPTS = p;
+	pOrientation = rot;
 
 	int s = w * h;
 	switch ( pType ) {
@@ -115,6 +117,7 @@ void Frame::setVideoFrame( Frame *src )
 {
 	profile = src->profile;
 	pPTS = src->pts();
+	pOrientation = src->orientation();
 }
 
 

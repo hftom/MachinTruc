@@ -35,7 +35,7 @@ public:
 	enum ParameterType{ PDOUBLE, PINT, PRGBCOLOR, PRGBACOLOR };
 	
 	double getUnnormalizedKeyValue( int keyIndex ) {
-		double range = qAbs( min.toDouble() + max.toDouble() );
+		double range = qAbs( -min.toDouble() + max.toDouble() );
 		return (range * graph.keys[keyIndex].y) + min.toDouble();
 	}
 	

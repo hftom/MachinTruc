@@ -10,6 +10,7 @@
 extern "C" {
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
+#include <libavutil/dict.h>
 #include <libswresample/swresample.h>
 }
 
@@ -115,7 +116,7 @@ public:
 class LastDecodedFrame
 {
 public:
-	LastDecodedFrame() : buffer(NULL), type(0), pts(0) {}
+	LastDecodedFrame() : buffer(NULL), type(0), pts(0), orientation(0) {}
 	~LastDecodedFrame() {
 		if ( buffer )
 			BufferPool::globalInstance()->releaseBuffer( buffer );
@@ -130,13 +131,14 @@ public:
 			profile = f->profile;
 			type = f->type();
 			pts = f->pts() + f->profile.getVideoFrameDuration();
+			orientation = f->orientation();
 		}
 	}
 	void get( Frame *f ) {
 		if ( buffer )
 			f->setSharedBuffer( buffer );
 		f->setVideoFrame( (Frame::DataType)type, profile.getVideoWidth(), profile.getVideoHeight(), profile.getVideoSAR(),
-						  profile.getVideoInterlaced(), profile.getVideoTopFieldFirst(), pts, profile.getVideoFrameDuration() );
+						  profile.getVideoInterlaced(), profile.getVideoTopFieldFirst(), pts, profile.getVideoFrameDuration(), orientation );
 		f->profile = profile;
 		pts += profile.getVideoFrameDuration();
 	}
@@ -147,6 +149,7 @@ private:
 	int type;
 	double pts;
 	Profile profile;
+	int orientation;
 };
 
 
@@ -157,7 +160,8 @@ public:
 	VideoResampler()
 		: repeatBuffer( NULL ),
 		repeatType( 0 ),
-		repeatPTS( 0 )
+		repeatPTS( 0 ),
+		orientation( 0 )
 	{
 		reset( 40000 );
 	}
@@ -187,6 +191,7 @@ public:
 			profile = f->profile;
 			repeatType = f->type();
 			repeatPTS = f->pts();
+			orientation = f->orientation();
 		}
 	}
 
@@ -194,7 +199,7 @@ public:
 		if ( repeatBuffer )
 			f->setSharedBuffer( repeatBuffer );
 		f->setVideoFrame( (Frame::DataType)repeatType, profile.getVideoWidth(), profile.getVideoHeight(), profile.getVideoSAR(),
-						  profile.getVideoInterlaced(), profile.getVideoTopFieldFirst(), repeatPTS + outputDuration, profile.getVideoFrameDuration() );
+						  profile.getVideoInterlaced(), profile.getVideoTopFieldFirst(), repeatPTS + outputDuration, profile.getVideoFrameDuration(), orientation );
 		f->profile = profile;
 		if ( (repeat - 1) > 0 )
 			setRepeat( f, repeat - 1 );
@@ -211,6 +216,7 @@ public:
 	int repeatType;
 	double repeatPTS;
 	Profile profile;
+	int orientation;
 };
 
 
@@ -266,6 +272,8 @@ private:
 	int audioStream;
 	AVFrame *videoAvframe;
 	AVFrame *audioAvframe;
+
+	int orientation;
 
 	double duration;
 	double startTime;

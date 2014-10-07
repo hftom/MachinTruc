@@ -59,6 +59,7 @@ InputFF::InputFF() : InputBase(),
 	audioCodec( NULL ),
 	videoStream( -1 ),
 	audioStream( -1 ),
+	orientation( 0 ),
 	duration( 0 ),
 	startTime( 0 ),
 	seekAndPlayPTS( 0 ),
@@ -371,12 +372,18 @@ bool InputFF::ffOpen( QString fn )
 
 	videoStream = audioStream = -1;
 	haveVideo = haveAudio = false;
+	orientation = 0;
 
 	for ( i = 0; i < formatCtx->nb_streams; i++ ) {
 		if ( videoStream == -1 && outProfile.hasVideo() && formatCtx->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO ) {
 			if ( (videoCodecCtx = formatCtx->streams[ i ]->codec) ) {
 				if ( (videoCodec = avcodec_find_decoder( videoCodecCtx->codec_id )) ) {
 					videoStream = i;
+					AVStream *st = formatCtx->streams[ i ];
+					AVDictionaryEntry *tag = NULL;
+					while ( ( tag = av_dict_get( st->metadata, "rotate", tag, AV_DICT_IGNORE_SUFFIX ) ) ) {
+						orientation = QString( tag->value ).toInt();
+					}
 					haveVideo = true;
 				}
 			}
@@ -953,7 +960,7 @@ bool InputFF::makeFrame( Frame *f, double ratio, double pts, double dur )
 		case AV_PIX_FMT_YUVJ420P:
 		case AV_PIX_FMT_YUV420P: {
 			f->setVideoFrame( Frame::YUV420P, videoCodecCtx->width, height,
-				ratio, videoAvframe->interlaced_frame, videoAvframe->top_field_first, pts, dur );
+				ratio, videoAvframe->interlaced_frame, videoAvframe->top_field_first, pts, dur, orientation );
 			int i;
 			uint8_t *buf = f->data();
 			for ( i = 0; i < height; i++ ) {
@@ -973,7 +980,7 @@ bool InputFF::makeFrame( Frame *f, double ratio, double pts, double dur )
 		case AV_PIX_FMT_YUVJ422P:
 		case AV_PIX_FMT_YUV422P: {
 			f->setVideoFrame( Frame::YUV422P, videoCodecCtx->width, height,
-				ratio, videoAvframe->interlaced_frame, videoAvframe->top_field_first, pts, dur );
+				ratio, videoAvframe->interlaced_frame, videoAvframe->top_field_first, pts, dur, orientation );
 			int i;
 			uint8_t *buf = f->data();
 			for ( i = 0; i < height; i++ ) {

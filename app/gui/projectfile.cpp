@@ -26,19 +26,19 @@ bool ProjectFile::loadProject( QString filename )
 	}
 	
 	QString s = rootElement.attribute( "width" );
-	if ( s.isEmpty() )
+	if ( s.isEmpty() || s.toInt() < 1 || s.toInt() > 1920 )
 		return false;
 	projectProfile.setVideoWidth( s.toInt() );
 	s = rootElement.attribute( "height" );
-	if ( s.isEmpty() )
+	if ( s.isEmpty() || s.toInt() < 1 || s.toInt() > 1080 )
 		return false;
 	projectProfile.setVideoHeight( s.toInt() );
 	s = rootElement.attribute( "sar" );
-	if ( s.isEmpty() )
+	if ( s.isEmpty() || s.toDouble() < 0.3 || s.toDouble() >= 2 )
 		return false;
 	projectProfile.setVideoSAR( s.toDouble() );
 	s = rootElement.attribute( "fps" );
-	if ( s.isEmpty() )
+	if ( s.isEmpty() || s.toDouble() < 5 || s.toDouble() > 120 )
 		return false;
 	projectProfile.setVideoFrameRate( s.toDouble() );
 	projectProfile.setVideoFrameDuration( MICROSECOND / s.toDouble() );
@@ -51,11 +51,11 @@ bool ProjectFile::loadProject( QString filename )
 		return false;
 	projectProfile.setVideoTopFieldFirst( s.toInt() );
 	s = rootElement.attribute( "samplerate" );
-	if ( s.isEmpty() )
+	if ( s.isEmpty() || s.toInt() < 1000 || s.toInt() > 192000 )
 		return false;
 	projectProfile.setAudioSampleRate( s.toInt() );
 	s = rootElement.attribute( "channels" );
-	if ( s.isEmpty() )
+	if ( s.isEmpty() || s.toInt() < 2 || s.toInt() > 8 )
 		return false;
 	projectProfile.setAudioChannels( s.toInt() );
 	s = rootElement.attribute( "layout" );
@@ -132,6 +132,7 @@ void ProjectFile::readSource( QDomElement &element )
 	}
 
 	Source *source = new Source( name );
+	sourcesList.append( source );
 
 	for ( int i = 0; i < nodes.count(); ++i ) {
 		QDomElement e = nodes.at( i ).toElement();
@@ -149,8 +150,6 @@ void ProjectFile::readSource( QDomElement &element )
 				source->audioFilters.append( f.staticCast<AudioFilter>() );
 		}
 	}
-	
-	sourcesList.append( source );
 }
 
 

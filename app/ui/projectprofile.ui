@@ -71,6 +71,9 @@ The default settings come from the clip you have dropped  onto the timeline. If 
              <property name="text">
               <string>x</string>
              </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
             </widget>
            </item>
            <item>

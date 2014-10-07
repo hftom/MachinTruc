@@ -33,7 +33,8 @@ public:
 
 	ThumbRequest( QString path )
 		: typeOfRequest( PROBE ),
-		filePath( path ) {}
+		filePath( path ),
+		thumbPTS( 0 ) {}
 		
 	ThumbRequest( QString path, double pts )
 		: typeOfRequest( THUMB ),

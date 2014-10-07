@@ -13,5 +13,8 @@ class ProjectProfileDialog : public QDialog, protected Ui::ProjectProfileDlg
 	Q_OBJECT
 public:
 	ProjectProfileDialog( QWidget *parent, Profile p );
+	
+private slots:
+	void presetChanged( int index );
 };
 #endif // PROJECTPROFILEDIALOG_H

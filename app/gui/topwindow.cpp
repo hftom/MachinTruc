@@ -340,7 +340,7 @@ void TopWindow::setThumbContext( QGLWidget *context )
 void TopWindow::openSources()
 {
 	QStringList	list = QFileDialog::getOpenFileNames( this, tr("Open files"), openSourcesCurrentDir,
-		"Videos(*.dv *.m2t *.mts *.mkv *.mpg *.mpeg *.ts *.avi *.mov *.vob *.wmv *.mjpg *.mp4 *.ogg *.wav *.mp3 *.ac3 *.mp2 *.mpa *.mpc *.png *.jpg)" );
+		"Videos(*.3gp *.dv *.m2t *.mts *.mkv *.mpg *.mpeg *.ts *.avi *.mov *.vob *.wmv *.mjpg *.mp4 *.ogg *.wav *.mp3 *.ac3 *.mp2 *.mpa *.mpc *.png *.jpg)" );
 
 	if ( !list.isEmpty() ) {
 		openSourcesCurrentDir = QFileInfo( list[0] ).absolutePath();
@@ -482,7 +482,7 @@ void TopWindow::loadProject()
 
 	projectLoader = new ProjectFile();
 
-	if ( projectLoader->loadProject( file ) && projectLoader->sceneList.count() ) {
+	if ( projectLoader->loadProject( file ) && projectLoader->sourcesList.count() ) {
 		int i;
 		for ( i = 0; i < projectLoader->sourcesList.count(); ++i ) {
 			thumbnailer->pushRequest( ThumbRequest( projectLoader->sourcesList[i]->getFileName() ) );

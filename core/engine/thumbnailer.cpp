@@ -17,7 +17,8 @@
 
 
 Thumbnailer::Thumbnailer()
-	: glContext( NULL )
+	: running( false ),
+	glContext( NULL )
 {
 }
 

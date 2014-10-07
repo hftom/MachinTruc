@@ -73,7 +73,7 @@ public:
 	// Push the frame back in origin MQueue, release the texture and release tracks.
 	void release();
 
-	void setVideoFrame( DataType t, int w, int h, double sar, bool il, bool tff, double p, double d );
+	void setVideoFrame( DataType t, int w, int h, double sar, bool il, bool tff, double p, double d, int rot = 0 );
 	void setVideoFrame( Frame *src );
 	void setFBO( FBO *f );
 	FBO* fbo() { return fb; }
@@ -88,6 +88,8 @@ public:
 	// PTS in microsecond
 	void setPts( double p ) { pPTS = p; }
 	double pts() { return pPTS; }
+
+	int orientation() { return pOrientation; }
 
 	// memory management indicator. See input.h
 	quint32 mmi;
@@ -115,6 +117,7 @@ private:
 	FENCE *glfence;
 	int pAudioSamples;
 	double pPTS;
+	int pOrientation;
 
 	Buffer *buffer;
 
