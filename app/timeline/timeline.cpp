@@ -132,7 +132,11 @@ void Timeline::trackPressedRightBtn( TrackViewItem *t, QPoint p )
 			switch ( what ) {
 				case ADDABOVE: emit trackRequest( false, i + 1 ); break;
 				case ADDBELOW: emit trackRequest( false, i ); break;
-				case RMTRACK: emit trackRequest( true, i ); break;
+				case RMTRACK: {
+					if ( tracks.count() < 2 )
+						return;
+					emit trackRequest( true, i ); break;
+				}
 			}
 			break;
 		}
