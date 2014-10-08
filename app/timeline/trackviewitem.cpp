@@ -36,7 +36,10 @@ void TrackViewItem::paint( QPainter *painter, const QStyleOptionGraphicsItem *op
 void TrackViewItem::mousePressEvent( QGraphicsSceneMouseEvent * event )
 {
 	Timeline *t = (Timeline*)scene();
-	t->trackPressed( event->scenePos() );
+	if ( event->button() == Qt::LeftButton )
+		t->trackPressed( event->scenePos() );
+	else if ( event->button() == Qt::RightButton )
+		t->trackPressedRightBtn( this, event->screenPos() );
 }
 
 

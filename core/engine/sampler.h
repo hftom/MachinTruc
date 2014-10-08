@@ -120,6 +120,7 @@ public:
 	Metronom* getMetronom() { return metronom; }
 	void play( bool b );
 	
+	bool trackRequest( bool rm, int index );
 	void drainScenes();
 	bool isProjectEmpty();
 	QList<Scene*> getSceneList() { return sceneList; }

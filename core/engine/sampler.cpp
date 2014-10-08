@@ -56,6 +56,26 @@ bool Sampler::isProjectEmpty()
 
 
 
+bool Sampler::trackRequest( bool rm, int index )
+{
+	if ( composer->isRunning() ) {
+		composer->play( false );
+		emit paused( true );
+	}
+		
+	bool ok;
+	if ( rm )
+		ok = currentScene->removeTrack( index );
+	else
+		ok = currentScene->addTrack( index );
+	
+	if ( ok )
+		updateFrame();
+	return ok;
+}
+
+
+
 void Sampler::drainScenes()
 {
 	if ( composer->isRunning() ) {

@@ -109,6 +109,59 @@ void Timeline::trackPressed( QPointF p )
 }
 
 
+#define ADDABOVE 100
+#define ADDBELOW 101
+#define RMTRACK 102
+void Timeline::trackPressedRightBtn( TrackViewItem *t, QPoint p )
+{
+	QMenu menu;
+	QAction *action = menu.addAction( tr("Add track above") );
+	action->setData( ADDABOVE );
+	action = menu.addAction( tr("Add track below") );
+	action->setData( ADDBELOW );
+	action = menu.addAction( tr("Delete track") );
+	action->setData( RMTRACK );
+	action = menu.exec( p );
+	
+	if ( !action )
+		return;
+	
+	for ( int i = 0; i < tracks.count(); ++i ) {
+		if ( tracks[i] == t ) {
+			int what = action->data().toInt();
+			switch ( what ) {
+				case ADDABOVE: emit trackRequest( false, i + 1 ); break;
+				case ADDBELOW: emit trackRequest( false, i ); break;
+				case RMTRACK: emit trackRequest( true, i ); break;
+			}
+			break;
+		}
+	}
+}
+
+
+
+void Timeline::trackRemoved( int index )
+{
+	QGraphicsItem *it = tracks.takeAt( index );
+	removeItem( it );
+	delete it;
+	
+	for ( int i = 0; i < tracks.count(); ++i )
+		tracks.at( tracks.count() - 1 - i )->setPos( 0, (TRACKVIEWITEMHEIGHT + 1) * i );
+
+	cursor->setHeight( tracks.count() * (TRACKVIEWITEMHEIGHT + 1) );
+	QTimer::singleShot ( 1, this, SLOT(updateLength()) );
+}
+
+
+
+void Timeline::trackAdded( int index )
+{
+	addTrack( index );
+}
+
+
 
 void Timeline::updateTransitions( ClipViewItem *clip, bool remove )
 {
@@ -353,9 +406,7 @@ void Timeline::snapMove( ClipViewItem *item, double &pos, double mouseX, double 
 
 int Timeline::getTrack( const QPointF &p )
 {
-	int i;
-	
-	for ( i = 0; i < tracks.count(); ++i ) {
+	for ( int i = 0; i < tracks.count(); ++i ) {
 		if ( tracks.at( i )->sceneBoundingRect().contains( QPointF( 0, p.y() ) ) )
 			return i;
 	}
@@ -386,6 +437,7 @@ void Timeline::addTrack( int index )
 		tracks.at( tracks.count() - 1 - i )->setPos( 0, (TRACKVIEWITEMHEIGHT + 1) * i );
 	
 	cursor->setHeight( tracks.count() * (TRACKVIEWITEMHEIGHT + 1) );
+	QTimer::singleShot ( 1, this, SLOT(updateLength()) );
 }
 
 

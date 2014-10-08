@@ -20,6 +20,8 @@ public:
 	Profile & getProfile() { return profile; }
 	
 	void drain();
+	bool removeTrack( int index );
+	bool addTrack( int index );
 	
 	Clip* createClip( Source *src, double posInTrackPTS, double strt, double len );
 	

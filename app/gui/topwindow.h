@@ -56,6 +56,7 @@ private slots:
 	void openSources();
 	void thumbResultReady( ThumbResult result );
 	
+	void trackRequest( bool rm, int index );
 	void clipAddedToTimeline( Profile );
 	void projectSettings();
 	void menuProjectSettings();

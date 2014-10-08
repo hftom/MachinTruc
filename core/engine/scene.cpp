@@ -516,3 +516,29 @@ void Scene::drain()
 	}
 	update = true;
 }
+
+
+
+bool Scene::removeTrack( int index )
+{
+	if ( index < 0 || index >= tracks.count() )
+		return false;
+	
+	if ( tracks[index]->clipCount() )
+		return false;
+	delete tracks.takeAt( index );
+	update = true;
+	return true;
+}
+
+
+
+bool Scene::addTrack( int index )
+{
+	if ( index < 0 || index > tracks.count() )
+		return false;
+	
+	tracks.insert( index, new Track() );
+	update = true;
+	return true;
+}

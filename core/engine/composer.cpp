@@ -47,13 +47,13 @@ void Composer::setSharedContext( QGLWidget *shared )
 	
 	movitPool = new ResourcePool( 100, 300 << 20, 100 );
 
-	mask_texture = hiddenContext->bindTexture( QImage("/home/cris/mask.png") );
+	/*mask_texture = hiddenContext->bindTexture( QImage("/home/cris/mask.png") );
 	glBindTexture( GL_TEXTURE_2D, mask_texture );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-	printf("mask_texture = %u\n", mask_texture);
+	printf("mask_texture = %u\n", mask_texture);*/
 
 	hiddenContext->doneCurrent();
 }
@@ -310,13 +310,15 @@ void Composer::movitFrameDescriptor( QString prefix, Frame *f, QList< QSharedPoi
 	}
 
 	// resize to match destination aspect ratio and/or output size
-	if ( fabs( projectProfile->getVideoSAR() - f->glSAR ) > 1e-3 ||
-		( f->glWidth != projectProfile->getVideoWidth() &&
-		f->glHeight != projectProfile->getVideoHeight() ) )
-	{		
-		GLResize resize;
-		desc.append( prefix + resize.getDescriptor( f, projectProfile ) );
-		f->resizeAuto = true;
+	if ( !sampler->previewMode() ) {
+		if ( fabs( projectProfile->getVideoSAR() - f->glSAR ) > 1e-3 ||
+			( f->glWidth != projectProfile->getVideoWidth() &&
+			f->glHeight != projectProfile->getVideoHeight() ) )
+		{		
+			GLResize resize;
+			desc.append( prefix + resize.getDescriptor( f, projectProfile ) );
+			f->resizeAuto = true;
+		}
 	}
 
 	// padding
@@ -412,6 +414,8 @@ void Composer::movitRender( Frame *dst, bool update )
 	// processing frames from bottom to top
 	i = start;
 	QStringList currentDescriptor;
+	int ow = projectProfile.getVideoWidth();
+	int oh = projectProfile.getVideoHeight();
 	while ( (f = getNextFrame( dst, i )) ) {
 		FrameSample *sample = dst->sample->frames[i - 1];
 		// input and filters
@@ -424,8 +428,10 @@ void Composer::movitRender( Frame *dst, bool update )
 		// overlay
 		if ( (i - 1) > start )
 			currentDescriptor.append( GLOverlay().getDescriptor( f, &projectProfile ) );
+		ow = f->glWidth;
+		oh = f->glHeight;
 	}
-	currentDescriptor.append( QString("OUTPUT %1 %2").arg(projectProfile.getVideoWidth()).arg(projectProfile.getVideoHeight()) );
+	currentDescriptor.append( QString("OUTPUT %1 %2").arg( ow ).arg( oh ) );
 
 	// rebuild the chain if neccessary
 	if ( currentDescriptor !=  movitDescriptor ) {

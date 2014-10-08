@@ -27,7 +27,6 @@ TopWindow::TopWindow()
 	horizontalLayout_2->insertWidget( 9, seekSlider );
 	
 	sampler = new Sampler();
-	
 	timeline = new Timeline( this );
 
 	timelineView = new TimelineGraphicsView( 0 );
@@ -43,6 +42,7 @@ TopWindow::TopWindow()
 	connect( timeline, SIGNAL(centerOn(const QGraphicsItem*)), this, SLOT(centerOn(const QGraphicsItem*)) );
 	connect( timeline, SIGNAL(updateFrame()), sampler, SLOT(updateFrame()) );
 	connect( timeline, SIGNAL(clipAddedToTimeline(Profile)), this, SLOT(clipAddedToTimeline(Profile)) );
+	connect( timeline, SIGNAL(trackRequest(bool,int)), this, SLOT(trackRequest(bool,int)) );
 	connect( timelineView, SIGNAL(sizeChanged(const QSize&)), timeline, SLOT(viewSizeChanged(const QSize&)) );
 	
 	animEditor = new AnimEditor( 0 );
@@ -98,17 +98,38 @@ TopWindow::TopWindow()
 	connect( outButton, SIGNAL(clicked()), this, SLOT(setOutPoint()) );
 
 	connect( switchButton, SIGNAL(toggled(bool)), sampler, SLOT(switchMode(bool)) );
-	
-	timeline->setScene( sampler->getCurrentScene() );
 
 	connect( actionSave, SIGNAL(triggered()), this, SLOT(saveProject()) );
 	connect( actionOpen, SIGNAL(triggered()), this, SLOT(loadProject()) );
-	
 	connect( actionProjectSettings, SIGNAL(triggered()), this, SLOT(menuProjectSettings()) );
 	connect( actionTransparentBackground, SIGNAL(toggled(bool)), vw, SLOT(setTransparentBackground(bool)) );
 	connect( actionDeleteClip, SIGNAL(triggered()), timeline, SLOT(deleteClip()) );
 	connect( actionSplitCurrentClip, SIGNAL(triggered()), timeline, SLOT(splitCurrentClip()) );
 	connect( actionSaveImage, SIGNAL(triggered()), vw, SLOT(shot()) );
+	
+	timeline->setScene( sampler->getCurrentScene() );
+}
+
+
+
+void TopWindow::trackRequest( bool rm, int index )
+{
+	if ( rm ) {
+		if ( !sampler->trackRequest( rm, index ) ) {
+			QMessageBox::warning( this, tr("Error"), tr("Only empty track can be deleted.") );
+		}
+		else {
+			timeline->trackRemoved( index );
+		}
+	}
+	else {
+		if ( !sampler->trackRequest( rm, index ) ) {
+			QMessageBox::warning( this, tr("Error"), tr("Track coul not be added.") );
+		}
+		else {
+			timeline->trackAdded( index );
+		}
+	}
 }
 
 

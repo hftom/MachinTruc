@@ -53,7 +53,11 @@ public:
 	void addFilter( ClipViewItem *clip, QString fx );
 	
 	void trackPressed( QPointF p );
+	void trackPressedRightBtn( TrackViewItem *t, QPoint p );
 	void itemSelected( AbstractViewItem *it );
+	
+	void trackRemoved( int index );
+	void trackAdded( int index );
 	
 public slots:
 	void viewSizeChanged( const QSize &size );
@@ -107,6 +111,7 @@ signals:
 	void updateFrame();
 	void clipSelected( Clip* );
 	void clipAddedToTimeline( Profile );
+	void trackRequest( bool, int );
 };
 
 #endif //TIMELINE_H
