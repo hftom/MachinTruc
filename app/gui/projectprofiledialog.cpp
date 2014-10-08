@@ -62,8 +62,12 @@ ProjectProfileDialog::ProjectProfileDialog( QWidget *parent, Profile &p ) : QDia
 	audioPresetLab->setEnabled( false );
 	audioPresetCombo->setEnabled( false );
 	layoutLab->setEnabled( false );
+	layoutCombo->addItem( "Stereo" );
 	layoutCombo->setEnabled( false );
 	samplerateLab->setEnabled( false );
+	samplerateSpinBox->setRange( 1000, 192000 );
+	samplerateSpinBox->setSuffix( "Hz" );
+	samplerateSpinBox->setValue( 48000 );
 	samplerateSpinBox->setEnabled( false );
 
 	videoPresetCombo->addItem( tr("Custom") );
