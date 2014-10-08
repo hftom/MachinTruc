@@ -17,14 +17,7 @@ class Composer;
 class Preview
 {
 public:
-	Preview() {
-		reset();
-	}
-	
-	void reset() {
-		input = NULL;
-		source = NULL;
-		currentPTS = currentPTSAudio = 0;
+	Preview() : currentPTS(0), currentPTSAudio(0), input(NULL), source(NULL) {
 	}
 	
 	bool seekTo( double p ) {
@@ -43,6 +36,11 @@ public:
 	}
 	
 	void setSource( Source *s, InputBase *in ) {
+		if ( input ) {
+			input->play(false);
+			input->setUsed( false );
+		}
+		input = in;
 		source = s;
 		if ( source ) {
 			profile = source->getProfile();
@@ -51,17 +49,18 @@ public:
 			profile.setAudioLayout( DEFAULTLAYOUT );
 			profile.setAudioFormat( Profile::SAMPLE_FMT_S16 );
 			
-			if ( input )
-				input->setUsed( false );
-			input = in;
 			if ( input ) {
+				input->play(false);
 				input->setUsed( true );
 				input->setProfile( profile, profile );
 				input->open( source->getFileName() );
 			}
 		}
-		else
-			reset();
+		else {
+			input = NULL;
+			source = NULL;
+			currentPTS = currentPTSAudio = 0;
+		}
 	}
 	
 	void play( bool b ) {
@@ -115,6 +114,7 @@ public:
 	void rewardPTS();
 	void seekTo( double p );
 	
+	void newProject( Profile p );
 	void setProfile( Profile p );
 	Profile getProfile();
 	Metronom* getMetronom() { return metronom; }

@@ -500,6 +500,8 @@ void Timeline::setScene( Scene *s )
 			updateTransitions( it, false );
 		}
 	}
+	
+	setCursorPos( 0 );
 
 	QTimer::singleShot ( 1, this, SLOT(updateLength()) );
 }

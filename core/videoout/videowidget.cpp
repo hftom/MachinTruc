@@ -192,6 +192,15 @@ void VideoWidget::showFrame( Frame *frame )
 
 
 
+void VideoWidget::clear()
+{
+	lastFrame = NULL;
+	lastFrameRatio = 16. / 9.;
+	updateGL();
+}
+
+
+
 QImage VideoWidget::lastImage()
 {
 	if ( !lastFrame )

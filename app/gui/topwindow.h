@@ -61,6 +61,7 @@ private slots:
 	void projectSettings();
 	void menuProjectSettings();
 
+	void newProject();
 	void saveProject();
 	void loadProject();
 	
@@ -71,7 +72,7 @@ private slots:
 	void showFxSettingsPage();
 
 	void setThumbContext( QGLWidget* );
-	void sourceActivated( SourceListItem *item );
+	void sourceActivated();
 	void currentFramePts( double d );
 	void modeSwitched();
 
@@ -96,7 +97,6 @@ private:
 	
 	ProjectSourcesPage *sourcePage;
 	FxPage *fxPage;
-	SourceListItem *activeSource;
 	
 	TimelineGraphicsView *timelineView;
 	Timeline *timeline;

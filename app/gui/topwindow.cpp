@@ -7,8 +7,7 @@
 
 
 TopWindow::TopWindow()
-	: activeSource( NULL ),
-	openSourcesCounter( 0 ),
+	: openSourcesCounter( 0 ),
 	projectLoader( NULL ),
 	thumbnailer( new Thumbnailer() )
 {
@@ -51,7 +50,7 @@ TopWindow::TopWindow()
 	timelineStackedWidget->addWidget( animEditor );
 	
 	sourcePage = new ProjectSourcesPage( sampler );
-	connect( sourcePage, SIGNAL(sourceActivated(SourceListItem*)), this, SLOT(sourceActivated(SourceListItem*)) );
+	connect( sourcePage, SIGNAL(sourceActivated()), this, SLOT(sourceActivated()) );
 	connect( sourcePage, SIGNAL(openSourcesBtnClicked()), this, SLOT(openSources()) );
 	
 	fxPage = new FxPage();
@@ -99,6 +98,7 @@ TopWindow::TopWindow()
 
 	connect( switchButton, SIGNAL(toggled(bool)), sampler, SLOT(switchMode(bool)) );
 
+	connect( actionNewProject, SIGNAL(triggered()), this, SLOT(newProject()) );
 	connect( actionSave, SIGNAL(triggered()), this, SLOT(saveProject()) );
 	connect( actionOpen, SIGNAL(triggered()), this, SLOT(loadProject()) );
 	connect( actionProjectSettings, SIGNAL(triggered()), this, SLOT(menuProjectSettings()) );
@@ -142,6 +142,22 @@ void TopWindow::clipAddedToTimeline( Profile prof )
 
 
 
+void TopWindow::newProject()
+{
+	tempProfile = Profile();
+	ProjectProfileDialog dlg( this, tempProfile );
+	dlg.exec();
+	if ( dlg.result() == QDialog::Accepted ) {
+		sampler->newProject( dlg.getCurrentProfile() );
+		timeline->setScene( sampler->getCurrentScene() );
+		sourcePage->clearAllSources();
+		timelineSeek( 0 );
+		QTimer::singleShot( 200, vw, SLOT(clear()) );
+	}
+}
+
+
+
 void TopWindow::menuProjectSettings()
 {
 	tempProfile = sampler->getCurrentScene()->getProfile();
@@ -178,15 +194,15 @@ void TopWindow::quitEditor()
 
 void TopWindow::modeSwitched()
 {
-	if ( activeSource )
-		sampler->setSource( activeSource->getSource(), activeSource->getCurrentPts() );
+	if ( sourcePage->hasActiveSource() )
+		sampler->setSource( sourcePage->sourceActiveSource(), sourcePage->currentPtsActiveSource() );
 }
 
 
 
 void TopWindow::setInPoint()
 {
-	if ( activeSource ) {
+	if ( sourcePage->hasActiveSource() ) {
 		//double pts;
 		//QImage img = vw->getThumb( THUMBHEIGHT, &pts, false );
 		//if ( !img.isNull() )
@@ -198,7 +214,7 @@ void TopWindow::setInPoint()
 
 void TopWindow::setOutPoint()
 {
-	if ( activeSource ) {
+	if ( sourcePage->hasActiveSource() ) {
 		//double pts;
 		//QImage img = vw->getThumb( THUMBHEIGHT, &pts, true );
 		//if ( !img.isNull() ) {
@@ -213,9 +229,9 @@ void TopWindow::setOutPoint()
 Source* TopWindow::getDroppedCut( int index, QString mime, QString filename, double &start, double &len )
 {
 	if ( mime == MIMETYPECUT ) {
-		if ( !activeSource )
+		if ( !sourcePage->hasActiveSource() )
 			return NULL;
-		Cut *cut = activeSource->getCut( index, filename );
+		Cut *cut = sourcePage->activeSourceGetCut( index, filename );
 		if ( !cut )
 			return NULL;
 		start = cut->getStart();
@@ -236,10 +252,10 @@ Source* TopWindow::getDroppedCut( int index, QString mime, QString filename, dou
 void TopWindow::currentFramePts( double d )
 {
 	if ( !switchButton->isChecked() ) {
-		if ( !activeSource )
+		if ( !sourcePage->hasActiveSource() )
 			return;
-		activeSource->setCurrentPts( d );
-		Profile prof = activeSource->getProfile();
+		sourcePage->activeSourceSetCurrentPts( d );
+		Profile prof = sourcePage->activeSourceGetProfile();
 		d -= prof.getStreamStartTime();
 		d *= seekSlider->maximum() / prof.getStreamDuration();
 	}
@@ -280,14 +296,13 @@ void TopWindow::composerPaused( bool b )
 
 
 
-void TopWindow::sourceActivated( SourceListItem *item )
+void TopWindow::sourceActivated()
 {
-	if ( item ) {
-		activeSource = item;
+	if ( sourcePage->hasActiveSource() ) {
 		if ( switchButton->isChecked() )
 			switchButton->toggle();
 		else
-			sampler->setSource( activeSource->getSource(), activeSource->getCurrentPts() );
+			sampler->setSource( sourcePage->sourceActiveSource(), sourcePage->currentPtsActiveSource() );
 	}
 }
 
@@ -345,9 +360,9 @@ void TopWindow::seek( int v )
 	double value;
 	
 	if ( !switchButton->isChecked() ) {
-		if ( !activeSource )
+		if ( !sourcePage->hasActiveSource() )
 			return;
-		Profile prof = activeSource->getProfile();
+		Profile prof = sourcePage->activeSourceGetProfile();
 		value = prof.getStreamStartTime();
 		value += v * prof.getStreamDuration() / seekSlider->maximum();
 	}
@@ -519,6 +534,7 @@ void TopWindow::loadProject()
 	sampler->drainScenes();
 	timeline->setScene( sampler->getCurrentScene() );
 	sourcePage->clearAllSources();
+	QTimer::singleShot( 200, vw, SLOT(clear()) );
 
 	projectLoader = new ProjectFile();
 

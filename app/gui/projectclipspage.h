@@ -189,6 +189,16 @@ public:
 	Source* getSource( int index, const QString &filename );
 	void addSource( QPixmap pix, Source *src );
 	
+	bool hasActiveSource() { return activeSource != NULL; }
+	Source *sourceActiveSource() { return activeSource->getSource(); }
+	double currentPtsActiveSource() { return activeSource->getCurrentPts(); }
+	Cut *activeSourceGetCut( int index, QString filename ) {
+		return activeSource->getCut( index, filename ); }
+	void activeSourceSetCurrentPts( double d ) { activeSource->setCurrentPts( d ); }
+	Profile activeSourceGetProfile() { return activeSource->getProfile(); }
+	
+	
+	
 public slots:
 	void newCut( SourceListItem* );
 
@@ -199,11 +209,12 @@ private slots:
 	void showSourceFilters();
 
 signals:
-	void sourceActivated( SourceListItem* );
+	void sourceActivated();
 	void openSourcesBtnClicked();
 
 private:
 	CutListModel model;
 	Sampler *sampler;
+	SourceListItem *activeSource;
 };
 #endif // PROJECTCLIPSPAGE_H

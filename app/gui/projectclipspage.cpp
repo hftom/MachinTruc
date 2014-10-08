@@ -15,7 +15,8 @@
 
 
 ProjectSourcesPage::ProjectSourcesPage( Sampler *samp )
-	: sampler( samp )
+	: sampler( samp ),
+	activeSource( NULL )
 {	
 	setupUi( this );
 	
@@ -68,6 +69,7 @@ void ProjectSourcesPage::clearAllSources()
 		delete it->getSource();
 	}
 	model.setSource( NULL );
+	activeSource = NULL;
 	sourceListWidget->clear();
 }
 
@@ -96,7 +98,8 @@ void ProjectSourcesPage::sourceItemActivated( QListWidgetItem *item, QListWidget
 		return;
 
 	SourceListItem *it = (SourceListItem*)item;
-	emit sourceActivated( it );
+	activeSource = it;
+	emit sourceActivated();
 	model.setSource( it );
 	cutListView->setIconSize( it->getThumbSize() );
 	cutListView->reset();

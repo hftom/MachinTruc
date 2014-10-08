@@ -15,23 +15,8 @@ Sampler::Sampler()
 	connect( composer, SIGNAL(paused(bool)), this, SIGNAL(paused(bool)) );
 	connect( metronom, SIGNAL(discardFrame()), composer, SLOT(discardFrame()) );
 
-	/*projectProfile.setVideoFrameRate( 25 );
-	projectProfile.setVideoFrameDuration( MICROSECOND / projectProfile.getVideoFrameRate() );
-	projectProfile.setVideoWidth( 1920 );
-	projectProfile.setVideoHeight( 1080 );
-	projectProfile.setVideoSAR( 1 );
-	projectProfile.setVideoInterlaced( false );
-	projectProfile.setVideoTopFieldFirst( true );
-	projectProfile.setAudioSampleRate( DEFAULTSAMPLERATE );
-	projectProfile.setAudioChannels( DEFAULTCHANNELS );
-	projectProfile.setAudioLayout( DEFAULTLAYOUT );*/
-	
-	currentScene = new Scene( projectProfile );
-	sceneList.append( currentScene );
-	
-	currentScene->tracks.append( new Track() );
-	currentScene->tracks.append( new Track() );
-	currentScene->tracks.append( new Track() );
+	Profile prof;
+	newProject( prof );
 }
 
 
@@ -75,6 +60,21 @@ bool Sampler::trackRequest( bool rm, int index )
 }
 
 
+void Sampler::newProject( Profile p )
+{
+	drainScenes();
+	
+	QList<Scene*> list;
+	Scene *s = new Scene( p );
+	s->tracks.append( new Track() );
+	s->tracks.append( new Track() );
+	s->tracks.append( new Track() );
+	list.append( s );
+	
+	setSceneList( list );
+}
+
+
 
 void Sampler::drainScenes()
 {
@@ -82,7 +82,7 @@ void Sampler::drainScenes()
 		composer->play( false );
 		emit paused( true );
 	}
-	
+
 	preview.setSource( NULL, NULL );
 
 	for ( int i = 0; i < sceneList.count(); ++i ) {
@@ -102,7 +102,24 @@ void Sampler::setSceneList( QList<Scene*> list )
 	}
 	sceneList = list;
 	currentScene = sceneList.first();
-	setProfile( currentScene->getProfile() );
+	projectProfile = currentScene->getProfile();
+}
+
+
+
+void Sampler::setProfile( Profile p )
+{
+	projectProfile = p;
+	for ( int i = 0; i < sceneList.count(); ++i )
+		sceneList[i]->setProfile( p );
+	
+	if ( playMode != PlaySource ) {
+		if ( composer->isRunning() ) {
+			composer->play( false );
+			emit paused( true );
+		}
+		seekTo( currentPTS() );
+	}
 }
 
 
@@ -143,23 +160,6 @@ void Sampler::setSource( Source *source, double pts )
 
 	preview.setSource( source, getInput( source->getFileName(), source->getType() ) );
 	seekTo( pts );
-}
-
-
-
-void Sampler::setProfile( Profile p )
-{
-	projectProfile = p;
-	for ( int i = 0; i < sceneList.count(); ++i )
-		sceneList[i]->setProfile( p );
-	
-	if ( playMode != PlaySource ) {
-		if ( composer->isRunning() ) {
-			composer->play( false );
-			emit paused( true );
-		}
-		seekTo( currentPTS() );
-	}
 }
 
 
@@ -288,7 +288,7 @@ void Sampler::seekTo( double p )
 		currentScene->currentPTS = p;
 		currentScene->currentPTSAudio = p;
 	}
-	
+
 	composer->seeking();
 }
 

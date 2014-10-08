@@ -23,6 +23,7 @@ public slots:
 	void showFrame( Frame *frame );
 	void shot();
 	void setTransparentBackground( bool b );
+	void clear();
 
 protected :
 	void initializeGL();

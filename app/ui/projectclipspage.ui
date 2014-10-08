@@ -46,7 +46,7 @@
           <enum>Qt::NoFocus</enum>
          </property>
          <property name="toolTip">
-          <string>Open clips</string>
+          <string>Open files</string>
          </property>
          <property name="text">
           <string>...</string>
