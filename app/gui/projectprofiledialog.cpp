@@ -144,7 +144,7 @@ Profile ProjectProfileDialog::getCurrentProfile()
 	p.setVideoWidth( widthSpinBox->value() );
 	p.setVideoHeight( heightSpinBox->value() );
 	
-	double r = 1.0;
+	double r = widthSpinBox->value() / heightSpinBox->value();
 	if ( ratioCombo->currentText() == "16:9" )
 		r = 16. / 9.;
 	else if ( ratioCombo->currentText() == "4:3" )
