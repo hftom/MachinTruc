@@ -55,9 +55,17 @@ static const VideoPreset vPresets[ nvpresets ] = {
 
 
 
-ProjectProfileDialog::ProjectProfileDialog( QWidget *parent, Profile &p ) : QDialog( parent )
+ProjectProfileDialog::ProjectProfileDialog( QWidget *parent, Profile &p, int warn ) : QDialog( parent )
 {
 	setupUi( this );
+	
+	QString info = "Select a profile for your project.";
+	if ( warn == WARNCHANGE )
+		info += "\nIt's not recommended to change the video settings when you have already put some clips in the timeline.";
+	else if ( warn == WARNNEWCLIP )
+		info += "\nThe default settings come from the clip you have dropped onto the timeline. If you don't know what to choose, just click ok and play the timeline; if you are not satisfied, remove the clip and drop a new one.";
+	
+	infoLab->setText( info );
 
 	audioPresetLab->setEnabled( false );
 	audioPresetCombo->setEnabled( false );

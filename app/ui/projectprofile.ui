@@ -17,10 +17,9 @@
    <item row="0" column="0">
     <layout class="QVBoxLayout" name="verticalLayout">
      <item>
-      <widget class="QLabel" name="label_10">
+      <widget class="QLabel" name="infoLab">
        <property name="text">
-        <string>Select a profile for your project.
-The default settings come from the clip you have dropped  onto the timeline. If you don't know what to choose,  just click ok and play the timeline; if you are not satisfied, remove the clip and drop a new one.</string>
+        <string/>
        </property>
        <property name="wordWrap">
         <bool>true</bool>

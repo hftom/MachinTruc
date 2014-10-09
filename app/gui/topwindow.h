@@ -58,7 +58,7 @@ private slots:
 	
 	void trackRequest( bool rm, int index );
 	void clipAddedToTimeline( Profile );
-	void projectSettings();
+	void projectSettings( int warn = 0 );
 	void menuProjectSettings();
 
 	void newProject();

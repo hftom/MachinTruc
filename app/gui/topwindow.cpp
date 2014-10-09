@@ -145,9 +145,10 @@ void TopWindow::clipAddedToTimeline( Profile prof )
 void TopWindow::newProject()
 {
 	tempProfile = Profile();
-	ProjectProfileDialog dlg( this, tempProfile );
+	ProjectProfileDialog dlg( this, tempProfile, WARNNO );
 	dlg.exec();
 	if ( dlg.result() == QDialog::Accepted ) {
+		showProjectClipsPage();
 		sampler->newProject( dlg.getCurrentProfile() );
 		timeline->setScene( sampler->getCurrentScene() );
 		sourcePage->clearAllSources();
@@ -161,14 +162,17 @@ void TopWindow::newProject()
 void TopWindow::menuProjectSettings()
 {
 	tempProfile = sampler->getCurrentScene()->getProfile();
-	projectSettings();
+	int warn = WARNNO;
+	if ( !sampler->isProjectEmpty() )
+		warn = WARNCHANGE;
+	projectSettings( warn );
 }
 
 
 
-void TopWindow::projectSettings()
+void TopWindow::projectSettings( int warn )
 {
-	ProjectProfileDialog dlg( this, tempProfile );
+	ProjectProfileDialog dlg( this, tempProfile, warn );
 	dlg.exec();
 	if ( dlg.result() == QDialog::Accepted ) {
 		sampler->setProfile( dlg.getCurrentProfile() );
@@ -531,6 +535,7 @@ void TopWindow::loadProject()
 	if ( file.isEmpty() )
 		return;
 	
+	showProjectClipsPage();
 	sampler->drainScenes();
 	timeline->setScene( sampler->getCurrentScene() );
 	sourcePage->clearAllSources();
