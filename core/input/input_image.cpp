@@ -11,7 +11,7 @@
 
 
 InputImage::InputImage() : InputBase(),
-	fps( 30 ),
+	fps( 25 ),
 	currentVideoPTS( 0 ),
 	buffer( NULL ),
 	width( 0 ),
