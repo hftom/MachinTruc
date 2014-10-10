@@ -88,7 +88,7 @@ void FiltersDialog::addVideoFilter( int i )
 {
 	FilterCollection *fc = FilterCollection::getGlobalInstance();
 	
-	QSharedPointer<Filter> f = fc->videoFilters[ i ].create();
+	QSharedPointer<Filter> f = fc->sourceVideoFilters[ i ].create();
 	source->videoFilters.append( f.staticCast<GLFilter>() );
 	videoList->clear();
 	videoList->addItems( source->videoFilters.filtersNames() );
@@ -155,7 +155,7 @@ void FiltersDialog::addAudioFilter( int i )
 {
 	FilterCollection *fc = FilterCollection::getGlobalInstance();
 	
-	QSharedPointer<Filter> f = fc->audioFilters[ i ].create();
+	QSharedPointer<Filter> f = fc->sourceAudioFilters[ i ].create();
 	source->audioFilters.append( f.staticCast<AudioFilter>() );
 	audioList->clear();
 	audioList->addItems( source->audioFilters.filtersNames() );
@@ -203,12 +203,12 @@ FiltersListDlg::FiltersListDlg( int m, QWidget *parent ) : QDialog( parent ),
 	QListWidget *list = new QListWidget( this );
 	layout->addWidget( list );
 	if ( mode == MODEVIDEO ) {
-		for ( i = 0; i < fc->videoFilters.count(); ++i )
-			list->addItem( new QListWidgetItem( fc->videoFilters.at( i ).name ) );
+		for ( i = 0; i < fc->sourceVideoFilters.count(); ++i )
+			list->addItem( new QListWidgetItem( fc->sourceVideoFilters.at( i ).name ) );
 	}
 	else {
-		for ( i = 0; i < fc->audioFilters.count(); ++i )
-			list->addItem( new QListWidgetItem( fc->audioFilters.at( i ).name ) );
+		for ( i = 0; i < fc->sourceAudioFilters.count(); ++i )
+			list->addItem( new QListWidgetItem( fc->sourceAudioFilters.at( i ).name ) );
 	}
 	
 	connect( list, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(filterSelected(QListWidgetItem*)) );
@@ -224,16 +224,16 @@ void FiltersListDlg::filterSelected( QListWidgetItem *item )
 	int i;
 
 	if ( mode == MODEVIDEO ) {
-		for ( i = 0; i < fc->videoFilters.count(); ++i ) {
-			if ( item->text() == fc->videoFilters.at( i ).name ) {
+		for ( i = 0; i < fc->sourceVideoFilters.count(); ++i ) {
+			if ( item->text() == fc->sourceVideoFilters.at( i ).name ) {
 				emit addVideoFilter( i );
 				accept();
 			}
 		}
 	}
 	else {
-		for ( i = 0; i < fc->audioFilters.count(); ++i ) {
-			if ( item->text() == fc->audioFilters.at( i ).name ) {
+		for ( i = 0; i < fc->sourceAudioFilters.count(); ++i ) {
+			if ( item->text() == fc->sourceAudioFilters.at( i ).name ) {
 				emit addAudioFilter( i );
 				accept();
 			}

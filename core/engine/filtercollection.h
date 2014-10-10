@@ -79,8 +79,10 @@ public:
 	static FilterCollection* getGlobalInstance();
 	
 	QList<FilterEntry> videoFilters;
+	QList<FilterEntry> sourceVideoFilters;
 	QList<FilterEntry> videoTransitions;
 	QList<FilterEntry> audioFilters;
+	QList<FilterEntry> sourceAudioFilters;
 	QList<FilterEntry> audioTransitions;
 };
 

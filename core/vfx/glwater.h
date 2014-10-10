@@ -43,6 +43,13 @@ static const char *WaterEffect_frag=
 "	return result;\n"
 "}\n";
 
+/*
+// noise
+"float PREFIX(rand)(vec2 seed){\n"
+"	return fract(sin(dot(seed ,vec2(12.9898,78.233))) * 43758.5453) - 0.5;\n"
+"}\n"
+*/
+
 
 
 class WaterEffect : public Effect {
