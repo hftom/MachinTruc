@@ -23,14 +23,36 @@ Scene::~Scene()
 
 
 
-void Scene::setProfile( Profile &p )
+bool Scene::setProfile( Profile &p )
 {
+	bool ok = true;
+	double duration = profile.getVideoFrameDuration();
 	profile = p;
-	for ( int i = 0; i < tracks.count(); ++i ) {
-		Track *t = tracks[i];
-		for ( int j = 0; j < t->clipCount(); ++j ) 
-			t->clipAt( j )->setFrameDuration( p.getVideoFrameDuration() );
+	double margin = profile.getVideoFrameDuration() / 4.0;
+	
+	if ( duration != profile.getVideoFrameDuration() ) {
+		duration = profile.getVideoFrameDuration();
+		for ( int i = 0; i < tracks.count(); ++i ) {
+			Track *t = tracks[i];
+			for ( int j = 0; j < t->clipCount(); ++j ) {
+				Clip *c = t->clipAt( j );
+				c->setFrameDuration( duration );
+				double newPos = nearestPTS( c->position(), duration );
+				if ( !c->getTransition() && j > 0 ) {
+					Clip *prev = t->clipAt( j - 1 );
+					if ( newPos < prev->position() + prev->length() - margin )
+						newPos = prev->position() + prev->length();
+					c->setPosition( newPos );
+				}
+				else if ( canMove( c, c->length(), newPos, i ) )
+					move( c, i, newPos, i );
+				else
+					ok = false;
+			}
+		}
 	}
+	
+	return ok;
 }
 	
 

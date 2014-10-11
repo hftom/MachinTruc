@@ -144,6 +144,13 @@ void TopWindow::clipAddedToTimeline( Profile prof )
 
 void TopWindow::newProject()
 {
+	if ( openSourcesCounter != 0 ) {
+		QMessageBox msgBox;
+		msgBox.setText( tr("You can't load a project while files are being loaded.\nWait until the operation has completed.") );
+		msgBox.exec();
+		return;
+	}
+
 	tempProfile = Profile();
 	ProjectProfileDialog dlg( this, tempProfile, WARNNO );
 	dlg.exec();
@@ -175,7 +182,9 @@ void TopWindow::projectSettings( int warn )
 	ProjectProfileDialog dlg( this, tempProfile, warn );
 	dlg.exec();
 	if ( dlg.result() == QDialog::Accepted ) {
-		sampler->setProfile( dlg.getCurrentProfile() );
+		if ( !sampler->setProfile( dlg.getCurrentProfile() ) )
+			QMessageBox::warning( this, tr("Error"), tr("Somme errors occured while changing profile.\nCheck clips alignement.") );
+		timeline->setScene( sampler->getCurrentScene() );
 	}
 }
 
@@ -524,7 +533,7 @@ void TopWindow::loadProject()
 {
 	if ( openSourcesCounter != 0 ) {
 		QMessageBox msgBox;
-		msgBox.setText( tr("We can't load a project while sources are being loaded.\nWait until the operation has completed.") );
+		msgBox.setText( tr("You can't load a project while files are being loaded.\nWait until the operation has completed.") );
 		msgBox.exec();
 		return;
 	}

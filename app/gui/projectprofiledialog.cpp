@@ -59,11 +59,24 @@ ProjectProfileDialog::ProjectProfileDialog( QWidget *parent, Profile &p, int war
 {
 	setupUi( this );
 	
-	QString info = "Select a profile for your project.";
-	if ( warn == WARNCHANGE )
-		info += "\nIt's not recommended to change the video settings when you have already put some clips in the timeline.";
-	else if ( warn == WARNNEWCLIP )
-		info += "\nThe default settings come from the clip you have dropped onto the timeline. If you don't know what to choose, just click ok and play the timeline; if you are not satisfied, remove the clip and drop a new one.";
+	QString info = "<p>";
+	info += tr("Select a profile for your project.");
+	info += "<br>";
+	if ( warn == WARNCHANGE ) {
+		info += "<br><b>";
+		info += tr("It's not recommended to change the video settings when you have already put some clips in the timeline.");
+		info += "<br>";
+		info += tr("It may introduce clips misalignement.");
+		info += "</b>";
+	}
+	else if ( warn == WARNNEWCLIP ) {
+		info += "<br>";
+		info += tr("The default settings come from the clip you have dropped onto the timeline.");
+		info += "<br><b><i>";
+		info += tr("If you don't know what to choose, just click ok and play the timeline; if you are not satisfied, remove the clip and drop a new one.");
+		info += "</i></b>";
+	}
+	info += "</p>";
 	
 	infoLab->setText( info );
 

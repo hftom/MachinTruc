@@ -43,7 +43,7 @@ void Metronom::setSharedContext( QGLWidget *shared )
 void Metronom::setLastFrame( Frame *f )
 {
 	QMutexLocker ml( &lastFrameMutex );
-	if ( lastFrame )
+	if ( lastFrame && lastFrame != f )
 		lastFrame->release();
 	lastFrame = f;
 	emit currentFramePts( f->pts() );

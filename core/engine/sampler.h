@@ -115,7 +115,7 @@ public:
 	void seekTo( double p );
 	
 	void newProject( Profile p );
-	void setProfile( Profile p );
+	bool setProfile( Profile p );
 	Profile getProfile();
 	Metronom* getMetronom() { return metronom; }
 	void play( bool b );

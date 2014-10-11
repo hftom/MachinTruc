@@ -497,7 +497,9 @@ void Timeline::setScene( Scene *s )
 			Clip *c = t->clipAt( j );
 			ClipViewItem *it = new ClipViewItem( c, zoom );
 			it->setParentItem( tracks.at( i ) );
-			updateTransitions( it, false );
+			Transition *trans = c->getTransition();
+			if ( trans )
+				it->updateTransition( trans->length() );	
 		}
 	}
 	

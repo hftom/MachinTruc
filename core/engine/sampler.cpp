@@ -107,11 +107,16 @@ void Sampler::setSceneList( QList<Scene*> list )
 
 
 
-void Sampler::setProfile( Profile p )
+bool Sampler::setProfile( Profile p )
 {
+	bool ok = true;
+	
 	projectProfile = p;
-	for ( int i = 0; i < sceneList.count(); ++i )
-		sceneList[i]->setProfile( p );
+	for ( int i = 0; i < sceneList.count(); ++i ) {
+		bool b = sceneList[i]->setProfile( p );
+		if ( !b )
+			ok = false;
+	}
 	
 	if ( playMode != PlaySource ) {
 		if ( composer->isRunning() ) {
@@ -120,6 +125,8 @@ void Sampler::setProfile( Profile p )
 		}
 		seekTo( currentPTS() );
 	}
+	
+	return ok;
 }
 
 

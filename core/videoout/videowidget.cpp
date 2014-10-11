@@ -183,10 +183,8 @@ void VideoWidget::paintGL()
 void VideoWidget::showFrame( Frame *frame )
 {
 	lastFrameRatio = frame->glSAR * (double)frame->glWidth / (double)frame->glHeight;
-	if ( lastFrame != frame ) {
-		lastFrame = frame;
-		emit frameShown( frame );
-	}
+	lastFrame = frame;
+	emit frameShown( frame );
 	updateGL();
 }
 

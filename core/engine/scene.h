@@ -16,7 +16,7 @@ public:
 	Scene( Profile p );
 	~Scene();
 	
-	void setProfile( Profile &p );
+	bool setProfile( Profile &p );
 	Profile & getProfile() { return profile; }
 	
 	void drain();
