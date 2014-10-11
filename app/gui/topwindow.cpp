@@ -4,6 +4,8 @@
 #include "gui/topwindow.h"
 #include "projectprofiledialog.h"
 
+#define VIDEOCLEARDELAY 200
+
 
 
 TopWindow::TopWindow()
@@ -146,7 +148,7 @@ void TopWindow::newProject()
 {
 	if ( openSourcesCounter != 0 ) {
 		QMessageBox msgBox;
-		msgBox.setText( tr("You can't load a project while files are being loaded.\nWait until the operation has completed.") );
+		msgBox.setText( tr("Files are being loaded.\nWait until the operation has completed.") );
 		msgBox.exec();
 		return;
 	}
@@ -160,7 +162,7 @@ void TopWindow::newProject()
 		timeline->setScene( sampler->getCurrentScene() );
 		sourcePage->clearAllSources();
 		timelineSeek( 0 );
-		QTimer::singleShot( 200, vw, SLOT(clear()) );
+		QTimer::singleShot( VIDEOCLEARDELAY, vw, SLOT(clear()) );
 	}
 }
 
@@ -548,7 +550,7 @@ void TopWindow::loadProject()
 	sampler->drainScenes();
 	timeline->setScene( sampler->getCurrentScene() );
 	sourcePage->clearAllSources();
-	QTimer::singleShot( 200, vw, SLOT(clear()) );
+	QTimer::singleShot( VIDEOCLEARDELAY, vw, SLOT(clear()) );
 
 	projectLoader = new ProjectFile();
 
