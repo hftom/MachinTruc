@@ -7,19 +7,12 @@
 
 #include "videoout/videowidget.h"
 
-#define BOARDWIDTH 32
-#define HICOLOR 153
-#define LOCOLOR 102
-
 
 
 VideoWidget::VideoWidget( QWidget *parent ) : QGLWidget( parent ),
 	hidden( NULL ),
 	thumb( NULL ),
 	fences( NULL ),
-	boardbg( 0 ),
-	blackbg( 0 ),
-	background( 0 ),
 	lastFrameRatio( 16./9. ),
 	lastFrame( NULL )
 {
@@ -45,34 +38,6 @@ void VideoWidget::initializeGL()
 	glShadeModel( GL_SMOOTH );
 	glEnable( GL_TEXTURE_2D );
 	glHint( GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST );
-
-	uint8_t img[ BOARDWIDTH * BOARDWIDTH ];
-	int i = 0, loop = 0;
-	bool color = true;
-	while ( i < BOARDWIDTH * BOARDWIDTH ) {
-		memset( img + i, (color) ? HICOLOR : LOCOLOR, BOARDWIDTH / 2 );
-		if ( ++loop >= BOARDWIDTH )
-			loop = 0;
-		if ( loop )
-			color = !color;
-		i += BOARDWIDTH / 2;
-	}
-	boardbg = bindTexture( QImage(BOARDWIDTH, BOARDWIDTH, QImage::Format_Indexed8), GL_TEXTURE_2D, GL_LUMINANCE );
-	glTexImage2D( GL_TEXTURE_2D, 0, GL_LUMINANCE, BOARDWIDTH, BOARDWIDTH, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, img );
-	
-	memset( img, 0, BOARDWIDTH * BOARDWIDTH );
-	blackbg = bindTexture( QImage(BOARDWIDTH, BOARDWIDTH, QImage::Format_Indexed8), GL_TEXTURE_2D, GL_LUMINANCE );
-	glTexImage2D( GL_TEXTURE_2D, 0, GL_LUMINANCE, BOARDWIDTH, BOARDWIDTH, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, img );
-	
-	background = blackbg;
-
-/*#define GL_GPU_MEM_INFO_TOTAL_AVAILABLE_MEM_NVX 0x9048
-#define GL_GPU_MEM_INFO_CURRENT_AVAILABLE_MEM_NVX 0x9049
-	GLint total_mem_kb = 0;
-	glGetIntegerv(GL_GPU_MEM_INFO_TOTAL_AVAILABLE_MEM_NVX, &total_mem_kb);
-	GLint cur_avail_mem_kb = 0;
-	glGetIntegerv(GL_GPU_MEM_INFO_CURRENT_AVAILABLE_MEM_NVX, &cur_avail_mem_kb);
-	printf("Total GPU mem = %d MB, Available = %d MB\n", total_mem_kb/1024, cur_avail_mem_kb/1024);*/
 
 	hidden = new QGLWidget( NULL, this );
 	if ( hidden ) {
@@ -120,47 +85,26 @@ void VideoWidget::paintGL()
 
 	GLfloat left, right, top, bottom;
 	GLfloat war = (GLfloat)w / (GLfloat)h;
-	GLfloat u, v;
 
 	if ( war < lastFrameRatio ) {
 		left = -1.0;
 		right = 1.0;
 		top = -war / lastFrameRatio;
 		bottom = war / lastFrameRatio;
-		u = (GLfloat)w / 32.0;
-		v = u / lastFrameRatio;
 	}
 	else {
 		top = -1.0;
 		bottom = 1.0;
 		left = -lastFrameRatio / war;
 		right = lastFrameRatio / war;
-		v = (GLfloat)h / 32.0;
-		u = v * lastFrameRatio;
 	}
 
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-
 	glPushMatrix();
-
 	glTranslatef( w / 2.0, h / 2.0, 0 );
 	glScalef( w / 2.0, h / 2.0, 1.0 );
-
-	glActiveTexture( GL_TEXTURE0 );
-	glBindTexture( GL_TEXTURE_2D, background );
-	glBegin( GL_QUADS );
-		glTexCoord2f( 0, 0 );
-		glVertex3f( left, top, 0.);
-		glTexCoord2f( 0, v );
-		glVertex3f( left, bottom, 0.);
-		glTexCoord2f( u, v );
-		glVertex3f( right, bottom, 0.);
-		glTexCoord2f( u, 0 );
-		glVertex3f( right, top, 0.);
-	glEnd();
 	
 	if ( lastFrame ) {
-		glEnable( GL_BLEND );
 		glBindTexture( GL_TEXTURE_2D, lastFrame->fbo()->texture() );
 		glBegin( GL_QUADS );
 			glTexCoord2f( 0, 0 );
@@ -172,7 +116,6 @@ void VideoWidget::paintGL()
 			glTexCoord2f( 1, 0 );
 			glVertex3f( right, top, 0 );
 		glEnd();
-		glDisable( GL_BLEND );
 	}
 
 	glPopMatrix();
@@ -248,14 +191,6 @@ void VideoWidget::shot()
 	while ( QFile::exists( QString("shot%1.png").arg( i ) ) )
 		++i;
 	img.save(QString("shot%1.png").arg( i ));
-}
-
-
-
-void VideoWidget::setTransparentBackground( bool b )
-{
-	background = b ? boardbg : blackbg;
-	updateGL();
 }
 
 

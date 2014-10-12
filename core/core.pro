@@ -25,6 +25,7 @@ SOURCES = \
 	\
 	audioout/ao_sdl.cpp \
 	\
+	vfx/movitbackground.cpp \
 	vfx/gltest.cpp \
 	vfx/glmix.cpp \
 	vfx/gloverlay.cpp \
@@ -87,6 +88,7 @@ HEADERS = \
 	afx/audiovolume.h \
 	afx/audiocrossfade.h \
 	\
+	vfx/movitbackground.h \
 	vfx/gltest.h \
 	vfx/glfilter.h \
 	vfx/glmix.h \

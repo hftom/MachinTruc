@@ -10,7 +10,7 @@ using namespace movit;
 
 static const char *inputColorShader=
 "vec4 FUNCNAME(vec2 tc) {\n"
-"	return vec4( 0.7, 0.0, 0.0, 1.0 );\n"
+"	return vec4( 0.0, 0.0, 0.0, 1.0 );\n"
 "}\n";
 
 

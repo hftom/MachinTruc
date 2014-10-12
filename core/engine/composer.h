@@ -2,8 +2,7 @@
 #define COMPOSER_H
 
 #include "movitchain.h"
-#include "vfx/glmix.h"
-#include "vfx/gloverlay.h"
+#include "vfx/movitbackground.h"
 #include "filtercollection.h"
 
 #include <QGLWidget>
@@ -49,6 +48,7 @@ private:
 	
 	QGLWidget *hiddenContext;
 	GLResource gl;
+	MovitBackground movitBackground;
 
 	MovitChain movitChain;
 	ResourcePool *movitPool;

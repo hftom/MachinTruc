@@ -606,7 +606,6 @@
      <string>Settings</string>
     </property>
     <addaction name="actionProjectSettings"/>
-    <addaction name="actionTransparentBackground"/>
    </widget>
    <widget class="QMenu" name="menuRender">
     <property name="title">

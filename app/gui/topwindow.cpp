@@ -104,7 +104,6 @@ TopWindow::TopWindow()
 	connect( actionSave, SIGNAL(triggered()), this, SLOT(saveProject()) );
 	connect( actionOpen, SIGNAL(triggered()), this, SLOT(loadProject()) );
 	connect( actionProjectSettings, SIGNAL(triggered()), this, SLOT(menuProjectSettings()) );
-	connect( actionTransparentBackground, SIGNAL(toggled(bool)), vw, SLOT(setTransparentBackground(bool)) );
 	connect( actionDeleteClip, SIGNAL(triggered()), timeline, SLOT(deleteClip()) );
 	connect( actionSplitCurrentClip, SIGNAL(triggered()), timeline, SLOT(splitCurrentClip()) );
 	connect( actionSaveImage, SIGNAL(triggered()), vw, SLOT(shot()) );

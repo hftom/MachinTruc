@@ -22,7 +22,6 @@ public:
 public slots:
 	void showFrame( Frame *frame );
 	void shot();
-	void setTransparentBackground( bool b );
 	void clear();
 
 protected :
@@ -38,7 +37,6 @@ private:
 	QImage lastImage();
 	
 	QGLWidget *hidden, *thumb, *fences;
-	GLuint boardbg, blackbg, background;
 	double lastFrameRatio;
 	Frame *lastFrame;
 

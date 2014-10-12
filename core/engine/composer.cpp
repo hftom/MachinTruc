@@ -311,8 +311,10 @@ void Composer::movitFrameDescriptor( QString prefix, Frame *f, QList< QSharedPoi
 
 	// resize to match destination aspect ratio and/or output size
 	if ( !sampler->previewMode() ) {
-		if ( fabs( projectProfile->getVideoSAR() - f->glSAR ) > 1e-3 ||
-			( f->glWidth != projectProfile->getVideoWidth() &&
+		if ( fabs( projectProfile->getVideoSAR() - f->glSAR ) > 1e-3
+			|| f->glWidth > projectProfile->getVideoWidth()
+			|| f->glHeight > projectProfile->getVideoHeight()
+			|| ( f->glWidth != projectProfile->getVideoWidth() &&
 			f->glHeight != projectProfile->getVideoHeight() ) )
 		{		
 			GLResize resize;
@@ -431,6 +433,9 @@ void Composer::movitRender( Frame *dst, bool update )
 		ow = f->glWidth;
 		oh = f->glHeight;
 	}
+	// background
+	currentDescriptor.append( movitBackground.getDescriptor( NULL, &projectProfile ) );
+	// output
 	currentDescriptor.append( QString("OUTPUT %1 %2").arg( ow ).arg( oh ) );
 
 	// rebuild the chain if neccessary
@@ -444,8 +449,6 @@ void Composer::movitRender( Frame *dst, bool update )
 		i = start;
 		Effect *last, *current = NULL;
 		
-		//current = movitChain.chain->add_input( new InputColor() );
-			
 		while ( (f = getNextFrame( dst, i )) ) {
 			last = current;
 			// input and filters
@@ -470,7 +473,10 @@ void Composer::movitRender( Frame *dst, bool update )
 					current = movitChain.chain->add_effect( el.at( l ), last, current );
 			}
 		}
-
+		// background
+		QList<Effect*> el = movitBackground.getMovitEffects();
+		movitChain.chain->add_effect( el[0] );
+		// output
 		movitChain.chain->set_dither_bits( 8 );
 		ImageFormat output_format;
 		output_format.color_space = COLORSPACE_sRGB;

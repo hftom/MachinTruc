@@ -165,11 +165,12 @@ Profile ProjectProfileDialog::getCurrentProfile()
 	p.setVideoWidth( widthSpinBox->value() );
 	p.setVideoHeight( heightSpinBox->value() );
 	
-	double r = widthSpinBox->value() / heightSpinBox->value();
+	double r = (double)widthSpinBox->value() / (double)heightSpinBox->value();
 	if ( ratioCombo->currentText() == "16:9" )
 		r = 16. / 9.;
 	else if ( ratioCombo->currentText() == "4:3" )
 		r = 4. / 3.;
+	
 	p.setVideoSAR( (double)p.getVideoHeight() * r / (double)p.getVideoWidth() );
 	
 	p.setVideoFrameRate( fpsPresets[ framerateCombo->currentIndex() ] );
