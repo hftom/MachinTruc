@@ -125,7 +125,7 @@ void TopWindow::trackRequest( bool rm, int index )
 	}
 	else {
 		if ( !sampler->trackRequest( rm, index ) ) {
-			QMessageBox::warning( this, tr("Error"), tr("Track coul not be added.") );
+			QMessageBox::warning( this, tr("Error"), tr("Track could not be added.") );
 		}
 		else {
 			timeline->trackAdded( index );
