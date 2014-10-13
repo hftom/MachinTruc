@@ -60,9 +60,9 @@ void Composer::setSharedContext( QGLWidget *shared )
 
 
 
-void Composer::discardFrame()
+void Composer::discardFrame( int n )
 {
-	++skipFrame;
+	skipFrame += n;
 }
 
 
@@ -271,7 +271,7 @@ bool Composer::renderVideoFrame( Frame *dst )
 		}
 		if ( skip ) {
 			qDebug() << "skipFrame" << sampler->currentPTS();
-			skipFrame = 0;
+			--skipFrame;
 			Profile projectProfile = sampler->getProfile();
 			dst->setVideoFrame( Frame::NONE, projectProfile.getVideoWidth(), projectProfile.getVideoHeight(), projectProfile.getVideoSAR(),
 								false, false, sampler->currentPTS(), projectProfile.getVideoFrameDuration() );

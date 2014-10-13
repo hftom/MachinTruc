@@ -26,7 +26,7 @@ public:
 
 public slots:
 	void setSharedContext( QGLWidget *shared );
-	void discardFrame();
+	void discardFrame( int );
 
 private:
 	void run();

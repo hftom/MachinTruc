@@ -13,7 +13,7 @@ Sampler::Sampler()
 	composer = new Composer( this );
 	connect( composer, SIGNAL(newFrame(Frame*)), this, SIGNAL(newFrame(Frame*)) );
 	connect( composer, SIGNAL(paused(bool)), this, SIGNAL(paused(bool)) );
-	connect( metronom, SIGNAL(discardFrame()), composer, SLOT(discardFrame()) );
+	connect( metronom, SIGNAL(discardFrame(int)), composer, SLOT(discardFrame(int)) );
 
 	Profile prof;
 	newProject( prof );

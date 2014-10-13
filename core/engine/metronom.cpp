@@ -120,19 +120,26 @@ void Metronom::run()
 	int skipped = -1;
 	struct timeval tv;
 	double sc, ct, t, predict = 0;
-	bool show;
 
 	fencesContext->makeCurrent();
 
 	while ( running ) {
 		if ( (f = videoFrames.dequeue()) ) {
+
+			if ( f->type() == Frame::NONE ) {
+				f->release();
+				continue;
+			}
+
+			if ( f->fence() )
+				glClientWaitSync( f->fence()->fence(), 0, GL_TIMEOUT_IGNORED );
+
 			clockMutex.lock();
 			sc = sclock;
 			clockMutex.unlock();
 			gettimeofday( &tv, NULL );
 			ct = tv.tv_sec * MICROSECOND + tv.tv_usec;
 
-			show = true;
 			if ( !sc ) {
 				if ( lastpts == 0 ) {
 					t = ct;
@@ -156,13 +163,12 @@ void Metronom::run()
 			}
 			lastpts = f->pts();
 
-			if ( f->type() == Frame::NONE ) {
-				show = false;
-				f->release();
-			}
-			else if ( t < ct ) {
+			if ( t < ct ) {
 				if ( (ct - t) > f->profile.getVideoFrameDuration() && skipped > -1 ) {
-					if ( ++skipped > 5 ) {
+					double delta = ( (ct - t) / f->profile.getVideoFrameDuration() );
+					skipped += delta;
+					emit discardFrame( delta + 1 );
+					if ( skipped >  f->profile.getVideoFrameRate() / 3 ) {
 						clockMutex.lock();
 						videoLate = qMin( ct -t, MICROSECOND / 4.0 );
 						//qDebug() << "videoLate" << videoLate;
@@ -170,31 +176,20 @@ void Metronom::run()
 						skipped = -1;
 						predict = 0;
 					}
-					//show = false;
-					emit discardFrame();
-					//f->release();
 				}
 				else {
 					skipped = 0;
-					t = ct;
 				}
 			}
 			else
 				skipped = 0;
 
-			if ( show ) {
-				if ( f->fence() )
-					glClientWaitSync( f->fence()->fence(), 0, GL_TIMEOUT_IGNORED );
-				gettimeofday( &tv, NULL );
-				ct = (tv.tv_sec * MICROSECOND + tv.tv_usec);
-
-				t = t - ct;
-				if ( t > 0 ) {
-					//qDebug() << "sleep:" << t;
-					usleep( t );
-				}
-				emit newFrame( f );
+			t = t - ct;
+			if ( t > 0 ) {
+				//qDebug() << "sleep:" << t;
+				usleep( t );
 			}
+			emit newFrame( f );
 		}
 		else
 			usleep( 1000 );
