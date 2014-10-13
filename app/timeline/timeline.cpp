@@ -504,6 +504,7 @@ void Timeline::setScene( Scene *s )
 	}
 	
 	setCursorPos( 0 );
+	itemSelected( NULL );
 
 	QTimer::singleShot ( 1, this, SLOT(updateLength()) );
 }
@@ -559,7 +560,19 @@ void Timeline::addFilter( ClipViewItem *clip, QString fx )
 			clip->getClip()->videoFilters.append( f.staticCast<GLFilter>() );
 			itemSelected( clip );
 			emit updateFrame();
-			break;
+			return;
+		}
+	}
+	
+	for ( i = 0; i < fc->audioFilters.count(); ++i ) {
+		if ( fc->audioFilters[ i ].identifier == fx ) {
+			QSharedPointer<Filter> f = fc->audioFilters[ i ].create();
+			f->setPosition( clip->getClip()->position() );
+			f->setLength( clip->getClip()->length() );
+			clip->getClip()->audioFilters.append( f.staticCast<AudioFilter>() );
+			itemSelected( clip );
+			emit updateFrame();
+			return;
 		}
 	}
 }

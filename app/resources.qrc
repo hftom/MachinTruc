@@ -1,6 +1,8 @@
 <RCC>
   <qresource prefix="toolbar">
+    <file>icons/audio-volume-high.png</file>
     <file>icons/arrow-down.png</file>
+    <file>icons/video_icon.png</file>
     <file>icons/arrow-up.png</file>
     <file>icons/lines-connector-active.png</file>
     <file>icons/trash-empty.png</file>

@@ -6,40 +6,98 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>539</width>
-    <height>461</height>
+    <width>524</width>
+    <height>440</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout">
-   <property name="margin">
-    <number>0</number>
-   </property>
+  <layout class="QGridLayout" name="gridLayout_2">
    <item row="0" column="0">
-    <widget class="QSplitter" name="splitter">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
+    <widget class="QTabWidget" name="tabWidget">
+     <property name="currentIndex">
+      <number>0</number>
      </property>
-     <widget class="EffectListWidget" name="listWidget">
-      <property name="focusPolicy">
-       <enum>Qt::NoFocus</enum>
-      </property>
+     <widget class="QWidget" name="videoTab">
+      <attribute name="icon">
+       <iconset resource="../resources.qrc">
+        <normaloff>:/toolbar/icons/video_icon.png</normaloff>:/toolbar/icons/video_icon.png</iconset>
+      </attribute>
+      <attribute name="title">
+       <string>Video effects</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout">
+       <property name="margin">
+        <number>0</number>
+       </property>
+       <item row="0" column="0">
+        <widget class="QSplitter" name="videoSplitter">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <widget class="EffectListWidget" name="videoListWidget">
+          <property name="focusPolicy">
+           <enum>Qt::NoFocus</enum>
+          </property>
+         </widget>
+         <widget class="QScrollArea" name="videoEffectsWidget">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>1</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="focusPolicy">
+           <enum>Qt::NoFocus</enum>
+          </property>
+          <property name="widgetResizable">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </widget>
+       </item>
+      </layout>
      </widget>
-     <widget class="QScrollArea" name="effectsWidget">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-        <horstretch>1</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="focusPolicy">
-       <enum>Qt::NoFocus</enum>
-      </property>
-      <property name="widgetResizable">
-       <bool>true</bool>
-      </property>
+     <widget class="QWidget" name="audioTab">
+      <attribute name="icon">
+       <iconset resource="../resources.qrc">
+        <normaloff>:/toolbar/icons/audio-volume-high.png</normaloff>:/toolbar/icons/audio-volume-high.png</iconset>
+      </attribute>
+      <attribute name="title">
+       <string>Audio effects</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout">
+       <property name="margin">
+        <number>0</number>
+       </property>
+       <item row="0" column="0">
+        <widget class="QSplitter" name="audioSplitter">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <widget class="EffectListWidget" name="audioListWidget">
+          <property name="focusPolicy">
+           <enum>Qt::NoFocus</enum>
+          </property>
+         </widget>
+         <widget class="QScrollArea" name="audioEffectsWidget">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>1</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="focusPolicy">
+           <enum>Qt::NoFocus</enum>
+          </property>
+          <property name="widgetResizable">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </widget>
+       </item>
+      </layout>
      </widget>
     </widget>
    </item>
@@ -52,6 +110,8 @@
    <header>gui/effectlistwidget.h</header>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="../resources.qrc"/>
+ </resources>
  <connections/>
 </ui>

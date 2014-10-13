@@ -28,6 +28,10 @@ private:
 	QGridLayout *effectsWidgetLayout;
 	QList<FilterWidget*> filterWidgets;
 	
+	QWidget *currentEffectsWidgetAudio;
+	QGridLayout *effectsWidgetLayoutAudio;
+	QList<FilterWidget*> filterWidgetsAudio;
+	
 signals:
 	void filterDeleted( Clip*, QSharedPointer<Filter> );
 	void editAnimation( FilterWidget*, ParameterWidget*, Parameter* );
