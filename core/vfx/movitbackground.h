@@ -21,6 +21,8 @@ public:
 	
 	std::string effect_type_id() const { return "MovitBackgroundEffect"; }
 	std::string output_fragment_shader() { return MovitBackgroundEffect_shader; }
+	bool needs_srgb_primaries() const { return false; }
+	AlphaHandling alpha_handling() const { return INPUT_PREMULTIPLIED_ALPHA_KEEP_BLANK; }
 };
 
 

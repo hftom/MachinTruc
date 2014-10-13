@@ -30,11 +30,18 @@ public:
 	virtual std::string effect_type_id() const { return "MyDeinterlaceEffect"; }
 	std::string output_fragment_shader() { return MyDeinterlaceEffect_frag; }
 	virtual bool needs_texture_bounce() const { return true; }
+	virtual bool changes_output_size() const { return true; }
 	virtual AlphaHandling alpha_handling() const { return DONT_CARE_ALPHA_TYPE; }
 	
 	virtual void inform_input_size(unsigned, unsigned width, unsigned height) {
 		iwidth = width;
 		iheight = height;
+	}
+	
+	virtual void get_output_size(unsigned *width, unsigned *height,
+	                             unsigned *virtual_width, unsigned *virtual_height) const {
+		*width = *virtual_width = iwidth;
+		*height = *virtual_height = iheight;
 	}
 	
 	virtual void set_gl_state( GLuint glsl_program_num, const std::string &prefix, unsigned *sampler_num ) {

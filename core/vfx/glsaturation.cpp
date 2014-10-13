@@ -31,7 +31,7 @@ bool GLSaturation::process( const QList<Effect*> &el, Frame *src, Profile *p )
 QList<Effect*> GLSaturation::getMovitEffects()
 {
 	QList<Effect*> list;
-	list.append( new MGLSaturation() );
+	list.append( new SaturationEffect() );
 	return list;
 }
 

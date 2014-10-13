@@ -1,4 +1,5 @@
 #include <movit/resample_effect.h>
+#include <movit/resize_effect.h>
 #include <movit/padding_effect.h>
 
 #include "glsize.h"
