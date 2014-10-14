@@ -27,16 +27,16 @@ public slots:
 protected :
 	void initializeGL();
 	void resizeGL( int, int );
-	void paintGL();
+	void paintEvent( QPaintEvent *event );
 
 	void wheelEvent( QWheelEvent * event );
 	void mouseMoveEvent( QMouseEvent * event );
 	void mousePressEvent( QMouseEvent * event );
 
 private:
+	void openglDraw();
 	QImage lastImage();
-	
-	QGLWidget *hidden, *thumb, *fences;
+
 	double lastFrameRatio;
 	Frame *lastFrame;
 

@@ -9,10 +9,7 @@
 
 
 
-VideoWidget::VideoWidget( QWidget *parent ) : QGLWidget( parent ),
-	hidden( NULL ),
-	thumb( NULL ),
-	fences( NULL ),
+VideoWidget::VideoWidget( QWidget *parent ) : QGLWidget( QGLFormat(QGL::SampleBuffers), parent ), //QGLWidget( parent ),
 	lastFrameRatio( 16./9. ),
 	lastFrame( NULL )
 {
@@ -29,29 +26,21 @@ VideoWidget::~VideoWidget()
 
 void VideoWidget::initializeGL()
 {
-	glClearColor( 0.2f, 0.2f, 0.2f, 0.0f );
-	glClearDepth( 1.0f );
-	glDepthFunc( GL_LEQUAL );
-	glDisable( GL_DEPTH_TEST );
-	glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
-	glDisable( GL_BLEND );
-	glShadeModel( GL_SMOOTH );
-	glEnable( GL_TEXTURE_2D );
-	glHint( GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST );
+	glEnable(GL_MULTISAMPLE);
 
-	hidden = new QGLWidget( NULL, this );
+	QGLWidget *hidden = new QGLWidget( NULL, this );
 	if ( hidden ) {
 		hidden->hide();
 		emit newSharedContext( hidden );
 	}
 	
-	thumb = new QGLWidget();
+	QGLWidget *thumb = new QGLWidget();
 	if ( thumb ) {
 		thumb->hide();
 		emit newThumbContext( thumb );
 	}
 	
-	fences = new QGLWidget( NULL, this );
+	QGLWidget *fences = new QGLWidget( NULL, this );
 	if ( fences ) {
 		fences->hide();
 		emit newFencesContext( fences );
@@ -67,13 +56,18 @@ void VideoWidget::resizeGL( int width, int height )
 	glLoadIdentity();
 	glOrtho(0.0, width, 0.0, height, -1.0, 1.0);
 	glMatrixMode(GL_MODELVIEW);
-	updateGL();
 }
 
 
 
-void VideoWidget::paintGL()
+void VideoWidget::openglDraw()
 {
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	
+	glClearColor( 0.2f, 0.2f, 0.2f, 0.0f );
+	glEnable( GL_TEXTURE_2D );
+	
 	int w = width();
 	int h = height();
 
@@ -119,6 +113,26 @@ void VideoWidget::paintGL()
 	}
 
 	glPopMatrix();
+	
+	glDisable( GL_TEXTURE_2D );
+	glMatrixMode(GL_MODELVIEW);
+	glPopMatrix();
+}
+
+
+
+void VideoWidget::paintEvent( QPaintEvent *event )
+{
+	makeCurrent();
+
+	openglDraw();
+	
+	QPainter painter( this );
+	/*painter.setRenderHint( QPainter::Antialiasing );
+	painter.setPen( QColor(255,255,255,255) );
+	painter.drawEllipse( rect() );
+	painter.setFont(QFont("Arial", 30));
+	painter.drawText(rect(), Qt::AlignCenter, QString::fromUtf8("Qt essai de texte.") );*/
 }
 
 
@@ -128,7 +142,7 @@ void VideoWidget::showFrame( Frame *frame )
 	lastFrameRatio = frame->glSAR * (double)frame->glWidth / (double)frame->glHeight;
 	lastFrame = frame;
 	emit frameShown( frame );
-	updateGL();
+	update();
 }
 
 
@@ -137,7 +151,7 @@ void VideoWidget::clear()
 {
 	lastFrame = NULL;
 	lastFrameRatio = 16. / 9.;
-	updateGL();
+	update();
 }
 
 

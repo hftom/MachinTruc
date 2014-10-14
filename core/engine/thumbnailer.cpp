@@ -1,3 +1,5 @@
+#include <QApplication>
+
 #include <movit/resample_effect.h>
 #include "engine/movitchain.h"
 #include "engine/filtercollection.h"

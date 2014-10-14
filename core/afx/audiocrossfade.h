@@ -32,6 +32,7 @@ public:
 
 	bool process( Frame *first, Frame *second, Profile *p ) {
 		// ATTENTION: first or second can be NULL (but not both)
+		// a NULL frame is considered silent.
 		// if first is NULL result goes in second->data()
 		// else it goes in first->data()		
 		int samples, channels;
