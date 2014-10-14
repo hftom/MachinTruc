@@ -439,10 +439,10 @@ void Composer::movitRender( Frame *dst, bool update )
 	currentDescriptor.append( QString("OUTPUT %1 %2").arg( ow ).arg( oh ) );
 
 	// rebuild the chain if neccessary
-	if ( currentDescriptor !=  movitDescriptor ) {
+	if ( currentDescriptor !=  movitChain.descriptor ) {
 		for ( int k = 0; k < currentDescriptor.count(); k++ )
 			printf("%s\n", currentDescriptor[k].toLocal8Bit().data());
-		movitDescriptor = currentDescriptor;
+		movitChain.descriptor = currentDescriptor;
 		movitChain.reset();
 		movitChain.chain = new EffectChain( projectProfile.getVideoSAR() * projectProfile.getVideoWidth(), projectProfile.getVideoHeight(), movitPool );
 
@@ -551,16 +551,20 @@ void Composer::movitRender( Frame *dst, bool update )
 
 
 
-void Composer::processAudioFrame( FrameSample *sample, Frame *f, Profile *profile )
+void Composer::processAudioFrame( FrameSample *sample, Profile *profile )
 {
-	// filters
-	for ( int k = 0; k < sample->audioFilters.count(); ++k )
-		sample->audioFilters[k]->process( f, profile );
+	if ( sample->frame ) {
+		// filters
+		for ( int k = 0; k < sample->audioFilters.count(); ++k )
+			sample->audioFilters[k]->process( sample->frame, profile );
+	}
 	// transition
-	if ( sample->transitionFrame.frame && !sample->transitionFrame.audioTransitionFilter.isNull() ) {
-		for ( int k = 0; k < sample->transitionFrame.audioFilters.count(); ++k )
-			sample->transitionFrame.audioFilters[k]->process( sample->transitionFrame.frame, profile );
-		sample->transitionFrame.audioTransitionFilter->process( f, sample->transitionFrame.frame, profile );
+	if ( !sample->transitionFrame.audioTransitionFilter.isNull() ) {
+		if ( sample->transitionFrame.frame ) {
+			for ( int k = 0; k < sample->transitionFrame.audioFilters.count(); ++k )
+				sample->transitionFrame.audioFilters[k]->process( sample->transitionFrame.frame, profile );
+		}
+		sample->transitionFrame.audioTransitionFilter->process( sample->frame, sample->transitionFrame.frame, profile );
 	}
 }
 
@@ -583,19 +587,25 @@ bool Composer::renderAudioFrame( Frame *dst, int nSamples )
 	}
 	
 	// process first frame
-	f = getNextFrame( dst, i );
+	getNextAudioFrame( dst, i );
 	sample = dst->sample->frames[i - 1];
-	processAudioFrame( sample, f, &profile );
+	processAudioFrame( sample, &profile );
 	// copy in dst
 	AudioCopy ac;
+	f = sample->frame;
+	if ( !f )
+		f = sample->transitionFrame.frame;
 	ac.process( f, dst, &profile );
 
 	// process remaining frames
 	AudioMix am;
-	while ( (f = getNextFrame( dst, i )) ) {
+	while ( getNextAudioFrame( dst, i ) ) {
 		sample = dst->sample->frames[i - 1];
-		processAudioFrame( sample, f, &profile );
+		processAudioFrame( sample, &profile );
 		// mix
+		f = sample->frame;
+		if ( !f )
+			f = sample->transitionFrame.frame;
 		am.process( f, dst, &profile );
 	}
 
@@ -615,4 +625,19 @@ Frame* Composer::getNextFrame( Frame *dst, int &track )
 	}
 
 	return NULL;
+}
+
+
+
+bool Composer::getNextAudioFrame( Frame *dst, int &track )
+{
+	while ( track < dst->sample->frames.count() ) {
+		if ( dst->sample->frames[track]->frame || dst->sample->frames[track]->transitionFrame.frame ) {
+			++track;
+			return true;
+		}
+		++track;
+	}
+
+	return false;
 }

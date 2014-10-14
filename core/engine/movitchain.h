@@ -70,6 +70,8 @@ public:
 	
 	EffectChain *chain;
 	QList<MovitBranch*> branches;
+	
+	QStringList descriptor;
 };
 
 #endif //MOVITCHAIN_H

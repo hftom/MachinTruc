@@ -601,7 +601,7 @@ int Sampler::getVideoTracks( Frame *dst )
 				c = t->clipAt( i + 1 );
 				if ( (c->position() - margin) <= currentScene->currentPTS && (c->position() + c->length() - margin) > currentScene->currentPTS ) {
 					if ( !(in = c->getInput()) )
-					in = getClipInput( c, currentScene->currentPTS );
+						in = getClipInput( c, currentScene->currentPTS );
 					f = in->getVideoFrame();
 					if ( f ) {
 						f->setPts( currentScene->currentPTS );
@@ -677,7 +677,6 @@ int Sampler::getAudioTracks( Frame *dst, int nSamples )
 				in = getClipInput( c, currentScene->currentPTSAudio );
 			f = in->getAudioFrame( nSamples );
 			if ( f ) {
-				++nFrames;
 				f->setPts( currentScene->currentPTSAudio );
 				fs->frame = f;
 				fs->audioFilters = c->getSource()->audioFilters.copy();
@@ -686,23 +685,23 @@ int Sampler::getAudioTracks( Frame *dst, int nSamples )
 			// Check for transition
 			if ( i < t->clipCount() - 1 ) {
 				c = t->clipAt( i + 1 );
-				if ( (c->position() - margin) <= currentScene->currentPTSAudio && (c->position() + c->length() - margin) > currentScene->currentPTSAudio ) {
+				Transition *trans = c->getTransition();
+				if ( trans && (c->position() - margin) <= currentScene->currentPTSAudio
+						&& (c->position() + c->length() - margin) > currentScene->currentPTSAudio ) {
 					if ( !(in = c->getInput()) )
 						in = getClipInput( c, currentScene->currentPTSAudio );
 					f = in->getAudioFrame( nSamples );
-					if ( f ) {
+					if ( f )
 						f->setPts( currentScene->currentPTSAudio );
-						fs->transitionFrame.frame = f;
-						fs->transitionFrame.audioFilters = c->getSource()->audioFilters.copy();
-						fs->transitionFrame.audioFilters.append( c->audioFilters.copy() );
-						Transition *trans;
-						if ( (trans = c->getTransition()) ) {
-							if ( c->position() + trans->length() + margin > currentScene->currentPTSAudio )
-								fs->transitionFrame.audioTransitionFilter = trans->getAudioFilter();
-						}
-					}
+					fs->transitionFrame.frame = f;
+					fs->transitionFrame.audioFilters = c->getSource()->audioFilters.copy();
+					fs->transitionFrame.audioFilters.append( c->audioFilters.copy() );
+					if ( c->position() + trans->length() + margin > currentScene->currentPTSAudio )
+						fs->transitionFrame.audioTransitionFilter = trans->getAudioFilter();
 				}
 			}
+			if ( fs->frame || fs->transitionFrame.frame )
+				++nFrames;
 		}
 	}
 	

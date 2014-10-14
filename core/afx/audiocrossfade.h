@@ -31,17 +31,33 @@ public:
 	}
 
 	bool process( Frame *first, Frame *second, Profile *p ) {
-		firstVol->process( first, p );
-		secondVol->process( second, p );
-		
-		int samples = first->audioSamples(), channels = first->profile.getAudioChannels();
-		int16_t *in = (int16_t*)first->data();
-		int16_t *out = (int16_t*)second->data();
-
-		for ( int i = 0; i < samples; ++i ) {
-			for ( int j = 0; j < channels; ++j )
-				in[(i * channels) + j] += out[(i * channels) + j];
+		// ATTENTION: first or second can be NULL (but not both)
+		// if first is NULL result goes in second->data()
+		// else it goes in first->data()		
+		int samples, channels;
+		if ( first ) {
+			firstVol->process( first, p );
+			samples = first->audioSamples();
+			channels = first->profile.getAudioChannels();
 		}
+		if ( second ) {
+			secondVol->process( second, p );
+			if ( !first ) {
+				samples = second->audioSamples();
+				channels = second->profile.getAudioChannels();
+			}
+		}
+
+		if ( first && second ) {
+			int16_t *in = (int16_t*)first->data();
+			int16_t *out = (int16_t*)second->data();
+
+			for ( int i = 0; i < samples; ++i ) {
+				for ( int j = 0; j < channels; ++j )
+					in[(i * channels) + j] += out[(i * channels) + j];
+			}
+		}
+
 		return true;
 	}
 
