@@ -9,10 +9,11 @@
 
 
 
-VideoWidget::VideoWidget( QWidget *parent ) : QGLWidget( QGLFormat(QGL::SampleBuffers), parent ), //QGLWidget( parent ),
+VideoWidget::VideoWidget( QWidget *parent ) : QGLWidget( QGLFormat(QGL::SampleBuffers), parent ),
 	lastFrameRatio( 16./9. ),
 	lastFrame( NULL )
 {
+	setAttribute( Qt::WA_OpaquePaintEvent );
 	setAutoFillBackground( false );
 }
 

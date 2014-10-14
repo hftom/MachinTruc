@@ -39,7 +39,7 @@ FilterCollection::FilterCollection()
 	sourceVideoFilters.append( FilterEntry( "GLCrop", QObject::tr("Crop"), &Maker<GLCrop>::make ) );
 	
 	// video transitions
-	videoTransitions.append( FilterEntry( "GLMix", QObject::tr("Mix"), &Maker<GLMix>::make ) );
+	videoTransitions.append( FilterEntry( "GLMix", QObject::tr("Crossfade"), &Maker<GLMix>::make ) );
 
 
 

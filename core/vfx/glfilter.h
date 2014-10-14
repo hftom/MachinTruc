@@ -20,8 +20,8 @@ public:
 
 	// single input effects
 	virtual bool process( const QList<Effect*>&, Frame*, Profile* ) { return true; }
-	// multi input effects
-	virtual bool process( const QList<Effect*>&, Frame* /*src*/, Frame* /*dst*/, Profile* ) { return true; }
+	// 2 inputs effects (transitions)
+	virtual bool process( const QList<Effect*>&, Frame* /*first*/, Frame* /*second*/, Profile* ) { return true; }
 	
 	virtual QList<Effect*> getMovitEffects() = 0;
 
