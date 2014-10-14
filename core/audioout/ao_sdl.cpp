@@ -1,5 +1,7 @@
 #include <unistd.h>
 
+#include <QMutexLocker>
+
 #include <SDL/SDL.h>
 
 #include "audioout/ao_sdl.h"
@@ -58,6 +60,8 @@ void AudioOutSDL::go()
 void AudioOutSDL::stop()
 {
 	SDL_PauseAudio( 1 );
+	QMutexLocker ml( &mutex );
+	bufferLen = bufferOffset = 0;
 }
 
 
@@ -85,6 +89,8 @@ void AudioOutSDL::streamRequestCallback( void *userdata, uint8_t *stream, int le
 
 	uint8_t *dst = stream;
 	int size = len;
+	
+	QMutexLocker ml( &ao->mutex );
 
 	// first, copy the remaining samples from previous Frame
 	if ( ao->bufferLen ) {

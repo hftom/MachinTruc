@@ -1,6 +1,8 @@
 #ifndef AUDIOOUTSDL_H
 #define AUDIOOUTSDL_H
 
+#include <QMutex>
+
 #include <sys/time.h>
 
 #include <SDL/SDL_audio.h>
@@ -30,5 +32,7 @@ private:
 
 	READDATACALLBACK readData;
 	void *readUserData;
+	
+	QMutex mutex;
 };
 #endif //AUDIOOUTSDL_H
