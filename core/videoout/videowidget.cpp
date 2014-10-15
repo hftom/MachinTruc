@@ -130,8 +130,11 @@ void VideoWidget::paintEvent( QPaintEvent *event )
 	
 	QPainter painter( this );
 	/*painter.setRenderHint( QPainter::Antialiasing );
-	painter.setPen( QColor(255,255,255,255) );
-	painter.drawEllipse( rect() );
+	QPen pen;
+	pen.setColor( QColor(0,0,0,128) );
+	pen.setWidth( 3 );
+	painter.setPen( pen );
+	painter.drawRect( 0, 0, 50, 50 );
 	painter.setFont(QFont("Arial", 30));
 	painter.drawText(rect(), Qt::AlignCenter, QString::fromUtf8("Qt essai de texte.") );*/
 }
