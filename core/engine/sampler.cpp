@@ -306,7 +306,7 @@ double Sampler::getEndPTS()
 	if ( playMode == PlaySource )
 		return preview.endPTS();
 	
-	return samplerDuration();
+	return currentSceneDuration();
 }
 
 
@@ -316,12 +316,12 @@ double Sampler::getSamplerDuration()
 	if ( playMode == PlaySource )
 		return preview.duration();
 
-	return samplerDuration();
+	return currentSceneDuration();
 }
 
 
 
-double Sampler::samplerDuration()
+double Sampler::currentSceneDuration()
 {
 	int i;
 	double duration = 0;

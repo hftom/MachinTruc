@@ -49,8 +49,8 @@ private:
 	
 	QGLWidget *hiddenContext;
 	GLResource gl;
-	MovitBackground movitBackground;
 
+	MovitBackground movitBackground;
 	MovitChain movitChain;
 	ResourcePool *movitPool;
 

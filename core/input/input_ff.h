@@ -7,12 +7,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-extern "C" {
-#include <libavcodec/avcodec.h>
-#include <libavformat/avformat.h>
-#include <libavutil/dict.h>
-#include <libswresample/swresample.h>
-}
+#include "output/common_ff.h"
 
 #include <QString>
 #include <QQueue>

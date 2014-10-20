@@ -19,6 +19,7 @@ class Metronom : public QThread
 public:
 	Metronom();
 	~Metronom();
+	void setRenderMode( bool b );
 	void play( bool b );
 	Frame* getLastFrame();
 	void flush();
@@ -28,6 +29,7 @@ public:
 	void setSharedContext( QGLWidget *shared );
 
 	MQueue<Frame*> videoFrames;
+	MQueue<Frame*> encodeVideoFrames;
 	MQueue<Frame*> freeVideoFrames;
 	MQueue<Frame*> audioFrames;
 	MQueue<Frame*> freeAudioFrames;
@@ -35,10 +37,11 @@ public:
 public slots:
 	void setLastFrame( Frame *f );
 
-protected:
-	void run();
-
 private:
+	void run();
+	void runRender();
+	void runShow();
+
 	bool running;
 	double sclock, videoLate;
 	QMutex clockMutex;
@@ -46,6 +49,7 @@ private:
 
 	QGLWidget *fencesContext;
 
+	bool renderMode;
 	Frame *lastFrame;
 	QMutex lastFrameMutex;
 

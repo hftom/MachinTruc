@@ -1,8 +1,12 @@
 // kate: tab-indent on; indent-width 4; mixedindent off; indent-mode cstyle; remove-trailing-space on;
 
+#include "output/common_ff.h"
+
 #include <QApplication>
 
 #include "engine/metronom.h"
+
+#include <QGLFramebufferObject>
 
 
 
@@ -11,6 +15,7 @@ Metronom::Metronom()
 	sclock( 0 ),
 	videoLate( 0 ),
 	fencesContext( NULL ),
+	renderMode( false ),
 	lastFrame( NULL )
 {
 	for ( int i = 0; i < NUMOUTPUTFRAMES; ++i ) {
@@ -62,6 +67,8 @@ Frame* Metronom::getLastFrame()
 void Metronom::flush()
 {
 	Frame *f;
+	while ( (f = encodeVideoFrames.dequeue()) )
+		f->release();
 	while ( (f = videoFrames.dequeue()) )
 		f->release();
 	while ( (f = audioFrames.dequeue()) )
@@ -72,12 +79,20 @@ void Metronom::flush()
 
 
 
+void Metronom::setRenderMode( bool b )
+{
+	renderMode = b;
+}
+
+
+
 void Metronom::play( bool b )
 {
 	if ( b ) {
 		sclock = videoLate = 0;
 		running = true;
-		ao.go();
+		if ( !renderMode )
+			ao.go();
 		start();
 	}
 	else {
@@ -115,13 +130,99 @@ void Metronom::readData( Frame **data, double time, void *userdata )
 
 void Metronom::run()
 {
+	fencesContext->makeCurrent();
+
+	if ( renderMode )
+		runRender();
+	else
+		runShow();
+
+	fencesContext->doneCurrent();
+}
+
+
+
+void Metronom::runRender()
+{
+	Frame *f;
+	uint8_t *data = NULL;
+	QGLFramebufferObject *fb = NULL;
+	struct SwsContext *swsCtx = NULL;
+
+	while ( running ) {
+		if ( (f = videoFrames.dequeue()) ) {
+			int w = f->profile.getVideoWidth();
+			int h = f->profile.getVideoHeight();
+			if ( !data ) {
+				swsCtx = sws_getContext( w, h, AV_PIX_FMT_RGB24,
+							w, h, AV_PIX_FMT_YUV420P,
+							SWS_BILINEAR, NULL, NULL, NULL);
+				data = (uint8_t*)malloc( w * h * 3 );
+				fb = new QGLFramebufferObject( w, h );
+				glViewport( 0, 0, w, h );
+				glMatrixMode( GL_PROJECTION );
+				glLoadIdentity();
+				glOrtho( 0.0, w, 0.0, h, -1.0, 1.0 );
+				glMatrixMode( GL_MODELVIEW );
+				glEnable( GL_TEXTURE_2D );
+				glActiveTexture( GL_TEXTURE0 );
+			}
+
+			if ( f->fence() )
+				glClientWaitSync( f->fence()->fence(), 0, GL_TIMEOUT_IGNORED );
+
+			fb->bind();
+			glBindTexture( GL_TEXTURE_2D, f->fbo()->texture() );
+			glBegin( GL_QUADS );
+				glTexCoord2f( 0, 1 ); glVertex3f( 0, 0, 0.);
+				glTexCoord2f( 0, 0 ); glVertex3f( 0, h, 0.);
+				glTexCoord2f( 1, 0 ); glVertex3f( w, h, 0.);
+				glTexCoord2f( 1, 1 ); glVertex3f( w, 0, 0.);
+			glEnd();
+			glReadPixels(0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, data);
+			fb->release();
+
+			int err = glGetError();
+			if ( err != GL_NO_ERROR )
+				qDebug() << "GL ERROR" << err;
+
+			f->setVideoFrame( Frame::YUV420P, w, h, f->profile.getVideoSAR(),
+							  f->profile.getVideoInterlaced(),
+							  f->profile.getVideoTopFieldFirst(),
+							  f->pts(),
+							  f->profile.getVideoFrameDuration() );
+
+			const uint8_t* const src[4] = { data, NULL, NULL, NULL };
+			const int srcStride[4] = { w * 3, 0, 0, 0 };
+			uint8_t *buf = f->data();
+			uint8_t* const dst[4] = { buf, buf + w * h, buf + w * h + w * h / 4, NULL };
+			const int dstStride[4] = { w, w / 2, w / 2, 0 };
+
+			sws_scale( swsCtx, src, srcStride, 0, h, dst, dstStride );
+
+			encodeVideoFrames.enqueue( f );
+		}
+		else
+			usleep( 1000 );
+	}
+
+	if ( data )
+		free( data );
+	if ( fb )
+		delete fb;
+	if ( swsCtx )
+		sws_freeContext( swsCtx );
+}
+
+
+
+void Metronom::runShow()
+{
 	Frame *f;
 	double lastpts = 0, lastct = 0;
 	int skipped = -1;
 	struct timeval tv;
 	double sc, ct, t, predict = 0;
-
-	fencesContext->makeCurrent();
 
 	while ( running ) {
 		if ( (f = videoFrames.dequeue()) ) {
@@ -194,6 +295,4 @@ void Metronom::run()
 		else
 			usleep( 1000 );
 	}
-
-	fencesContext->doneCurrent();
 }

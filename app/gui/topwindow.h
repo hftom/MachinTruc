@@ -53,6 +53,10 @@ public:
 	Sampler* getSampler() { return sampler; };
 
 private slots:
+	void renderDialog();
+	void renderStart( double startPts );
+	void renderFinished( double pts );
+	
 	void openSources();
 	void thumbResultReady( ThumbResult result );
 	
@@ -118,6 +122,7 @@ private:
 	Profile tempProfile;
 	
 signals:
+	void timelineReadyForEncode();
 	void setCursorPos( double );
 };
 #endif // TOPWINDOW_H

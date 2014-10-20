@@ -612,6 +612,7 @@
      <string>Render</string>
     </property>
     <addaction name="actionSaveImage"/>
+    <addaction name="actionRenderToFile"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuTimeline"/>
@@ -689,6 +690,11 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+N</string>
+   </property>
+  </action>
+  <action name="actionRenderToFile">
+   <property name="text">
+    <string>Render to file</string>
    </property>
   </action>
  </widget>

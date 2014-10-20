@@ -106,6 +106,7 @@ public:
 	int getAudioTracks( Frame *dst, int nSamples );
 	void prepareInputs();
 	double getSamplerDuration();
+	double currentSceneDuration();
 	double getEndPTS();
 	double currentPTS();
 	double currentPTSAudio();
@@ -143,7 +144,6 @@ private:
 	int updateLastFrame( Frame *dst );
 	InputBase* getInput( QString fn, InputBase::InputType type );
 	InputBase* getClipInput( Clip *c, double pts );
-	double samplerDuration();
 
 	QList<Scene*> sceneList;
 	Scene *currentScene;

@@ -5,6 +5,7 @@ QT += xml
 
 SOURCES = \
 	main.cpp \
+	gui/renderingdialog.cpp \
 	gui/projectprofiledialog.cpp \
 	gui/projectfile.cpp \
 	gui/topwindow.cpp \
@@ -33,6 +34,7 @@ SOURCES = \
 	animation/keyitem.cpp
 	
 HEADERS = \
+	gui/renderingdialog.h \
 	gui/projectprofiledialog.h \
 	gui/projectfile.h \
 	gui/topwindow.h \
@@ -75,7 +77,8 @@ FORMS = \
 	ui/profile.ui \
 	ui/filters.ui \
 	ui/effectheader.ui \
-	ui/animeditor.ui
+	ui/animeditor.ui \
+	ui/render.ui
 
 TARGET = ../machintruc
 
@@ -90,7 +93,7 @@ CONFIG += debug
 unix {
 	CONFIG += link_pkgconfig
 	PKGCONFIG += movit
-	PKGCONFIG += libavformat libavcodec libavutil libswresample
+	PKGCONFIG += libavformat libavcodec libavutil libswresample libswscale
 	PKGCONFIG += sdl
 	PKGCONFIG += x11
 }

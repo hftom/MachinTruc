@@ -11,28 +11,6 @@
 
 
 
-int lockManagerRegistered = 0;
-
-int lockManager( void **mutex, enum AVLockOp op)
-{
-	QMutex **m = (QMutex**)mutex;
-	switch ( op ) {
-		case AV_LOCK_CREATE:
-			(*m) = new QMutex();
-			break;
-		case AV_LOCK_OBTAIN:
-			(*m)->lock();
-			break;
-		case AV_LOCK_RELEASE:
-			(*m)->unlock();
-			break;
-		case AV_LOCK_DESTROY:
-			delete (*m);
-			break;
-	}
-	return 0;
-}
-
 static const int NCFR = 9;
 static const double CommonFrameRates[NCFR][2] = {
 	{ 24000., 1001. },
@@ -71,12 +49,7 @@ InputFF::InputFF() : InputBase(),
 {
 	inputType = FFMPEG;
 
-	if ( !lockManagerRegistered ) {
-		av_lockmgr_register( lockManager );
-		lockManagerRegistered = 1;
-		avcodec_register_all();
-		av_register_all();
-	}
+	FFmpegCommon::getGlobalInstance()->initFFmpeg();
 
 	videoAvframe = av_frame_alloc();
 	audioAvframe = av_frame_alloc();

@@ -3,6 +3,7 @@
 #include <movit/resample_effect.h>
 #include "engine/movitchain.h"
 #include "engine/filtercollection.h"
+#include "vfx/movitflip.h"
 
 #include <QGLFramebufferObject>
 
@@ -172,6 +173,9 @@ QImage Thumbnailer::getSourceThumb( Frame *f )
 		movitChain->chain->add_effect( e );
 	else
 		delete e;
+	// vertical flip
+	movitChain->chain->add_effect( new MyFlipEffect() );
+	
 	
 	movitChain->chain->set_dither_bits( 8 );
 	ImageFormat output_format;
@@ -192,7 +196,7 @@ QImage Thumbnailer::getSourceThumb( Frame *f )
 	QImage img( ICONSIZEWIDTH + 4, ICONSIZEHEIGHT + 4, QImage::Format_ARGB32 );
 	img.fill( QColor(0,0,0,0) );
 	QPainter p(&img);
-	p.drawImage( (ICONSIZEWIDTH - iw) / 2 + 2, (ICONSIZEHEIGHT - ih) / 2 + 2, QImage( data, iw, ih, QImage::Format_ARGB32 ).mirrored() );
+	p.drawImage( (ICONSIZEWIDTH - iw) / 2 + 2, (ICONSIZEHEIGHT - ih) / 2 + 2, QImage( data, iw, ih, QImage::Format_ARGB32 ) );
 
 	f->release();
 	delete movitChain;

@@ -2,6 +2,7 @@
 #include <QFileDialog>
 
 #include "gui/topwindow.h"
+#include "renderingdialog.h"
 #include "projectprofiledialog.h"
 
 #define VIDEOCLEARDELAY 200
@@ -107,8 +108,58 @@ TopWindow::TopWindow()
 	connect( actionDeleteClip, SIGNAL(triggered()), timeline, SLOT(deleteClip()) );
 	connect( actionSplitCurrentClip, SIGNAL(triggered()), timeline, SLOT(splitCurrentClip()) );
 	connect( actionSaveImage, SIGNAL(triggered()), vw, SLOT(shot()) );
+	connect( actionRenderToFile, SIGNAL(triggered()), this, SLOT(renderDialog()) );
 	
 	timeline->setScene( sampler->getCurrentScene() );
+}
+
+
+
+void TopWindow::renderDialog()
+{
+	if ( !sampler->currentSceneDuration() ) {
+		QMessageBox::warning( this, tr("Sorry"), tr("The timeline is empty.") );
+		return;
+	}
+
+	double playhead = 0;
+	if ( !sampler->previewMode() ) {
+		Frame *f = sampler->getMetronom()->getLastFrame();
+		if ( f )
+			playhead = f->pts();
+	}
+	else
+		playhead = sampler->getCurrentScene()->currentPTS;		
+
+	RenderingDialog *dlg = new RenderingDialog( this,
+								sampler->getCurrentScene()->getProfile(),
+								playhead,
+								sampler->currentSceneDuration(),
+								&sampler->getMetronom()->audioFrames,
+								&sampler->getMetronom()->encodeVideoFrames );
+
+	connect( dlg, SIGNAL(renderStarted(double)), this, SLOT(renderStart(double)) );
+	connect( dlg, SIGNAL(renderFinished(double)), this, SLOT(renderFinished(double)) );
+	connect( dlg, SIGNAL(showFrame(Frame*)), vw, SLOT(showFrame(Frame*)) );
+	connect( this, SIGNAL(timelineReadyForEncode()), dlg, SLOT(timelineReady()) );
+	dlg->exec();
+	delete dlg;
+}
+
+void TopWindow::renderStart( double startPts )
+{
+	timelineSeek( startPts );
+	vw->clear();
+	sampler->getMetronom()->setRenderMode( true );
+	playPause( true );
+	emit timelineReadyForEncode();
+}
+
+void TopWindow::renderFinished( double pts )
+{
+	timelineSeek( pts );
+	sampler->getMetronom()->setRenderMode( false );
+	timelineSeek( pts );
 }
 
 

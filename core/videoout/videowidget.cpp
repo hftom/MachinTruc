@@ -167,12 +167,14 @@ QImage VideoWidget::lastImage()
 	
 	makeCurrent();
 	
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glEnable( GL_TEXTURE_2D );
+	
 	int h = lastFrame->glHeight;
 	int w = lastFrame->glWidth * lastFrame->glSAR;
 	QGLFramebufferObject fb( w, h );
 	fb.bind();
-	glClearColor( 0, 0, 0, 0 );
-	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 	glViewport( 0, 0, w, h );
 	glMatrixMode( GL_PROJECTION );
 	glLoadIdentity();
@@ -180,7 +182,6 @@ QImage VideoWidget::lastImage()
 	glMatrixMode( GL_MODELVIEW );
 	glActiveTexture( GL_TEXTURE0 );
 	glBindTexture( GL_TEXTURE_2D, lastFrame->fbo()->texture() );
-	glEnable( GL_BLEND );
 	glBegin( GL_QUADS );
 		glTexCoord2f( 0, 0 );
 		glVertex3f( 0, 0, 0.);
@@ -191,9 +192,11 @@ QImage VideoWidget::lastImage()
 		glTexCoord2f( 1, 0 );
 		glVertex3f( w, 0, 0.);
 	glEnd();
-	glDisable( GL_BLEND );
-	glClearColor( 0.2f, 0.2f, 0.2f, 0.0f );
 	fb.release();
+	
+	glDisable( GL_TEXTURE_2D );
+	glMatrixMode(GL_MODELVIEW);
+	glPopMatrix();
 
 	return fb.toImage();
 }

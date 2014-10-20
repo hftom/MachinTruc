@@ -23,6 +23,9 @@ SOURCES = \
 	input/input_gl.cpp \
 	input/input_image.cpp \
 	\
+	output/common_ff.cpp \
+	output/output_ff.cpp \
+	\
 	audioout/ao_sdl.cpp \
 	\
 	vfx/movitbackground.cpp \
@@ -80,6 +83,9 @@ HEADERS = \
 	input/input_gl.h \
 	input/input_image.h \
 	\
+	output/common_ff.h \
+	output/output_ff.h \
+	\
 	audioout/ao_sdl.h \
 	\
 	afx/audiofilter.h \
@@ -128,7 +134,7 @@ CONFIG += staticlib debug
 unix {
 	CONFIG += link_pkgconfig
 	PKGCONFIG += movit
-	PKGCONFIG += libavformat libavcodec libavutil libswresample
+	PKGCONFIG += libavformat libavcodec libavutil libswresample libswscale
 	PKGCONFIG += sdl
 	PKGCONFIG += x11
 }
