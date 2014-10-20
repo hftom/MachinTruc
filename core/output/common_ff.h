@@ -22,6 +22,20 @@ extern "C" {
 
 
 
+const int NCFR = 8;
+const double CommonFrameRates[NCFR][2] = {
+	{ 24000., 1001. },
+	{ 24., 1. },
+	{ 25., 1. },
+	{ 30000., 1001. },
+	{ 30., 1. },
+	{ 50., 1. },
+	{ 60000., 1001. },
+	{ 60., 1. },
+};
+
+
+
 class FFmpegCommon
 {
 public:

@@ -115,6 +115,14 @@ bool OutputFF::openVideo( QString filename, Profile &prof, int vrate )
 	videoCodecCtx->height = prof.getVideoHeight();
 	/* frames per second */
 	videoCodecCtx->time_base = (AVRational){1,25};
+	double fps = prof.getVideoFrameRate();
+	for ( int i = 0; i < NCFR; ++i ) {
+		double cfps = CommonFrameRates[i][1] / CommonFrameRates[i][0];
+		if ( qAbs( fps - cfps ) < 1e-3 ) {
+			videoCodecCtx->time_base = (AVRational){ (int)CommonFrameRates[i][0], (int)CommonFrameRates[i][1] };
+			break;
+		}
+	}
 	/*
 	* emit one intra frame every ten frames
 	* check frame pict_type before passing frame
@@ -366,7 +374,6 @@ void OutputFF::run()
         ret = avcodec_encode_audio2( audioCodecCtx, &pkt, NULL, &got_output );
         if ( ret < 0 ) {
             qDebug() << "Error encoding audio frame.";
-            exit(1);
         }
 
         if ( got_output ) {

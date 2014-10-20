@@ -11,21 +11,6 @@
 
 
 
-static const int NCFR = 9;
-static const double CommonFrameRates[NCFR][2] = {
-	{ 24000., 1001. },
-	{ 24., 1. },
-	{ 25000., 1001. },
-	{ 25., 1. },
-	{ 30000., 1001. },
-	{ 30., 1. },
-	{ 50., 1. },
-	{ 60000., 1001. },
-	{ 60., 1. },
-};
-
-
-
 InputFF::InputFF() : InputBase(),
 	formatCtx( NULL ),
 	videoCodecCtx( NULL ),
