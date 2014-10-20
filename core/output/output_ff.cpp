@@ -126,8 +126,8 @@ bool OutputFF::openVideo( QString filename, Profile &prof, int vrate )
 	videoCodecCtx->max_b_frames = 2;
 	videoCodecCtx->pix_fmt = AV_PIX_FMT_YUV420P;
 
-	//if ( codec_id == AV_CODEC_ID_H264 )
-		//av_opt_set( videoCodecCtx->priv_data, "preset", "slow", 0 );
+	if ( codec_id == AV_CODEC_ID_H264 )
+		av_opt_set( videoCodecCtx->priv_data, "preset", "slow", 0 );
 
 	/* open it */
 	if ( avcodec_open2( videoCodecCtx, codec, NULL ) < 0 ) {
@@ -304,7 +304,7 @@ void OutputFF::run()
 		if ( !videoEnd && nVideo == nAudio ) {
 			if ( (f = videoFrames->dequeue()) ) {
 				encodeVideo( f, nVideo );
-				qDebug() << "N:" << nVideo << f->pts();
+				//qDebug() << "N:" << nVideo << f->pts();
 				if ( f->pts() > endPTS )
 					videoEnd = true;
 				if ( time.elapsed() >= 1000 ) {
@@ -320,7 +320,7 @@ void OutputFF::run()
 		if ( nAudio < nVideo ) {
 			if ( (f = audioFrames->dequeue()) ) {
 				encodeAudio( f, nAudio );
-				qDebug() << "N audio:" << nAudio;
+				//qDebug() << "N audio:" << nAudio;
 				f->release();
 				++nAudio;
 				wait = false;
@@ -332,7 +332,7 @@ void OutputFF::run()
 			break;
 		}
 		if ( wait ) {
-			qDebug() << "OutputFF::run sleep";
+			//qDebug() << "OutputFF::run sleep";
 			usleep( 1000 );
 		}
 	}

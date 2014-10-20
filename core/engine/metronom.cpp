@@ -154,10 +154,11 @@ void Metronom::runRender()
 			int w = f->profile.getVideoWidth();
 			int h = f->profile.getVideoHeight();
 			if ( !data ) {
+				data = (uint8_t*)malloc( w * h * 3 );
 				swsCtx = sws_getContext( w, h, AV_PIX_FMT_RGB24,
 							w, h, AV_PIX_FMT_YUV420P,
 							SWS_BILINEAR, NULL, NULL, NULL);
-				data = (uint8_t*)malloc( w * h * 3 );
+
 				fb = new QGLFramebufferObject( w, h );
 				glViewport( 0, 0, w, h );
 				glMatrixMode( GL_PROJECTION );
@@ -179,12 +180,8 @@ void Metronom::runRender()
 				glTexCoord2f( 1, 0 ); glVertex3f( w, h, 0.);
 				glTexCoord2f( 1, 1 ); glVertex3f( w, 0, 0.);
 			glEnd();
-			glReadPixels(0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, data);
+        	glReadPixels( 0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, data );
 			fb->release();
-
-			int err = glGetError();
-			if ( err != GL_NO_ERROR )
-				qDebug() << "GL ERROR" << err;
 
 			f->setVideoFrame( Frame::YUV420P, w, h, f->profile.getVideoSAR(),
 							  f->profile.getVideoInterlaced(),

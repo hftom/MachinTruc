@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>299</width>
-    <height>283</height>
+    <width>344</width>
+    <height>321</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -164,6 +164,13 @@
       <widget class="QProgressBar" name="progressBar">
        <property name="value">
         <number>0</number>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="etaLab">
+       <property name="text">
+        <string/>
        </property>
       </widget>
      </item>

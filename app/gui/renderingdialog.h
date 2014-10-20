@@ -1,6 +1,8 @@
 #ifndef RENDERINGDIALOG_H
 #define RENDERINGDIALOG_H
 
+#include <QTime>
+
 #include "output/output_ff.h"
 #include "ui_render.h"
 
@@ -35,6 +37,7 @@ private:
 	Profile profile;
 	bool encoderRunning;
 	OutputFF *out;
+	QTime eta;
 	
 signals:
 	void renderStarted( double startPts );

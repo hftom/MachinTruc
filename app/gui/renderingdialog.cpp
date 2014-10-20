@@ -94,6 +94,7 @@ void RenderingDialog::startRender()
 	
 	encoderRunning = true;
 	enableUI( false );
+	eta.start();
 	emit renderStarted( encodeStartPts );
 }
 
@@ -101,7 +102,13 @@ void RenderingDialog::startRender()
 
 void RenderingDialog::frameEncoded( Frame *f )
 {
-	progressBar->setValue( (f->pts() - encodeStartPts) * 100.0 / encodeLength );
+	double prc = (f->pts() - encodeStartPts) * 100.0 / encodeLength;
+	int elapsed = eta.elapsed();
+	int still = (elapsed * 100 / prc) - elapsed;
+	QString s = tr("Remaining time:");
+	s += "  " + QTime( 0, 0, 0 ).addMSecs( still ).toString("hh:mm:ss");
+	etaLab->setText( s );
+	progressBar->setValue( prc );
 	emit showFrame( f );
 }
 
@@ -119,6 +126,7 @@ void RenderingDialog::outputFinished()
 	emit renderFinished( playheadPts );
 	enableUI( true );
 	encoderRunning = false;
+	etaLab->setText("");
 }
 
 
