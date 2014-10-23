@@ -109,9 +109,9 @@ bool OutputFF::openVideo( QString filename, Profile &prof, int vrate )
 	videoCodecCtx->time_base = (AVRational){1,25};
 	double fps = prof.getVideoFrameRate();
 	for ( int i = 0; i < NCFR; ++i ) {
-		double cfps = CommonFrameRates[i][1] / CommonFrameRates[i][0];
+		double cfps = CommonFrameRates[i][0] / CommonFrameRates[i][1];
 		if ( qAbs( fps - cfps ) < 1e-3 ) {
-			videoCodecCtx->time_base = (AVRational){ (int)CommonFrameRates[i][0], (int)CommonFrameRates[i][1] };
+			videoCodecCtx->time_base = (AVRational){ (int)CommonFrameRates[i][1], (int)CommonFrameRates[i][0] };
 			break;
 		}
 	}
