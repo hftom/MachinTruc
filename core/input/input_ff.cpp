@@ -74,6 +74,8 @@ InputFF::~InputFF()
 
 	if ( arb )
 		delete arb;
+
+	delete semaphore;
 }
 
 
@@ -339,9 +341,8 @@ bool InputFF::ffOpen( QString fn )
 					videoStream = i;
 					AVStream *st = formatCtx->streams[ i ];
 					AVDictionaryEntry *tag = NULL;
-					while ( ( tag = av_dict_get( st->metadata, "rotate", tag, AV_DICT_IGNORE_SUFFIX ) ) ) {
+					if ( (tag = av_dict_get( st->metadata, "rotate", tag, AV_DICT_IGNORE_SUFFIX )) )
 						orientation = QString( tag->value ).toInt();
-					}
 					haveVideo = true;
 				}
 			}
@@ -875,7 +876,7 @@ bool InputFF::makeFrame( Frame *f, double ratio, double pts, double dur )
 			f->profile.setVideoColorSpace( Profile::SPC_601_525 );
 			break;
 		default:
-			f->profile.setVideoColorSpace( (height > 576) ? Profile::SPC_709 : Profile::SPC_601_625 );
+			f->profile.setVideoColorSpace( (videoCodecCtx->width * height > 1280 * 576) ? Profile::SPC_709 : Profile::SPC_601_625 );
 	}
 
 	switch ( videoCodecCtx->color_primaries ) {

@@ -21,6 +21,7 @@ public:
 	
 private slots:
 	void presetChanged( int index );
+	void done( int r );
 
 };
 #endif // PROJECTPROFILEDIALOG_H

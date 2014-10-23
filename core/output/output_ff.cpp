@@ -22,14 +22,6 @@ OutputFF::OutputFF( MQueue<Frame*> *vf, MQueue<Frame*> *af )
 	endPTS( 0 )
 {
 	FFmpegCommon::getGlobalInstance()->initFFmpeg();
-	
-	/*const AVCodecDescriptor *desc = NULL;
-	desc = avcodec_descriptor_next( desc );
-	while ( desc ) {
-		qDebug() << desc->name;
-		qDebug() << "	" << desc->long_name;
-		desc = avcodec_descriptor_next( desc );
-	}*/
 }
 
 
@@ -134,8 +126,8 @@ bool OutputFF::openVideo( QString filename, Profile &prof, int vrate )
 	videoCodecCtx->max_b_frames = 2;
 	videoCodecCtx->pix_fmt = AV_PIX_FMT_YUV420P;
 
-	if ( codec_id == AV_CODEC_ID_H264 )
-		av_opt_set( videoCodecCtx->priv_data, "preset", "slow", 0 );
+	//if ( codec_id == AV_CODEC_ID_H264 )
+		//av_opt_set( videoCodecCtx->priv_data, "preset", "veryslow", 0 );
 
 	/* open it */
 	if ( avcodec_open2( videoCodecCtx, codec, NULL ) < 0 ) {

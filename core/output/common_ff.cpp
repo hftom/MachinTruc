@@ -1,3 +1,4 @@
+#include <QDebug>
 #include <QMutex>
 
 #include "common_ff.h"
@@ -42,6 +43,14 @@ bool FFmpegCommon::initFFmpeg()
 		avcodec_register_all();
 		av_register_all();
 		initDone = true;
+		
+		/*const AVCodecDescriptor *desc = NULL;
+		desc = avcodec_descriptor_next( desc );
+		while ( desc ) {
+			qDebug() << desc->name;
+			//qDebug() << "	" << desc->long_name;
+			desc = avcodec_descriptor_next( desc );
+		}*/
 	}
 
 	return initDone;

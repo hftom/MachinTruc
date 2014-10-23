@@ -145,20 +145,26 @@ void Metronom::run()
 void Metronom::runRender()
 {
 	Frame *f;
-	uint8_t *data = NULL;
+	uint8_t *rgbData = NULL;
 	QGLFramebufferObject *fb = NULL;
-	struct SwsContext *swsCtx = NULL;
+	struct SwsContext *swsCtx;
 
 	while ( running ) {
 		if ( (f = videoFrames.dequeue()) ) {
+			glGetError();
 			int w = f->profile.getVideoWidth();
 			int h = f->profile.getVideoHeight();
-			if ( !data ) {
-				data = (uint8_t*)malloc( w * h * 3 );
+			if ( !rgbData ) {
+				rgbData = (uint8_t*)malloc( w  * h * 3 + 32/*extra space for sws_scale*/ );
 				swsCtx = sws_getContext( w, h, AV_PIX_FMT_RGB24,
-							w, h, AV_PIX_FMT_YUV420P,
-							SWS_BILINEAR, NULL, NULL, NULL);
-
+										w, h, AV_PIX_FMT_YUV420P,
+										0, NULL, NULL, NULL );
+				const int *coefs;
+				if ( w * h > 1280 * 576 )
+					coefs = sws_getCoefficients( SWS_CS_ITU709 );
+				else
+					coefs = sws_getCoefficients( SWS_CS_ITU601 );
+				sws_setColorspaceDetails( swsCtx, coefs, 1, coefs, 0, 0, 0, 0 );
 				fb = new QGLFramebufferObject( w, h );
 				glViewport( 0, 0, w, h );
 				glMatrixMode( GL_PROJECTION );
@@ -180,7 +186,7 @@ void Metronom::runRender()
 				glTexCoord2f( 1, 0 ); glVertex3f( w, h, 0.);
 				glTexCoord2f( 1, 1 ); glVertex3f( w, 0, 0.);
 			glEnd();
-        	glReadPixels( 0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, data );
+        	glReadPixels( 0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, rgbData );
 			fb->release();
 
 			f->setVideoFrame( Frame::YUV420P, w, h, f->profile.getVideoSAR(),
@@ -189,11 +195,10 @@ void Metronom::runRender()
 							  f->pts(),
 							  f->profile.getVideoFrameDuration() );
 
-			const uint8_t* const src[4] = { data, NULL, NULL, NULL };
+			const uint8_t * const src[4] = { rgbData, NULL, NULL, NULL };
 			const int srcStride[4] = { w * 3, 0, 0, 0 };
-			uint8_t *buf = f->data();
-			uint8_t* const dst[4] = { buf, buf + w * h, buf + w * h + w * h / 4, NULL };
-			const int dstStride[4] = { w, w / 2, w / 2, 0 };
+			uint8_t *dst[4] = { f->data(), f->data() + w * h, f->data() + w * h * 5 / 4 };
+			const int dstStride[4] = { w, w / 2, w / 2 };
 
 			sws_scale( swsCtx, src, srcStride, 0, h, dst, dstStride );
 
@@ -203,10 +208,10 @@ void Metronom::runRender()
 			usleep( 1000 );
 	}
 
-	if ( data )
-		free( data );
 	if ( fb )
 		delete fb;
+	if ( rgbData )
+		free( rgbData );
 	if ( swsCtx )
 		sws_freeContext( swsCtx );
 }

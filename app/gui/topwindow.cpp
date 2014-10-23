@@ -123,11 +123,9 @@ void TopWindow::renderDialog()
 	}
 
 	double playhead = 0;
-	if ( !sampler->previewMode() ) {
-		Frame *f = sampler->getMetronom()->getLastFrame();
-		if ( f )
-			playhead = f->pts();
-	}
+	Frame *f = sampler->getMetronom()->getLastFrame();
+	if ( f && !sampler->previewMode() )
+		playhead = f->pts();
 	else
 		playhead = sampler->getCurrentScene()->currentPTS;		
 

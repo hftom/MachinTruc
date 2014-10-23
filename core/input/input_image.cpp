@@ -36,6 +36,8 @@ InputImage::~InputImage()
 		delete f;
 	if ( buffer )
 		BufferPool::globalInstance()->releaseBuffer( buffer );
+
+	delete semaphore;
 }
 
 

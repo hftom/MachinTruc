@@ -1,4 +1,6 @@
 #include <QDebug>
+#include <QMessageBox>
+
 #include "projectprofiledialog.h"
 
 
@@ -101,9 +103,9 @@ ProjectProfileDialog::ProjectProfileDialog( QWidget *parent, Profile &p, int war
 	}
 
 	widthSpinBox->setRange( 64, 1920 );
-	widthSpinBox->setSingleStep( 2 );
+	widthSpinBox->setSingleStep( 8 );
 	heightSpinBox->setRange( 64, 1080 );
-	heightSpinBox->setSingleStep( 2 );
+	heightSpinBox->setSingleStep( 8 );
 	
 	ratioCombo->addItem( "16:9" );
 	ratioCombo->addItem( "4:3" );
@@ -155,6 +157,20 @@ void ProjectProfileDialog::presetChanged( int index )
 		ratioCombo->setCurrentIndex( 1 );
 	
 	framerateCombo->setCurrentIndex( vPresets[index - 1].framerate );
+}
+
+
+
+void ProjectProfileDialog::done( int r )
+{
+	if ( r == QDialog::Accepted ) {
+		if ( widthSpinBox->value() % 8 || heightSpinBox->value() % 8 ) {
+			QMessageBox::warning( this, tr("Error"), tr("Width and Height must be multiple of 8.") );
+			return;
+		}
+	}
+
+	QDialog::done( r );
 }
 
 

@@ -25,7 +25,7 @@ private:
 		refCount = 1;
 	}
 	~Buffer() {
-		free ( buf );
+		free( buf );
 	}
 	int getBufferSize() {
 		return bufSize;
