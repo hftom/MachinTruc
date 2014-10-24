@@ -155,7 +155,7 @@ void Metronom::runRender()
 			int w = f->profile.getVideoWidth();
 			int h = f->profile.getVideoHeight();
 			if ( !rgbData ) {
-				rgbData = (uint8_t*)malloc( w  * h * 3 + 32/*extra space for sws_scale*/ );
+				rgbData = (uint8_t*)malloc( w * h * 3 + 32 );
 				swsCtx = sws_getContext( w, h, AV_PIX_FMT_RGB24,
 										w, h, AV_PIX_FMT_YUV420P,
 										0, NULL, NULL, NULL );
@@ -186,6 +186,7 @@ void Metronom::runRender()
 				glTexCoord2f( 1, 0 ); glVertex3f( w, h, 0.);
 				glTexCoord2f( 1, 1 ); glVertex3f( w, 0, 0.);
 			glEnd();
+			glPixelStorei( GL_PACK_ALIGNMENT, 1 );
         	glReadPixels( 0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, rgbData );
 			fb->release();
 

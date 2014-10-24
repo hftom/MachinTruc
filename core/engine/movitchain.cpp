@@ -25,8 +25,10 @@ bool MovitInput::setBuffer( PBO *p, Frame *src, int size )
 {
 	glBindBuffer( GL_PIXEL_UNPACK_BUFFER_ARB, p->pbo() );
 	void *mem = glMapBuffer( GL_PIXEL_UNPACK_BUFFER_ARB, GL_WRITE_ONLY );
-	if ( !mem )
+	if ( !mem ) {
+		p->setFree( true );
 		return false;
+	}
 	memcpy( mem, src->data(), size );
 	glUnmapBuffer( GL_PIXEL_UNPACK_BUFFER_ARB );
 	glBindBuffer( GL_PIXEL_UNPACK_BUFFER_ARB, 0 );

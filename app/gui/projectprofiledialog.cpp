@@ -103,9 +103,9 @@ ProjectProfileDialog::ProjectProfileDialog( QWidget *parent, Profile &p, int war
 	}
 
 	widthSpinBox->setRange( 64, 1920 );
-	widthSpinBox->setSingleStep( 8 );
+	widthSpinBox->setSingleStep( 2 );
 	heightSpinBox->setRange( 64, 1080 );
-	heightSpinBox->setSingleStep( 8 );
+	heightSpinBox->setSingleStep( 2 );
 	
 	ratioCombo->addItem( "16:9" );
 	ratioCombo->addItem( "4:3" );
@@ -163,12 +163,12 @@ void ProjectProfileDialog::presetChanged( int index )
 
 void ProjectProfileDialog::done( int r )
 {
-	if ( r == QDialog::Accepted ) {
-		if ( widthSpinBox->value() % 8 || heightSpinBox->value() % 8 ) {
-			QMessageBox::warning( this, tr("Error"), tr("Width and Height must be multiple of 8.") );
+	/*if ( r == QDialog::Accepted ) {
+		if ( widthSpinBox->value() % 2 || heightSpinBox->value() % 2 ) {
+			QMessageBox::warning( this, tr("Error"), tr("Width and Height must be multiple of 2.") );
 			return;
 		}
-	}
+	}*/
 
 	QDialog::done( r );
 }
@@ -178,16 +178,28 @@ void ProjectProfileDialog::done( int r )
 Profile ProjectProfileDialog::getCurrentProfile()
 {
 	Profile p;
-	p.setVideoWidth( widthSpinBox->value() );
-	p.setVideoHeight( heightSpinBox->value() );
+	int w = widthSpinBox->value();
+	if ( w % 2 )
+		--w;
+	if ( w < 64 )
+		w = 64;
 	
-	double r = (double)widthSpinBox->value() / (double)heightSpinBox->value();
+	int h = heightSpinBox->value();
+	if ( h % 2 )
+		--h;
+	if ( h < 64 )
+		h = 64;
+		
+	p.setVideoWidth( w );
+	p.setVideoHeight( h );
+	
+	double r = (double)w / (double)h;
 	if ( ratioCombo->currentText() == "16:9" )
 		r = 16. / 9.;
 	else if ( ratioCombo->currentText() == "4:3" )
 		r = 4. / 3.;
 	
-	p.setVideoSAR( (double)p.getVideoHeight() * r / (double)p.getVideoWidth() );
+	p.setVideoSAR( (double)h * r / (double)w );
 	
 	p.setVideoFrameRate( fpsPresets[ framerateCombo->currentIndex() ] );
 	p.setVideoFrameDuration( MICROSECOND / p.getVideoFrameRate() );
