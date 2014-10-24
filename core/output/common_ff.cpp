@@ -51,6 +51,13 @@ bool FFmpegCommon::initFFmpeg()
 			//qDebug() << "	" << desc->long_name;
 			desc = avcodec_descriptor_next( desc );
 		}*/
+		
+		/*const AVOutputFormat *format = NULL;
+		format = av_oformat_next( format );
+		while ( format ) {
+			qDebug() << format->name << avcodec_get_name( format->video_codec ) << avcodec_get_name( format->audio_codec );
+			format = av_oformat_next( format );
+		}*/
 	}
 
 	return initDone;

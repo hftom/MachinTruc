@@ -16,32 +16,35 @@ public:
 	OutputFF( MQueue<Frame*> *vf, MQueue<Frame*> *af );
 	~OutputFF();
 	
-	bool init( QString filename, Profile &prof, int vrate, double end );
+	bool init( QString filename, Profile &prof, int vrate, bool mpeg, double end );
 	void startEncode();
 	bool cancel();
 	
 private:
 	void run();
 	void close();
-	bool openVideo( QString filename, Profile &prof, int vrate );
-	bool openAudio( QString filename, Profile &prof );
+	bool openFormat( QString filename, Profile &prof, int vrate, bool mpeg );
+	bool openVideo( Profile &prof, int vrate, bool mpeg );
+	bool openAudio( Profile &prof );
 	bool encodeVideo( Frame *f, int nFrame );
 	bool encodeAudio( Frame *f, int nFrame );
 	
 	MQueue<Frame*> *audioFrames;
 	MQueue<Frame*> *videoFrames;
 	bool running;
-	AVCodecContext *videoCodecCtx;
-	AVFrame *videoFrame;
-	FILE *videoFile;
 	
-	AVCodecContext *audioCodecCtx;
+	AVFormatContext *formatCtx;
+	
+	AVStream *videoStream;
+	AVFrame *videoFrame;
+	
+	AVStream *audioStream;
 	AVFrame *audioFrame;
 	uint8_t *audioSamples;
 	int audioSamplesSize;
 	uint8_t *audioBuffer;
 	int audioBufferLen;
-	FILE *audioFile;
+	double firstAudioPts;
 
 	double endPTS;
 	

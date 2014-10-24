@@ -66,10 +66,7 @@ void RenderingDialog::startRender()
 	if ( !suffix.isEmpty() )
 		s.truncate( s.length() - suffix.length() - 1 );
 	
-	if ( mpeg2RadBtn->isChecked() )
-		s += ".m2v";
-	else
-		s += ".h264";
+	s += ".mkv";
 	
 	double endPts = timelineLength - profile.getVideoFrameDuration();
 	if ( playheadRadBtn->isChecked() ) {
@@ -87,7 +84,7 @@ void RenderingDialog::startRender()
 		encodeStartPts = playheadPts;
 	}
 	
-	if ( !out->init( s, profile, videoRateSpin->value(), endPts ) ) {
+	if ( !out->init( s, profile, videoRateSpin->value(), mpeg2RadBtn->isChecked(), endPts ) ) {
 		QMessageBox::warning( this, tr("Error"), tr("Could not setup encoding.") );
 		return;
 	}
