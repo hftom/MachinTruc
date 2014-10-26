@@ -187,7 +187,7 @@ void Metronom::runRender()
 				glTexCoord2f( 1, 1 ); glVertex3f( w, 0, 0.);
 			glEnd();
 			glPixelStorei( GL_PACK_ALIGNMENT, 1 );
-			glPixelStorei( GL_PACK_ROW_LENGTH, W * 3 );
+			glPixelStorei( GL_PACK_ROW_LENGTH, w * 3 );
         	glReadPixels( 0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, rgbData );
 			fb->release();
 
