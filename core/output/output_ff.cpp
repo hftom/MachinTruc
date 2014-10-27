@@ -19,7 +19,8 @@ OutputFF::OutputFF( MQueue<Frame*> *vf, MQueue<Frame*> *af )
 	audioBuffer( NULL ),
 	audioBufferLen( 0 ),
 	firstAudioPts( 0 ),
-	endPTS( 0 )
+	endPTS( 0 ),
+	showFrameProgress( true )
 {
 	FFmpegCommon::getGlobalInstance()->initFFmpeg();
 }
@@ -292,8 +293,9 @@ bool OutputFF::init( QString filename, Profile &prof, int vrate, bool mpeg, doub
 
 
 
-void OutputFF::startEncode()
+void OutputFF::startEncode( bool show )
 {
+	showFrameProgress = show;
 	running = true;
 	start();
 }
@@ -326,7 +328,7 @@ void OutputFF::run()
 				//qDebug() << "N:" << nVideo << f->pts();
 				if ( f->pts() > endPTS )
 					videoEnd = true;
-				if ( time.elapsed() >= 1000 ) {
+				if ( showFrameProgress && time.elapsed() >= 1000 ) {
 					emit showFrame( f );
 					time.restart();
 				}

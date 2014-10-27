@@ -17,7 +17,7 @@ public:
 	~OutputFF();
 	
 	bool init( QString filename, Profile &prof, int vrate, bool mpeg, double end );
-	void startEncode();
+	void startEncode( bool show = true );
 	bool cancel();
 	
 private:
@@ -47,6 +47,8 @@ private:
 	double firstAudioPts;
 
 	double endPTS;
+	
+	bool showFrameProgress;
 	
 signals:
 	void showFrame( Frame* );

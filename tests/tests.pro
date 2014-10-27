@@ -6,10 +6,12 @@ TARGET = tests
 TEMPLATE = app
 
 SOURCES += main.cpp \
-	testinputff.cpp
+	testinputff.cpp \
+	testoutputff.cpp
 
 HEADERS += AutoTest.h \
-	testinputff.h
+	testinputff.h \
+	testoutputff.h
 
 LIBS += ../build/core/libcore.a
 INCLUDEPATH += ../core
