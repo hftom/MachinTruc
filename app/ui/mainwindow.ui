@@ -583,7 +583,7 @@
      <x>0</x>
      <y>0</y>
      <width>1051</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -614,7 +614,16 @@
     <addaction name="actionSaveImage"/>
     <addaction name="actionRenderToFile"/>
    </widget>
+   <widget class="QMenu" name="menuPlayer">
+    <property name="title">
+     <string>Player</string>
+    </property>
+    <addaction name="actionPlayPause"/>
+    <addaction name="actionFaster"/>
+    <addaction name="actionSlower"/>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuPlayer"/>
    <addaction name="menuTimeline"/>
    <addaction name="menuSettings"/>
    <addaction name="menuRender"/>
@@ -695,6 +704,30 @@
   <action name="actionRenderToFile">
    <property name="text">
     <string>Render to file</string>
+   </property>
+  </action>
+  <action name="actionPlayPause">
+   <property name="text">
+    <string>Play / Pause</string>
+   </property>
+   <property name="shortcut">
+    <string>K</string>
+   </property>
+  </action>
+  <action name="actionFaster">
+   <property name="text">
+    <string>Faster</string>
+   </property>
+   <property name="shortcut">
+    <string>L</string>
+   </property>
+  </action>
+  <action name="actionSlower">
+   <property name="text">
+    <string>Slower</string>
+   </property>
+   <property name="shortcut">
+    <string>J</string>
    </property>
   </action>
  </widget>

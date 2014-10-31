@@ -140,6 +140,9 @@ void Thumbnailer::probe( ThumbRequest &request )
 
 QImage Thumbnailer::getSourceThumb( Frame *f )
 {
+#ifdef NOMOVIT
+	return QImage();
+#endif
 	if ( !f )
 		return QImage();
 

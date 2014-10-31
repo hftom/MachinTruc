@@ -9,9 +9,34 @@
 #include <QGLFramebufferObject>
 
 
+static const int NSPS = 5;
+static const int slowPlaybackSpeed[NSPS][2] = {
+	{ 1, 1 }, // 1
+	{ 7, 8 }, // 0.875
+	{ 3, 4 }, // 0.75
+	{ 1, 2 }, // 0.5
+	{ 1, 4 }, // 0.25
+};
+
+static const int NFPS = 10;
+static const int fastPlaybackSpeed[NFPS][2] = {
+	{ 1, 1 }, // 1
+	{ 9, 8 }, // 1.125
+	{ 5, 4 }, // 1.25
+	{ 11, 8 }, // 1.375
+	{ 3, 2 }, // 1.5
+	{ 7, 4 }, // 1.75
+	{ 2, 1 }, // 2
+	{ 3, 1 }, // 3
+	{ 4, 1 }, // 4
+	{ 8, 1 }, // 8
+};
+
+
 
 Metronom::Metronom()
-	: running( false ),
+	: speed( 0 ),
+	running( false ),
 	sclock( 0 ),
 	videoLate( 0 ),
 	fencesContext( NULL ),
@@ -89,6 +114,7 @@ void Metronom::setRenderMode( bool b )
 void Metronom::play( bool b )
 {
 	if ( b ) {
+		speed = 0;
 		sclock = videoLate = 0;
 		running = true;
 		if ( !renderMode )
@@ -104,6 +130,17 @@ void Metronom::play( bool b )
 
 
 
+void Metronom::changeSpeed( int s )
+{
+	speed = qMax( qMin( speed + s, NFPS - 1 ), 1 - NSPS  );
+	if ( speed >= 0 )
+		qDebug() << "speed:" << (double)fastPlaybackSpeed[speed][0] / (double)fastPlaybackSpeed[speed][1];
+	else
+		qDebug() << "speed:" << (double)slowPlaybackSpeed[-speed][0] / (double)slowPlaybackSpeed[-speed][1];
+}
+
+
+
 void Metronom::readData( Frame **data, double time, void *userdata )
 {
 	Metronom *m = (Metronom*)userdata;
@@ -112,15 +149,54 @@ void Metronom::readData( Frame **data, double time, void *userdata )
 
 	if ( (f = m->audioFrames.dequeue()) ) {
 		m->clockMutex.lock();
-		m->sclock = time - f->pts();
 		if ( m->videoLate > 0 ) {
 			waitVideo = m->videoLate;
+			time += waitVideo;
 			m->videoLate = 0;
 		}
+		m->sclock = time - f->pts();
 		m->clockMutex.unlock();
 		if ( waitVideo ) {
+			qDebug() << "videoLate" << waitVideo;
 			usleep( waitVideo );
 			waitVideo = 0;
+		}
+
+		int speed = m->speed;
+		if ( speed != 0 ) {
+			int sampleSize = f->profile.getAudioChannels() * 2;
+			int offset, keep;
+			Buffer *buffer = NULL;
+			uint8_t *buf = f->data();
+			uint8_t *dst = buf;
+			if ( speed > 0 ) {
+				offset = fastPlaybackSpeed[speed][0];
+				keep = fastPlaybackSpeed[speed][1];
+			}
+			else {
+				offset = slowPlaybackSpeed[-speed][0];
+				keep = slowPlaybackSpeed[-speed][1];
+				int size = f->audioSamples() * keep / offset + 1;
+				size *= sampleSize;
+				buffer = BufferPool::globalInstance()->getBuffer( size );
+				dst = buffer->data();
+			}
+			int chunkSize = sampleSize * keep;
+			uint8_t *end = buf + sampleSize * f->audioSamples();
+			int nSamples = 0;
+			while ( buf + chunkSize < end ) {
+				memcpy( dst, buf, chunkSize );
+				dst += chunkSize;
+				buf += sampleSize * offset;
+				nSamples += keep;
+			}
+			memcpy( dst, buf, end - buf );
+			nSamples += (end - buf) / sampleSize;
+			if ( buffer ) {
+				f->setSharedBuffer( buffer );
+				BufferPool::globalInstance()->releaseBuffer( buffer );
+			}
+			f->setAudioSamples( nSamples );
 		}
 		*data = f;
 	}
@@ -187,7 +263,6 @@ void Metronom::runRender()
 				glTexCoord2f( 1, 1 ); glVertex3f( w, 0, 0.);
 			glEnd();
 			glPixelStorei( GL_PACK_ALIGNMENT, 1 );
-			glPixelStorei( GL_PACK_ROW_LENGTH, w * 3 );
         	glReadPixels( 0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, rgbData );
 			fb->release();
 
@@ -223,17 +298,26 @@ void Metronom::runRender()
 void Metronom::runShow()
 {
 	Frame *f;
-	double lastpts = 0, lastct = 0;
+	double lastpts = 0, lastct = 0, ptsDiff;
 	int skipped = -1;
 	struct timeval tv;
 	double sc, ct, t, predict = 0;
+	double frameDuration, speedFactor = 1;
 
 	while ( running ) {
 		if ( (f = videoFrames.dequeue()) ) {
+			bool show = f->type() == Frame::GLTEXTURE;
 
-			if ( f->type() == Frame::NONE ) {
-				f->release();
-				continue;
+			ptsDiff = f->pts() - lastpts;
+			frameDuration = f->profile.getVideoFrameDuration();
+			speedFactor = 1;
+			if ( speed != 0 ) {
+				if ( speed > 0 )
+					speedFactor = (double)fastPlaybackSpeed[speed][0] / (double)fastPlaybackSpeed[speed][1];
+				else
+					speedFactor = (double)slowPlaybackSpeed[-speed][0] / (double)slowPlaybackSpeed[-speed][1];
+				ptsDiff /= speedFactor;
+				frameDuration /= speedFactor;
 			}
 
 			if ( f->fence() )
@@ -250,7 +334,7 @@ void Metronom::runShow()
 					t = ct;
 				}
 				else {
-					t = lastct + f->pts() - lastpts;
+					t = lastct + ptsDiff;
 				}
 				lastct = t;
 			}
@@ -259,8 +343,8 @@ void Metronom::runShow()
 				if ( !predict )
 					 predict = t;
 				else {
-					predict += f->pts() - lastpts;
-					if ( qAbs( predict - t ) < f->profile.getVideoFrameDuration() * 3 )
+					predict += ptsDiff;
+					if ( qAbs( predict - t ) < frameDuration * 3 )
 						t = predict;
 					else
 						predict = t;
@@ -269,17 +353,14 @@ void Metronom::runShow()
 			lastpts = f->pts();
 
 			if ( t < ct ) {
-				if ( (ct - t) > f->profile.getVideoFrameDuration() && skipped > -1 ) {
-					double delta = ( (ct - t) / f->profile.getVideoFrameDuration() );
-					skipped += delta;
-					emit discardFrame( delta + 1 );
-					if ( skipped >  f->profile.getVideoFrameRate() / 3 ) {
+				if ( (ct - t) > frameDuration && skipped > -1 ) {
+					//predict = 0;
+					emit discardFrame( 1 );
+					if ( ++skipped > MICROSECOND / frameDuration / 4.0 ) {
 						clockMutex.lock();
-						videoLate = qMin( ct -t, MICROSECOND / 4.0 );
-						//qDebug() << "videoLate" << videoLate;
+						videoLate = qMin( ct -t, MICROSECOND / 2.0 );
 						clockMutex.unlock();
 						skipped = -1;
-						predict = 0;
 					}
 				}
 				else {
@@ -289,12 +370,16 @@ void Metronom::runShow()
 			else
 				skipped = 0;
 
-			t = t - ct;
-			if ( t > 0 ) {
-				//qDebug() << "sleep:" << t;
-				usleep( t );
+			if ( show ) {
+				t = t - ct;
+				if ( t > 0 ) {
+					//qDebug() << "sleep:" << t;
+					usleep( qMin( t, frameDuration * 3.0 ) );
+				}
+				emit newFrame( f );
 			}
-			emit newFrame( f );
+			else
+				f->release();
 		}
 		else
 			usleep( 1000 );

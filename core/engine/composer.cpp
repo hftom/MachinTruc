@@ -9,11 +9,132 @@
 
 
 
+#ifdef NOMOVIT
+static const char *yuv420p_frag=
+"uniform sampler2D texY, texU, texV;\n"
+"const vec4 r_coefs = vec4( 1.16438, 0.00000, 1.79274, -0.97295 );\n"
+"const vec4 g_coefs = vec4( 1.16438, -0.21325, -0.53291, 0.30148 );\n"
+"const vec4 b_coefs = vec4( 1.16438, 2.11240, 0.00000, -1.13340 );\n"
+"void main(void) {\n"
+"    vec3 rgb;\n"
+"    vec4 yuv;\n"
+"    vec2 coord = gl_TexCoord[0].xy;\n"
+"    yuv.r = texture2D(texY, coord).r;\n"
+"    yuv.g = texture2D(texU, coord).r;\n"
+"    yuv.b = texture2D(texV, coord).r;\n"
+"    yuv.a = 1.0;\n"
+"    rgb.r = dot( yuv, r_coefs );\n"
+"    rgb.g = dot( yuv, g_coefs );\n"
+"    rgb.b = dot( yuv, b_coefs );\n"
+"    gl_FragColor = vec4(rgb, 1.0);\n"
+"}\n";
+
+#include <QGLShaderProgram>
+
+class Yuv420pToRgba
+{
+public:
+	Yuv420pToRgba() : width(0), height(0), shader(NULL) {
+		tex[0] = tex[1] = tex[2] = 0;
+	}
+	
+	bool process( Frame *f, FBO *fbo ) {
+		glGetError();
+		if ( !shader ) {
+			shader = new QGLShaderProgram();
+			shader->addShaderFromSourceCode( QGLShader::Fragment, yuv420p_frag );
+			if ( !shader->link() )
+				qDebug() << "shader failed : " << shader->log();
+		}
+		
+		glEnable( GL_TEXTURE_2D );
+		
+		if ( width != f->glWidth || height != f->glHeight ) {
+			width = f->glWidth;
+			height = f->glHeight;
+			if ( !tex[0] )
+				glGenTextures( 3, tex );
+			glActiveTexture( GL_TEXTURE0 );
+			glBindTexture( GL_TEXTURE_2D, tex[0] );
+			glTexImage2D( GL_TEXTURE_2D, 0, GL_LUMINANCE, width, height, 0, GL_RED, GL_UNSIGNED_BYTE, NULL );
+			glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+			glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+			glBindTexture( GL_TEXTURE_2D, tex[1] );
+			glTexImage2D( GL_TEXTURE_2D, 0, GL_LUMINANCE, width/2, height/2, 0, GL_RED, GL_UNSIGNED_BYTE, NULL );
+			glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+			glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+			glBindTexture( GL_TEXTURE_2D, tex[2] );
+			glTexImage2D( GL_TEXTURE_2D, 0, GL_LUMINANCE, width/2, height/2, 0, GL_RED, GL_UNSIGNED_BYTE, NULL );
+			glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+			glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+			if ( glGetError() != GL_NO_ERROR )
+			qDebug() << "Yuv420pToRgba GL ERROR in texture init.";
+		}
+		
+		glBindFramebuffer( GL_FRAMEBUFFER, fbo->fbo() );
+		glViewport( 0, 0, width, height );
+		glMatrixMode( GL_PROJECTION );
+		glLoadIdentity();
+		glOrtho( 0.0, width, 0.0, height, -1.0, 1.0 );
+		glMatrixMode( GL_MODELVIEW );
+		glLoadIdentity();
+
+		shader->bind();
+
+		uint8_t *buf = f->data();
+		glActiveTexture( GL_TEXTURE0 );
+		glBindTexture( GL_TEXTURE_2D, tex[0] );
+		glTexSubImage2D( GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RED, GL_UNSIGNED_BYTE, buf );
+		glActiveTexture( GL_TEXTURE1 );
+		glBindTexture( GL_TEXTURE_2D, tex[1] );
+		glTexSubImage2D( GL_TEXTURE_2D, 0, 0, 0, width/2, height/2, GL_RED, GL_UNSIGNED_BYTE, buf + (width*height) );
+		glActiveTexture( GL_TEXTURE2 );
+		glBindTexture( GL_TEXTURE_2D, tex[2] );
+		glTexSubImage2D( GL_TEXTURE_2D, 0, 0, 0, width/2, height/2, GL_RED, GL_UNSIGNED_BYTE, buf + (width*height*5/4) );
+
+		shader->setUniformValue( "texY", 0 );
+		shader->setUniformValue( "texU", 1 );
+		shader->setUniformValue( "texV", 2 );
+
+		glBegin( GL_QUADS );
+		glTexCoord2f( 0, 1 );		glVertex3f( 0, 0, 0.);
+		glTexCoord2f( 0, 0 );		glVertex3f( 0, height, 0.);
+		glTexCoord2f( 1, 0 );		glVertex3f( width, height, 0.);
+		glTexCoord2f( 1, 1 );		glVertex3f( width, 0, 0.);
+		glEnd();
+		
+		shader->release();
+		glBindFramebuffer( GL_FRAMEBUFFER, 0 );
+		
+		if ( glGetError() != GL_NO_ERROR )
+			qDebug() << "Yuv420pToRgba GL ERROR";
+			
+		return true;
+	}
+	
+private:
+	GLuint tex[3];
+	int width, height;
+	QGLShaderProgram *shader;
+};
+
+Yuv420pToRgba yuvshader;
+#endif
+
+
+
 Composer::Composer( Sampler *samp )
 	: running( false ),
 	oneShot( false ),
 	skipFrame( 0 ),
 	hiddenContext( NULL ),
+	composerFence( NULL ),
 	movitPool( NULL ),
 	sampler( samp ),
 	audioSampleDelta( 0 )
@@ -35,6 +156,7 @@ void Composer::setSharedContext( QGLWidget *shared )
 	
 	glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
 
+#ifndef NOMOVIT
 	QString movitPath;
 	if ( QFile("/usr/share/movit/header.frag").exists() )
 		movitPath = "/usr/share/movit";
@@ -46,6 +168,7 @@ void Composer::setSharedContext( QGLWidget *shared )
 	assert( init_movit( movitPath.toLocal8Bit().data(), MOVIT_DEBUG_ON ) );
 	
 	movitPool = new ResourcePool( 100, 300 << 20, 100 );
+#endif
 
 	/*mask_texture = hiddenContext->bindTexture( QImage("/home/cris/mask.png") );
 	glBindTexture( GL_TEXTURE_2D, mask_texture );
@@ -232,11 +355,26 @@ int Composer::process( Frame **frame )
 			ret = PROCESSONESHOTVIDEO;
 			*frame = dst;
 		}
-		else
-			sampler->getMetronom()->videoFrames.enqueue( dst );
+		else {
+			//if ( dst->type() == Frame::NONE )
+				//dst->release();
+			//else
+				sampler->getMetronom()->videoFrames.enqueue( dst );
+		}
 	}
 
 	return ret;
+}
+
+
+
+void Composer:: waitFence()
+{
+	if ( composerFence ) {
+		glClientWaitSync( composerFence->fence(), 0, GL_TIMEOUT_IGNORED );
+		composerFence->setFree();
+		composerFence = NULL;
+	}
 }
 
 
@@ -248,12 +386,14 @@ bool Composer::renderVideoFrame( Frame *dst )
 		Profile projectProfile = sampler->getProfile();
 		dst->setVideoFrame( Frame::GLTEXTURE, projectProfile.getVideoWidth(), projectProfile.getVideoHeight(), projectProfile.getVideoSAR(),
 							false, false, sampler->currentPTS(), projectProfile.getVideoFrameDuration() );
+		waitFence();
 		if ( !gl.black( dst ) )
 			return false;
 		dst->glWidth = dst->profile.getVideoWidth();
 		dst->glHeight = dst->profile.getVideoHeight();
 		dst->glSAR = dst->profile.getVideoSAR();
 		dst->setFence( gl.getFence() );
+		composerFence = gl.getFence();
 		glFlush();
 		return true;
 	}
@@ -270,7 +410,7 @@ bool Composer::renderVideoFrame( Frame *dst )
 			}
 		}
 		if ( skip ) {
-			qDebug() << "skipFrame" << sampler->currentPTS();
+			//qDebug() << "skipFrame" << sampler->currentPTS();
 			--skipFrame;
 			Profile projectProfile = sampler->getProfile();
 			dst->setVideoFrame( Frame::NONE, projectProfile.getVideoWidth(), projectProfile.getVideoHeight(), projectProfile.getVideoSAR(),
@@ -397,6 +537,38 @@ Effect* Composer::movitFrameBuild( Frame *f, QList< QSharedPointer<GLFilter> > *
 
 void Composer::movitRender( Frame *dst, bool update )
 {
+#ifdef NOMOVIT
+	Frame *f;
+	int start = 0;
+	// find the lowest frame to process
+	for ( int j = 0 ; j < dst->sample->frames.count(); ++j ) {
+		if ( (f = dst->sample->frames[j]->frame) ) {
+			start = j;
+			break;
+		}
+	}
+	f = getNextFrame( dst, start );
+	int w = f->glWidth = f->profile.getVideoWidth();
+	int h = f->glHeight = f->profile.getVideoHeight();
+	f->glSAR = f->profile.getVideoSAR();
+	
+	waitFence();
+	FBO *fbo = gl.getFBO( w, h, GL_RGBA );
+	yuvshader.process( f, fbo );
+	
+	dst->glWidth = w;
+	dst->glHeight = h;
+	dst->glSAR = f->glSAR;
+	if ( !update ) {
+		dst->setVideoFrame( Frame::GLTEXTURE, w, h, dst->glSAR,
+						f->profile.getVideoInterlaced(), f->profile.getVideoTopFieldFirst(),
+						sampler->currentPTS(), f->profile.getVideoFrameDuration() );
+	}
+	dst->setFBO( fbo );
+	dst->setFence( gl.getFence() );
+	composerFence = gl.getFence();
+	glFlush();
+#else
 	int i, j, start=0;
 	Frame *f;
 	//QTime time;
@@ -531,6 +703,7 @@ void Composer::movitRender( Frame *dst, bool update )
 	}
 
 	// render
+	waitFence();
 	FBO *fbo = gl.getFBO( w, h, GL_RGBA );
 	movitChain.chain->render_to_fbo( fbo->fbo(), w, h );
 	
@@ -544,9 +717,11 @@ void Composer::movitRender( Frame *dst, bool update )
 	}
 	dst->setFBO( fbo );
 	dst->setFence( gl.getFence() );
+	composerFence = gl.getFence();
 	glFlush();
 	
 	//qDebug() << "elapsed" << time.elapsed();
+#endif
 }
 
 

@@ -33,6 +33,7 @@ private:
 	
 	int process( Frame **frame );
 	Frame* getNextFrame( Frame *dst, int &track );
+	void waitFence();
 	bool renderVideoFrame( Frame *dst );
 	void movitFrameDescriptor( QString prefix, Frame *f, QList< QSharedPointer<GLFilter> > *filters, QStringList &desc, Profile *projectProfile );
 	Effect* movitFrameBuild( Frame *f, QList< QSharedPointer<GLFilter> > *filters, MovitBranch **newBranch );
@@ -49,6 +50,7 @@ private:
 	
 	QGLWidget *hiddenContext;
 	GLResource gl;
+	FENCE *composerFence;
 
 	MovitBackground movitBackground;
 	MovitChain movitChain;

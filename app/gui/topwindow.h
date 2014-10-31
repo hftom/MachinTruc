@@ -86,6 +86,8 @@ private slots:
 	void composerPaused( bool b );
 	void playPause( bool playing );
 	void videoPlayPause();
+	void playFaster();
+	void playSlower();
 	void seekPrevious();
 	void seekNext();
 	void seekBackward();

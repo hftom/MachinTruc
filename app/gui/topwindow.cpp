@@ -104,6 +104,9 @@ TopWindow::TopWindow()
 	connect( actionNewProject, SIGNAL(triggered()), this, SLOT(newProject()) );
 	connect( actionSave, SIGNAL(triggered()), this, SLOT(saveProject()) );
 	connect( actionOpen, SIGNAL(triggered()), this, SLOT(loadProject()) );
+	connect( actionPlayPause, SIGNAL(triggered()), this, SLOT(videoPlayPause()) );
+	connect( actionFaster, SIGNAL(triggered()), this, SLOT(playFaster()) );
+	connect( actionSlower, SIGNAL(triggered()), this, SLOT(playSlower()) );
 	connect( actionProjectSettings, SIGNAL(triggered()), this, SLOT(menuProjectSettings()) );
 	connect( actionDeleteClip, SIGNAL(triggered()), timeline, SLOT(deleteClip()) );
 	connect( actionSplitCurrentClip, SIGNAL(triggered()), timeline, SLOT(splitCurrentClip()) );
@@ -396,6 +399,16 @@ void TopWindow::playPause( bool playing )
 void TopWindow::videoPlayPause()
 {
 	playToolButton->toggle();
+}
+
+void TopWindow::playFaster()
+{
+	sampler->getMetronom()->changeSpeed( 1 );
+}
+
+void TopWindow::playSlower()
+{
+	sampler->getMetronom()->changeSpeed( -1 );
 }
 
 void TopWindow::seekPrevious()

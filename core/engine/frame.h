@@ -84,6 +84,7 @@ public:
 
 	void setAudioFrame( int c, int r, int bpc, int samples, double p );
 	int audioSamples() { return pAudioSamples; }
+	void setAudioSamples( int n ) { pAudioSamples = n; }
 
 	// PTS in microsecond
 	void setPts( double p ) { pPTS = p; }

@@ -108,6 +108,7 @@ bool OutputFF::openVideo( Profile &prof, int vrate, bool mpeg )
 	int sh = prof.getVideoWidth();
 	videoCodecCtx->sample_aspect_ratio = (AVRational){ sw, sh };
 	
+	videoStream->sample_aspect_ratio = videoCodecCtx->sample_aspect_ratio;
 	videoStream->time_base = videoCodecCtx->time_base;
 
 	//if ( codec_id == AV_CODEC_ID_H264 )

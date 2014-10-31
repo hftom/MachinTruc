@@ -34,13 +34,6 @@ AudioOutSDL::AudioOutSDL()
 	printf("SDL audio obtained : freq=%d format=%d channels=%d\n", obt.freq, obt.format, obt.channels);
 }
 
-uint8_t *buffer;
-	int bufferSize, bufferLen, bufferOffset;
-	int bytesPerSample, sampleRate;
-
-	READDATACALLBACK readData;
-	void *readUserData;
-
 
 
 AudioOutSDL::~AudioOutSDL()
