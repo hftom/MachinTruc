@@ -3,108 +3,11 @@
 #ifndef INPUTFF_H
 #define INPUTFF_H
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-
-#include "output/common_ff.h"
-
 #include <QString>
-#include <QQueue>
 #include <QSemaphore>
 
-#include "input/input.h"
-
-
-
-class AudioChunk
-{
-public:
-	AudioChunk()
-		: pts( 0 ),
-		bytes( NULL ),
-		bufSize( 0 ),
-		bufOffset( 0 ),
-		available( 0 )
-	{
-	}
-	~AudioChunk() {
-		if ( bytes )
-			free( bytes );
-	}
-
-	double pts;
-	uint8_t *bytes;
-	int bufSize, bufOffset; // in bytes
-	int available; // in samples
-};
-
-
-
-class AudioRingBuffer
-{
-public:
-	AudioRingBuffer();
-	~AudioRingBuffer();
-	void reset();
-	bool readable( int nSamples );
-	bool writable();
-	void read( uint8_t *dst, int nSamples );
-	double readPts();
-	int read( uint8_t *dst ); // reads all available samples
-	//uint8_t* write( int nSamples );
-	uint8_t* write( int writtenSamples, int moreSamples );
-	void writeDone( double pts, int nSamples, int samplesOffset=0 ); // MUST be called right after last "write"
-	void setBytesPerChannel( int n );
-	int getBytesPerChannel();
-	void setChannels( int c );
-	int getChannels();
-	void setSampleRate( int r );
-	int getSampleRate();
-	int getBytesPerSample();
-
-private:
-	AudioChunk *chunks;
-	int reader, writer;
-	int size;
-	int channels;
-	int bytesPerChannel;
-	int bytesPerSample;
-	int sampleRate;
-
-	QMutex mutex;
-};
-
-
-
-class AudioPacket
-{
-public:
-	AudioPacket() : orgData(NULL), orgSize(0), pts(0) {
-		free();
-	}
-	~AudioPacket() {}
-	void set( AVPacket *p ) {
-		packet = p;
-		orgData = p->data;
-		orgSize = p->size;
-		pts = AV_NOPTS_VALUE;
-	}
-	void reset() {
-		if ( packet ) {
-			packet->data = orgData;
-			packet->size = orgSize;
-		}
-	}
-	void free() {
-		packet = NULL;
-	}
-
-	AVPacket *packet;
-	uint8_t *orgData;
-	int orgSize;
-	double pts;
-};
+#include "input.h"
+#include "ffdecoder.h"
 
 
 
@@ -153,53 +56,25 @@ class VideoResampler
 {
 public:
 	VideoResampler()
-		: repeatBuffer( NULL ),
-		repeatType( 0 ),
-		repeatPTS( 0 ),
-		orientation( 0 )
+		: repeatPTS( 0 )
 	{
 		reset( 40000 );
-	}
-	~VideoResampler() {
-		if ( repeatBuffer )
-			BufferPool::globalInstance()->releaseBuffer( repeatBuffer );
-
 	}
 	void reset( double dur ) {
 		outputPts = 0;
 		outputDuration = dur;
 		repeat = 0;
-		if ( repeatBuffer )
-			BufferPool::globalInstance()->releaseBuffer( repeatBuffer );
-		repeatBuffer = NULL;
 	}
-	void setRepeat( Frame *f, int r ) {
+	void setRepeat( double pts, int r ) {
 		repeat = r;
-		if ( repeatBuffer ) {
-			BufferPool::globalInstance()->releaseBuffer( repeatBuffer );
-			repeatBuffer = NULL;
-		}
-		if ( f ) {
-			//printf("repeat frame = %d\n", r);
-			repeatBuffer = f->getBuffer();
-			BufferPool::globalInstance()->useBuffer( repeatBuffer );
-			profile = f->profile;
-			repeatType = f->type();
-			repeatPTS = f->pts();
-			orientation = f->orientation();
-		}
+		repeatPTS = pts;
 	}
-
 	void duplicate( Frame *f ) {
-		if ( repeatBuffer )
-			f->setSharedBuffer( repeatBuffer );
-		f->setVideoFrame( (Frame::DataType)repeatType, profile.getVideoWidth(), profile.getVideoHeight(), profile.getVideoSAR(),
-						  profile.getVideoInterlaced(), profile.getVideoTopFieldFirst(), repeatPTS + outputDuration, profile.getVideoFrameDuration(), orientation );
-		f->profile = profile;
+		f->setPts( repeatPTS + outputDuration );
 		if ( (repeat - 1) > 0 )
-			setRepeat( f, repeat - 1 );
+			setRepeat( f->pts(), repeat - 1 );
 		else
-			setRepeat( NULL, 0 );
+			setRepeat( 0, 0 );
 		outputPts += outputDuration;
 	}
 
@@ -207,11 +82,7 @@ public:
 	double outputDuration;
 
 	int repeat;
-	Buffer *repeatBuffer;
-	int repeatType;
 	double repeatPTS;
-	Profile profile;
-	int orientation;
 };
 
 
@@ -223,67 +94,27 @@ public:
 	InputFF();
 	~InputFF();
 	bool open( QString fn );
-	void close();
-	void flush();
-	void seekFast( float percent );
-	void seekNext();
-	double seekTo( double p );
 	void openSeekPlay( QString fn, double p );
+	double seekTo( double p );
 	void play( bool b );
 	Frame *getVideoFrame();
 	Frame *getAudioFrame( int nSamples );
 
 	bool probe( QString fn, Profile *prof );
 
+	void setProfile( const Profile &in, const Profile &out ) {
+		InputBase::setProfile( in, out );
+		decoder->setProfile( in, out );
+	}
+
 protected:
 	void run();
 
 private:
-	bool ffOpen( QString fn );
-	bool getPacket();
-	void freePacket( AVPacket *packet );
-	bool decodeVideo( Frame *f );
+	void flush();
 	void resample( Frame *f );
-	bool makeFrame( Frame *f, double ratio, double pts, double dur );
-	bool decodeAudio( int sync=0, double *pts=NULL );
-	void freeCurrentAudioPacket();
-	void shiftCurrentAudioPacket( int len );
-	void shiftCurrentAudioPacketPts( double pts );
-	void resetAudioResampler( bool resetArb = true );
-	AVSampleFormat convertProfileSampleFormat( int f );
-	qint64 convertProfileAudioLayout( int nChannels );
-	bool seek( double t );
-	bool seekDecodeNext( Frame *f );
 
-	AVFormatContext *formatCtx;
-	AVCodecContext *videoCodecCtx;
-	AVCodecContext *audioCodecCtx;
-	SwrContext *swr;
-	int lastChannels;
-	int64_t lastLayout;
-	AVCodec *videoCodec;
-	AVCodec *audioCodec;
-	int videoStream;
-	int audioStream;
-	AVFrame *videoAvframe;
-	AVFrame *audioAvframe;
-
-	int orientation;
-
-	double duration;
-	double startTime;
-
-	double seekAndPlayPTS;
-	bool seekAndPlay;
-	QString seekAndPlayPath;
-
-	AudioRingBuffer *arb;
-	AudioPacket currentAudioPacket;
-
-	LastDecodedFrame lastFrame;
-	VideoResampler videoResampler;
-
-	QQueue<AVPacket*> audioPackets, videoPackets;
+	FFDecoder *decoder;
 
 	MQueue<Frame*> audioFrames;
 	MQueue<Frame*> freeAudioFrames;
@@ -291,11 +122,15 @@ private:
 	MQueue<Frame*> videoFrames;
 	MQueue<Frame*> freeVideoFrames;
 
-	enum EofMode{ EofPacket=1, EofAudioPacket=2, EofVideoPacket=4, EofAudio=8, EofVideoFrame=16, EofVideo=32 };
-	int endOfFile;
-
-	bool running, oneShot;
 	QSemaphore *semaphore;
+	bool running;
+
+	double seekAndPlayPTS;
+	QString seekAndPlayPath;
+	bool seekAndPlay;
+
+	LastDecodedFrame lastFrame;
+	VideoResampler videoResampler;
 };
 
-#endif //INPUTFF_H
+#endif // INPUTFF_H

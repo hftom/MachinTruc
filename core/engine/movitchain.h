@@ -12,7 +12,7 @@
 #include "vfx/glfilter.h"
 
 // Do not define unless you know what you do!
-//#define NOMOVIT
+#define NOMOVIT
 
 
 

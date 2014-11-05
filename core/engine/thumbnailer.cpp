@@ -116,8 +116,10 @@ void Thumbnailer::probe( ThumbRequest &request )
 			probed = true;
 	}
 	if ( probed ) {
-		if ( request.result.profile.hasVideo() )
+		if ( request.result.profile.hasVideo() ) {
+			input->seekTo( request.result.profile.getStreamStartTime() + request.result.profile.getStreamDuration() / 10.0 );
 			request.result.thumb = getSourceThumb( input->getVideoFrame() );
+		}
 		else {
 			request.result.thumb = QImage( ICONSIZEWIDTH + 4, ICONSIZEHEIGHT + 4, QImage::Format_ARGB32 );
 			request.result.thumb.fill( QColor(0,0,0,0) );

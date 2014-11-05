@@ -19,6 +19,7 @@ SOURCES = \
 	engine/transition.cpp \
 	engine/thumbnailer.cpp \
 	\
+	input/ffdecoder.cpp \
 	input/input_ff.cpp \
 	input/input_gl.cpp \
 	input/input_image.cpp \
@@ -79,6 +80,7 @@ HEADERS = \
 	engine/thumbnailer.h \
 	\
 	input/input.h \
+	input/ffdecoder.h \
 	input/input_ff.h \
 	input/input_gl.h \
 	input/input_image.h \

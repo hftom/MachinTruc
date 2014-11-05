@@ -26,16 +26,12 @@ public:
 	virtual bool probe( QString fn, Profile *prof ) = 0;
 	virtual bool open( QString fn ) = 0;
 	virtual void openSeekPlay( QString fn, double pts ) = 0;
-	virtual void close() = 0;
-	virtual void flush() = 0;
-	virtual void seekFast( float percent ) = 0;
-	virtual void seekNext() = 0;
 	virtual double seekTo( double ) = 0;
 	virtual void play( bool ) = 0;
 	virtual Frame *getVideoFrame() = 0;
 	virtual Frame *getAudioFrame( int nSamples ) = 0;
+	virtual void setProfile( const Profile &in, const Profile &out ) { inProfile = in; outProfile = out; }
 
-	void setProfile( const Profile &in, const Profile &out ) { inProfile = in; outProfile = out; }
 	bool hasAudio() { return haveAudio; }
 	bool hasVideo() { return haveVideo; }
 	QString getSource() { return sourceName; }

@@ -263,7 +263,7 @@ void Metronom::runRender()
 				glTexCoord2f( 1, 1 ); glVertex3f( w, 0, 0.);
 			glEnd();
 			glPixelStorei( GL_PACK_ALIGNMENT, 1 );
-        	glReadPixels( 0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, rgbData );
+			glReadPixels( 0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, rgbData );
 			fb->release();
 
 			f->setVideoFrame( Frame::YUV420P, w, h, f->profile.getVideoSAR(),
