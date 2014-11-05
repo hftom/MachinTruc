@@ -190,8 +190,10 @@ void Metronom::readData( Frame **data, double time, void *userdata )
 				buf += sampleSize * offset;
 				nSamples += keep;
 			}
-			memcpy( dst, buf, end - buf );
-			nSamples += (end - buf) / sampleSize;
+			if ( buf < end ) {
+				memcpy( dst, buf, end - buf );
+				nSamples += (end - buf) / sampleSize;
+			}
 			if ( buffer ) {
 				f->setSharedBuffer( buffer );
 				BufferPool::globalInstance()->releaseBuffer( buffer );
