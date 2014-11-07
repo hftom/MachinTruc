@@ -34,7 +34,7 @@ private:
 		bufSize = size;
 		buf = (uint8_t*)realloc( buf, bufSize );
 		if ( !buf )
-			qDebug() << "FATAL! Realloc failed. Expect a crash very soon.";
+			qDebug() << "FATAL! Realloc failed. Expect a crash very soon." << size;
 	}
 	void use() {
 		++refCount;
@@ -57,6 +57,7 @@ public:
 	~BufferPool();
 	
 	Buffer* getBuffer( int size );
+	void enlargeBuffer( Buffer *buf, int size );
 	void releaseBuffer( Buffer *buf );
 	void useBuffer( Buffer *buf );
 	

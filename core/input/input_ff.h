@@ -11,6 +11,107 @@
 
 
 
+class AudioFrameList
+{
+public:
+	AudioFrameList() : maxSamples( 11520 ),
+		bytesPerSample( 4 ),
+		sampleRate( 48000 ) {
+	}
+	~AudioFrameList() {
+		while ( !list.isEmpty() )
+			delete list.takeFirst();
+	}
+	void reset( Profile p ) {
+		QMutexLocker ml( &mutex );
+		while ( !list.isEmpty() )
+			delete list.takeFirst();
+		bytesPerSample = Profile::bytesPerChannel( &p ) * p.getAudioChannels();
+		sampleRate = p.getAudioSampleRate();
+		maxSamples = (((double)sampleRate / p.getVideoFrameRate()) + 1) * (NUMINPUTFRAMES + 1);
+	}
+	bool readable( int nSamples ) {
+		QMutexLocker ml( &mutex );
+		int ns = 0;
+		for ( int i = 0; i < list.count(); ++i ) {
+			ns += list[i]->available;
+			if ( ns >= nSamples )
+				return true;
+		}
+		return false;
+	}
+	bool writable() {
+		QMutexLocker ml( &mutex );
+		int ns = 0;
+		for ( int i = 0; i < list.count(); ++i ) {
+			ns += list[i]->available;
+		}
+		return ns < maxSamples;
+	}
+	void read( uint8_t *dst, int nSamples ) {
+		QMutexLocker ml( &mutex );
+		uint8_t *d = dst;
+		while ( nSamples > 0 ) {
+			bool shift = false;
+			AudioFrame *frame = list.first();
+			int ns = frame->available;
+			if ( ns > nSamples ) {
+				ns = nSamples;
+				shift = true;
+			}
+			int blen = ns * bytesPerSample;
+			memcpy( d, frame->buffer->data() + frame->bufOffset, blen );
+			if ( shift ) {
+				frame->bufOffset += blen;
+				frame->available -= ns;
+				frame->bufPts += (double)ns * MICROSECOND / (double)sampleRate;
+				return;
+			}
+			delete list.takeFirst();
+			nSamples -= ns;
+			d += blen;
+		}
+	}
+	double readPts() {
+		QMutexLocker ml( &mutex );
+		if ( list.isEmpty() )
+			return 0;
+		return list.first()->bufPts;
+	}
+	int read( uint8_t *dst ) { // reads all available samples
+		QMutexLocker ml( &mutex );
+		uint8_t *d = dst;
+		int nSamples = 0;
+		while ( !list.isEmpty() ) {
+			AudioFrame *frame = list.takeFirst();
+			int ns = frame->available;
+			int blen = ns * bytesPerSample;
+			memcpy( d, frame->buffer->data() + frame->bufOffset, blen );
+			nSamples += ns;
+			d += blen;
+			delete frame;
+		}
+		return nSamples;
+	}
+	int getBytesPerSample() {
+		return bytesPerSample;
+	}
+	void append( AudioFrame *af ) {
+		list.append( af );
+	}
+
+private:
+	QList<AudioFrame*> list;
+	int maxSamples;
+
+	int bytesPerSample;
+	int sampleRate;
+
+	QMutex mutex;
+};
+
+
+
 class LastDecodedFrame
 {
 public:
@@ -41,6 +142,7 @@ public:
 		pts += profile.getVideoFrameDuration();
 	}
 	bool valid() { return buffer != NULL; }
+	double framePts() { return pts - profile.getVideoFrameDuration(); }
 
 private:
 	Buffer *buffer;
@@ -105,6 +207,7 @@ public:
 	void setProfile( const Profile &in, const Profile &out ) {
 		InputBase::setProfile( in, out );
 		decoder->setProfile( in, out );
+		audioFrameList.reset( out );
 	}
 
 protected:
@@ -131,6 +234,8 @@ private:
 
 	LastDecodedFrame lastFrame;
 	VideoResampler videoResampler;
+
+	AudioFrameList audioFrameList;
 };
 
 #endif // INPUTFF_H

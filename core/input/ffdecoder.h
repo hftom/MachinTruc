@@ -17,62 +17,45 @@
 
 
 
-class AudioChunk
+class AudioFrame
 {
 public:
-	AudioChunk()
-		: pts( 0 ),
-		bytes( NULL ),
+	explicit AudioFrame( int sampleSize )
+		: bufPts( 0 ),
+		buffer( NULL ),
 		bufSize( 0 ),
 		bufOffset( 0 ),
-		available( 0 )
+		available( 0 ),
+		bytesPerSample( sampleSize )
 	{
 	}
-	~AudioChunk() {
-		if ( bytes )
-			free( bytes );
+	~AudioFrame() {
+		if ( buffer )
+			BufferPool::globalInstance()->releaseBuffer( buffer );
+	}
+	uint8_t* write( int writtenSamples, int moreSamples ) {
+		int size = (writtenSamples + moreSamples) * bytesPerSample;
+		if ( size < 1 )
+			return NULL;
+		if ( !buffer )
+			buffer = BufferPool::globalInstance()->getBuffer( size );
+		else
+			BufferPool::globalInstance()->enlargeBuffer( buffer, size );
+		bufSize = size;
+
+		return buffer->data() + (writtenSamples * bytesPerSample);
+	}
+	void writeDone( double pts, int nSamples, int samplesOffset = 0 ) {
+		bufPts = pts;
+		available = nSamples - samplesOffset;
+		bufOffset = samplesOffset * bytesPerSample;
 	}
 
-	double pts;
-	uint8_t *bytes;
+	double bufPts;
+	Buffer *buffer;
 	int bufSize, bufOffset; // in bytes
 	int available; // in samples
-};
-
-
-
-class AudioRingBuffer
-{
-public:
-	AudioRingBuffer();
-	~AudioRingBuffer();
-	void reset();
-	bool readable( int nSamples );
-	bool writable();
-	void read( uint8_t *dst, int nSamples );
-	double readPts();
-	int read( uint8_t *dst ); // reads all available samples
-	//uint8_t* write( int nSamples );
-	uint8_t* write( int writtenSamples, int moreSamples );
-	void writeDone( double pts, int nSamples, int samplesOffset=0 ); // MUST be called right after last "write"
-	void setBytesPerChannel( int n );
-	int getBytesPerChannel();
-	void setChannels( int c );
-	int getChannels();
-	void setSampleRate( int r );
-	int getSampleRate();
-	int getBytesPerSample();
-
-private:
-	AudioChunk *chunks;
-	int reader, writer;
-	int size;
-	int channels;
-	int bytesPerChannel;
 	int bytesPerSample;
-	int sampleRate;
-
-	QMutex mutex;
 };
 
 
@@ -116,10 +99,10 @@ private:
 	FFDecoder();
 	~FFDecoder();
 	bool open( QString fn );
-	bool seekTo( double p, Frame *f );
+	bool seekTo( double p, Frame *f, AudioFrame *af );
 	bool probe( QString fn, Profile *prof );
 	bool decodeVideo( Frame *f );
-	bool decodeAudio( int sync=0, double *pts=NULL );
+	bool decodeAudio( AudioFrame *f, int sync=0, double *pts=NULL );
 	void setProfile( const Profile &in, const Profile &out ) {
 		inProfile = in;
 		outProfile = out;
@@ -134,7 +117,7 @@ private:
 	void freeCurrentAudioPacket();
 	void shiftCurrentAudioPacket( int len );
 	void shiftCurrentAudioPacketPts( double pts );
-	void resetAudioResampler( bool resetArb = true );
+	void resetAudioResampler();
 	AVSampleFormat convertProfileSampleFormat( int f );
 	qint64 convertProfileAudioLayout( int nChannels );
 	bool seek( double t );
@@ -158,7 +141,6 @@ private:
 	double duration;
 	double startTime;
 
-	AudioRingBuffer *arb;
 	AudioPacket currentAudioPacket;
 
 	QQueue<AVPacket*> audioPackets, videoPackets;

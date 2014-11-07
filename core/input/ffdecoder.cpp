@@ -25,7 +25,6 @@ FFDecoder::FFDecoder()
 	orientation( 0 ),
 	duration( 0 ),
 	startTime( 0 ),
-	arb( NULL ),
 	endOfFile( 0 )
 {
 	FFmpegCommon::getGlobalInstance()->initFFmpeg();
@@ -45,9 +44,6 @@ FFDecoder::~FFDecoder()
 
 	if ( audioAvframe )
 		av_free( audioAvframe );
-
-	if ( arb )
-		delete arb;
 }
 
 
@@ -177,9 +173,11 @@ bool FFDecoder::probe( QString fn, Profile *prof )
 		if ( haveAudio ) {
 			int loop = 0;
 			double pts = f.pts();
-			if ( !decodeAudio( DECODEAUDIOPROBE, &pts ) ) {
+			AudioFrame *af = new AudioFrame( Profile::bytesPerChannel( &outProfile ) * outProfile.getAudioChannels() );
+			if ( !decodeAudio( af, DECODEAUDIOPROBE, &pts ) ) {
 				return haveAudio;
 			}
+			delete af;
 			while ( pts > f.pts() && loop++ < 250 ) {
 				if ( !seekDecodeNext( &f ) ) {
 					return haveAudio;
@@ -353,7 +351,7 @@ qint64 FFDecoder::convertProfileAudioLayout( int layout )
 
 
 
-void FFDecoder::resetAudioResampler( bool resetArb )
+void FFDecoder::resetAudioResampler()
 {
 	if ( !haveAudio )
 		return;
@@ -372,15 +370,6 @@ void FFDecoder::resetAudioResampler( bool resetArb )
 	swr = swr_alloc_set_opts( swr, convertProfileAudioLayout( outProfile.getAudioLayout() ), convertProfileSampleFormat( outProfile.getAudioFormat() ),
 								outProfile.getAudioSampleRate(), lastLayout, audioCodecCtx->sample_fmt, audioCodecCtx->sample_rate, 0, NULL );
 	swr_init( swr );
-
-	if ( !arb )
-		arb = new AudioRingBuffer();
-	if ( resetArb ) {
-		arb->reset();
-		arb->setBytesPerChannel( Profile::bytesPerChannel( &outProfile ) );
-		arb->setChannels( outProfile.getAudioChannels() );
-		arb->setSampleRate( outProfile.getAudioSampleRate() );
-	}
 }
 
 
@@ -433,7 +422,7 @@ bool FFDecoder::seekDecodeNext( Frame *f )
 
 
 
-bool FFDecoder::seekTo( double p, Frame *f )
+bool FFDecoder::seekTo( double p, Frame *f, AudioFrame *af )
 {
 	if ( !formatCtx || ( p < startTime ) )
 		return false;
@@ -452,7 +441,7 @@ bool FFDecoder::seekTo( double p, Frame *f )
 		if ( haveAudio ) {
 			while ( loop++ < maxloop ) {
 				seek( timestamp );
-				if ( !decodeAudio( DECODEAUDIOSYNC, &p ) ) {
+				if ( !decodeAudio( af, DECODEAUDIOSYNC, &p ) ) {
 					printf("! decodeAudio\n");
 					timestamp -= MICROSECOND;
 				}
@@ -493,7 +482,7 @@ bool FFDecoder::seekTo( double p, Frame *f )
 			else if ( cur > p ) {
 				if ( delta > hdur && !before )
 					timestamp -= (timestampinc++ * (cur - p));
-				else if ( haveAudio && !decodeAudio( DECODEAUDIOSYNC, &cur ) )
+				else if ( haveAudio && !decodeAudio( af, DECODEAUDIOSYNC, &cur ) )
 					timestamp -= seekinc * hdur;
 				else
 					break;
@@ -516,12 +505,12 @@ bool FFDecoder::seekTo( double p, Frame *f )
 
 				if ( (cur > p) && ( delta > hdur && !before ) )
 					timestamp -= (audiotimestampinc++ * (cur - p));
-				else if ( haveAudio && !decodeAudio( DECODEAUDIOSYNC, &cur ) )
+				else if ( haveAudio && !decodeAudio( af, DECODEAUDIOSYNC, &cur ) )
 					timestamp -= seekinc * hdur;
 				else
 					break;
 			}
-			else if ( haveAudio && !decodeAudio( DECODEAUDIOSYNC, &cur ) )
+			else if ( haveAudio && !decodeAudio( af, DECODEAUDIOSYNC, &cur ) )
 				timestamp -= seekinc * hdur;
 			else
 				break;
@@ -709,7 +698,7 @@ bool FFDecoder::makeFrame( Frame *f, double ratio, double pts, double dur )
 
 
 
-bool FFDecoder::decodeAudio( int sync, double *pts )
+bool FFDecoder::decodeAudio( AudioFrame *f, int sync, double *pts )
 {
 	int gotFrame = 0;
 	int writtenSamples = 0;
@@ -719,12 +708,11 @@ bool FFDecoder::decodeAudio( int sync, double *pts )
 			while ( audioPackets.isEmpty() ) {
 				if ( !getPacket() ) {
 					// get the last few samples
-					int n = swr_get_delay( swr, arb->getSampleRate() ) * arb->getChannels();
-					uint8_t* dst = arb->write( writtenSamples, n );
-					int outSamples = swr_convert( swr, &dst, n, 0, 0 );
-					writtenSamples += outSamples;
+					int n = swr_get_delay( swr, outProfile.getAudioSampleRate() ) * outProfile.getAudioChannels();
+					uint8_t* dst = f->write( writtenSamples, n );
+					writtenSamples += swr_convert( swr, &dst, n, 0, 0 );
 					if ( writtenSamples )
-						arb->writeDone( 0, writtenSamples );
+						f->writeDone( 0, writtenSamples );
 					endOfFile |= EofAudio;
 					return false;
 				}
@@ -745,13 +733,13 @@ bool FFDecoder::decodeAudio( int sync, double *pts )
 
 				if ( !sync ) {
 					// get the pts of the resampled chunk
-					vpts -= swr_get_delay( swr, arb->getSampleRate() ) * MICROSECOND / arb->getSampleRate();
+					vpts -= swr_get_delay( swr, outProfile.getAudioSampleRate() ) * MICROSECOND / outProfile.getAudioSampleRate();
 				}
 
 				// roundup estimate
-				int outSamples = av_rescale_rnd( swr_get_delay( swr, audioCodecCtx->sample_rate ) + audioAvframe->nb_samples, arb->getSampleRate(), audioCodecCtx->sample_rate, AV_ROUND_UP );
+				int outSamples = av_rescale_rnd( swr_get_delay( swr, audioCodecCtx->sample_rate ) + audioAvframe->nb_samples, outProfile.getAudioSampleRate(), audioCodecCtx->sample_rate, AV_ROUND_UP );
 				// FIXME:nasty hack to avoid ringbuffer overflow
-				outSamples *= arb->getChannels();
+				outSamples *= outProfile.getAudioChannels();
 
 				// audio channels and layout may have changed
 				// if so, we flush swr internal buffer and reset
@@ -759,18 +747,17 @@ bool FFDecoder::decodeAudio( int sync, double *pts )
 								audioCodecCtx->channel_layout : av_get_default_channel_layout(audioCodecCtx->channels);
 				if ( audioCodecCtx->channels != lastChannels || layout != lastLayout ) {
 					//printf("channels=%d, lastChannels=%d\n", audioCodecCtx->channels, lastChannels);
-					int n = swr_get_delay( swr, arb->getSampleRate() ) * arb->getChannels();
-					uint8_t* dst = arb->write( writtenSamples, n );
-					int outSamples = swr_convert( swr, &dst, n, 0, 0 );
-					writtenSamples += outSamples;
-					resetAudioResampler( false );
+					int n = swr_get_delay( swr, outProfile.getAudioSampleRate() ) * outProfile.getAudioChannels();
+					uint8_t* dst = f->write( writtenSamples, n );
+					writtenSamples += swr_convert( swr, &dst, n, 0, 0 );
+					resetAudioResampler();
 				}
 
 				// We have to convert in order to get the exact number of out samples
 				// and swr_convert writes directly into the ringbuffer.
-				// So, if all samples have to be skipped, don't call arb->writeDone,
+				// So, if all samples have to be skipped, don't call f->writeDone,
 				// thus the write pointer isn't increased and next time we will overwrite this chunk.
-				uint8_t* dst = arb->write( writtenSamples, outSamples );
+				uint8_t* dst = f->write( writtenSamples, outSamples );
 				outSamples = swr_convert( swr, &dst, outSamples, (const uint8_t**)&audioAvframe->data[0], audioAvframe->nb_samples );
 				writtenSamples += outSamples;
 				if ( sync ) {
@@ -779,8 +766,8 @@ bool FFDecoder::decodeAudio( int sync, double *pts )
 						return true;
 					}
 					// how much samples to skip?
-					int ns = (*pts - vpts) * (double)arb->getSampleRate() / MICROSECOND;
-					printf("pts=%f, vpts=%f, ns=%d, sr=%d, outSamples=%d\n", *pts, vpts, ns, arb->getSampleRate(), outSamples);
+					int ns = (*pts - vpts) * (double)outProfile.getAudioSampleRate() / MICROSECOND;
+					printf("pts=%f, vpts=%f, ns=%d, sr=%d, outSamples=%d\n", *pts, vpts, ns, outProfile.getAudioSampleRate(), outSamples);
 					if ( ns < 0 ) {
 						// we have to seek back again
 						freeCurrentAudioPacket();
@@ -788,7 +775,7 @@ bool FFDecoder::decodeAudio( int sync, double *pts )
 					}
 					else if ( ns < outSamples ) {
 						// Tell the ringbuffer that "ns" samples are skipped
-						arb->writeDone( *pts, writtenSamples, ns );
+						f->writeDone( *pts, writtenSamples, ns );
 						if ( (currentAudioPacket.packet->size - len) <= 0 )
 							freeCurrentAudioPacket();
 						else {
@@ -803,7 +790,7 @@ bool FFDecoder::decodeAudio( int sync, double *pts )
 					}
 				}
 				else {
-					arb->writeDone( vpts, writtenSamples );
+					f->writeDone( vpts, writtenSamples );
 					if ( (currentAudioPacket.packet->size - len) <= 0 )
 						freeCurrentAudioPacket();
 					else {
@@ -885,196 +872,4 @@ void FFDecoder::freePacket( AVPacket *packet )
 {
 	av_free_packet( packet );
 	free( packet );
-}
-
-
-
-////////////////////////////////////////////////////////////////////
-AudioRingBuffer::AudioRingBuffer()
-	: reader(0),
-	writer(0),
-	size(25),
-	channels(DEFAULTCHANNELS),
-	bytesPerChannel(2),
-	bytesPerSample(channels * bytesPerChannel),
-	sampleRate(DEFAULTSAMPLERATE)
-{
-	chunks = new AudioChunk[size];
-}
-
-
-
-AudioRingBuffer::~AudioRingBuffer()
-{
-	delete [] chunks;
-}
-
-
-
-void AudioRingBuffer::reset()
-{
-	reader = writer = 0;
-}
-
-
-
-int AudioRingBuffer::getBytesPerSample()
-{
-	return bytesPerSample;
-}
-
-
-
-void AudioRingBuffer::setBytesPerChannel( int n )
-{
-	bytesPerChannel = n;
-	bytesPerSample = channels * bytesPerChannel;
-}
-
-int AudioRingBuffer::getBytesPerChannel()
-{
-	return bytesPerChannel;
-}
-
-
-
-void AudioRingBuffer::setChannels( int c )
-{
-	channels = c;
-	bytesPerSample = channels * bytesPerChannel;
-}
-
-int AudioRingBuffer::getChannels()
-{
-	return channels;
-}
-
-
-
-void AudioRingBuffer::setSampleRate( int r )
-{
-	sampleRate = r;
-}
-
-int AudioRingBuffer::getSampleRate()
-{
-	return sampleRate;
-}
-
-
-
-double AudioRingBuffer::readPts()
-{
-	return chunks[reader].pts;
-}
-
-
-
-bool AudioRingBuffer::readable( int nSamples )
-{
-	QMutexLocker ml( &mutex );
-	int i = reader;
-	int n = 0;
-	while ( i != writer ) {
-		n += chunks[i].available;
-		if ( n >= nSamples )
-			return true;
-		if ( ++i >= size )
-			i = 0;
-	}
-	return false;
-}
-
-
-
-void AudioRingBuffer::read( uint8_t *dst, int nSamples )
-{
-	QMutexLocker ml( &mutex );
-	uint8_t *d = dst;
-	while ( nSamples > 0 ) {
-		bool shift = false;
-		int ns = chunks[reader].available;
-		if ( ns > nSamples ) {
-			ns = nSamples;
-			shift = true;
-		}
-		int blen = ns * bytesPerSample;
-		memcpy( d, chunks[reader].bytes + chunks[reader].bufOffset, blen );
-		if ( shift ) {
-			chunks[reader].bufOffset += blen;
-			chunks[reader].available -= ns;
-			chunks[reader].pts += (double)ns * MICROSECOND / sampleRate;
-			return;
-		}
-		nSamples -= ns;
-		d += blen;
-		if ( ++reader >= size )
-			reader = 0;
-	}
-}
-
-
-
-int AudioRingBuffer::read( uint8_t *dst )
-{
-	QMutexLocker ml( &mutex );
-	uint8_t *d = dst;
-	int nSamples = 0;
-	while ( reader != writer ) {
-		int ns = chunks[reader].available;
-		int blen = ns * bytesPerSample;
-		memcpy( d, chunks[reader].bytes + chunks[reader].bufOffset, blen );
-		nSamples += ns;
-		d += blen;
-		if ( ++reader >= size )
-			reader = 0;
-	}
-	return nSamples;
-}
-
-
-
-bool AudioRingBuffer::writable()
-{
-	QMutexLocker ml( &mutex );
-	if ( writer == reader ) // true when ringbuffer is empty
-		return true;
-	int dist = 0;
-	if ( writer < reader )
-		dist = reader - writer;
-	else
-		dist = size - 1 - writer + reader;
-
-	return ( dist > 1 );
-}
-
-
-
-uint8_t* AudioRingBuffer::write( int writtenSamples, int moreSamples )
-{
-	QMutexLocker ml( &mutex );
-	if ( chunks[writer].bufSize < ((writtenSamples + moreSamples) * bytesPerSample) ) {
-		chunks[writer].bufSize = (writtenSamples + moreSamples) * bytesPerSample;
-		if ( !chunks[writer].bytes )
-			chunks[writer].bytes = (uint8_t*)malloc( chunks[writer].bufSize );
-		else {
-			chunks[writer].bytes = (uint8_t*)realloc( chunks[writer].bytes, chunks[writer].bufSize );
-			if ( !chunks[writer].bytes )
-				qDebug() << "FATAL! Realloc failed. Expect a crash very soon.";
-		}
-	}
-
-	return chunks[writer].bytes + (writtenSamples * bytesPerSample);
-}
-
-
-
-void AudioRingBuffer::writeDone( double pts, int nSamples, int samplesOffset )
-{
-	QMutexLocker ml( &mutex );
-	chunks[writer].pts = pts;
-	chunks[writer].available = nSamples - samplesOffset;
-	chunks[writer].bufOffset = samplesOffset * bytesPerSample;
-	if ( ++writer >= size )
-		writer = 0;
 }
