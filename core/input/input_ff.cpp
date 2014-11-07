@@ -83,12 +83,12 @@ double InputFF::seekTo( double p )
 	if ( !f )
 		return p;
 	AudioFrame *af = new AudioFrame( audioFrameList.getBytesPerSample() );
-	decoder->seekTo( p, f, af );
+	bool ok = decoder->seekTo( p, f, af );
 	if ( af->buffer )
 		audioFrameList.append( af );
 	else
 		delete af;
-	if ( f->getBuffer() ) {
+	if ( ok && f->getBuffer() ) {
 		lastFrame.set( f );
 		videoResampler.reset( outProfile.getVideoFrameDuration() );
 		videoResampler.outputPts = f->pts();
@@ -195,8 +195,6 @@ void InputFF::run()
 					mmiIncrement();
 					if ( decoder->decodeVideo( f ) ) {
 						lastFrame.set( f );
-						if ( !f->getBuffer() )
-							qDebug() << "NO decode BUFFER";
 						resample ( f );
 					}
 					else
@@ -248,8 +246,6 @@ void InputFF::run()
 
 void InputFF::resample( Frame *f )
 {
-	if ( !f->getBuffer() )
-		qDebug() << "NO resample BUFFER";
 	double delta = ( f->pts() + f->profile.getVideoFrameDuration() ) - ( videoResampler.outputPts + videoResampler.outputDuration );
 	if ( outProfile.getVideoFrameRate() == inProfile.getVideoFrameRate() ) { // no resampling
 		videoFrames.enqueue( f );
@@ -290,8 +286,6 @@ Frame* InputFF::getVideoFrame()
 					usleep( 1000 );
 				Frame *f = freeVideoFrames.dequeue();
 				lastFrame.get( f );
-				if ( !f->getBuffer() )
-					qDebug() << "NO LAST BUFFER";
 				return f;
 			}
 			return NULL;
@@ -300,8 +294,6 @@ Frame* InputFF::getVideoFrame()
 	}
 
 	Frame *f = videoFrames.dequeue();
-	if ( !f->getBuffer() )
-		qDebug() << "NO BUFFER";
 	return f;
 }
 

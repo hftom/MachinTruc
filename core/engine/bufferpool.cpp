@@ -64,6 +64,7 @@ Buffer* BufferPool::getBuffer( int size )
 
 void BufferPool::enlargeBuffer( Buffer *buf, int size )
 {
+	QMutexLocker ml( &mutex );
 	totalBytes -= buf->getBufferSize();
 	buf->resizeBuffer( size );
 	totalBytes += size;

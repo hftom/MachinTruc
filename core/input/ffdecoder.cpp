@@ -461,7 +461,6 @@ bool FFDecoder::seekTo( double p, Frame *f, AudioFrame *af )
 					continue;
 				}
 				printf("seekTo !decodeVideo\n");
-				f->release();
 				return false;
 			}
 			printf("decoded PTS=%f, timestamp=%f, wanted PTS=%f\n", f->pts(), timestamp, p );
@@ -490,7 +489,6 @@ bool FFDecoder::seekTo( double p, Frame *f, AudioFrame *af )
 			else if ( delta > hdur ) {
 				do {
 					if ( !seekDecodeNext( f ) ) {
-						f->release();
 						return false;
 					}
 					cur = f->pts();
