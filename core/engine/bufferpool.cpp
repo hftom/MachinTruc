@@ -14,6 +14,7 @@ BufferPool::BufferPool()
 	: totalBytes( 0 ),
 	totalBuffers( 0 )
 {
+	time.start();
 }
 
 
@@ -28,6 +29,20 @@ Buffer* BufferPool::getBuffer( int size )
 {
 	QMutexLocker ml( &mutex );
 	int i, index = -1, indexDiff = 0;
+	
+	if ( time.elapsed() > 30000 ) {
+		QTime t = QTime::currentTime();
+		for ( i = 0; i < freeBuffers.count(); ++i ) {
+			Buffer *b = freeBuffers[i];
+			if ( b->releasedTime.secsTo( t ) > 10 ) {
+				totalBytes -= b->getBufferSize();
+				--totalBuffers;
+				delete freeBuffers.takeAt( i-- );
+			}
+		}
+		t.restart();
+		qDebug() << "clean - total buffers:" << totalBuffers << "total bytes:" << totalBytes;
+	}
 
 	for ( i = 0; i < freeBuffers.count(); ++i ) {
 		Buffer *b = freeBuffers[i];
@@ -50,13 +65,13 @@ Buffer* BufferPool::getBuffer( int size )
 		b->resizeBuffer( size );
 		totalBytes += size;
 		b->use();
-		//qDebug() << "total buffers:" << totalBuffers << "total bytes:" << totalBytes;
+		qDebug() << "total buffers:" << totalBuffers << "total bytes:" << totalBytes;
 		return b;
 	}
 
 	totalBytes += size;
 	++totalBuffers;
-	//qDebug() << "total buffers:" << totalBuffers << "total bytes:" << totalBytes;
+	qDebug() << "total buffers:" << totalBuffers << "total bytes:" << totalBytes;
 	return new Buffer( size );
 }
 

@@ -113,13 +113,13 @@ public:
 	void shiftCurrentPTS( double d = 0 );
 	void shiftCurrentPTSAudio( double d = 0 );
 	void rewardPTS();
-	void seekTo( double p );
+	void seekTo( double p, bool backward = false );
 	
 	void newProject( Profile p );
 	bool setProfile( Profile p );
 	Profile getProfile();
 	Metronom* getMetronom() { return metronom; }
-	void play( bool b );
+	void play( bool b, bool backward = false );
 	
 	bool trackRequest( bool rm, int index );
 	void drainScenes();
@@ -151,6 +151,7 @@ private:
 
 	Profile projectProfile;
 
+	bool playBackward;
 	PlayMode playMode;
 	Preview preview;
 	

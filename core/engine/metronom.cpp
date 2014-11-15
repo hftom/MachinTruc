@@ -36,6 +36,7 @@ static const int fastPlaybackSpeed[NFPS][2] = {
 
 Metronom::Metronom()
 	: speed( 0 ),
+	playBackward( false ),
 	running( false ),
 	sclock( 0 ),
 	videoLate( 0 ),
@@ -111,8 +112,9 @@ void Metronom::setRenderMode( bool b )
 
 
 
-void Metronom::play( bool b )
+void Metronom::play( bool b, bool backward )
 {
+	playBackward = backward;
 	if ( b ) {
 		speed = 0;
 		sclock = videoLate = 0;

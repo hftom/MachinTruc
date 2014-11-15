@@ -19,7 +19,7 @@ public:
 	Composer( Sampler *samp );
 	~Composer();
 
-	void play( bool b );
+	void play( bool b, bool backward = false );
 	void seeking();
 	void runOneShot();
 	void updateFrame( Frame *dst );
@@ -42,6 +42,7 @@ private:
 	void processAudioFrame( FrameSample *sample, Profile *profile );
 	bool renderAudioFrame( Frame *dst, int nSamples );
 
+	bool playBackward;
 	bool running;
 	bool oneShot;
 	int skipFrame;

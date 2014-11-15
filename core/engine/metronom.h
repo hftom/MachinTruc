@@ -20,7 +20,7 @@ public:
 	Metronom();
 	~Metronom();
 	void setRenderMode( bool b );
-	void play( bool b );
+	void play( bool b, bool backward = false );
 	void changeSpeed( int s );
 	Frame* getLastFrame();
 	void flush();
@@ -44,6 +44,7 @@ private:
 	void runShow();
 
 	int speed;
+	bool playBackward;
 	bool running;
 	double sclock, videoLate;
 	QMutex clockMutex;

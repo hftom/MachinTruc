@@ -25,7 +25,7 @@ public:
 	virtual ~InputBase() {}
 	virtual bool probe( QString fn, Profile *prof ) = 0;
 	virtual bool open( QString fn ) = 0;
-	virtual void openSeekPlay( QString fn, double pts ) = 0;
+	virtual void openSeekPlay( QString fn, double pts, bool backward = false ) = 0;
 	virtual double seekTo( double ) = 0;
 	virtual void play( bool ) = 0;
 	virtual Frame *getVideoFrame() = 0;

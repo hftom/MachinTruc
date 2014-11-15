@@ -576,7 +576,7 @@ bool FFDecoder::decodeVideo( Frame *f )
 
 		freePacket( packet );
 		if ( endOfFile & EofVideoPacket ) {
-			endOfFile |= EofVideoFrame;
+			endOfFile |= EofVideo;
 			return false;
 		}
 	}

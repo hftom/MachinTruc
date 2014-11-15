@@ -5,6 +5,7 @@
 
 #include <QList>
 #include <QMutex>
+#include <QTime>
 
 
 
@@ -40,12 +41,14 @@ private:
 		++refCount;
 	}
 	bool release() {
+		releasedTime = QTime::currentTime();
 		return --refCount == 0;
 	}
 
 	int bufSize;
 	uint8_t *buf;
 	int refCount;
+	QTime releasedTime;
 };
 
 
@@ -67,6 +70,7 @@ private:
 	QList<Buffer*> freeBuffers;
 	QMutex mutex;
 	quint64 totalBytes, totalBuffers;
+	QTime time;
 };
 
 #endif // BUFFERPOOL_H

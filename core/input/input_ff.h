@@ -97,7 +97,12 @@ public:
 		return bytesPerSample;
 	}
 	void append( AudioFrame *af ) {
+		QMutexLocker ml( &mutex );
 		list.append( af );
+	}
+	int count() {
+		QMutexLocker ml( &mutex );
+		return list.count();
 	}
 
 private:
@@ -196,7 +201,7 @@ public:
 	InputFF();
 	~InputFF();
 	bool open( QString fn );
-	void openSeekPlay( QString fn, double p );
+	void openSeekPlay( QString fn, double p, bool backward = false );
 	double seekTo( double p );
 	void play( bool b );
 	Frame *getVideoFrame();
@@ -217,13 +222,20 @@ private:
 	void flush();
 	void resample( Frame *f );
 
+	void runForward();
+	void runBackward();
+
 	FFDecoder *decoder;
 
 	MQueue<Frame*> audioFrames;
 	MQueue<Frame*> freeAudioFrames;
+	QList<AudioFrame*> backwardAudioFrames;
+	int backwardAudioSamples;
 
 	MQueue<Frame*> videoFrames;
 	MQueue<Frame*> freeVideoFrames;
+	QList<Frame*> backwardVideoFrames;
+	MQueue<Frame*> reorderedVideoFrames;
 
 	QSemaphore *semaphore;
 	bool running;
@@ -232,10 +244,15 @@ private:
 	QString seekAndPlayPath;
 	bool seekAndPlay;
 
+	bool playBackward;
+	double backwardPts;
+
 	LastDecodedFrame lastFrame;
 	VideoResampler videoResampler;
 
 	AudioFrameList audioFrameList;
+
+	bool eofVideo, eofAudio;
 };
 
 #endif // INPUTFF_H

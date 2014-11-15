@@ -6,9 +6,9 @@
 
 
 Sampler::Sampler()
+	: playBackward( false ),
+	playMode( PlaySource )
 {	
-	playMode = PlaySource;
-	
 	metronom = new Metronom();
 	composer = new Composer( this );
 	connect( composer, SIGNAL(newFrame(Frame*)), this, SIGNAL(newFrame(Frame*)) );
@@ -195,14 +195,19 @@ void Sampler::setFencesContext( QGLWidget *shared )
 
 
 
-void Sampler::play( bool b )
+void Sampler::play( bool b, bool backward )
 {
+	playBackward = backward;
+
 	if ( playMode == PlaySource && !preview.isValid() ) {
 		emit paused( true );
 		return;
 	}
+	
+	if ( playBackward )
+		seekTo( currentPTS(), playBackward );
 
-	composer->play( b );
+	composer->play( b, backward );
 }
 
 
@@ -271,7 +276,7 @@ void Sampler::slideSeek( double p )
 
 
 
-void Sampler::seekTo( double p )
+void Sampler::seekTo( double p, bool backward )
 {
 	int i, j;
 
@@ -296,7 +301,8 @@ void Sampler::seekTo( double p )
 		currentScene->currentPTSAudio = p;
 	}
 
-	composer->seeking();
+	if ( !backward )
+		composer->seeking();
 }
 
 
@@ -455,7 +461,7 @@ InputBase* Sampler::getClipInput( Clip *c, double pts )
 	p.setAudioLayout( projectProfile.getAudioLayout() );
 	p.setAudioFormat( projectProfile.getAudioFormat() );
 	in->setProfile( c->getProfile(), p );
-	in->openSeekPlay( c->sourcePath(), pos );
+	in->openSeekPlay( c->sourcePath(), pos, playBackward );
 	c->setInput( in );
 
 	return in;

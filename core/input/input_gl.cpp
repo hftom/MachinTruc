@@ -46,7 +46,7 @@ bool InputGL::open( QString fn )
 
 
 
-void InputGL::openSeekPlay( QString fn, double p )
+void InputGL::openSeekPlay( QString fn, double p, bool backward )
 {
 	if ( fn != sourceName )
 		open( fn );

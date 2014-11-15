@@ -130,7 +130,8 @@ Yuv420pToRgba yuvshader;
 
 
 Composer::Composer( Sampler *samp )
-	: running( false ),
+	: playBackward( false ),
+	running( false ),
 	oneShot( false ),
 	skipFrame( 0 ),
 	hiddenContext( NULL ),
@@ -198,10 +199,10 @@ void Composer::seeking()
 
 
 
-void Composer::play( bool b )
+void Composer::play( bool b, bool backward )
 {
 	if ( b ) {
-		sampler->getMetronom()->play( b );
+		sampler->getMetronom()->play( b, backward );
 #if QT_VERSION >= 0x050000
 		hiddenContext->context()->moveToThread( this );
 #endif
@@ -209,7 +210,7 @@ void Composer::play( bool b )
 		start();
 	}
 	else {
-		sampler->getMetronom()->play( b );
+		sampler->getMetronom()->play( b, backward );
 		running = false;
 		wait();
 	}

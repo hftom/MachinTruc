@@ -14,7 +14,7 @@ public:
 	InputGL();
 	~InputGL();
 	bool open( QString fn );
-	void openSeekPlay( QString fn, double p );
+	void openSeekPlay( QString fn, double p, bool backward = false );
 	void close() {}
 	void flush() {}
 	void seekFast( float percent );

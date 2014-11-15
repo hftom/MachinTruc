@@ -110,7 +110,7 @@ bool InputImage::open( QString fn )
 
 
 
-void InputImage::openSeekPlay( QString fn, double p )
+void InputImage::openSeekPlay( QString fn, double p, bool backward )
 {
 	if ( fn != sourceName || !buffer ) {
 		wait();

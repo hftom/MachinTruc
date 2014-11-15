@@ -37,11 +37,14 @@ public:
 		int size = (writtenSamples + moreSamples) * bytesPerSample;
 		if ( size < 1 )
 			return NULL;
-		if ( !buffer )
-			buffer = BufferPool::globalInstance()->getBuffer( size );
-		else
-			BufferPool::globalInstance()->enlargeBuffer( buffer, size );
-		bufSize = size;
+		if ( !buffer ) {
+			bufSize = size;
+			buffer = BufferPool::globalInstance()->getBuffer( bufSize );
+		}
+		else if ( bufSize < size ) {
+			bufSize = size;
+			BufferPool::globalInstance()->enlargeBuffer( buffer, bufSize );
+		}
 
 		return buffer->data() + (writtenSamples * bytesPerSample);
 	}
@@ -145,7 +148,7 @@ private:
 
 	QQueue<AVPacket*> audioPackets, videoPackets;
 
-	enum EofMode{ EofPacket=1, EofAudioPacket=2, EofVideoPacket=4, EofAudio=8, EofVideoFrame=16, EofVideo=32 };
+	enum EofMode{ EofPacket=1, EofAudioPacket=2, EofVideoPacket=4, EofAudio=8, EofVideo=16 };
 	int endOfFile;
 
 	bool haveAudio, haveVideo;

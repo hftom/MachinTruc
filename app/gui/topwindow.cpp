@@ -408,7 +408,8 @@ void TopWindow::playFaster()
 
 void TopWindow::playSlower()
 {
-	sampler->getMetronom()->changeSpeed( -1 );
+	sampler->play( true, true );//getMetronom()->changeSpeed( -1 );
+	composerPaused( false );
 }
 
 void TopWindow::seekPrevious()
