@@ -20,13 +20,14 @@
 class AudioFrame
 {
 public:
-	explicit AudioFrame( int sampleSize )
+	explicit AudioFrame( int sampleSize, int rate )
 		: bufPts( 0 ),
 		buffer( NULL ),
 		bufSize( 0 ),
 		bufOffset( 0 ),
 		available( 0 ),
-		bytesPerSample( sampleSize )
+		bytesPerSample( sampleSize ),
+		sampleRate( rate )
 	{
 	}
 	~AudioFrame() {
@@ -59,6 +60,7 @@ public:
 	int bufSize, bufOffset; // in bytes
 	int available; // in samples
 	int bytesPerSample;
+	int sampleRate;
 };
 
 

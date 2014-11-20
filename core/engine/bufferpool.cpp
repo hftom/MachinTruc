@@ -40,7 +40,7 @@ Buffer* BufferPool::getBuffer( int size )
 				delete freeBuffers.takeAt( i-- );
 			}
 		}
-		t.restart();
+		time.restart();
 		qDebug() << "clean - total buffers:" << totalBuffers << "total bytes:" << totalBytes;
 	}
 
@@ -65,13 +65,13 @@ Buffer* BufferPool::getBuffer( int size )
 		b->resizeBuffer( size );
 		totalBytes += size;
 		b->use();
-		qDebug() << "total buffers:" << totalBuffers << "total bytes:" << totalBytes;
+		//qDebug() << "total buffers:" << totalBuffers << "total bytes:" << totalBytes;
 		return b;
 	}
 
 	totalBytes += size;
 	++totalBuffers;
-	qDebug() << "total buffers:" << totalBuffers << "total bytes:" << totalBytes;
+	//qDebug() << "total buffers:" << totalBuffers << "total bytes:" << totalBytes;
 	return new Buffer( size );
 }
 

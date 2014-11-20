@@ -105,6 +105,8 @@ TopWindow::TopWindow()
 	connect( actionSave, SIGNAL(triggered()), this, SLOT(saveProject()) );
 	connect( actionOpen, SIGNAL(triggered()), this, SLOT(loadProject()) );
 	connect( actionPlayPause, SIGNAL(triggered()), this, SLOT(videoPlayPause()) );
+	connect( actionForward, SIGNAL(triggered()), this, SLOT(playForward()) );
+	connect( actionBackward, SIGNAL(triggered()), this, SLOT(playBackward()) );
 	connect( actionFaster, SIGNAL(triggered()), this, SLOT(playFaster()) );
 	connect( actionSlower, SIGNAL(triggered()), this, SLOT(playSlower()) );
 	connect( actionProjectSettings, SIGNAL(triggered()), this, SLOT(menuProjectSettings()) );
@@ -401,6 +403,16 @@ void TopWindow::videoPlayPause()
 	playToolButton->toggle();
 }
 
+void TopWindow::playForward()
+{
+}
+
+void TopWindow::playBackward()
+{
+	sampler->play( true, true );
+	composerPaused( false );
+}
+
 void TopWindow::playFaster()
 {
 	sampler->getMetronom()->changeSpeed( 1 );
@@ -408,8 +420,7 @@ void TopWindow::playFaster()
 
 void TopWindow::playSlower()
 {
-	sampler->play( true, true );//getMetronom()->changeSpeed( -1 );
-	composerPaused( false );
+	sampler->getMetronom()->changeSpeed( -1 );
 }
 
 void TopWindow::seekPrevious()

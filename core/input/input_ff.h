@@ -134,20 +134,22 @@ public:
 			BufferPool::globalInstance()->useBuffer( buffer );
 			profile = f->profile;
 			type = f->type();
-			pts = f->pts() + f->profile.getVideoFrameDuration();
+			pts = f->pts();
 			orientation = f->orientation();
 		}
 	}
-	void get( Frame *f ) {
+	void get( Frame *f, bool backward = false ) {
 		if ( buffer )
 			f->setSharedBuffer( buffer );
+		if ( backward )
+			pts -= profile.getVideoFrameDuration();
+		else
+			pts += profile.getVideoFrameDuration();
 		f->setVideoFrame( (Frame::DataType)type, profile.getVideoWidth(), profile.getVideoHeight(), profile.getVideoSAR(),
 						  profile.getVideoInterlaced(), profile.getVideoTopFieldFirst(), pts, profile.getVideoFrameDuration(), orientation );
 		f->profile = profile;
-		pts += profile.getVideoFrameDuration();
 	}
 	bool valid() { return buffer != NULL; }
-	double framePts() { return pts - profile.getVideoFrameDuration(); }
 
 private:
 	Buffer *buffer;
@@ -176,13 +178,19 @@ public:
 		repeat = r;
 		repeatPTS = pts;
 	}
-	void duplicate( Frame *f ) {
-		f->setPts( repeatPTS + outputDuration );
+	void duplicate( Frame *f, bool backward = false ) {
+		if ( backward )
+			f->setPts( repeatPTS - outputDuration );
+		else
+			f->setPts( repeatPTS + outputDuration );
 		if ( (repeat - 1) > 0 )
 			setRepeat( f->pts(), repeat - 1 );
 		else
 			setRepeat( 0, 0 );
-		outputPts += outputDuration;
+		if ( backward )
+			outputPts -= outputDuration;
+		else
+			outputPts += outputDuration;
 	}
 
 	double outputPts;
@@ -221,6 +229,7 @@ protected:
 private:
 	void flush();
 	void resample( Frame *f );
+	void resampleBackward( Frame *f );
 
 	void runForward();
 	void runBackward();
@@ -229,13 +238,9 @@ private:
 
 	MQueue<Frame*> audioFrames;
 	MQueue<Frame*> freeAudioFrames;
-	QList<AudioFrame*> backwardAudioFrames;
-	int backwardAudioSamples;
 
 	MQueue<Frame*> videoFrames;
 	MQueue<Frame*> freeVideoFrames;
-	QList<Frame*> backwardVideoFrames;
-	MQueue<Frame*> reorderedVideoFrames;
 
 	QSemaphore *semaphore;
 	bool running;
@@ -244,8 +249,13 @@ private:
 	QString seekAndPlayPath;
 	bool seekAndPlay;
 
+	QList<Frame*> backwardVideoFrames;
+	MQueue<Frame*> reorderedVideoFrames;
+	QList<AudioFrame*> backwardAudioFrames;
+	int backwardAudioSamples;
 	bool playBackward;
-	double backwardPts;
+	double backwardPts, backwardStartPts;
+	bool backwardEof;
 
 	LastDecodedFrame lastFrame;
 	VideoResampler videoResampler;

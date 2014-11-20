@@ -7,13 +7,15 @@
 
 InputFF::InputFF() : InputBase(),
 	decoder( new FFDecoder() ),
-	backwardAudioSamples( 0 ),
 	semaphore( new QSemaphore( 1 ) ),
 	running( false ),
 	seekAndPlayPTS( 0 ),
 	seekAndPlay( false ),
+	backwardAudioSamples( 0 ),
 	playBackward( false ),
 	backwardPts( 0 ),
+	backwardStartPts( 0 ),
+	backwardEof( false ),
 	eofVideo( false ),
 	eofAudio( false )
 {
@@ -56,12 +58,13 @@ void InputFF::flush()
 		f->release();
 	while ( !backwardAudioFrames.isEmpty() )
 		delete backwardAudioFrames.takeFirst();
-	backwardAudioSamples = 0;
 
 	lastFrame.set( NULL );
 	audioFrameList.reset( outProfile );
 	videoResampler.reset( outProfile.getVideoFrameDuration() );
 	eofVideo = eofAudio = false;
+	backwardEof = false;
+	backwardAudioSamples = 0;
 }
 
 
@@ -93,10 +96,15 @@ double InputFF::seekTo( double p )
 	mmiSeek();
 
 	if ( playBackward ) {
-		backwardPts = p;
+		backwardPts = backwardStartPts = p;
+		double target = backwardPts - MICROSECOND;
+		if ( target <= inProfile.getStreamStartTime() ) {
+			target = inProfile.getStreamStartTime();
+			backwardEof = true;
+		}
 		Frame *f = new Frame( NULL );
-		AudioFrame *af = new AudioFrame( audioFrameList.getBytesPerSample() );
-		bool ok = decoder->seekTo( p - MICROSECOND, f, af );
+		AudioFrame *af = new AudioFrame( audioFrameList.getBytesPerSample(), outProfile.getAudioSampleRate() );
+		bool ok = decoder->seekTo( target, f, af );
 		if ( af->buffer ) {
 			backwardAudioFrames.append( af );
 			backwardAudioSamples += af->available;
@@ -105,6 +113,8 @@ double InputFF::seekTo( double p )
 			delete af;
 		if ( ok && f->getBuffer() ) {
 			backwardVideoFrames.append( f );
+			videoResampler.reset( outProfile.getVideoFrameDuration() );
+			videoResampler.outputPts = p;
 			return f->pts();
 		}
 		else {
@@ -115,7 +125,7 @@ double InputFF::seekTo( double p )
 		Frame *f = freeVideoFrames.dequeue();
 		if ( !f )
 			return p;
-		AudioFrame *af = new AudioFrame( audioFrameList.getBytesPerSample() );
+		AudioFrame *af = new AudioFrame( audioFrameList.getBytesPerSample(), outProfile.getAudioSampleRate() );
 		bool ok = decoder->seekTo( p, f, af );
 		if ( af->buffer )
 			audioFrameList.append( af );
@@ -254,7 +264,7 @@ void InputFF::runForward()
 
 		if ( decoder->haveAudio && !eofAudio ) {
 			if ( audioFrameList.writable() ) {
-				AudioFrame *af = new AudioFrame( audioFrameList.getBytesPerSample() );
+				AudioFrame *af = new AudioFrame( audioFrameList.getBytesPerSample(), outProfile.getAudioSampleRate() );
 				decoder->decodeAudio( af );
 				if ( af->buffer )
 					audioFrameList.append( af );
@@ -299,55 +309,99 @@ void InputFF::runBackward()
 	int doWait;
 	bool endVideoSequence = !decoder->haveVideo;
 	bool endAudioSequence = !decoder->haveAudio;
+	int minSamples = (outProfile.getAudioSampleRate() / outProfile.getVideoFrameRate()) * 5;
 
 	while ( running ) {
 		doWait = 1;
 
-		if ( !eofVideo && !endVideoSequence ) {
-			Frame *f = new Frame( NULL );
-			if ( decoder->decodeVideo( f ) ) {
-				backwardVideoFrames.append( f );
-				if ( backwardVideoFrames.count() == outProfile.getVideoFrameRate() )
+		if ( !endVideoSequence ) {
+			bool yes = backwardVideoFrames.count() + reorderedVideoFrames.count() < inProfile.getVideoFrameRate() + 3;
+			yes |= reorderedVideoFrames.count() < 3;
+			yes |= decoder->haveAudio && !audioFrameList.readable( minSamples );
+			if ( yes ) {
+				Frame *f = new Frame( NULL );
+				if ( decoder->decodeVideo( f ) ) {
+					backwardVideoFrames.append( f );
+					if ( f->pts() >= backwardPts )
+						endVideoSequence = true;
+				}
+				else {
+					delete f;
 					endVideoSequence = true;
+				}
+				doWait = 0;
 			}
-			else {
-				delete f;
-				endVideoSequence = true;
-			}
-			doWait = 0;
 		}
 
-		if ( !eofAudio && !endAudioSequence ) {
-			AudioFrame *af = new AudioFrame( audioFrameList.getBytesPerSample() );
-			decoder->decodeAudio( af );
-			if ( af->buffer ) {
-				if ( backwardAudioSamples + af->available >= outProfile.getAudioSampleRate() ) {
-					af->available = outProfile.getAudioSampleRate() - backwardAudioSamples;
+		if ( !endAudioSequence ) {
+			bool yes = !audioFrameList.readable( minSamples * 3 );
+			yes |= decoder->haveVideo && reorderedVideoFrames.count() < 3;
+			if ( yes ) {
+				AudioFrame *af = new AudioFrame( audioFrameList.getBytesPerSample(), outProfile.getAudioSampleRate() );
+				decoder->decodeAudio( af );
+				if ( af->buffer ) {
+					double dpts = (double)(backwardAudioSamples + af->available) * MICROSECOND / (double)outProfile.getAudioSampleRate();
+					if ( backwardAudioFrames.count() && backwardAudioFrames.first()->bufPts + dpts >= backwardStartPts ) {
+						af->available -= ((backwardAudioFrames.first()->bufPts + dpts - backwardStartPts) * (double)outProfile.getAudioSampleRate() / MICROSECOND) - 0.5;
+						if ( af->available <= 0 )
+							delete af;
+						else {
+							backwardAudioSamples += af->available;
+							backwardAudioFrames.append( af );
+						}
+						endAudioSequence = true;
+					}
+					else {
+						backwardAudioSamples += af->available;
+						backwardAudioFrames.append( af );
+					}
+				}
+				else {
+					delete af;
 					endAudioSequence = true;
 				}
-				backwardAudioSamples += af->available;
-				backwardAudioFrames.append( af );
+				doWait = 0;
 			}
-			else {
-				delete af;
-				endAudioSequence = true;
-			}
-			doWait = 0;
 		}
 
-		if ( endVideoSequence && endAudioSequence && !audioFrameList.readable( 2000 ) ) {
-			bool eof = false;
+		if ( endVideoSequence && endAudioSequence ) {
 			if ( backwardVideoFrames.count() ) {
-				if ( backwardVideoFrames.first()->pts() == inProfile.getStreamStartTime() )
-					eof = true;
+				backwardPts = backwardVideoFrames.first()->pts();
+				if ( backwardVideoFrames.first()->pts() <= inProfile.getStreamStartTime() )
+					backwardEof = true;
 			}
 			else if ( backwardAudioFrames.count() ) {
-				if ( backwardAudioFrames.first()->bufPts == inProfile.getStreamStartTime() )
-					eof = true;
+				backwardPts = backwardAudioFrames.first()->bufPts;
+				if ( backwardAudioFrames.first()->bufPts <= inProfile.getStreamStartTime() )
+					backwardEof = true;
 			}
 
-			while ( !backwardVideoFrames.isEmpty() )
-				reorderedVideoFrames.enqueue( backwardVideoFrames.takeLast() );
+			double bpts = backwardPts;
+			while ( !backwardVideoFrames.isEmpty() ) {
+				// resample if necessary
+				if ( videoResampler.repeat && lastFrame.valid() ) {
+					// duplicate previous frame
+					Frame *f = new Frame( NULL );
+					lastFrame.get( f, true );
+					videoResampler.duplicate( f, true );
+					f->mmi = mmi;
+					f->mmiProvider = mmiProvider;
+					if ( !videoResampler.repeat )
+						mmiIncrement();
+					reorderedVideoFrames.enqueue( f );
+				}
+				else {
+					Frame *f = backwardVideoFrames.takeLast();
+					f->mmi = mmi;
+					f->mmiProvider = mmiProvider;
+					mmiIncrement();
+					lastFrame.set( f );
+					resampleBackward( f );
+				}
+				bpts = videoResampler.outputPts + videoResampler.outputDuration;
+			}
+			backwardPts = bpts;
+
 			while ( !backwardAudioFrames.isEmpty() ) {
 				int bps = audioFrameList.getBytesPerSample();
 				AudioFrame *af = backwardAudioFrames.takeLast();
@@ -369,18 +423,24 @@ void InputFF::runBackward()
 				audioFrameList.append( af );
 			}
 
-			if ( eof ) {
+			if ( backwardEof ) {
 				eofVideo = eofAudio = true;
+				printf("ff.run break\n");
+				break;
 			}
 			else {
-				backwardAudioSamples = 0;
-				backwardPts -= MICROSECOND;
-				backwardPts -= inProfile.getVideoFrameDuration();
+				double target = backwardPts - MICROSECOND;
+				if ( target <= inProfile.getStreamStartTime() ) {
+					target = inProfile.getStreamStartTime();
+					backwardEof = true;
+				}
 				Frame *f = new Frame( NULL );
-				AudioFrame *af = new AudioFrame( audioFrameList.getBytesPerSample() );
-				bool ok = decoder->seekTo( backwardPts - MICROSECOND, f, af );
+				AudioFrame *af = new AudioFrame( audioFrameList.getBytesPerSample(), outProfile.getAudioSampleRate() );
+				bool ok = decoder->seekTo( target, f, af );
 				if ( af->buffer ) {
 					backwardAudioSamples += af->available;
+					if ( !decoder->haveVideo && af->bufPts == 0 )
+						af->bufPts = target;
 					backwardAudioFrames.append( af );
 				}
 				else
@@ -405,10 +465,10 @@ void InputFF::runBackward()
 void InputFF::resample( Frame *f )
 {
 	double delta = ( f->pts() + f->profile.getVideoFrameDuration() ) - ( videoResampler.outputPts + videoResampler.outputDuration );
-	if ( outProfile.getVideoFrameRate() == inProfile.getVideoFrameRate() ) { // no resampling
+	/*if ( outProfile.getVideoFrameRate() == inProfile.getVideoFrameRate() ) { // no resampling
 		videoFrames.enqueue( f );
 	}
-	else if ( delta >= videoResampler.outputDuration ) {
+	else*/ if ( delta >= videoResampler.outputDuration ) {
 		// this frame will be duplicated (delta / videoResampler.outputDuration) times
 		printf("duplicate, delta=%f, f->pts=%f, outputPts=%f\n", delta, f->pts(), videoResampler.outputPts);
 		// add some to delta to prevent subduplicate
@@ -429,6 +489,30 @@ void InputFF::resample( Frame *f )
 
 
 
+void InputFF::resampleBackward( Frame *f )
+{
+	double delta = ( videoResampler.outputPts - videoResampler.outputDuration ) - ( f->pts() - f->profile.getVideoFrameDuration() );
+	if ( delta >= videoResampler.outputDuration ) {
+		// this frame will be duplicated (delta / videoResampler.outputDuration) times
+		printf("duplicate, delta=%f, f->pts=%f, outputPts=%f\n", delta, f->pts(), videoResampler.outputPts);
+		// add some to delta to prevent subduplicate
+		videoResampler.setRepeat( f->pts(), (delta + 1) / videoResampler.outputDuration );
+		reorderedVideoFrames.enqueue( f );
+		videoResampler.outputPts -= videoResampler.outputDuration;
+	}
+	else if ( delta <= -videoResampler.outputDuration ) {
+		// skip
+		printf("skip frame delta=%f, f->pts=%f, outputPts=%f\n", delta, f->pts(), videoResampler.outputPts);
+		delete f;
+	}
+	else {
+		reorderedVideoFrames.enqueue( f );
+		videoResampler.outputPts -= videoResampler.outputDuration;
+	}
+}
+
+
+
 Frame* InputFF::getVideoFrame()
 {
 	SemaphoreLocker sem( semaphore );
@@ -443,6 +527,7 @@ Frame* InputFF::getVideoFrame()
 		while ( reorderedVideoFrames.queueEmpty() ) {
 			if ( eofVideo )
 				return NULL;
+			qDebug() << "wait video";
 			usleep( 1000 );
 		}
 		Frame *rf = reorderedVideoFrames.dequeue();
@@ -454,6 +539,8 @@ Frame* InputFF::getVideoFrame()
 						  rf->profile.getVideoFrameDuration(),
 						  rf->orientation() );
 		f->profile = rf->profile;
+		f->mmi = rf->mmi;
+		f->mmiProvider = rf->mmiProvider;
 		delete rf;
 		return f;
 	}
@@ -503,6 +590,7 @@ Frame* InputFF::getAudioFrame( int nSamples )
 			memset( f->data() + ( n * audioFrameList.getBytesPerSample() ), 0, (nSamples - n) * audioFrameList.getBytesPerSample() );
 			return f;
 		}
+		qDebug() << "wait audio";
 		usleep( 1000 );
 	}
 

@@ -383,8 +383,17 @@ void Composer:: waitFence()
 bool Composer::renderVideoFrame( Frame *dst )
 {
 	if ( !sampler->getVideoTracks( dst ) ) {
-		// make black
 		Profile projectProfile = sampler->getProfile();
+		
+		if ( skipFrame > 0 ) {
+			//qDebug() << "skipFrame" << sampler->currentPTS();
+			--skipFrame;
+			dst->setVideoFrame( Frame::NONE, projectProfile.getVideoWidth(), projectProfile.getVideoHeight(), projectProfile.getVideoSAR(),
+								false, false, sampler->currentPTS(), projectProfile.getVideoFrameDuration() );
+			return true;
+		}
+		
+		// make black
 		dst->setVideoFrame( Frame::GLTEXTURE, projectProfile.getVideoWidth(), projectProfile.getVideoHeight(), projectProfile.getVideoSAR(),
 							false, false, sampler->currentPTS(), projectProfile.getVideoFrameDuration() );
 		waitFence();

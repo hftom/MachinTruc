@@ -173,7 +173,7 @@ bool FFDecoder::probe( QString fn, Profile *prof )
 		if ( haveAudio ) {
 			int loop = 0;
 			double pts = f.pts();
-			AudioFrame *af = new AudioFrame( Profile::bytesPerChannel( &outProfile ) * outProfile.getAudioChannels() );
+			AudioFrame *af = new AudioFrame( Profile::bytesPerChannel( &outProfile ) * outProfile.getAudioChannels(), outProfile.getAudioSampleRate() );
 			if ( !decodeAudio( af, DECODEAUDIOPROBE, &pts ) ) {
 				return haveAudio;
 			}
@@ -765,7 +765,7 @@ bool FFDecoder::decodeAudio( AudioFrame *f, int sync, double *pts )
 					}
 					// how much samples to skip?
 					int ns = (*pts - vpts) * (double)outProfile.getAudioSampleRate() / MICROSECOND;
-					printf("pts=%f, vpts=%f, ns=%d, sr=%d, outSamples=%d\n", *pts, vpts, ns, outProfile.getAudioSampleRate(), outSamples);
+					//printf("pts=%f, vpts=%f, ns=%d, sr=%d, outSamples=%d\n", *pts, vpts, ns, outProfile.getAudioSampleRate(), outSamples);
 					if ( ns < 0 ) {
 						// we have to seek back again
 						freeCurrentAudioPacket();

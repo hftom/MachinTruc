@@ -583,7 +583,7 @@
      <x>0</x>
      <y>0</y>
      <width>1051</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -619,6 +619,8 @@
      <string>Player</string>
     </property>
     <addaction name="actionPlayPause"/>
+    <addaction name="actionForward"/>
+    <addaction name="actionBackward"/>
     <addaction name="actionFaster"/>
     <addaction name="actionSlower"/>
    </widget>
@@ -714,12 +716,28 @@
     <string>K</string>
    </property>
   </action>
+  <action name="actionForward">
+   <property name="text">
+    <string>Forward</string>
+   </property>
+   <property name="shortcut">
+    <string>L</string>
+   </property>
+  </action>
+  <action name="actionBackward">
+   <property name="text">
+    <string>Backward</string>
+   </property>
+   <property name="shortcut">
+    <string>J</string>
+   </property>
+  </action>
   <action name="actionFaster">
    <property name="text">
     <string>Faster</string>
    </property>
    <property name="shortcut">
-    <string>L</string>
+    <string>+</string>
    </property>
   </action>
   <action name="actionSlower">
@@ -727,7 +745,7 @@
     <string>Slower</string>
    </property>
    <property name="shortcut">
-    <string>J</string>
+    <string>-</string>
    </property>
   </action>
  </widget>

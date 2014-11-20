@@ -20,7 +20,7 @@ public:
 	Preview() : currentPTS(0), currentPTSAudio(0), input(NULL), source(NULL) {
 	}
 	
-	bool seekTo( double p ) {
+	bool seekTo( double p, bool backward ) {
 		if ( !isValid() )
 			return false;
 		// do not seek back beyond the probed first frame
@@ -30,8 +30,8 @@ public:
 			p = profile.getStreamStartTime();
 		}
 		input->play( false );
-		currentPTS = currentPTSAudio = input->seekTo( p );
-		input->play( true );
+		currentPTS = currentPTSAudio = p;
+		input->openSeekPlay( source->getFileName(), p, backward );
 		return true;
 	}
 	

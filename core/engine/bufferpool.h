@@ -32,6 +32,8 @@ private:
 		return bufSize;
 	}
 	void resizeBuffer( int size ) {
+		if ( size <= 0 )
+			return;
 		bufSize = size;
 		buf = (uint8_t*)realloc( buf, bufSize );
 		if ( !buf )
