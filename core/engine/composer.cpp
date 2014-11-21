@@ -300,7 +300,7 @@ int Composer::process( Frame **frame )
 	
 	Profile projectProfile = sampler->getProfile();
 
-	if ( ( sampler->getEndPTS() - sampler->currentPTS() ) <  ( projectProfile.getVideoFrameDuration() / 2.0 ) )
+	if ( ( sampler->currentSceneDuration() - sampler->currentPTS() ) <  ( projectProfile.getVideoFrameDuration() / 2.0 ) )
 		return PROCESSEND;
 
 	if ( oneShot)
@@ -344,8 +344,7 @@ int Composer::process( Frame **frame )
 	}
 
 	if ( video ) {
-		double d = (dst->sample->frames.count() && dst->sample->frames[0]->frame) ? dst->sample->frames[0]->frame->pts() : 0;
-		sampler->shiftCurrentPTS( d );
+		sampler->shiftCurrentPTS();
 	}
 	
 	if ( !oneShot)

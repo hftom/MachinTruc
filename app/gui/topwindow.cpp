@@ -122,7 +122,7 @@ TopWindow::TopWindow()
 
 void TopWindow::renderDialog()
 {
-	if ( !sampler->currentSceneDuration() ) {
+	if ( !sampler->currentTimelineSceneDuration() ) {
 		QMessageBox::warning( this, tr("Sorry"), tr("The timeline is empty.") );
 		return;
 	}
@@ -137,7 +137,7 @@ void TopWindow::renderDialog()
 	RenderingDialog *dlg = new RenderingDialog( this,
 								sampler->getCurrentScene()->getProfile(),
 								playhead,
-								sampler->currentSceneDuration(),
+								sampler->currentTimelineSceneDuration(),
 								&sampler->getMetronom()->audioFrames,
 								&sampler->getMetronom()->encodeVideoFrames );
 
@@ -270,6 +270,7 @@ void TopWindow::modeSwitched()
 
 void TopWindow::setInPoint()
 {
+	// ATTENTION preview pts is now in timeline range (start at 0)
 	if ( sourcePage->hasActiveSource() ) {
 		//double pts;
 		//QImage img = vw->getThumb( THUMBHEIGHT, &pts, false );
@@ -282,6 +283,7 @@ void TopWindow::setInPoint()
 
 void TopWindow::setOutPoint()
 {
+	// ATTENTION preview pts is now in timeline range (start at 0)
 	if ( sourcePage->hasActiveSource() ) {
 		//double pts;
 		//QImage img = vw->getThumb( THUMBHEIGHT, &pts, true );
@@ -325,13 +327,12 @@ void TopWindow::currentFramePts( double d )
 		sourcePage->activeSourceSetCurrentPts( d );
 		Profile prof = sourcePage->activeSourceGetProfile();
 		d -= prof.getStreamStartTime();
-		d *= seekSlider->maximum() / prof.getStreamDuration();
 	}
 	else {
 		emit setCursorPos( d ); 
-		d *= seekSlider->maximum() / sampler->getSamplerDuration();
 	}
-
+	
+	d *= seekSlider->maximum() / sampler->currentSceneDuration();
 	seekSlider->blockSignals( true );
 	seekSlider->setValue( d );
 	seekSlider->blockSignals( false );
@@ -445,19 +446,7 @@ void TopWindow::seekForward()
 
 void TopWindow::seek( int v )
 {
-	double value;
-	
-	if ( !switchButton->isChecked() ) {
-		if ( !sourcePage->hasActiveSource() )
-			return;
-		Profile prof = sourcePage->activeSourceGetProfile();
-		value = prof.getStreamStartTime();
-		value += v * prof.getStreamDuration() / seekSlider->maximum();
-	}
-	else {
-		value = v * sampler->getSamplerDuration() / seekSlider->maximum();
-	}
-
+	double value = v * sampler->currentSceneDuration() / seekSlider->maximum();
 	sampler->slideSeek( value );
 }
 
@@ -643,7 +632,7 @@ void TopWindow::loadProject()
 			delete projectLoader->sceneList.takeFirst();
 			
 		QMessageBox msgBox;
-		msgBox.setText( tr("Project loading failed.\nThe project file is corrupted.") );
+		msgBox.setText( tr("Project loading failed.\nThe file seems corrupted.") );
 		msgBox.exec();
 		delete projectLoader;
 		projectLoader = NULL;

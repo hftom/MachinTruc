@@ -14,87 +14,6 @@ class Composer;
 
 
 
-class Preview
-{
-public:
-	Preview() : currentPTS(0), currentPTSAudio(0), input(NULL), source(NULL) {
-	}
-	
-	bool seekTo( double p, bool backward ) {
-		if ( !isValid() )
-			return false;
-		// do not seek back beyond the probed first frame
-		if ( p < profile.getStreamStartTime() ) {
-			if ( currentPTS == profile.getStreamStartTime() )
-				return false;
-			p = profile.getStreamStartTime();
-		}
-		input->play( false );
-		currentPTS = currentPTSAudio = p;
-		input->openSeekPlay( source->getFileName(), p, backward );
-		return true;
-	}
-	
-	void setSource( Source *s, InputBase *in ) {
-		if ( input ) {
-			input->play(false);
-			input->setUsed( false );
-		}
-		input = in;
-		source = s;
-		if ( source ) {
-			profile = source->getProfile();
-			profile.setAudioSampleRate( DEFAULTSAMPLERATE );
-			profile.setAudioChannels( DEFAULTCHANNELS );
-			profile.setAudioLayout( DEFAULTLAYOUT );
-			profile.setAudioFormat( Profile::SAMPLE_FMT_S16 );
-			
-			if ( input ) {
-				input->play(false);
-				input->setUsed( true );
-				input->setProfile( profile, profile );
-				input->open( source->getFileName() );
-			}
-		}
-		else {
-			input = NULL;
-			source = NULL;
-			currentPTS = currentPTSAudio = 0;
-		}
-	}
-	
-	void play( bool b ) {
-		if ( input )
-			input->play( b );
-	}
-	
-	double endPTS() {
-		if ( !isValid() )
-			return 0;
-		return profile.getStreamStartTime() + profile.getStreamDuration();
-	}
-	
-	double duration() {
-		if ( !isValid() )
-			return 0;
-		return profile.getStreamDuration();
-	}
-	
-	bool isValid() { return source && input; }
-	const Profile & getProfile() const { return profile; }
-	Source * getSource() const { return source; }
-	InputBase * getInput() const { return input; }
-	
-	double currentPTS, currentPTSAudio;
-	
-private:
-	InputBase *input;
-	Source *source;
-	Profile profile;
-};
-
-
-
 class Sampler : public QObject
 {
 	Q_OBJECT
@@ -105,13 +24,12 @@ public:
 	int getVideoTracks( Frame *dst );
 	int getAudioTracks( Frame *dst, int nSamples );
 	void prepareInputs();
-	double getSamplerDuration();
 	double currentSceneDuration();
-	double getEndPTS();
+	double currentTimelineSceneDuration();
 	double currentPTS();
 	double currentPTSAudio();
-	void shiftCurrentPTS( double d = 0 );
-	void shiftCurrentPTSAudio( double d = 0 );
+	void shiftCurrentPTS();
+	void shiftCurrentPTSAudio();
 	void rewardPTS();
 	void seekTo( double p, bool backward = false );
 	
@@ -125,9 +43,9 @@ public:
 	void drainScenes();
 	bool isProjectEmpty();
 	QList<Scene*> getSceneList() { return sceneList; }
-	Scene* getCurrentScene() { return currentScene; }
+	Scene* getCurrentScene() { return timelineScene; }
 	void setSceneList( QList<Scene*> list );
-	bool previewMode() { return playMode == PlaySource; }
+	bool previewMode() { return currentScene == preview; }
 
 public slots:
 	void setSharedContext( QGLWidget *shared );
@@ -139,21 +57,18 @@ public slots:
 	void updateFrame();
 
 private:
-	enum PlayMode{ PlaySource, PlayScene };
-	
+	double sceneDuration( Scene *s );
 	int updateLastFrame( Frame *dst );
 	InputBase* getInput( QString fn, InputBase::InputType type );
 	InputBase* getClipInput( Clip *c, double pts );
 
 	QList<Scene*> sceneList;
+	Scene *timelineScene;
+	Scene *preview;
 	Scene *currentScene;
 	QList<InputBase*> inputs;
 
-	Profile projectProfile;
-
 	bool playBackward;
-	PlayMode playMode;
-	Preview preview;
 	
 	Metronom *metronom;
 	Composer *composer;

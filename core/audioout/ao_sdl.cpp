@@ -13,7 +13,8 @@ AudioOutSDL::AudioOutSDL()
 	bufferLen( 0 ),
 	bufferOffset( 0 ),
 	readData( NULL ),
-	readUserData( NULL )
+	readUserData( NULL ),
+	running( false )
 {
 	buffer = (uint8_t*)malloc( bufferSize );
 
@@ -45,6 +46,7 @@ AudioOutSDL::~AudioOutSDL()
 
 void AudioOutSDL::go()
 {
+	running = true;
 	SDL_PauseAudio( 0 );
 }
 
@@ -53,6 +55,7 @@ void AudioOutSDL::go()
 void AudioOutSDL::stop()
 {
 	SDL_PauseAudio( 1 );
+	running = false;
 	QMutexLocker ml( &mutex );
 	bufferLen = bufferOffset = 0;
 }
@@ -105,6 +108,9 @@ void AudioOutSDL::streamRequestCallback( void *userdata, uint8_t *stream, int le
 	}
 
 	while ( size ) {
+		if ( !ao->running ) {
+			break;
+		}
 		ao->readData( &data, (tv.tv_sec * MICROSECOND) + tv.tv_usec + latency, ao->readUserData );
 		if ( data ) {
 			int s = data->profile.bytesPerChannel( &data->profile ) * data->profile.getAudioChannels() * data->audioSamples();

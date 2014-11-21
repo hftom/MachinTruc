@@ -6,8 +6,7 @@
 
 
 Sampler::Sampler()
-	: playBackward( false ),
-	playMode( PlaySource )
+	: playBackward( false )
 {	
 	metronom = new Metronom();
 	composer = new Composer( this );
@@ -16,6 +15,11 @@ Sampler::Sampler()
 	connect( metronom, SIGNAL(discardFrame(int)), composer, SLOT(discardFrame(int)) );
 
 	Profile prof;
+
+	preview = new Scene( prof );
+	preview->tracks.append( new Track() );
+	currentScene = preview;
+	
 	newProject( prof );
 }
 
@@ -50,9 +54,9 @@ bool Sampler::trackRequest( bool rm, int index )
 		
 	bool ok;
 	if ( rm )
-		ok = currentScene->removeTrack( index );
+		ok = timelineScene->removeTrack( index );
 	else
-		ok = currentScene->addTrack( index );
+		ok = timelineScene->addTrack( index );
 	
 	if ( ok )
 		updateFrame();
@@ -83,8 +87,6 @@ void Sampler::drainScenes()
 		emit paused( true );
 	}
 
-	preview.setSource( NULL, NULL );
-
 	for ( int i = 0; i < sceneList.count(); ++i ) {
 		sceneList[i]->drain();
 	}
@@ -101,8 +103,8 @@ void Sampler::setSceneList( QList<Scene*> list )
 		delete sceneList.takeFirst();
 	}
 	sceneList = list;
-	currentScene = sceneList.first();
-	projectProfile = currentScene->getProfile();
+	timelineScene = sceneList.first();
+	preview->drain();
 }
 
 
@@ -110,21 +112,18 @@ void Sampler::setSceneList( QList<Scene*> list )
 bool Sampler::setProfile( Profile p )
 {
 	bool ok = true;
-	
-	projectProfile = p;
+
 	for ( int i = 0; i < sceneList.count(); ++i ) {
 		bool b = sceneList[i]->setProfile( p );
 		if ( !b )
 			ok = false;
 	}
-	
-	if ( playMode != PlaySource ) {
-		if ( composer->isRunning() ) {
-			composer->play( false );
-			emit paused( true );
-		}
-		seekTo( currentPTS() );
+
+	if ( composer->isRunning() ) {
+		composer->play( false );
+		emit paused( true );
 	}
+	seekTo( currentPTS() );
 	
 	return ok;
 }
@@ -133,7 +132,7 @@ bool Sampler::setProfile( Profile p )
 
 void Sampler::switchMode( bool down )
 {
-	if ( (down ? PlayScene : PlaySource) == playMode )
+	if ( (down ? timelineScene : preview) == currentScene )
 		return;
 
 	if ( composer->isRunning() ) {
@@ -142,12 +141,12 @@ void Sampler::switchMode( bool down )
 	}
 
 	if ( down ) {
-		playMode = PlayScene;
+		currentScene = timelineScene;
 		rewardPTS();
 		seekTo( currentPTS() );
 	}
 	else {
-		playMode = PlaySource;
+		currentScene = preview;
 		emit modeSwitched();
 	}	
 }
@@ -161,11 +160,16 @@ void Sampler::setSource( Source *source, double pts )
 		emit paused( true );
 	}
 
-	preview.play( false );
 	metronom->flush();
-	playMode = PlaySource;
 
-	preview.setSource( source, getInput( source->getFileName(), source->getType() ) );
+	preview->drain();
+	Profile p = source->getProfile();
+	p.setAudioSampleRate( DEFAULTSAMPLERATE );
+	p.setAudioChannels( DEFAULTCHANNELS );
+	p.setAudioLayout( DEFAULTLAYOUT );
+	p.setAudioFormat( Profile::SAMPLE_FMT_S16 );
+	preview->setProfile( p );
+	preview->addClip( preview->createClip( source, 0, p.getStreamStartTime(), p.getStreamDuration() ), 0 );
 	seekTo( pts );
 }
 
@@ -173,10 +177,7 @@ void Sampler::setSource( Source *source, double pts )
 
 Profile Sampler::getProfile()
 {
-	if ( playMode == PlaySource )
-		return preview.getProfile();
-	
-	return projectProfile;
+	return currentScene->getProfile();
 }
 
 
@@ -198,11 +199,6 @@ void Sampler::setFencesContext( QGLWidget *shared )
 void Sampler::play( bool b, bool backward )
 {
 	playBackward = backward;
-
-	if ( playMode == PlaySource && !preview.isValid() ) {
-		emit paused( true );
-		return;
-	}
 	
 	if ( playBackward )
 		seekTo( currentPTS(), playBackward );
@@ -216,8 +212,7 @@ void Sampler::updateFrame()
 {
 	if ( composer->isRunning() )
 		return;
-	if ( playMode == PlaySource && !preview.isValid() )
-		return;
+
 	Frame *last = metronom->getLastFrame();
 	if ( !last )
 		return;
@@ -237,8 +232,6 @@ void Sampler::updateFrame()
 void Sampler::wheelSeek( int a )
 {
 	if ( composer->isRunning() )
-		return;
-	if ( playMode == PlaySource && !preview.isValid() )
 		return;
 
 	printf("running=%d, a=%d\n", composer->isRunning(), a);
@@ -281,25 +274,19 @@ void Sampler::seekTo( double p, bool backward )
 	int i, j;
 
 	metronom->flush();
-	
-	if ( playMode == PlaySource ) {
-		if ( !preview.seekTo( p ) )
+
+	if ( p < 0 ) {
+		if ( currentScene->currentPTS == 0 )
 			return;
+		p = 0;
 	}
-	else {
-		if ( p < 0 ) {
-			if ( currentScene->currentPTS == 0 )
-				return;
-			p = 0;
-		}
-		for ( j = 0; j < currentScene->tracks.count(); ++j ) {
-			for ( i = 0 ; i < currentScene->tracks[j]->clipCount(); ++i )
-				currentScene->tracks[j]->clipAt( i )->setInput( NULL );
-			currentScene->tracks[j]->resetIndexes();
-		}
-		currentScene->currentPTS = p;
-		currentScene->currentPTSAudio = p;
+	for ( j = 0; j < currentScene->tracks.count(); ++j ) {
+		for ( i = 0 ; i < currentScene->tracks[j]->clipCount(); ++i )
+			currentScene->tracks[j]->clipAt( i )->setInput( NULL );
+		currentScene->tracks[j]->resetIndexes();
 	}
+	currentScene->currentPTS = p;
+	currentScene->currentPTSAudio = p;
 
 	if ( !backward )
 		composer->seeking();
@@ -307,34 +294,28 @@ void Sampler::seekTo( double p, bool backward )
 
 
 
-double Sampler::getEndPTS()
-{
-	if ( playMode == PlaySource )
-		return preview.endPTS();
-	
-	return currentSceneDuration();
-}
-
-
-
-double Sampler::getSamplerDuration()
-{
-	if ( playMode == PlaySource )
-		return preview.duration();
-
-	return currentSceneDuration();
-}
-
-
-
 double Sampler::currentSceneDuration()
+{
+	return sceneDuration( currentScene );
+}
+
+
+
+double Sampler::currentTimelineSceneDuration()
+{
+	return sceneDuration( timelineScene );
+}
+
+
+
+double Sampler::sceneDuration( Scene *s )
 {
 	int i;
 	double duration = 0;
-	for ( i = 0; i < currentScene->tracks.count(); ++i ) {
-		if ( !currentScene->tracks[ i ]->clipCount() )
+	for ( i = 0; i < s->tracks.count(); ++i ) {
+		if ( !s->tracks[ i ]->clipCount() )
 			continue;
-		Clip *c = currentScene->tracks[ i ]->clipAt( currentScene->tracks[ i ]->clipCount() - 1 );
+		Clip *c = s->tracks[ i ]->clipAt( s->tracks[ i ]->clipCount() - 1 );
 		double d = c->position() + c->length();
 		if ( d > duration )
 			duration = d;
@@ -347,9 +328,6 @@ double Sampler::currentSceneDuration()
 
 double Sampler::currentPTS()
 {
-	if ( playMode == PlaySource )
-		return preview.currentPTS;
-
 	return currentScene->currentPTS;
 }
 
@@ -357,54 +335,31 @@ double Sampler::currentPTS()
 
 double Sampler::currentPTSAudio()
 {
-	if ( playMode == PlaySource )
-		return preview.currentPTSAudio;
-	
 	return currentScene->currentPTSAudio;
 }
 
 
 
-void Sampler::shiftCurrentPTS( double d )
+void Sampler::shiftCurrentPTS()
 {
-	if ( playMode == PlaySource ) {
-		if ( d )
-			preview.currentPTS = d + preview.getProfile().getVideoFrameDuration();
-		else
-			preview.currentPTS += preview.getProfile().getVideoFrameDuration();
-	}
-	else
-		currentScene->currentPTS +=  projectProfile.getVideoFrameDuration();
+	currentScene->currentPTS += currentScene->getProfile().getVideoFrameDuration();
 }
 
 
 
-void Sampler::shiftCurrentPTSAudio( double d )
+void Sampler::shiftCurrentPTSAudio()
 {
-	if ( playMode == PlaySource ) {
-		if ( d )
-			preview.currentPTSAudio = d + preview.getProfile().getVideoFrameDuration();
-		else
-			preview.currentPTSAudio += preview.getProfile().getVideoFrameDuration();
-	}
-	else
-		currentScene->currentPTSAudio +=  projectProfile.getVideoFrameDuration();
+	currentScene->currentPTSAudio += currentScene->getProfile().getVideoFrameDuration();
 }
 
 
 
 void Sampler::rewardPTS()
 {
-	if ( playMode == PlaySource ) {
-		preview.currentPTS -= preview.getProfile().getVideoFrameDuration();
-		preview.currentPTSAudio = preview.currentPTS;
-	}
-	else {
-		currentScene->currentPTS -=  projectProfile.getVideoFrameDuration();
-		if ( currentScene->currentPTS < 0 )
-			currentScene->currentPTS = 0;
-		currentScene->currentPTSAudio = currentScene->currentPTS;
-	}
+	currentScene->currentPTS -= currentScene->getProfile().getVideoFrameDuration();
+	if ( currentScene->currentPTS < 0 )
+		currentScene->currentPTS = 0;
+	currentScene->currentPTSAudio = currentScene->currentPTS;
 }
 
 
@@ -454,12 +409,13 @@ InputBase* Sampler::getClipInput( Clip *c, double pts )
 		pos += pts - c->position();
 	printf("%s cpos:%f, cstart:%f, seek:%f\n", c->sourcePath().toLatin1().data(), c->position(), c->start(), pos);
 	Profile p = c->getProfile();
-	p.setVideoFrameRate( projectProfile.getVideoFrameRate() );
-	p.setVideoFrameDuration( projectProfile.getVideoFrameDuration() );
-	p.setAudioSampleRate( projectProfile.getAudioSampleRate() );
-	p.setAudioChannels( projectProfile.getAudioChannels() );
-	p.setAudioLayout( projectProfile.getAudioLayout() );
-	p.setAudioFormat( projectProfile.getAudioFormat() );
+	Profile cur = currentScene->getProfile();
+	p.setVideoFrameRate( cur.getVideoFrameRate() );
+	p.setVideoFrameDuration( cur.getVideoFrameDuration() );
+	p.setAudioSampleRate( cur.getAudioSampleRate() );
+	p.setAudioChannels( cur.getAudioChannels() );
+	p.setAudioLayout( cur.getAudioLayout() );
+	p.setAudioFormat( cur.getAudioFormat() );
 	in->setProfile( c->getProfile(), p );
 	in->openSeekPlay( c->sourcePath(), pos, playBackward );
 	c->setInput( in );
@@ -474,18 +430,7 @@ int Sampler::updateLastFrame( Frame *dst )
 	int i, j;
 	Clip *c = NULL;
 	int nframes = 0;
-	double margin = projectProfile.getVideoFrameDuration() / 4.0;
-	
-	if ( playMode == PlaySource ) {
-		if ( !preview.isValid() || !dst->sample->frames.count() )
-			return 0;
-		FrameSample *fs = dst->sample->frames.at( 0 );
-		if ( !fs->frame )
-			return 0;
-		fs->clear( false );
-		fs->videoFilters = preview.getSource()->videoFilters.copy();
-		return 1;
-	}
+	double margin = currentScene->getProfile().getVideoFrameDuration() / 4.0;
 
 	QMutexLocker ml( &currentScene->mutex );
 	
@@ -552,18 +497,7 @@ int Sampler::getVideoTracks( Frame *dst )
 	Clip *c = NULL;
 	InputBase *in = NULL;
 	int nFrames = 0;
-	double margin = projectProfile.getVideoFrameDuration() / 4.0;
-	
-	if ( playMode == PlaySource ) {
-		if ( !preview.isValid() )
-			return 0;
-		FrameSample *fs = new FrameSample();
-		dst->sample->frames.append( fs );
-		f = preview.getInput()->getVideoFrame();
-		fs->frame = f;
-		fs->videoFilters = preview.getSource()->videoFilters.copy();
-		return ( f ? 1 : 0 );
-	}
+	double margin = currentScene->getProfile().getVideoFrameDuration() / 4.0;
 
 	QMutexLocker ml( &currentScene->mutex );
 	
@@ -638,18 +572,7 @@ int Sampler::getAudioTracks( Frame *dst, int nSamples )
 	Clip *c = NULL;
 	InputBase *in = NULL;
 	int nFrames = 0;
-	double margin = projectProfile.getVideoFrameDuration() / 4.0;
-	
-	if ( playMode == PlaySource ) {
-		if ( !preview.isValid() )
-			return 0;
-		FrameSample *fs = new FrameSample();
-		dst->sample->frames.append( fs );
-		Frame *f = preview.getInput()->getAudioFrame( nSamples );
-		fs->frame = f;
-		fs->audioFilters = preview.getSource()->audioFilters.copy();
-		return ( f ? 1 : 0 );
-	}
+	double margin = currentScene->getProfile().getVideoFrameDuration() / 4.0;
 
 	QMutexLocker ml( &currentScene->mutex );
 	
@@ -661,8 +584,8 @@ int Sampler::getAudioTracks( Frame *dst, int nSamples )
 		// find the clip at currentScene->currentPTSAudio
 		for ( i = t->currentClipIndexAudio() ; i < t->clipCount(); ++i ) {
 			c = t->clipAt( i );
-			if ( (c->position() - (projectProfile.getVideoFrameDuration() / 4.0)) <= currentScene->currentPTSAudio ) {
-				if ( (c->position() + c->length() - (projectProfile.getVideoFrameDuration() / 4.0)) > currentScene->currentPTSAudio ) {
+			if ( (c->position() - margin) <= currentScene->currentPTSAudio ) {
+				if ( (c->position() + c->length() - margin) > currentScene->currentPTSAudio ) {
 					// we have one
 					t->setCurrentClipIndexAudio( i );
 					break;
@@ -723,9 +646,6 @@ void Sampler::prepareInputs()
 	Clip *c = NULL;
 	InputBase *in = NULL;
 	double minPTS, maxPTS;
-	
-	if ( playMode == PlaySource )
-		return;
 
 	if ( currentScene->currentPTS < currentScene->currentPTSAudio ) {
 		minPTS = currentScene->currentPTS;

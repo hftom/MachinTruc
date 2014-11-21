@@ -34,5 +34,6 @@ private:
 	void *readUserData;
 	
 	QMutex mutex;
+	bool running;
 };
 #endif //AUDIOOUTSDL_H
