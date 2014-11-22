@@ -300,7 +300,7 @@ int Composer::process( Frame **frame )
 	
 	Profile projectProfile = sampler->getProfile();
 
-	if ( ( sampler->currentSceneDuration() - sampler->currentPTS() ) <  ( projectProfile.getVideoFrameDuration() / 2.0 ) )
+	if ( sampler->sceneEndReached() )
 		return PROCESSEND;
 
 	if ( oneShot)

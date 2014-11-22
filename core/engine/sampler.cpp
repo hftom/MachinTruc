@@ -104,6 +104,8 @@ void Sampler::setSceneList( QList<Scene*> list )
 	}
 	sceneList = list;
 	timelineScene = sceneList.first();
+	if ( currentScene != preview )
+		currentScene = timelineScene;
 	preview->drain();
 }
 
@@ -170,6 +172,7 @@ void Sampler::setSource( Source *source, double pts )
 	p.setAudioFormat( Profile::SAMPLE_FMT_S16 );
 	preview->setProfile( p );
 	preview->addClip( preview->createClip( source, 0, p.getStreamStartTime(), p.getStreamDuration() ), 0 );
+	qDebug() << "setSource" << p.getStreamStartTime() << pts;
 	seekTo( pts );
 }
 
@@ -196,14 +199,29 @@ void Sampler::setFencesContext( QGLWidget *shared )
 
 
 
-void Sampler::play( bool b, bool backward )
+bool Sampler::play( bool b, bool backward )
 {
-	playBackward = backward;
-	
-	if ( playBackward )
-		seekTo( currentPTS(), playBackward );
+	if ( b ) {	
+		if ( playBackward != backward ) {
+			if ( composer->isRunning() )
+				composer->play( false );
+			metronom->flush();
+			Frame *last = metronom->getLastFrame();
+			double pts = currentPTS();
+			if ( last ) {
+				if ( playBackward )
+					pts = last->pts() + last->profile.getVideoFrameDuration();
+				else
+					pts = last->pts() - last->profile.getVideoFrameDuration();
+			}
+			seekTo( pts, backward );
+		}
+		else if ( composer->isRunning() )
+			return false;
+	}
 
 	composer->play( b, backward );
+	return b;
 }
 
 
@@ -234,14 +252,20 @@ void Sampler::wheelSeek( int a )
 	if ( composer->isRunning() )
 		return;
 
-	printf("running=%d, a=%d\n", composer->isRunning(), a);
-
 	if ( a == 1 ) {
+		bool shown = false;
 		if ( !metronom->videoFrames.isEmpty() ) {
-			Frame *f = metronom->videoFrames.dequeue();
-			emit newFrame( f );
+			do {
+				Frame *f = metronom->videoFrames.dequeue();
+				if ( f->type() == Frame::GLTEXTURE ) {
+					emit newFrame( f );
+					shown = true;
+				}
+				else
+					f->release();
+			} while ( !metronom->videoFrames.isEmpty() && !shown );
 		}
-		else {
+		if ( !shown ) {
 			metronom->flush();
 			composer->runOneShot();
 		}
@@ -287,8 +311,10 @@ void Sampler::seekTo( double p, bool backward )
 	}
 	currentScene->currentPTS = p;
 	currentScene->currentPTSAudio = p;
+	
+	playBackward = backward;
 
-	if ( !backward )
+	if ( !playBackward )
 		composer->seeking();
 }
 
@@ -326,6 +352,15 @@ double Sampler::sceneDuration( Scene *s )
 
 
 
+bool Sampler::sceneEndReached()
+{
+	if ( playBackward )
+		return currentPTS() < 0;
+	return currentSceneDuration() - currentPTS() <  currentScene->getProfile().getVideoFrameDuration() / 2.0;
+}
+
+
+
 double Sampler::currentPTS()
 {
 	return currentScene->currentPTS;
@@ -342,14 +377,20 @@ double Sampler::currentPTSAudio()
 
 void Sampler::shiftCurrentPTS()
 {
-	currentScene->currentPTS += currentScene->getProfile().getVideoFrameDuration();
+	if ( playBackward )
+		currentScene->currentPTS -= currentScene->getProfile().getVideoFrameDuration();
+	else
+		currentScene->currentPTS += currentScene->getProfile().getVideoFrameDuration();
 }
 
 
 
 void Sampler::shiftCurrentPTSAudio()
 {
-	currentScene->currentPTSAudio += currentScene->getProfile().getVideoFrameDuration();
+	if ( playBackward )
+		currentScene->currentPTSAudio -= currentScene->getProfile().getVideoFrameDuration();
+	else
+		currentScene->currentPTSAudio += currentScene->getProfile().getVideoFrameDuration();
 }
 
 
@@ -507,7 +548,7 @@ int Sampler::getVideoTracks( Frame *dst )
 		if ( currentScene->update )
 			t->resetIndexes();
 		// find the clip at currentScene->currentPTS
-		for ( i = t->currentClipIndex(); i < t->clipCount(); ++i ) {
+		for ( i = qMax(t->currentClipIndex() - 1, 0); i < t->clipCount(); ++i ) {
 			c = t->clipAt( i );
 			if ( (c->position() - margin) <= currentScene->currentPTS ) {
 				if ( (c->position() + c->length() - margin) > currentScene->currentPTS ) {
@@ -582,7 +623,7 @@ int Sampler::getAudioTracks( Frame *dst, int nSamples )
 		if ( currentScene->update )
 			t->resetIndexes();
 		// find the clip at currentScene->currentPTSAudio
-		for ( i = t->currentClipIndexAudio() ; i < t->clipCount(); ++i ) {
+		for ( i = qMax(t->currentClipIndexAudio() - 1, 0) ; i < t->clipCount(); ++i ) {
 			c = t->clipAt( i );
 			if ( (c->position() - margin) <= currentScene->currentPTSAudio ) {
 				if ( (c->position() + c->length() - margin) > currentScene->currentPTSAudio ) {
@@ -642,6 +683,11 @@ int Sampler::getAudioTracks( Frame *dst, int nSamples )
 
 void Sampler::prepareInputs()
 {
+	if ( playBackward ) {
+		prepareInputsBackward();
+		return;
+	}
+	
 	int i, j;
 	Clip *c = NULL;
 	InputBase *in = NULL;
@@ -678,6 +724,58 @@ void Sampler::prepareInputs()
 					//break;
 				if ( !(in = c->getInput()) ) {
 					in = getClipInput( c, minPTS );
+					break;
+				}
+			}
+			else
+				break;
+		}
+	}
+	
+	currentScene->update = false;
+	//printf("******************************************** inputs=%d\n", inputs.count() );
+}
+
+
+
+void Sampler::prepareInputsBackward()
+{
+	int i, j;
+	Clip *c = NULL;
+	InputBase *in = NULL;
+	double minPTS, maxPTS;
+
+	if ( currentScene->currentPTS < currentScene->currentPTSAudio ) {
+		minPTS = currentScene->currentPTS;
+		maxPTS = currentScene->currentPTSAudio;
+	}
+	else {
+		minPTS = currentScene->currentPTSAudio;
+		maxPTS = currentScene->currentPTS;
+	}
+	
+	QMutexLocker ml( &currentScene->mutex );
+
+	for ( j = 0; j < currentScene->tracks.count(); ++j ) {
+		Track *t = currentScene->tracks[j];
+		if ( currentScene->update )
+			t->resetIndexes();
+
+		if ( minPTS == currentScene->currentPTS )
+			i = qMin( t->clipCount() - 1, t->currentClipIndex() + 1 );
+		else
+			i = qMin( t->clipCount() - 1, t->currentClipIndexAudio() + 1 );
+
+		for ( ; i >= 0; --i ) {
+			c = t->clipAt( i );
+			if ( c->position() > maxPTS ) {
+				c->setInput( NULL );
+			}
+			else if ( (c->position() + c->length()) >= (minPTS - FORWARDLOOKUP) ) {
+				//if ( inputs.count() >= MAXINPUTS )
+					//break;
+				if ( !(in = c->getInput()) ) {
+					in = getClipInput( c, maxPTS );
 					break;
 				}
 			}

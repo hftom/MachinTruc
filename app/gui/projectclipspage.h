@@ -57,7 +57,7 @@ public:
 		mins %= 60;
 		setText( QFileInfo( source->getFileName() ).fileName() + "\n" + QTime( hours, mins, secs ).toString("hh:mm:ss") );
 		setIcon( pix );
-		currentPts = inPoint = p.getStreamStartTime();
+		currentPts = inPoint = 0;
 		outPoint = inPoint + ( p.getStreamDuration() / 2 );
 	}
 

@@ -24,6 +24,7 @@ public:
 	int getVideoTracks( Frame *dst );
 	int getAudioTracks( Frame *dst, int nSamples );
 	void prepareInputs();
+	bool sceneEndReached();
 	double currentSceneDuration();
 	double currentTimelineSceneDuration();
 	double currentPTS();
@@ -37,7 +38,7 @@ public:
 	bool setProfile( Profile p );
 	Profile getProfile();
 	Metronom* getMetronom() { return metronom; }
-	void play( bool b, bool backward = false );
+	bool play( bool b, bool backward = false );
 	
 	bool trackRequest( bool rm, int index );
 	void drainScenes();
@@ -57,6 +58,7 @@ public slots:
 	void updateFrame();
 
 private:
+	void prepareInputsBackward();
 	double sceneDuration( Scene *s );
 	int updateLastFrame( Frame *dst );
 	InputBase* getInput( QString fn, InputBase::InputType type );

@@ -68,6 +68,7 @@ TopWindow::TopWindow()
 	stackedWidget->addWidget( new FxSettingsPage() );
 
 	QHBoxLayout *layout = new QHBoxLayout;
+	layout->setContentsMargins( 0, 0, 0, 0 );
 	vw = new VideoWidget( glWidget );
 	layout->addWidget( vw );
 	glWidget->setLayout( layout );
@@ -319,27 +320,6 @@ Source* TopWindow::getDroppedCut( int index, QString mime, QString filename, dou
 
 
 
-void TopWindow::currentFramePts( double d )
-{
-	if ( !switchButton->isChecked() ) {
-		if ( !sourcePage->hasActiveSource() )
-			return;
-		sourcePage->activeSourceSetCurrentPts( d );
-		Profile prof = sourcePage->activeSourceGetProfile();
-		d -= prof.getStreamStartTime();
-	}
-	else {
-		emit setCursorPos( d ); 
-	}
-	
-	d *= seekSlider->maximum() / sampler->currentSceneDuration();
-	seekSlider->blockSignals( true );
-	seekSlider->setValue( d );
-	seekSlider->blockSignals( false );
-}
-
-
-
 void TopWindow::ensureVisible( const QGraphicsItem *it )
 {
 	if ( playToolButton->isChecked() )
@@ -351,16 +331,6 @@ void TopWindow::ensureVisible( const QGraphicsItem *it )
 void TopWindow::centerOn( const QGraphicsItem *it )
 {
 	timelineView->centerOn( it );
-}
-
-
-
-void TopWindow::composerPaused( bool b )
-{
-	// avoid toggled() to be emitted
-	playToolButton->blockSignals( true );
-	playToolButton->setChecked( !b );
-	playToolButton->blockSignals( false );
 }
 
 
@@ -394,61 +364,118 @@ void TopWindow::showFxSettingsPage()
 
 
 
+void TopWindow::currentFramePts( double d )
+{
+	if ( !switchButton->isChecked() ) {
+		if ( !sourcePage->hasActiveSource() )
+			return;
+		sourcePage->activeSourceSetCurrentPts( d );
+	}
+	else {
+		emit setCursorPos( d ); 
+	}
+	
+	d *= seekSlider->maximum() / sampler->currentSceneDuration();
+	seekSlider->blockSignals( true );
+	seekSlider->setValue( d );
+	seekSlider->blockSignals( false );
+}
+
+
+
+void TopWindow::composerPaused( bool b )
+{
+	// avoid toggled() to be emitted
+	playToolButton->blockSignals( true );
+	playToolButton->setChecked( !b );
+	playToolButton->blockSignals( false );
+}
+
+
+
 void TopWindow::playPause( bool playing )
 {
 	sampler->play( playing );
 }
+
+
 
 void TopWindow::videoPlayPause()
 {
 	playToolButton->toggle();
 }
 
+
+
 void TopWindow::playForward()
 {
+	if ( sampler->play( true ) )
+		composerPaused( false );
+	else
+		playFaster();
 }
+
+
 
 void TopWindow::playBackward()
 {
-	sampler->play( true, true );
-	composerPaused( false );
+	if ( sampler->play( true, true ) )
+		composerPaused( false );
+	else
+		playFaster();
 }
+
+
 
 void TopWindow::playFaster()
 {
 	sampler->getMetronom()->changeSpeed( 1 );
 }
 
+
+
 void TopWindow::playSlower()
 {
 	sampler->getMetronom()->changeSpeed( -1 );
 }
+
+
 
 void TopWindow::seekPrevious()
 {
 	sampler->wheelSeek( -1 );
 }
 
+
+
 void TopWindow::seekNext()
 {
 	sampler->wheelSeek( 1 );
 }
+
+
 
 void TopWindow::seekBackward()
 {
 	sampler->wheelSeek( -10 );
 }
 
+
+
 void TopWindow::seekForward()
 {
 	sampler->wheelSeek( 10 );
 }
+
+
 
 void TopWindow::seek( int v )
 {
 	double value = v * sampler->currentSceneDuration() / seekSlider->maximum();
 	sampler->slideSeek( value );
 }
+
+
 
 void TopWindow:: timelineSeek( double pts )
 {

@@ -99,7 +99,7 @@ void VideoWidget::openglDraw()
 	glTranslatef( w / 2.0, h / 2.0, 0 );
 	glScalef( w / 2.0, h / 2.0, 1.0 );
 	
-	if ( lastFrame ) {
+	if ( lastFrame && lastFrame->fbo() ) {
 		glBindTexture( GL_TEXTURE_2D, lastFrame->fbo()->texture() );
 		glBegin( GL_QUADS );
 			glTexCoord2f( 0, 0 );

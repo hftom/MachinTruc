@@ -114,8 +114,8 @@ void Metronom::setRenderMode( bool b )
 
 void Metronom::play( bool b, bool backward )
 {
-	playBackward = backward;
 	if ( b ) {
+		playBackward = backward;
 		speed = 0;
 		sclock = videoLate = 0;
 		running = true;
@@ -156,7 +156,10 @@ void Metronom::readData( Frame **data, double time, void *userdata )
 			time += waitVideo;
 			m->videoLate = 0;
 		}
-		m->sclock = time - f->pts();
+		if ( m->playBackward )
+			m->sclock = time + f->pts();
+		else
+			m->sclock = time - f->pts();
 		m->clockMutex.unlock();
 		if ( waitVideo ) {
 			qDebug() << "videoLate" << waitVideo;
@@ -312,7 +315,10 @@ void Metronom::runShow()
 		if ( (f = videoFrames.dequeue()) ) {
 			bool show = f->type() == Frame::GLTEXTURE;
 
-			ptsDiff = f->pts() - lastpts;
+			if ( playBackward )
+				ptsDiff = lastpts - f->pts();
+			else
+				ptsDiff = f->pts() - lastpts;
 			frameDuration = f->profile.getVideoFrameDuration();
 			speedFactor = 1;
 			if ( speed != 0 ) {
@@ -343,7 +349,10 @@ void Metronom::runShow()
 				lastct = t;
 			}
 			else {
-				t = sc + f->pts();
+				if ( playBackward )
+					t = sc - f->pts();
+				else
+					t = sc + f->pts();
 				if ( !predict )
 					 predict = t;
 				else {
