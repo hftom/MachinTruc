@@ -97,8 +97,11 @@ void Track::setCurrentClipIndexAudio( int i )
 
 
 
-void Track::resetIndexes()
+void Track::resetIndexes( bool backward )
 
 {
-	clipIndex = clipIndexAudio = 0;
+	if ( backward )
+		clipIndex = clipIndexAudio = clips.count() - 1;
+	else
+		clipIndex = clipIndexAudio = 0;
 }

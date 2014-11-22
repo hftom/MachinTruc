@@ -58,6 +58,7 @@ public slots:
 	void updateFrame();
 
 private:
+	Clip* searchCurrentClip( int &i, Track *t, int clipIndex, double pts, double margin );
 	void prepareInputsBackward();
 	double sceneDuration( Scene *s );
 	int updateLastFrame( Frame *dst );

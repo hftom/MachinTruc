@@ -27,7 +27,7 @@ public:
 	int currentClipIndexAudio();
 	void setCurrentClipIndexAudio( int i );
 
-	void resetIndexes();
+	void resetIndexes( bool backward = false );
 
 private:
 	QList<Clip*> clips;

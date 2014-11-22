@@ -307,7 +307,7 @@ void Sampler::seekTo( double p, bool backward )
 	for ( j = 0; j < currentScene->tracks.count(); ++j ) {
 		for ( i = 0 ; i < currentScene->tracks[j]->clipCount(); ++i )
 			currentScene->tracks[j]->clipAt( i )->setInput( NULL );
-		currentScene->tracks[j]->resetIndexes();
+		currentScene->tracks[j]->resetIndexes( backward );
 	}
 	currentScene->currentPTS = p;
 	currentScene->currentPTSAudio = p;
@@ -531,6 +531,50 @@ int Sampler::updateLastFrame( Frame *dst )
 
 
 
+Clip* Sampler::searchCurrentClip( int &i, Track *t, int clipIndex, double pts, double margin )
+{
+	Clip *c = NULL;
+	
+	if ( playBackward ) {
+		for ( i = qMin( t->clipCount() - 1, clipIndex + 1 ); i >= 0; --i ) {
+			c = t->clipAt( i );
+			if ( (c->position() + c->length() - margin) > pts ) {
+				if ( (c->position() - margin) <= pts ) {
+					// we have one
+					break;
+				}
+				else
+					c = NULL;
+			}
+			else {
+				c = NULL;
+				break;
+			}
+		}
+	}
+	else {
+		for ( i = qMax(clipIndex - 1, 0); i < t->clipCount(); ++i ) {
+			c = t->clipAt( i );
+			if ( (c->position() - margin) <= pts ) {
+				if ( (c->position() + c->length() - margin) > pts ) {
+					// we have one
+					break;
+				}
+				else
+					c = NULL;
+			}
+			else {
+				c = NULL;
+				break;
+			}
+		}
+	}
+	
+	return c;
+}
+
+
+
 int Sampler::getVideoTracks( Frame *dst )
 {
 	int i, j;
@@ -546,27 +590,13 @@ int Sampler::getVideoTracks( Frame *dst )
 		c = NULL;
 		Track *t = currentScene->tracks[j];
 		if ( currentScene->update )
-			t->resetIndexes();
+			t->resetIndexes( playBackward );
 		// find the clip at currentScene->currentPTS
-		for ( i = qMax(t->currentClipIndex() - 1, 0); i < t->clipCount(); ++i ) {
-			c = t->clipAt( i );
-			if ( (c->position() - margin) <= currentScene->currentPTS ) {
-				if ( (c->position() + c->length() - margin) > currentScene->currentPTS ) {
-					// we have one
-					t->setCurrentClipIndex( i );
-					break;
-				}
-				else
-					c = NULL;
-			}
-			else {
-				c = NULL;
-				break;
-			}
-		}
+		c = searchCurrentClip( i, t, t->currentClipIndex(), currentScene->currentPTS, margin );
 		FrameSample *fs = new FrameSample();
 		dst->sample->frames.append( fs );
 		if ( c ) {
+			t->setCurrentClipIndex( i );
 			if ( !(in = c->getInput()) )
 				in = getClipInput( c, currentScene->currentPTS );
 			f = in->getVideoFrame();
@@ -578,21 +608,35 @@ int Sampler::getVideoTracks( Frame *dst )
 				fs->videoFilters.append( c->videoFilters.copy() );
 			}
 			// Check for transition
-			if ( i < t->clipCount() - 1 ) {
-				c = t->clipAt( i + 1 );
-				if ( (c->position() - margin) <= currentScene->currentPTS && (c->position() + c->length() - margin) > currentScene->currentPTS ) {
-					if ( !(in = c->getInput()) )
-						in = getClipInput( c, currentScene->currentPTS );
+			if ( playBackward ? i > 0 : i < t->clipCount() - 1 ) {
+				Clip *ct = playBackward ? t->clipAt( i - 1 ) : t->clipAt( i + 1 );
+				if ( (ct->position() - margin) <= currentScene->currentPTS && (ct->position() + ct->length() - margin) > currentScene->currentPTS ) {
+					if ( !(in = ct->getInput()) )
+						in = getClipInput( ct, currentScene->currentPTS );
 					f = in->getVideoFrame();
 					if ( f ) {
 						f->setPts( currentScene->currentPTS );
-						fs->transitionFrame.frame = f;
-						fs->transitionFrame.videoFilters = c->getSource()->videoFilters.copy();
-						fs->transitionFrame.videoFilters.append( c->videoFilters.copy() );
-						Transition *trans;
-						if ( (trans = c->getTransition()) ) {
-							if ( c->position() + trans->length() + margin > currentScene->currentPTS )
-								fs->transitionFrame.videoTransitionFilter = trans->getVideoFilter();
+						if ( !playBackward ) {
+							fs->transitionFrame.frame = f;
+							fs->transitionFrame.videoFilters = ct->getSource()->videoFilters.copy();
+							fs->transitionFrame.videoFilters.append( ct->videoFilters.copy() );
+							Transition *trans;
+							if ( (trans = ct->getTransition()) ) {
+								if ( ct->position() + trans->length() + margin > currentScene->currentPTS )
+									fs->transitionFrame.videoTransitionFilter = trans->getVideoFilter();
+							}
+						}
+						else {
+							fs->transitionFrame.frame = fs->frame;
+							fs->frame = f;
+							fs->transitionFrame.videoFilters = fs->videoFilters;
+							fs->videoFilters = ct->getSource()->videoFilters.copy();
+							fs->videoFilters.append( ct->videoFilters.copy() );
+							Transition *trans;
+							if ( (trans = c->getTransition()) ) {
+								if ( c->position() + trans->length() + margin > currentScene->currentPTS )
+									fs->transitionFrame.videoTransitionFilter = trans->getVideoFilter();
+							}
 						}
 					}
 				}
@@ -621,28 +665,13 @@ int Sampler::getAudioTracks( Frame *dst, int nSamples )
 		c = NULL;
 		Track *t = currentScene->tracks[j];
 		if ( currentScene->update )
-			t->resetIndexes();
+			t->resetIndexes( playBackward );
 		// find the clip at currentScene->currentPTSAudio
-		for ( i = qMax(t->currentClipIndexAudio() - 1, 0) ; i < t->clipCount(); ++i ) {
-			c = t->clipAt( i );
-			if ( (c->position() - margin) <= currentScene->currentPTSAudio ) {
-				if ( (c->position() + c->length() - margin) > currentScene->currentPTSAudio ) {
-					// we have one
-					t->setCurrentClipIndexAudio( i );
-					break;
-				}
-				else
-					c = NULL;
-			}
-			else {
-				c = NULL;
-				break;
-			}
-		}
-
+		c = searchCurrentClip( i, t, t->currentClipIndexAudio(), currentScene->currentPTSAudio, margin );
 		FrameSample *fs = new FrameSample();
 		dst->sample->frames.append( fs );
 		if ( c ) {
+			t->setCurrentClipIndexAudio( i );
 			if ( !(in = c->getInput()) )
 				in = getClipInput( c, currentScene->currentPTSAudio );
 			f = in->getAudioFrame( nSamples );
@@ -653,21 +682,31 @@ int Sampler::getAudioTracks( Frame *dst, int nSamples )
 				fs->audioFilters.append( c->audioFilters.copy() );
 			}
 			// Check for transition
-			if ( i < t->clipCount() - 1 ) {
-				c = t->clipAt( i + 1 );
-				Transition *trans = c->getTransition();
-				if ( trans && (c->position() - margin) <= currentScene->currentPTSAudio
-						&& (c->position() + c->length() - margin) > currentScene->currentPTSAudio ) {
-					if ( !(in = c->getInput()) )
-						in = getClipInput( c, currentScene->currentPTSAudio );
+			if ( playBackward ? i > 0 : i < t->clipCount() - 1 ) {
+				Clip *ct = playBackward ? t->clipAt( i - 1 ) : t->clipAt( i + 1 );
+				Transition *trans = playBackward ? c->getTransition() : ct->getTransition();
+				if ( trans && (ct->position() - margin) <= currentScene->currentPTSAudio && (ct->position() + ct->length() - margin) > currentScene->currentPTSAudio ) {
+					if ( !(in = ct->getInput()) )
+						in = getClipInput( ct, currentScene->currentPTSAudio );
 					f = in->getAudioFrame( nSamples );
 					if ( f )
 						f->setPts( currentScene->currentPTSAudio );
-					fs->transitionFrame.frame = f;
-					fs->transitionFrame.audioFilters = c->getSource()->audioFilters.copy();
-					fs->transitionFrame.audioFilters.append( c->audioFilters.copy() );
-					if ( c->position() + trans->length() + margin > currentScene->currentPTSAudio )
-						fs->transitionFrame.audioTransitionFilter = trans->getAudioFilter();
+					if ( !playBackward ) {
+						fs->transitionFrame.frame = f;
+						fs->transitionFrame.audioFilters = ct->getSource()->audioFilters.copy();
+						fs->transitionFrame.audioFilters.append( ct->audioFilters.copy() );
+						if ( ct->position() + trans->length() + margin > currentScene->currentPTSAudio )
+							fs->transitionFrame.audioTransitionFilter = trans->getAudioFilter();
+					}
+					else {
+						fs->transitionFrame.frame = fs->frame;
+						fs->frame = f;
+						fs->transitionFrame.audioFilters = fs->audioFilters;
+						fs->audioFilters = ct->getSource()->audioFilters.copy();
+						fs->audioFilters.append( ct->audioFilters.copy() );
+						if ( c->position() + trans->length() + margin > currentScene->currentPTSAudio )
+							fs->transitionFrame.audioTransitionFilter = trans->getAudioFilter();
+					}
 				}
 			}
 			if ( fs->frame || fs->transitionFrame.frame )
@@ -707,7 +746,7 @@ void Sampler::prepareInputs()
 	for ( j = 0; j < currentScene->tracks.count(); ++j ) {
 		Track *t = currentScene->tracks[j];
 		if ( currentScene->update )
-			t->resetIndexes();
+			t->resetIndexes( playBackward );
 
 		if ( minPTS == currentScene->currentPTS )
 			i = qMax( 0, t->currentClipIndex() - 1 );
@@ -759,7 +798,7 @@ void Sampler::prepareInputsBackward()
 	for ( j = 0; j < currentScene->tracks.count(); ++j ) {
 		Track *t = currentScene->tracks[j];
 		if ( currentScene->update )
-			t->resetIndexes();
+			t->resetIndexes( playBackward );
 
 		if ( minPTS == currentScene->currentPTS )
 			i = qMin( t->clipCount() - 1, t->currentClipIndex() + 1 );
