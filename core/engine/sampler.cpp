@@ -252,7 +252,7 @@ void Sampler::wheelSeek( int a )
 	if ( composer->isRunning() )
 		return;
 
-	if ( a == 1 ) {
+	if ( a == 1 && !playBackward ) {
 		bool shown = false;
 		if ( !metronom->videoFrames.isEmpty() ) {
 			do {
