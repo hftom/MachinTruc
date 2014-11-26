@@ -30,7 +30,7 @@ public:
 	}
 	
 	void start() {
-		timer.start( 40 );
+		timer.start( 50 );
 	}
 	
 	void stop() {
