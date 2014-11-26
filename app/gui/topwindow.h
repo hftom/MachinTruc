@@ -126,6 +126,7 @@ private:
 	Profile tempProfile;
 	
 signals:
+	void startOSDTimer();
 	void timelineReadyForEncode();
 	void setCursorPos( double );
 };

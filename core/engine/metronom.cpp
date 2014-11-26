@@ -127,6 +127,7 @@ void Metronom::play( bool b, bool backward )
 		running = false;
 		ao.stop();
 		wait();
+		emit osdMessage( "", 0 );
 	}
 }
 
@@ -134,11 +135,15 @@ void Metronom::play( bool b, bool backward )
 
 void Metronom::changeSpeed( int s )
 {
+	if ( !isRunning() )
+		return;
 	speed = qMax( qMin( speed + s, NFPS - 1 ), 1 - NSPS  );
+	double d;
 	if ( speed >= 0 )
-		qDebug() << "speed:" << (double)fastPlaybackSpeed[speed][0] / (double)fastPlaybackSpeed[speed][1];
+		d = (double)fastPlaybackSpeed[speed][0] / (double)fastPlaybackSpeed[speed][1];
 	else
-		qDebug() << "speed:" << (double)slowPlaybackSpeed[-speed][0] / (double)slowPlaybackSpeed[-speed][1];
+		d = (double)slowPlaybackSpeed[-speed][0] / (double)slowPlaybackSpeed[-speed][1];
+	emit osdMessage( QString( "Speed: %1" ).arg( d, 0, 'g', 4 ), (speed == 0) ? 1 : 0 );
 }
 
 

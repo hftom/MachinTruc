@@ -534,8 +534,14 @@ Frame* InputFF::getVideoFrame()
 		while ( freeVideoFrames.queueEmpty() )
 			usleep( 1000 );
 		while ( reorderedVideoFrames.queueEmpty() ) {
-			if ( eofVideo )
+			if ( eofVideo ) {
+				if ( lastFrame.valid() ) {
+					Frame *f = freeVideoFrames.dequeue();
+					lastFrame.get( f );
+					return f;
+				}
 				return NULL;
+			}
 			//qDebug() << "wait video";
 			usleep( 1000 );
 		}

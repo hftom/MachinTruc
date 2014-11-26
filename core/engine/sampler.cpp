@@ -214,7 +214,8 @@ bool Sampler::play( bool b, bool backward )
 				else
 					pts = last->pts() - last->profile.getVideoFrameDuration();
 			}
-			seekTo( pts, backward );
+			seekTo( pts, backward, false );
+			emit startOSDTimer();
 		}
 		else if ( composer->isRunning() )
 			return false;
@@ -293,7 +294,7 @@ void Sampler::slideSeek( double p )
 
 
 
-void Sampler::seekTo( double p, bool backward )
+void Sampler::seekTo( double p, bool backward, bool seek )
 {
 	int i, j;
 
@@ -314,7 +315,7 @@ void Sampler::seekTo( double p, bool backward )
 	
 	playBackward = backward;
 
-	if ( !playBackward )
+	if ( !playBackward && seek )
 		composer->seeking();
 }
 

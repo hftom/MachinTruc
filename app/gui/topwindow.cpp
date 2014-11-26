@@ -84,6 +84,10 @@ TopWindow::TopWindow()
 	connect( sampler, SIGNAL(newFrame(Frame*)), vw, SLOT(showFrame(Frame*)) );
 	connect( sampler, SIGNAL(paused(bool)), this, SLOT(composerPaused(bool)) );
 	connect( sampler, SIGNAL(modeSwitched()), this, SLOT(modeSwitched()) );
+	
+	connect( sampler->getMetronom(), SIGNAL(osdMessage(const QString&,int)), vw, SLOT(showOSDMessage(const QString&,int)) );
+	connect( sampler, SIGNAL(startOSDTimer()), vw, SLOT(showOSDTimer()) );
+	connect( this, SIGNAL(startOSDTimer()), vw, SLOT(showOSDTimer()) );
 
 	connect( clipsToolButton, SIGNAL(clicked()), this, SLOT(showProjectClipsPage()) );
 	connect( fxToolButton, SIGNAL(clicked()), this, SLOT(showFxPage()) );
@@ -648,8 +652,10 @@ void TopWindow::loadProject()
 		for ( i = 0; i < projectLoader->sourcesList.count(); ++i ) {
 			thumbnailer->pushRequest( ThumbRequest( projectLoader->sourcesList[i]->getFileName() ) );
 		}
-		if ( i > 0 )
+		if ( i > 0 ) {
 			setEnabled( false );
+			emit startOSDTimer();
+		}
 	}
 	else {
 		while ( projectLoader->sourcesList.count() )

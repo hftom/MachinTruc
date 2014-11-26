@@ -15,6 +15,9 @@ VideoWidget::VideoWidget( QWidget *parent ) : QGLWidget( QGLFormat(QGL::SampleBu
 {
 	setAttribute( Qt::WA_OpaquePaintEvent );
 	setAutoFillBackground( false );
+	
+	connect( &osdMessage, SIGNAL(update()), this, SLOT(update()) );
+	connect( &osdTimer, SIGNAL(update()), this, SLOT(update()) );
 }
 
 
@@ -129,14 +132,9 @@ void VideoWidget::paintEvent( QPaintEvent *event )
 	openglDraw();
 	
 	QPainter painter( this );
-	/*painter.setRenderHint( QPainter::Antialiasing );
-	QPen pen;
-	pen.setColor( QColor(0,0,0,128) );
-	pen.setWidth( 3 );
-	painter.setPen( pen );
-	painter.drawRect( 0, 0, 50, 50 );
-	painter.setFont(QFont("Arial", 30));
-	painter.drawText(rect(), Qt::AlignCenter, QString::fromUtf8("Qt essai de texte.") );*/
+	painter.setRenderHint( QPainter::Antialiasing );
+	osdMessage.draw( &painter, width(), height() );
+	osdTimer.draw( &painter, width(), height() );
 }
 
 
@@ -146,6 +144,7 @@ void VideoWidget::showFrame( Frame *frame )
 	lastFrameRatio = frame->glSAR * (double)frame->glWidth / (double)frame->glHeight;
 	lastFrame = frame;
 	emit frameShown( frame );
+	osdTimer.stop();
 	update();
 }
 
@@ -245,5 +244,19 @@ void VideoWidget::mousePressEvent( QMouseEvent * event )
 	if ( event->button() == Qt::LeftButton ) {
 		emit playPause();
 	}
+}
+
+
+
+void VideoWidget::showOSDMessage( const QString &text, int duration )
+{
+	osdMessage.setMessage( text, duration );
+}
+
+
+
+void VideoWidget::showOSDTimer()
+{
+	osdTimer.start();
 }
 

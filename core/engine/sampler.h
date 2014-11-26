@@ -32,7 +32,7 @@ public:
 	void shiftCurrentPTS();
 	void shiftCurrentPTSAudio();
 	void rewardPTS();
-	void seekTo( double p, bool backward = false );
+	void seekTo( double p, bool backward = false, bool seek = true );
 	
 	void newProject( Profile p );
 	bool setProfile( Profile p );
@@ -77,6 +77,7 @@ private:
 	Composer *composer;
 
 signals:
+	void startOSDTimer();
 	void modeSwitched();
 	void paused( bool );
 	void newFrame( Frame* );

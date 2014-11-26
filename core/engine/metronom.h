@@ -61,6 +61,7 @@ signals:
 	void currentFramePts( double );
 	void discardFrame( int );
 
+	void osdMessage( const QString &text, int duration );
 };
 
 #endif // METRONOM_H
