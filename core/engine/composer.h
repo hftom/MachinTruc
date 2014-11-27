@@ -39,7 +39,7 @@ private:
 	Effect* movitFrameBuild( Frame *f, QList< QSharedPointer<GLFilter> > *filters, MovitBranch **newBranch );
 	void movitRender( Frame *dst, bool update = false );
 	bool getNextAudioFrame( Frame *dst, int &track );
-	void processAudioFrame( FrameSample *sample, Profile *profile );
+	Buffer* processAudioFrame( FrameSample *sample, int nsamples, int bitsPerSample, Profile *profile );
 	bool renderAudioFrame( Frame *dst, int nSamples );
 
 	bool playBackward;

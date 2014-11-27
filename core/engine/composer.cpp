@@ -735,21 +735,38 @@ void Composer::movitRender( Frame *dst, bool update )
 
 
 
-void Composer::processAudioFrame( FrameSample *sample, Profile *profile )
+Buffer* Composer::processAudioFrame( FrameSample *sample, int nsamples, int bitsPerSample, Profile *profile )
 {
+	Buffer *buf1 = NULL;
 	if ( sample->frame ) {
 		// filters
+		buf1 = BufferPool::globalInstance()->getBuffer( nsamples * bitsPerSample );
+		AudioCopy ac;
+		ac.process( sample->frame, sample->frame->getBuffer(), buf1, profile );
 		for ( int k = 0; k < sample->audioFilters.count(); ++k )
-			sample->audioFilters[k]->process( sample->frame, profile );
+			sample->audioFilters[k]->process( sample->frame, buf1, buf1, profile );
 	}
 	// transition
 	if ( !sample->transitionFrame.audioTransitionFilter.isNull() ) {
+		Buffer *buf2 = NULL;
 		if ( sample->transitionFrame.frame ) {
+			buf2 = BufferPool::globalInstance()->getBuffer( nsamples * bitsPerSample );
+			AudioCopy ac;
+			ac.process( sample->transitionFrame.frame, sample->transitionFrame.frame->getBuffer(), buf2, profile );
 			for ( int k = 0; k < sample->transitionFrame.audioFilters.count(); ++k )
-				sample->transitionFrame.audioFilters[k]->process( sample->transitionFrame.frame, profile );
+				sample->transitionFrame.audioFilters[k]->process( sample->transitionFrame.frame, buf2, buf2, profile );
 		}
-		sample->transitionFrame.audioTransitionFilter->process( sample->frame, sample->transitionFrame.frame, profile );
+		sample->transitionFrame.audioTransitionFilter->process( sample->frame, buf1, sample->transitionFrame.frame, buf2, buf2 ? buf2 : buf1, profile );
+		if ( buf2 ) {
+			if ( buf1 )
+				BufferPool::globalInstance()->releaseBuffer( buf1 );
+			return buf2;
+		}
+		else
+			return buf1;			
 	}
+	
+	return buf1;
 }
 
 
@@ -761,10 +778,10 @@ bool Composer::renderAudioFrame( Frame *dst, int nSamples )
 	FrameSample *sample;
 	
 	Profile profile = sampler->getProfile();
+	int bps = profile.getAudioChannels() * profile.bytesPerChannel( &profile );
 
 	if ( !sampler->getAudioTracks( dst, nSamples ) ) {
 		// make silence
-		int bps = profile.getAudioChannels() * profile.bytesPerChannel( &profile );
 		dst->setAudioFrame( profile.getAudioChannels(), profile.getAudioSampleRate(), profile.bytesPerChannel( &profile ), nSamples, sampler->currentPTSAudio() );
 		memset( dst->data(), 0, nSamples * bps );
 		return true;
@@ -773,24 +790,27 @@ bool Composer::renderAudioFrame( Frame *dst, int nSamples )
 	// process first frame
 	getNextAudioFrame( dst, i );
 	sample = dst->sample->frames[i - 1];
-	processAudioFrame( sample, &profile );
+	Buffer *buf = processAudioFrame( sample, nSamples, bps, &profile );
 	// copy in dst
 	AudioCopy ac;
 	f = sample->frame;
 	if ( !f )
 		f = sample->transitionFrame.frame;
-	ac.process( f, dst, &profile );
+	dst->setAudioFrame( f->profile.getAudioChannels(), f->profile.getAudioSampleRate(), f->profile.bytesPerChannel( &f->profile ), f->audioSamples(), f->pts() );
+	ac.process( f, buf, dst->getBuffer(), &profile );
+	BufferPool::globalInstance()->releaseBuffer( buf );
 
 	// process remaining frames
 	AudioMix am;
 	while ( getNextAudioFrame( dst, i ) ) {
 		sample = dst->sample->frames[i - 1];
-		processAudioFrame( sample, &profile );
+		buf = processAudioFrame( sample, nSamples, bps, &profile );
 		// mix
 		f = sample->frame;
 		if ( !f )
 			f = sample->transitionFrame.frame;
-		am.process( f, dst, &profile );
+		am.process( f, buf, dst, dst->getBuffer(), dst->getBuffer(), &profile );
+		BufferPool::globalInstance()->releaseBuffer( buf );
 	}
 
 	return true;

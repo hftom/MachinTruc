@@ -30,19 +30,17 @@ public:
 		delete secondVol;
 	}
 
-	bool process( Frame *first, Frame *second, Profile *p ) {
+	bool process( Frame *first, Buffer *buf1, Frame *second, Buffer *buf2, Buffer *dst, Profile *p ) {
 		// ATTENTION: first or second can be NULL (but not both)
 		// a NULL frame is considered silent.
-		// if first is NULL result goes in second->data()
-		// else it goes in first->data()		
 		int samples, channels;
 		if ( first ) {
-			firstVol->process( first, p );
+			firstVol->process( first, buf1, buf1, p );
 			samples = first->audioSamples();
 			channels = first->profile.getAudioChannels();
 		}
 		if ( second ) {
-			secondVol->process( second, p );
+			secondVol->process( second, buf2, buf2, p );
 			if ( !first ) {
 				samples = second->audioSamples();
 				channels = second->profile.getAudioChannels();
@@ -50,13 +48,22 @@ public:
 		}
 
 		if ( first && second ) {
-			int16_t *in = (int16_t*)first->data();
-			int16_t *out = (int16_t*)second->data();
+			int16_t *in = (int16_t*)buf1->data();
+			int16_t *in2 = (int16_t*)buf2->data();
+			int16_t *out = (int16_t*)dst->data();
 
 			for ( int i = 0; i < samples; ++i ) {
 				for ( int j = 0; j < channels; ++j )
-					in[(i * channels) + j] += out[(i * channels) + j];
+					out[(i * channels) + j] = in[(i * channels) + j] + in2[(i * channels) + j];
 			}
+		}
+		else if ( first ) {
+			int bps = first->profile.getAudioChannels() * first->profile.bytesPerChannel( &first->profile );
+			memcpy( dst->data(), buf1->data(), samples * bps );
+		}
+		else {
+			int bps = second->profile.getAudioChannels() * second->profile.bytesPerChannel( &second->profile );
+			memcpy( dst->data(), buf2->data(), samples * bps );
 		}
 
 		return true;

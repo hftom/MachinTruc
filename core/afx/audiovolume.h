@@ -12,18 +12,19 @@ public:
 		volume = addParameter( "volume", tr("Volume:"), Parameter::PDOUBLE, 1.0, 0.0, 2.0, true );
 	}
 
-	bool process( Frame *src, Profile *p ) {
+	bool process( Frame *f, Buffer *src, Buffer *dst, Profile *p ) {
 		Q_UNUSED( p );
-		int samples = src->audioSamples(), channels = src->profile.getAudioChannels();
+		int samples = f->audioSamples(), channels = f->profile.getAudioChannels();
 		int16_t *in = (int16_t*)src->data();
-		double vol = getParamValue( volume, src->pts() ).toDouble();
-		double d = (double)samples * MICROSECOND / (double)src->profile.getAudioSampleRate();
-		double vol2 = getParamValue( volume, src->pts() + d ).toDouble();
+		int16_t *out = (int16_t*)dst->data();
+		double vol = getParamValue( volume, f->pts() ).toDouble();
+		double d = (double)samples * MICROSECOND / (double)f->profile.getAudioSampleRate();
+		double vol2 = getParamValue( volume, f->pts() + d ).toDouble();
 		d = (vol2 - vol) / samples;
 
 		for ( int i = 0; i < samples; ++i ) {
 			for ( int j = 0; j < channels; ++j )
-				in[(i * channels) + j] = (double)in[(i * channels) + j] * vol;
+				out[(i * channels) + j] = (double)in[(i * channels) + j] * vol;
 			vol += d;
 		}
 		return true;
