@@ -38,8 +38,6 @@ private:
 	double fps;
 	double currentVideoPTS;
 
-	MQueue<Frame*> freeVideoFrames;
-
 	Buffer *buffer;
 	int width, height;
 	bool rgba;

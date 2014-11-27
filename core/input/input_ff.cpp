@@ -22,11 +22,6 @@ InputFF::InputFF() : InputBase(),
 	eofAudio( false )
 {
 	inputType = FFMPEG;
-
-	for ( int i = 0; i < NUMINPUTFRAMES; ++i ) {
-		freeAudioFrames.enqueue( new Frame( &freeAudioFrames ) );
-		freeVideoFrames.enqueue( new Frame( &freeVideoFrames ) );
-	}
 }
 
 
@@ -34,14 +29,7 @@ InputFF::InputFF() : InputBase(),
 InputFF::~InputFF()
 {
 	delete decoder;
-
 	flush();
-
-	Frame *f;
-	while ( (f = freeAudioFrames.dequeue()) )
-		delete f;
-	while ( (f = freeVideoFrames.dequeue()) )
-		delete f;
 }
 
 
@@ -49,15 +37,10 @@ InputFF::~InputFF()
 void InputFF::flush()
 {
 	Frame *f;
-	while ( (f = videoFrames.dequeue()) )
-		f->release();
 	while ( (f = reorderedVideoFrames.dequeue()) )
 		delete f;
 	while ( !backwardVideoFrames.isEmpty() )
 		delete backwardVideoFrames.takeFirst();
-
-	while ( (f = audioFrames.dequeue()) )
-		f->release();
 	while ( !backwardAudioFrames.isEmpty() )
 		delete backwardAudioFrames.takeFirst();
 
@@ -125,9 +108,7 @@ double InputFF::seekTo( double p )
 		}
 	}
 	else {
-		Frame *f = freeVideoFrames.dequeue();
-		if ( !f )
-			return p;
+		Frame *f = new Frame();
 		AudioFrame *af = new AudioFrame( audioFrameList.getBytesPerSample(), outProfile.getAudioSampleRate() );
 		bool ok = decoder->seekTo( p, f, af );
 		if ( af->buffer )
@@ -142,7 +123,7 @@ double InputFF::seekTo( double p )
 			return f->pts();
 		}
 		else {
-			f->release();
+			delete f;
 		}
 	}
 
@@ -235,7 +216,8 @@ void InputFF::runForward()
 		doWait = 1;
 
 		if ( decoder->haveVideo && !eofVideo ) {
-			if ( (f = freeVideoFrames.dequeue()) ) {
+			if ( reorderedVideoFrames.count() < 3 ) {
+				f = new Frame();
 				// resample if necessary
 				if ( videoResampler.repeat && lastFrame.valid() ) {
 					// duplicate previous frame
@@ -245,7 +227,7 @@ void InputFF::runForward()
 					f->mmiProvider = mmiProvider;
 					if ( !videoResampler.repeat )
 						mmiIncrement();
-					videoFrames.enqueue( f );
+					reorderedVideoFrames.enqueue( f );
 				}
 				else {
 					f->mmi = mmi;
@@ -256,7 +238,7 @@ void InputFF::runForward()
 						resample ( f );
 					}
 					else
-						f->release();
+						delete f;
 				}
 
 				if ( (decoder->endOfFile & FFDecoder::EofVideo) && !videoResampler.repeat )
@@ -312,7 +294,7 @@ void InputFF::runBackward()
 	int doWait;
 	bool endVideoSequence = !decoder->haveVideo;
 	bool endAudioSequence = !decoder->haveAudio;
-	int minSamples = (outProfile.getAudioSampleRate() / outProfile.getVideoFrameRate()) * (NUMINPUTFRAMES + 1);
+	int minSamples = (outProfile.getAudioSampleRate() / outProfile.getVideoFrameRate()) * NUMINPUTFRAMES;
 
 	while ( running ) {
 		doWait = 1;
@@ -482,16 +464,16 @@ void InputFF::resample( Frame *f )
 		printf("duplicate, delta=%f, f->pts=%f, outputPts=%f\n", delta, f->pts(), videoResampler.outputPts);
 		// add some to delta to prevent subduplicate
 		videoResampler.setRepeat( f->pts(), (delta + 1) / videoResampler.outputDuration );
-		videoFrames.enqueue( f );
+		reorderedVideoFrames.enqueue( f );
 		videoResampler.outputPts += videoResampler.outputDuration;
 	}
 	else if ( delta <= -videoResampler.outputDuration ) {
 		// skip
 		printf("skip frame delta=%f, f->pts=%f, outputPts=%f\n", delta, f->pts(), videoResampler.outputPts);
-		f->release();
+		delete f;
 	}
 	else {
-		videoFrames.enqueue( f );
+		reorderedVideoFrames.enqueue( f );
 		videoResampler.outputPts += videoResampler.outputDuration;
 	}
 }
@@ -530,42 +512,10 @@ Frame* InputFF::getVideoFrame()
 		return NULL;
 	}
 
-	if ( playBackward ) {
-		while ( freeVideoFrames.queueEmpty() )
-			usleep( 1000 );
-		while ( reorderedVideoFrames.queueEmpty() ) {
-			if ( eofVideo ) {
-				if ( lastFrame.valid() ) {
-					Frame *f = freeVideoFrames.dequeue();
-					lastFrame.get( f );
-					return f;
-				}
-				return NULL;
-			}
-			//qDebug() << "wait video";
-			usleep( 1000 );
-		}
-		Frame *rf = reorderedVideoFrames.dequeue();
-		Frame *f = freeVideoFrames.dequeue();
-		f->setSharedBuffer( rf->getBuffer() );
-		f->setVideoFrame( (Frame::DataType)rf->type(), rf->profile.getVideoWidth(), rf->profile.getVideoHeight(),
-						  rf->profile.getVideoSAR(), rf->profile.getVideoInterlaced(),
-						  rf->profile.getVideoTopFieldFirst(), rf->pts(),
-						  rf->profile.getVideoFrameDuration(),
-						  rf->orientation() );
-		f->profile = rf->profile;
-		f->mmi = rf->mmi;
-		f->mmiProvider = rf->mmiProvider;
-		delete rf;
-		return f;
-	}
-
-	while ( videoFrames.queueEmpty() ) {
+	while ( reorderedVideoFrames.queueEmpty() ) {
 		if ( eofVideo ) {
 			if ( lastFrame.valid() ) {
-				while ( freeVideoFrames.queueEmpty() )
-					usleep( 1000 );
-				Frame *f = freeVideoFrames.dequeue();
+				Frame *f = new Frame();
 				lastFrame.get( f );
 				return f;
 			}
@@ -574,7 +524,7 @@ Frame* InputFF::getVideoFrame()
 		usleep( 1000 );
 	}
 
-	Frame *f = videoFrames.dequeue();
+	Frame *f = reorderedVideoFrames.dequeue();
 	return f;
 }
 
@@ -588,17 +538,14 @@ Frame* InputFF::getAudioFrame( int nSamples )
 		return NULL;
 	}
 
-	while ( freeAudioFrames.queueEmpty() ) {
-		usleep( 1000 );
-	}
-	Frame *f = freeAudioFrames.dequeue();
+	Frame *f = new Frame();
 
 	while ( !audioFrameList.readable( nSamples ) ) {
 		if ( eofAudio ) {
 			f->setAudioFrame( outProfile.getAudioChannels(), outProfile.getAudioSampleRate(), Profile::bytesPerChannel( &outProfile ), nSamples, audioFrameList.readPts() );
 			int n = audioFrameList.read( f->data() );
 			if ( !n ) {
-				f->release();
+				delete f;
 				return NULL;
 			}
 			// complete with silence

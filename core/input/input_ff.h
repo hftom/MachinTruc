@@ -9,6 +9,9 @@
 #include "input.h"
 #include "ffdecoder.h"
 
+// buffer at most N audio output frames.
+#define NUMINPUTFRAMES 5
+
 
 
 class AudioFrameList
@@ -28,7 +31,7 @@ public:
 			delete list.takeFirst();
 		bytesPerSample = Profile::bytesPerChannel( &p ) * p.getAudioChannels();
 		sampleRate = p.getAudioSampleRate();
-		maxSamples = (((double)sampleRate / p.getVideoFrameRate()) + 1) * (NUMINPUTFRAMES + 1);
+		maxSamples = (((double)sampleRate / p.getVideoFrameRate()) + 1) * NUMINPUTFRAMES;
 	}
 	bool readable( int nSamples ) {
 		QMutexLocker ml( &mutex );
@@ -235,12 +238,6 @@ private:
 	void runBackward();
 
 	FFDecoder *decoder;
-
-	MQueue<Frame*> audioFrames;
-	MQueue<Frame*> freeAudioFrames;
-
-	MQueue<Frame*> videoFrames;
-	MQueue<Frame*> freeVideoFrames;
 
 	QSemaphore *semaphore;
 	bool running;

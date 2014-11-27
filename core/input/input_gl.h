@@ -31,8 +31,6 @@ private:
 	
 	double fps;
 	double currentVideoPTS;
-
-	MQueue<Frame*> freeVideoFrames;
 };
 
 #endif //INPUTGL_H

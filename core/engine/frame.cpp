@@ -6,8 +6,9 @@
 
 
 
-Frame::Frame( MQueue<Frame*> *origin, bool makeSample )
+Frame::Frame( MQueue<Frame*> *origin )
 	: mmi( 0 ),
+	sample( NULL ),
 	pType( Frame::NONE ),
 	fb( NULL ),
 	pb( NULL ),
@@ -17,10 +18,6 @@ Frame::Frame( MQueue<Frame*> *origin, bool makeSample )
 	buffer( NULL ),
 	originQueue( origin )
 {
-	if ( makeSample )
-		sample = new ProjectSample();
-	else
-		sample = NULL;
 }
 
 
@@ -35,10 +32,8 @@ Frame::~Frame()
 		pb->setFree( true );
 	if ( glfence )
 		glfence->setFree();
-	if ( sample ) {
-		sample->clear();
+	if ( sample )
 		delete sample;
-	}
 }
 
 
@@ -60,8 +55,11 @@ void Frame::release()
 		glfence = NULL;
 	}
 
-	if ( sample )
-		sample->clear();
+	if ( sample ) {
+		delete sample;
+		sample = NULL;
+	}
+
 
 	if ( buffer ) {
 		BufferPool::globalInstance()->releaseBuffer( buffer );
@@ -163,17 +161,4 @@ void Frame::setAudioFrame( int c, int r, int bpc, int samples, double p )
 			BufferPool::globalInstance()->releaseBuffer( buffer );
 		buffer = BufferPool::globalInstance()->getBuffer( s );
 	}
-}
-
-
-
-void FrameSample::clear( bool releaseFrame )
-{
-	videoFilters.clear();
-	audioFilters.clear();
-	if ( frame && releaseFrame ) {
-		frame->release();
-		frame = NULL;
-	}
-	transitionFrame.clear( releaseFrame );
 }

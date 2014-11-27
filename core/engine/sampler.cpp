@@ -473,6 +473,9 @@ int Sampler::updateLastFrame( Frame *dst )
 	Clip *c = NULL;
 	int nframes = 0;
 	double margin = currentScene->getProfile().getVideoFrameDuration() / 4.0;
+	
+	if ( !dst->sample )
+		return 0;
 
 	QMutexLocker ml( &currentScene->mutex );
 	
@@ -587,6 +590,10 @@ int Sampler::getVideoTracks( Frame *dst )
 
 	QMutexLocker ml( &currentScene->mutex );
 	
+	if ( dst->sample )
+		delete dst->sample;
+	dst->sample = new ProjectSample();
+	
 	for ( j = 0; j < currentScene->tracks.count(); ++j ) {
 		c = NULL;
 		Track *t = currentScene->tracks[j];
@@ -661,6 +668,10 @@ int Sampler::getAudioTracks( Frame *dst, int nSamples )
 	double margin = currentScene->getProfile().getVideoFrameDuration() / 4.0;
 
 	QMutexLocker ml( &currentScene->mutex );
+	
+	if ( dst->sample )
+		delete dst->sample;
+	dst->sample = new ProjectSample();
 	
 	for ( j = 0; j < currentScene->tracks.count(); ++j ) {
 		c = NULL;

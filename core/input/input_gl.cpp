@@ -11,19 +11,12 @@ InputGL::InputGL() : InputBase(),
 	currentVideoPTS( 0 )
 {
 	inputType = OPENGL;
-
-	int i;
-	for ( i = 0; i < NUMINPUTFRAMES; ++i )
-		freeVideoFrames.enqueue( new Frame( &freeVideoFrames ) );
 }
 
 
 
 InputGL::~InputGL()
 {
-	Frame *f;
-	while ( (f = freeVideoFrames.dequeue()) )
-		delete f;
 }
 
 
@@ -80,14 +73,10 @@ bool InputGL::process( Frame *f )
 
 Frame* InputGL::getVideoFrame()
 {
-	Frame *f = NULL;
+	Frame *f = new Frame();
 
-	while ( freeVideoFrames.queueEmpty() )
-		usleep( 500 );
-
-	f = freeVideoFrames.dequeue();
 	if ( !process( f ) ) {
-		f->release();
+		delete f;
 		return NULL;
 	}
 	return f;

@@ -203,7 +203,7 @@ QImage Thumbnailer::getSourceThumb( Frame *f )
 	QPainter p(&img);
 	p.drawImage( (ICONSIZEWIDTH - iw) / 2 + 2, (ICONSIZEHEIGHT - ih) / 2 + 2, QImage( data, iw, ih, QImage::Format_ARGB32 ) );
 
-	f->release();
+	delete f;
 	delete movitChain;
 	delete fbo;
 	

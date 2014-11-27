@@ -19,11 +19,6 @@ InputImage::InputImage() : InputBase(),
 	rgba( false )
 {
 	inputType = IMAGE;
-
-	int i;
-	for ( i = 0; i < NUMINPUTFRAMES; ++i )
-		freeVideoFrames.enqueue( new Frame( &freeVideoFrames ) );
-
 	semaphore = new QSemaphore( 1 );
 }
 
@@ -31,9 +26,6 @@ InputImage::InputImage() : InputBase(),
 
 InputImage::~InputImage()
 {
-	Frame *f;
-	while ( (f = freeVideoFrames.dequeue()) )
-		delete f;
 	if ( buffer )
 		BufferPool::globalInstance()->releaseBuffer( buffer );
 
@@ -168,14 +160,10 @@ bool InputImage::upload( Frame *f )
 
 Frame* InputImage::getVideoFrame()
 {
-	Frame *f = NULL;
+	Frame *f = new Frame();
 
-	while ( freeVideoFrames.queueEmpty() )
-		usleep( 500 );
-
-	f = freeVideoFrames.dequeue();
 	if ( !upload( f ) ) {
-		f->release();
+		delete f;
 		return NULL;
 	}
 	return f;

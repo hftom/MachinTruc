@@ -17,9 +17,6 @@
 #include "afx/audiofilter.h"
 #include "vfx/glfilter.h"
 
-#define NUMINPUTFRAMES 5
-#define NUMOUTPUTFRAMES 4
-
 
 
 class ProjectSample;
@@ -66,7 +63,7 @@ class Frame
 public:
 	enum DataType{ NONE, YUV420P, YUV422P, RGBA, RGB, GLSL, GLTEXTURE };
 
-	Frame( MQueue<Frame*> *origin, bool makeSample=false );
+	Frame( MQueue<Frame*> *origin = NULL );
 	~Frame();
 	void setType( int t ) { pType = t; }
 	int type() { return pType; }
@@ -135,7 +132,7 @@ public:
 		videoFilters.clear();
 		audioFilters.clear();
 		if ( frame && releaseFrame ) {
-			frame->release();
+			delete frame;
 			frame = NULL;
 		}
 		videoTransitionFilter.clear();
@@ -156,7 +153,15 @@ class FrameSample
 {
 public:
 	FrameSample() : frame(NULL) {}
-	void clear( bool releaseFrame = true );
+	void clear( bool releaseFrame = true ) {
+		videoFilters.clear();
+		audioFilters.clear();
+		if ( frame && releaseFrame ) {
+			delete frame;
+			frame = NULL;
+		}
+		transitionFrame.clear( releaseFrame );
+	}
 
 	Frame *frame;
 	TransitionSample transitionFrame;
@@ -170,7 +175,9 @@ class ProjectSample
 {
 public:
 	ProjectSample() {}
-	~ProjectSample() {}
+	~ProjectSample() {
+		clear();
+	}
 	void clear() {
 		while ( !frames.isEmpty() ) {
 			FrameSample *f = frames.takeFirst();

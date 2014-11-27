@@ -8,6 +8,14 @@
 
 #include <QGLFramebufferObject>
 
+// bare minimum :
+// 1 frame in composer
+// 1 in opengl
+// 1 in metronom::runShow
+// 1 in display
+// less than 4 would freeze the app.
+#define NUMOUTPUTFRAMES 4
+
 
 static const int NSPS = 5;
 static const int slowPlaybackSpeed[NSPS][2] = {
@@ -45,8 +53,8 @@ Metronom::Metronom()
 	lastFrame( NULL )
 {
 	for ( int i = 0; i < NUMOUTPUTFRAMES; ++i ) {
-		freeVideoFrames.enqueue( new Frame( &freeVideoFrames, true ) );
-		freeAudioFrames.enqueue( new Frame( &freeAudioFrames, true ) );
+		freeVideoFrames.enqueue( new Frame( &freeVideoFrames ) );
+		freeAudioFrames.enqueue( new Frame( &freeAudioFrames ) );
 	}
 
 	ao.setReadCallback( (void*)readData, (void*)this );
