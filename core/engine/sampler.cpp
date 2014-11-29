@@ -6,9 +6,10 @@
 
 
 Sampler::Sampler()
-	: playBackward( false )
+	: playBackward( false ),
+	bufferedPlaybackPts( -1 )
 {	
-	metronom = new Metronom();
+	metronom = new Metronom( &playbackBuffer );
 	composer = new Composer( this );
 	connect( composer, SIGNAL(newFrame(Frame*)), this, SIGNAL(newFrame(Frame*)) );
 	connect( composer, SIGNAL(paused(bool)), this, SIGNAL(paused(bool)) );
@@ -214,8 +215,17 @@ bool Sampler::play( bool b, bool backward )
 				else
 					pts = last->pts() - last->profile.getVideoFrameDuration();
 			}
+			int bufferedSamples = playbackBuffer.getBuffer( pts, backward );
+			if ( bufferedSamples > 0 ) {
+				if ( backward )
+					bufferedPlaybackPts = pts - ( bufferedSamples * currentScene->getProfile().getVideoFrameDuration() );
+				else
+					bufferedPlaybackPts = pts + ( bufferedSamples * currentScene->getProfile().getVideoFrameDuration() );
+			}
+			else
+				bufferedPlaybackPts = -1;
+			qDebug() << "bufferedPlaybackPts" << bufferedPlaybackPts;
 			seekTo( pts, backward, false );
-			emit startOSDTimer();
 		}
 		else if ( composer->isRunning() )
 			return false;
@@ -314,6 +324,13 @@ void Sampler::seekTo( double p, bool backward, bool seek )
 	currentScene->currentPTSAudio = p;
 	
 	playBackward = backward;
+	
+	if ( seek ) {
+		double skipPts = -1;
+		if ( metronom->getLastFrame() )
+			skipPts = metronom->getLastFrame()->pts();
+		playbackBuffer.reset( currentScene->getProfile().getVideoFrameRate() + 1, skipPts );
+	}
 
 	if ( !playBackward && seek )
 		composer->seeking();
@@ -449,7 +466,7 @@ InputBase* Sampler::getClipInput( Clip *c, double pts )
 	double pos = c->start();
 	if ( c->position() < pts )
 		pos += pts - c->position();
-	printf("%s cpos:%f, cstart:%f, seek:%f\n", c->sourcePath().toLatin1().data(), c->position(), c->start(), pos);
+	printf("%f %s cpos:%f, cstart:%f, seek:%f\n", pts, c->sourcePath().toLatin1().data(), c->position(), c->start(), pos);
 	Profile p = c->getProfile();
 	Profile cur = currentScene->getProfile();
 	p.setVideoFrameRate( cur.getVideoFrameRate() );
@@ -579,14 +596,19 @@ Clip* Sampler::searchCurrentClip( int &i, Track *t, int clipIndex, double pts, d
 
 
 
-int Sampler::getVideoTracks( Frame *dst )
+void Sampler::getVideoTracks( Frame *dst )
 {
 	int i, j;
 	Frame *f;
 	Clip *c = NULL;
 	InputBase *in = NULL;
-	int nFrames = 0;
 	double margin = currentScene->getProfile().getVideoFrameDuration() / 4.0;
+	
+	ProjectSample *ps = playbackBuffer.getVideoSample( currentScene->currentPTS );
+	if ( ps ) {
+		dst->sample = ps;
+		return;
+	}
 
 	QMutexLocker ml( &currentScene->mutex );
 	
@@ -609,7 +631,6 @@ int Sampler::getVideoTracks( Frame *dst )
 				in = getClipInput( c, currentScene->currentPTS );
 			f = in->getVideoFrame();
 			if ( f ) {
-				++nFrames;
 				f->setPts( currentScene->currentPTS );
 				fs->frame = f;
 				fs->videoFilters = c->getSource()->videoFilters.copy();
@@ -653,19 +674,23 @@ int Sampler::getVideoTracks( Frame *dst )
 	}
 
 	currentScene->update = false;
-	return nFrames;
 }
 
 
 
-int Sampler::getAudioTracks( Frame *dst, int nSamples )
+void Sampler::getAudioTracks( Frame *dst, int nSamples )
 {
 	int i, j;
 	Frame *f;
 	Clip *c = NULL;
 	InputBase *in = NULL;
-	int nFrames = 0;
 	double margin = currentScene->getProfile().getVideoFrameDuration() / 4.0;
+	
+	ProjectSample *ps = playbackBuffer.getAudioSample( currentScene->currentPTSAudio );
+	if ( ps ) {
+		dst->sample = ps;
+		return;
+	}
 
 	QMutexLocker ml( &currentScene->mutex );
 	
@@ -721,13 +746,10 @@ int Sampler::getAudioTracks( Frame *dst, int nSamples )
 					}
 				}
 			}
-			if ( fs->frame || fs->transitionFrame.frame )
-				++nFrames;
 		}
 	}
 	
 	currentScene->update = false;
-	return nFrames;
 }
 
 
@@ -744,7 +766,9 @@ void Sampler::prepareInputs()
 	InputBase *in = NULL;
 	double minPTS, maxPTS;
 
-	if ( currentScene->currentPTS < currentScene->currentPTSAudio ) {
+	if ( bufferedPlaybackPts != -1 )
+		minPTS = maxPTS = bufferedPlaybackPts;
+	else if ( currentScene->currentPTS < currentScene->currentPTSAudio ) {
 		minPTS = currentScene->currentPTS;
 		maxPTS = currentScene->currentPTSAudio;
 	}
@@ -775,7 +799,7 @@ void Sampler::prepareInputs()
 					//break;
 				if ( !(in = c->getInput()) ) {
 					in = getClipInput( c, minPTS );
-					break;
+					//break;
 				}
 			}
 			else
@@ -783,6 +807,7 @@ void Sampler::prepareInputs()
 		}
 	}
 	
+	bufferedPlaybackPts = -1;
 	currentScene->update = false;
 	//printf("******************************************** inputs=%d\n", inputs.count() );
 }
@@ -795,8 +820,10 @@ void Sampler::prepareInputsBackward()
 	Clip *c = NULL;
 	InputBase *in = NULL;
 	double minPTS, maxPTS;
-
-	if ( currentScene->currentPTS < currentScene->currentPTSAudio ) {
+	
+	if ( bufferedPlaybackPts != -1 )
+		minPTS = maxPTS = bufferedPlaybackPts;
+	else if ( currentScene->currentPTS < currentScene->currentPTSAudio ) {
 		minPTS = currentScene->currentPTS;
 		maxPTS = currentScene->currentPTSAudio;
 	}
@@ -827,7 +854,7 @@ void Sampler::prepareInputsBackward()
 					//break;
 				if ( !(in = c->getInput()) ) {
 					in = getClipInput( c, maxPTS );
-					break;
+					//break;
 				}
 			}
 			else
@@ -835,6 +862,7 @@ void Sampler::prepareInputsBackward()
 		}
 	}
 	
+	bufferedPlaybackPts = -1;
 	currentScene->update = false;
 	//printf("******************************************** inputs=%d\n", inputs.count() );
 }

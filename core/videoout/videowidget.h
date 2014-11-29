@@ -17,7 +17,7 @@ class OSDTimer : public QObject
 {
 	Q_OBJECT
 public:
-	OSDTimer() : startAngle( 0 ), arcAngle( 270 ), arcInc( -5 ) {
+	OSDTimer() : show( false ), startAngle( 0 ), arcAngle( 270 ), arcInc( -5 ) {
 		backgroundBrush = QBrush( QColor( 0, 0, 0, 168 ) );
 		backgroundPen = QPen( QColor( 0, 0, 0, 168 ) );
 		transparentBrush = QBrush( QColor( 0, 0, 0, 0 ) );
@@ -30,18 +30,26 @@ public:
 	}
 	
 	void start() {
-		timer.start( 50 );
+		timer.start( 100 );
 	}
 	
 	void stop() {
 		if ( timer.isActive() ) {
 			timer.stop();
+			show = false;
 			emit update();
 		}
 	}
 	
-	void draw( QPainter *p, int screenWidth, int screenHeight ) {
+	void disable() {
 		if ( !timer.isActive() )
+			return;
+		show = false;
+		timer.start( 100 );
+	}
+	
+	void draw( QPainter *p, int screenWidth, int screenHeight ) {
+		if ( !show )
 			return;
 		p->setPen( backgroundPen );
 		p->setBrush( backgroundBrush );
@@ -63,6 +71,7 @@ private slots:
 			startAngle = 0;
 		if ( arcAngle <= 10 || arcAngle >= 340 )
 			arcInc *= -1;
+		show = true;
 		emit update();
 	}
 	
@@ -73,6 +82,7 @@ private:
 	QPen timerBackgroundPen;
 	QPen timerPen;
 	QTimer timer;
+	bool show;
 	
 	int startAngle, arcAngle;
 	int arcInc;
@@ -154,7 +164,7 @@ public slots:
 	void clear();
 	
 	void showOSDMessage( const QString &text, int duration );
-	void showOSDTimer();
+	void showOSDTimer( bool b );
 
 protected :
 	void initializeGL();

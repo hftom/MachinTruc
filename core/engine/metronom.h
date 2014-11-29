@@ -4,7 +4,7 @@
 #define METRONOM_H
 
 #include "audioout/ao_sdl.h"
-#include "engine/frame.h"
+#include "engine/playbackbuffer.h"
 
 #include <QGLWidget>
 #include <QThread>
@@ -17,7 +17,7 @@ class Metronom : public QThread
 {
 	Q_OBJECT
 public:
-	Metronom();
+	Metronom( PlaybackBuffer *pb );
 	~Metronom();
 	void setRenderMode( bool b );
 	void play( bool b, bool backward = false );
@@ -50,6 +50,7 @@ private:
 	QMutex clockMutex;
 	AudioOutSDL ao;
 
+	PlaybackBuffer *playbackBuffer;
 	QGLWidget *fencesContext;
 
 	bool renderMode;
@@ -62,6 +63,7 @@ signals:
 	void discardFrame( int );
 
 	void osdMessage( const QString &text, int duration );
+	void osdTimer( bool );
 };
 
 #endif // METRONOM_H

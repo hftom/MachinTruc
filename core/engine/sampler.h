@@ -21,8 +21,8 @@ public:
 	Sampler();
 	~Sampler();
 
-	int getVideoTracks( Frame *dst );
-	int getAudioTracks( Frame *dst, int nSamples );
+	void getVideoTracks( Frame *dst );
+	void getAudioTracks( Frame *dst, int nSamples );
 	void prepareInputs();
 	bool sceneEndReached();
 	double currentSceneDuration();
@@ -72,12 +72,13 @@ private:
 	QList<InputBase*> inputs;
 
 	bool playBackward;
+	PlaybackBuffer playbackBuffer;
+	double bufferedPlaybackPts;
 	
 	Metronom *metronom;
 	Composer *composer;
 
 signals:
-	void startOSDTimer();
 	void modeSwitched();
 	void paused( bool );
 	void newFrame( Frame* );

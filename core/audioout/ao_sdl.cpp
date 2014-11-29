@@ -43,6 +43,12 @@ AudioOutSDL::~AudioOutSDL()
 }
 
 
+void AudioOutSDL::setPlaybackBuffer( PlaybackBuffer *pb )
+{
+	playbackBuffer = pb;
+}
+
+
 
 void AudioOutSDL::go()
 {
@@ -134,7 +140,7 @@ void AudioOutSDL::streamRequestCallback( void *userdata, uint8_t *stream, int le
 				dst += s;
 				size -= s;
 			}
-			data->release();
+			ao->playbackBuffer->releasedAudioFrame( data );
 			data = NULL;
 		}
 		else {

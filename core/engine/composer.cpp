@@ -381,7 +381,9 @@ void Composer:: waitFence()
 
 bool Composer::renderVideoFrame( Frame *dst )
 {
-	if ( !sampler->getVideoTracks( dst ) ) {
+	int i = 0;
+	sampler->getVideoTracks( dst );
+	if ( !getNextFrame( dst, i ) ) {
 		Profile projectProfile = sampler->getProfile();
 		
 		if ( skipFrame > 0 ) {
@@ -780,7 +782,8 @@ bool Composer::renderAudioFrame( Frame *dst, int nSamples )
 	Profile profile = sampler->getProfile();
 	int bps = profile.getAudioChannels() * profile.bytesPerChannel( &profile );
 
-	if ( !sampler->getAudioTracks( dst, nSamples ) ) {
+	sampler->getAudioTracks( dst, nSamples );
+	if ( !getNextAudioFrame( dst, i ) ) {
 		// make silence
 		dst->setAudioFrame( profile.getAudioChannels(), profile.getAudioSampleRate(), profile.bytesPerChannel( &profile ), nSamples, sampler->currentPTSAudio() );
 		memset( dst->data(), 0, nSamples * bps );
@@ -788,7 +791,6 @@ bool Composer::renderAudioFrame( Frame *dst, int nSamples )
 	}
 	
 	// process first frame
-	getNextAudioFrame( dst, i );
 	sample = dst->sample->frames[i - 1];
 	Buffer *buf = processAudioFrame( sample, nSamples, bps, &profile );
 	// copy in dst

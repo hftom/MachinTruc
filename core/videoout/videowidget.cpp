@@ -144,7 +144,7 @@ void VideoWidget::showFrame( Frame *frame )
 	lastFrameRatio = frame->glSAR * (double)frame->glWidth / (double)frame->glHeight;
 	lastFrame = frame;
 	emit frameShown( frame );
-	osdTimer.stop();
+	osdTimer.disable();
 	update();
 }
 
@@ -255,8 +255,11 @@ void VideoWidget::showOSDMessage( const QString &text, int duration )
 
 
 
-void VideoWidget::showOSDTimer()
+void VideoWidget::showOSDTimer( bool b )
 {
-	osdTimer.start();
+	if ( b )
+		osdTimer.start();
+	else
+		osdTimer.stop();
 }
 

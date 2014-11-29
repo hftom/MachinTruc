@@ -86,8 +86,8 @@ TopWindow::TopWindow()
 	connect( sampler, SIGNAL(modeSwitched()), this, SLOT(modeSwitched()) );
 	
 	connect( sampler->getMetronom(), SIGNAL(osdMessage(const QString&,int)), vw, SLOT(showOSDMessage(const QString&,int)) );
-	connect( sampler, SIGNAL(startOSDTimer()), vw, SLOT(showOSDTimer()) );
-	connect( this, SIGNAL(startOSDTimer()), vw, SLOT(showOSDTimer()) );
+	connect( sampler->getMetronom(), SIGNAL(osdTimer(bool)), vw, SLOT(showOSDTimer(bool)) );
+	connect( this, SIGNAL(startOSDTimer(bool)), vw, SLOT(showOSDTimer(bool)) );
 
 	connect( clipsToolButton, SIGNAL(clicked()), this, SLOT(showProjectClipsPage()) );
 	connect( fxToolButton, SIGNAL(clicked()), this, SLOT(showFxPage()) );
@@ -577,6 +577,7 @@ void TopWindow::thumbResultReady( ThumbResult result )
 			sampler->setSceneList( projectLoader->sceneList );
 			timeline->setScene( sampler->getCurrentScene() );
 			timelineSeek( 0 );
+			emit startOSDTimer( false );
 			
 			if ( projectLoader->readError ) {
 				QMessageBox msgBox;
@@ -654,7 +655,7 @@ void TopWindow::loadProject()
 		}
 		if ( i > 0 ) {
 			setEnabled( false );
-			emit startOSDTimer();
+			emit startOSDTimer( true );
 		}
 	}
 	else {

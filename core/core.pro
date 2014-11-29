@@ -18,6 +18,7 @@ SOURCES = \
 	engine/movitchain.cpp \
 	engine/transition.cpp \
 	engine/thumbnailer.cpp \
+	engine/playbackbuffer.cpp \
 	\
 	input/ffdecoder.cpp \
 	input/input_ff.cpp \
@@ -78,6 +79,7 @@ HEADERS = \
 	engine/movitchain.h \
 	engine/transition.h \
 	engine/thumbnailer.h \
+	engine/playbackbuffer.h \
 	\
 	input/input.h \
 	input/ffdecoder.h \

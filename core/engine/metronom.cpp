@@ -42,12 +42,13 @@ static const int fastPlaybackSpeed[NFPS][2] = {
 
 
 
-Metronom::Metronom()
+Metronom::Metronom( PlaybackBuffer *pb )
 	: speed( 0 ),
 	playBackward( false ),
 	running( false ),
 	sclock( 0 ),
 	videoLate( 0 ),
+	playbackBuffer( pb ),
 	fencesContext( NULL ),
 	renderMode( false ),
 	lastFrame( NULL )
@@ -58,6 +59,7 @@ Metronom::Metronom()
 	}
 
 	ao.setReadCallback( (void*)readData, (void*)this );
+	ao.setPlaybackBuffer( playbackBuffer );
 	//ao.go();
 }
 
@@ -83,7 +85,7 @@ void Metronom::setLastFrame( Frame *f )
 {
 	QMutexLocker ml( &lastFrameMutex );
 	if ( lastFrame && lastFrame != f )
-		lastFrame->release();
+		playbackBuffer->releasedVideoFrame( lastFrame );
 	lastFrame = f;
 	emit currentFramePts( f->pts() );
 }
@@ -104,9 +106,9 @@ void Metronom::flush()
 	while ( (f = encodeVideoFrames.dequeue()) )
 		f->release();
 	while ( (f = videoFrames.dequeue()) )
-		f->release();
+		playbackBuffer->releasedVideoFrame( f );
 	while ( (f = audioFrames.dequeue()) )
-		f->release();
+		playbackBuffer->releasedAudioFrame( f );
 	// make sure all queued frames are shown
 	qApp->processEvents();
 }
@@ -130,12 +132,14 @@ void Metronom::play( bool b, bool backward )
 		if ( !renderMode )
 			ao.go();
 		start();
+		emit osdTimer( true );
 	}
 	else {
 		running = false;
 		ao.stop();
 		wait();
 		emit osdMessage( "", 0 );
+		emit osdTimer( false );
 	}
 }
 
@@ -405,7 +409,7 @@ void Metronom::runShow()
 				emit newFrame( f );
 			}
 			else
-				f->release();
+				playbackBuffer->releasedVideoFrame( f );
 		}
 		else
 			usleep( 1000 );

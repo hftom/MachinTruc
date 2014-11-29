@@ -7,7 +7,7 @@
 
 #include <SDL/SDL_audio.h>
 
-#include "engine/frame.h"
+#include "engine/playbackbuffer.h"
 
 typedef void (*READDATACALLBACK) ( Frame **data, double time, void *userdata );
 
@@ -18,6 +18,7 @@ class AudioOutSDL
 public:
 	AudioOutSDL();
 	~AudioOutSDL();
+	void setPlaybackBuffer( PlaybackBuffer *pb );
 	void setReadCallback( void *func, void *userdata );
 
 	void go();
@@ -32,6 +33,8 @@ private:
 
 	READDATACALLBACK readData;
 	void *readUserData;
+	
+	PlaybackBuffer *playbackBuffer;
 	
 	QMutex mutex;
 	bool running;
