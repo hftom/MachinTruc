@@ -792,13 +792,14 @@ bool Composer::renderAudioFrame( Frame *dst, int nSamples )
 	
 	// process first frame
 	sample = dst->sample->frames[i - 1];
-	Buffer *buf = processAudioFrame( sample, nSamples, bps, &profile );
 	// copy in dst
 	AudioCopy ac;
 	f = sample->frame;
 	if ( !f )
 		f = sample->transitionFrame.frame;
-	dst->setAudioFrame( f->profile.getAudioChannels(), f->profile.getAudioSampleRate(), f->profile.bytesPerChannel( &f->profile ), f->audioSamples(), f->pts() );
+	nSamples = f->audioSamples();
+	Buffer *buf = processAudioFrame( sample, nSamples, bps, &profile );
+	dst->setAudioFrame( f->profile.getAudioChannels(), f->profile.getAudioSampleRate(), f->profile.bytesPerChannel( &f->profile ), nSamples, f->pts() );
 	ac.process( f, buf, dst->getBuffer(), &profile );
 	BufferPool::globalInstance()->releaseBuffer( buf );
 
