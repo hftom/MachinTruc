@@ -621,8 +621,9 @@
     <addaction name="actionPlayPause"/>
     <addaction name="actionForward"/>
     <addaction name="actionBackward"/>
-    <addaction name="actionFaster"/>
     <addaction name="actionSlower"/>
+    <addaction name="actionFrameByFrame"/>
+    <addaction name="actionFrameByFrameBackward"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuPlayer"/>
@@ -745,7 +746,23 @@
     <string>Slower</string>
    </property>
    <property name="shortcut">
-    <string>-</string>
+    <string>M</string>
+   </property>
+  </action>
+  <action name="actionFrameByFrame">
+   <property name="text">
+    <string>Frame by frame</string>
+   </property>
+   <property name="shortcut">
+    <string>Right</string>
+   </property>
+  </action>
+  <action name="actionFrameByFrameBackward">
+   <property name="text">
+    <string>Frame by frame backward</string>
+   </property>
+   <property name="shortcut">
+    <string>Left</string>
    </property>
   </action>
  </widget>

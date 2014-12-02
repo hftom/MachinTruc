@@ -113,6 +113,8 @@ TopWindow::TopWindow()
 	connect( actionForward, SIGNAL(triggered()), this, SLOT(playForward()) );
 	connect( actionBackward, SIGNAL(triggered()), this, SLOT(playBackward()) );
 	connect( actionFaster, SIGNAL(triggered()), this, SLOT(playFaster()) );
+	connect( actionFrameByFrame, SIGNAL(triggered()), this, SLOT(seekNext()) );
+	connect( actionFrameByFrameBackward, SIGNAL(triggered()), this, SLOT(seekPrevious()) );
 	connect( actionSlower, SIGNAL(triggered()), this, SLOT(playSlower()) );
 	connect( actionProjectSettings, SIGNAL(triggered()), this, SLOT(menuProjectSettings()) );
 	connect( actionDeleteClip, SIGNAL(triggered()), timeline, SLOT(deleteClip()) );

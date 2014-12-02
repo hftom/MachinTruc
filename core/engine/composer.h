@@ -16,7 +16,7 @@ class Composer : public QThread
 {
 	Q_OBJECT
 public:
-	Composer( Sampler *samp );
+	Composer( Sampler *samp, PlaybackBuffer *pb );
 	~Composer();
 
 	void play( bool b, bool backward = false );
@@ -58,6 +58,7 @@ private:
 	ResourcePool *movitPool;
 
 	Sampler *sampler;
+	PlaybackBuffer *playbackBuffer;
 	double audioSampleDelta;
 
 signals:

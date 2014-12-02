@@ -129,7 +129,7 @@ Yuv420pToRgba yuvshader;
 
 
 
-Composer::Composer( Sampler *samp )
+Composer::Composer( Sampler *samp, PlaybackBuffer *pb )
 	: playBackward( false ),
 	running( false ),
 	oneShot( false ),
@@ -138,6 +138,7 @@ Composer::Composer( Sampler *samp )
 	composerFence( NULL ),
 	movitPool( NULL ),
 	sampler( samp ),
+	playbackBuffer( pb ),
 	audioSampleDelta( 0 )
 {
 }
@@ -333,7 +334,7 @@ int Composer::process( Frame **frame )
 		}
 		else {
 			if ( oneShot )
-				dsta->release();
+				playbackBuffer->releasedAudioFrame( dsta );
 			else {
 				dsta->setPts( sampler->currentPTSAudio() );
 				sampler->getMetronom()->audioFrames.enqueue( dsta );

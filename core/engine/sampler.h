@@ -58,6 +58,7 @@ public slots:
 	void updateFrame();
 
 private:
+	void setPlaybackBuffer( bool backward );
 	Clip* searchCurrentClip( int &i, Track *t, int clipIndex, double pts, double margin );
 	void prepareInputsBackward();
 	double sceneDuration( Scene *s );

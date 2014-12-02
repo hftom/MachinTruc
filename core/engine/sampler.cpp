@@ -10,7 +10,7 @@ Sampler::Sampler()
 	bufferedPlaybackPts( -1 )
 {	
 	metronom = new Metronom( &playbackBuffer );
-	composer = new Composer( this );
+	composer = new Composer( this, &playbackBuffer );
 	connect( composer, SIGNAL(newFrame(Frame*)), this, SIGNAL(newFrame(Frame*)) );
 	connect( composer, SIGNAL(paused(bool)), this, SIGNAL(paused(bool)) );
 	connect( metronom, SIGNAL(discardFrame(int)), composer, SLOT(discardFrame(int)) );
@@ -200,32 +200,39 @@ void Sampler::setFencesContext( QGLWidget *shared )
 
 
 
+void Sampler::setPlaybackBuffer( bool backward )
+{
+	metronom->flush();
+	Frame *last = metronom->getLastFrame();
+	double pts = currentPTS();
+	if ( last ) {
+		if ( playBackward )
+			pts = last->pts() + last->profile.getVideoFrameDuration();
+		else
+			pts = last->pts() - last->profile.getVideoFrameDuration();
+	}
+	int bufferedSamples = playbackBuffer.getBuffer( pts, backward );
+	if ( bufferedSamples > 0 ) {
+		if ( backward )
+			bufferedPlaybackPts = pts - ( bufferedSamples * currentScene->getProfile().getVideoFrameDuration() );
+		else
+			bufferedPlaybackPts = pts + ( bufferedSamples * currentScene->getProfile().getVideoFrameDuration() );
+	}
+	else
+		bufferedPlaybackPts = -1;
+	qDebug() << "bufferedPlaybackPts" << bufferedPlaybackPts;
+	seekTo( pts, backward, false );
+}
+
+
+
 bool Sampler::play( bool b, bool backward )
 {
 	if ( b ) {	
 		if ( playBackward != backward ) {
 			if ( composer->isRunning() )
 				composer->play( false );
-			metronom->flush();
-			Frame *last = metronom->getLastFrame();
-			double pts = currentPTS();
-			if ( last ) {
-				if ( playBackward )
-					pts = last->pts() + last->profile.getVideoFrameDuration();
-				else
-					pts = last->pts() - last->profile.getVideoFrameDuration();
-			}
-			int bufferedSamples = playbackBuffer.getBuffer( pts, backward );
-			if ( bufferedSamples > 0 ) {
-				if ( backward )
-					bufferedPlaybackPts = pts - ( bufferedSamples * currentScene->getProfile().getVideoFrameDuration() );
-				else
-					bufferedPlaybackPts = pts + ( bufferedSamples * currentScene->getProfile().getVideoFrameDuration() );
-			}
-			else
-				bufferedPlaybackPts = -1;
-			qDebug() << "bufferedPlaybackPts" << bufferedPlaybackPts;
-			seekTo( pts, backward, false );
+			setPlaybackBuffer( backward );
 		}
 		else if ( composer->isRunning() )
 			return false;
@@ -263,22 +270,29 @@ void Sampler::wheelSeek( int a )
 	if ( composer->isRunning() )
 		return;
 
-	if ( a == 1 && !playBackward ) {
-		bool shown = false;
-		if ( !metronom->videoFrames.isEmpty() ) {
-			do {
-				Frame *f = metronom->videoFrames.dequeue();
-				if ( f->type() == Frame::GLTEXTURE ) {
-					emit newFrame( f );
-					shown = true;
-				}
-				else
-					f->release();
-			} while ( !metronom->videoFrames.isEmpty() && !shown );
+	if ( a == 1 || a == -1 ) {
+		bool backward = a < 0;
+		if ( playBackward != backward ) {
+			setPlaybackBuffer( backward );
+			composer->seeking();
 		}
-		if ( !shown ) {
-			metronom->flush();
-			composer->runOneShot();
+		else {
+			bool shown = false;
+			if ( !metronom->videoFrames.isEmpty() ) {
+				do {
+					Frame *f = metronom->videoFrames.dequeue();
+					if ( f->type() == Frame::GLTEXTURE ) {
+						emit newFrame( f );
+						shown = true;
+					}
+					else
+						playbackBuffer.releasedVideoFrame( f );
+				} while ( !metronom->videoFrames.isEmpty() && !shown );
+			}
+			if ( !shown ) {
+				metronom->flush();
+				composer->runOneShot();
+			}
 		}
 	}
 	else {

@@ -30,7 +30,8 @@ public:
 	}
 	
 	void start() {
-		timer.start( 100 );
+		drawTime.start();
+		timer.start( 40 );
 	}
 	
 	void stop() {
@@ -45,7 +46,7 @@ public:
 		if ( !timer.isActive() )
 			return;
 		show = false;
-		timer.start( 100 );
+		drawTime.restart();
 	}
 	
 	void draw( QPainter *p, int screenWidth, int screenHeight ) {
@@ -65,6 +66,8 @@ public:
 	
 private slots:
 	void timeOut() {
+		if ( drawTime.elapsed() < 300 )
+			return;
 		startAngle += 10;
 		arcAngle += arcInc;
 		if ( startAngle >= 360 )
@@ -82,6 +85,7 @@ private:
 	QPen timerBackgroundPen;
 	QPen timerPen;
 	QTimer timer;
+	QTime drawTime;
 	bool show;
 	
 	int startAngle, arcAngle;
