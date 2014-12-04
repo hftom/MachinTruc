@@ -74,7 +74,7 @@ void TestInputFF::allFramesDecoded()
 	while ( i < VIDEOTESTNFRAMES && (f = in->getVideoFrame()) ) {
 		uint8_t *data = f->data();
 		colors[i] = data[0] + 2 * data[prof.getVideoWidth() * prof.getVideoHeight() * 5 / 4];
-		f->release();
+		delete f;
 		++i;
 	}
 	in->play( false );
@@ -98,14 +98,14 @@ void TestInputFF::seekBackOneFrameFromEnd()
 	while ( i < VIDEOTESTNFRAMES && (f = in->getVideoFrame()) ) {
 		pts = f->pts();
 		duration = f->profile.getVideoFrameDuration();
-		f->release();
+		delete f;
 		++i;
 	}
 	in->openSeekPlay( VIDEOTEST, pts - duration );
 	f = in->getVideoFrame();
 	pts = f->pts();
 	int color = f->data()[0] + 2 * f->data()[prof.getVideoWidth() * prof.getVideoHeight() * 5 / 4];
-	f->release();
+	delete f;
 	in->play( false );
 	delete in;
     QVERIFY( pts == prof.getStreamStartTime() + prof.getStreamDuration() - (prof.getVideoFrameDuration() * 2.0)
@@ -124,14 +124,14 @@ void TestInputFF::seekStart()
 	Frame *f;
 	int i = 0;
 	while ( i < VIDEOTESTNFRAMES && (f = in->getVideoFrame()) ) {
-		f->release();
+		delete f;
 		++i;
 	}
 	in->openSeekPlay( VIDEOTEST, prof.getStreamStartTime() );
 	f = in->getVideoFrame();
 	double pts = f->pts();
 	int color = f->data()[0] + 2 * f->data()[prof.getVideoWidth() * prof.getVideoHeight() * 5 / 4];
-	f->release();
+	delete f;
 	in->play( false );
 	delete in;
     QVERIFY( pts == prof.getStreamStartTime()
@@ -156,7 +156,7 @@ void TestInputFF::resampleDoubleFrameRate()
 	int i = 0;
 	while ( i < VIDEOTESTNFRAMES * 2 && (f = in->getVideoFrame()) ) {
 		colors[i] = f->data()[0] + 2 * f->data()[prof.getVideoWidth() * prof.getVideoHeight() * 5 / 4];
-		f->release();
+		delete f;
 		++i;
 	}
 	in->play( false );
@@ -190,7 +190,7 @@ void TestInputFF::resampleTripleFrameRate()
 	int i = 0;
 	while ( i < VIDEOTESTNFRAMES * 3 && (f = in->getVideoFrame()) ) {
 		colors[i] = f->data()[0] + 2 * f->data()[prof.getVideoWidth() * prof.getVideoHeight() * 5 / 4];
-		f->release();
+		delete f;
 		++i;
 	}
 	in->play( false );
@@ -223,7 +223,7 @@ void TestInputFF::resampleHalfFrameRate()
 	int i = 0;
 	while ( i < VIDEOTESTNFRAMES / 2 && (f = in->getVideoFrame()) ) {
 		colors[i] = f->data()[0] + 2 * f->data()[prof.getVideoWidth() * prof.getVideoHeight() * 5 / 4];
-		f->release();
+		delete f;
 		++i;
 	}
 	in->play( false );
@@ -293,9 +293,9 @@ void TestInputFF::memLeakTest()
 		while ( j++ < 20  ) {
 			for ( int i = 0; i < numInputs; ++i ) {
 				if ( (f = in[i]->getVideoFrame()) )
-					f->release();
+					delete f;
 				if ( (f = in[i]->getAudioFrame( samples )) )
-					f->release();
+					delete f;
 			}
 		}
 		for ( int i = 0; i < numInputs; ++i ) {
