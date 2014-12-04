@@ -8,12 +8,11 @@
 
 #include <QGLFramebufferObject>
 
-// bare minimum :
 // 1 frame in composer
 // 1 in opengl
 // 1 in metronom::runShow
 // 1 in display
-// less than 4 would freeze the app.
+// less than 2 would freeze the app.
 #define NUMOUTPUTFRAMES 4
 
 

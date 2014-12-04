@@ -27,6 +27,7 @@
 #include "vfx/glsoftborder.h"
 #include "vfx/glvignette.h"
 #include "vfx/glwater.h"
+#include "vfx/glwhitebalance.h"
 #include "vfx/gltest.h"
 
 // video compositions

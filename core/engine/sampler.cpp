@@ -617,7 +617,7 @@ void Sampler::getVideoTracks( Frame *dst )
 	Clip *c = NULL;
 	InputBase *in = NULL;
 	double margin = currentScene->getProfile().getVideoFrameDuration() / 4.0;
-	
+
 	ProjectSample *ps = playbackBuffer.getVideoSample( currentScene->currentPTS );
 	if ( ps ) {
 		dst->sample = ps;

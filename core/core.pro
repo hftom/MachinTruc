@@ -58,6 +58,7 @@ SOURCES = \
 	vfx/glborder.cpp \
 	vfx/glbackgroundcolor.cpp \
 	vfx/glorientation.cpp \
+	vfx/glwhitebalance.cpp \
 	\
 	videoout/videowidget.cpp
 
@@ -127,6 +128,7 @@ HEADERS = \
 	vfx/glborder.h \
 	vfx/glbackgroundcolor.h \
 	vfx/glorientation.h \
+	vfx/glwhitebalance.h \
 	\
 	videoout/videowidget.h
 
