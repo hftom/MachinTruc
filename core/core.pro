@@ -135,6 +135,7 @@ HEADERS = \
 TEMPLATE = lib
 
 QT += opengl
+QT += concurrent
 
 CONFIG += staticlib debug
 unix {

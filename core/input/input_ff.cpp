@@ -1,5 +1,6 @@
 // kate: tab-indent on; indent-width 4; mixedindent off; indent-mode cstyle; remove-trailing-space on;
 
+#include <QtConcurrentRun>
 
 #include "input/input_ff.h"
 
@@ -155,15 +156,30 @@ private:
 
 
 
-void InputFF::openSeekPlay( QString fn, double p, bool backward )
+void threadOpenSeekPlay( InputFF *that, QString fn, double p, bool backward )
 {
-	semaphore->acquire();
+	that->osp( fn, p, backward );
+}
+
+void InputFF::osp( QString fn, double p, bool backward )
+{
 	play( false );
 	seekAndPlayPTS = p;
 	seekAndPlayPath = fn;
 	seekAndPlay = true;
 	playBackward = backward;
 	start();
+}
+
+void InputFF::openSeekPlay( QString fn, double p, bool backward )
+{
+	// We want this function to return as soon as possible,
+	// but in some cases it may block too long in play(), particularly
+	// if we are seeking in backward mode.
+	// Thus, we delegate the work to InputFF::osp that we
+	// call from a separate thread.
+	semaphore->acquire();
+	QtConcurrent::run( threadOpenSeekPlay, this, fn, p, backward );
 }
 
 

@@ -226,6 +226,11 @@ public:
 		audioFrameList.reset( out );
 	}
 
+	bool isUsed();
+	void setUsed( bool b );
+
+	void osp( QString fn, double p, bool backward );
+
 protected:
 	void run();
 
@@ -240,6 +245,7 @@ private:
 	FFDecoder *decoder;
 
 	QSemaphore *semaphore;
+
 	bool running;
 
 	double seekAndPlayPTS;
