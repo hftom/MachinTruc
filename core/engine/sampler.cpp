@@ -253,7 +253,7 @@ void Sampler::updateFrame()
 	if ( !last )
 		return;
 	
-	if ( updateLastFrame( last ) ) {
+	if ( updateVideoFrame( last ) ) {
 		metronom->flush();
 		composer->updateFrame( last );
 	}
@@ -498,74 +498,6 @@ InputBase* Sampler::getClipInput( Clip *c, double pts )
 
 
 
-int Sampler::updateLastFrame( Frame *dst )
-{
-	int i, j;
-	Clip *c = NULL;
-	int nframes = 0;
-	double margin = currentScene->getProfile().getVideoFrameDuration() / 4.0;
-	
-	if ( !dst->sample )
-		return 0;
-
-	QMutexLocker ml( &currentScene->mutex );
-	
-	for ( j = 0; j < currentScene->tracks.count(); ++j ) {
-		c = NULL;
-		Track *t = currentScene->tracks[j];
-		if ( currentScene->update )
-			return 0;
-		
-		// find the clip at dst->pts
-		for ( i = qMax(t->currentClipIndex() - 1, 0) ; i < t->clipCount(); ++i ) {
-			c = t->clipAt( i );
-			if ( (c->position() - margin) <= dst->pts() ) {
-				if ( (c->position() + c->length() - margin) > dst->pts() ) {
-					// we have one
-					break;
-				}
-				else
-					c = NULL;
-			}
-			else {
-				c = NULL;
-				break;
-			}
-		}
-		if ( dst->sample->frames.count() - 1 < j ) {
-			return 0;
-		}
-		if ( c && c->getProfile().hasVideo() ) {
-			FrameSample *fs = dst->sample->frames.at( j );
-			if ( !fs->frame )
-				return 0;
-			++nframes;
-			fs->clear( false );
-			fs->videoFilters = c->getSource()->videoFilters.copy();
-			fs->videoFilters.append( c->videoFilters.copy() );
-			// Check for transition
-			if ( i < t->clipCount() - 1 ) {
-				c = t->clipAt( i + 1 );
-				if ( (c->position() - margin) <= dst->pts() && (c->position() + c->length() - margin) > dst->pts() ) {
-					if ( !fs->transitionFrame.frame )
-						return 0;
-					fs->transitionFrame.videoFilters = c->getSource()->videoFilters.copy();
-					fs->transitionFrame.videoFilters.append( c->videoFilters.copy() );
-					Transition *trans;
-					if ( (trans = c->getTransition()) ) {
-						if ( c->position() + trans->length() + margin > dst->pts() )
-							fs->transitionFrame.videoTransitionFilter = trans->getVideoFilter();
-					}
-				}
-			}
-		}
-	}
-
-	return nframes;
-}
-
-
-
 Clip* Sampler::searchCurrentClip( int &i, Track *t, int clipIndex, double pts, double margin )
 {
 	Clip *c = NULL;
@@ -621,6 +553,7 @@ void Sampler::getVideoTracks( Frame *dst )
 	ProjectSample *ps = playbackBuffer.getVideoSample( currentScene->currentPTS );
 	if ( ps ) {
 		dst->sample = ps;
+		updateVideoFrame( dst );
 		return;
 	}
 
@@ -692,6 +625,72 @@ void Sampler::getVideoTracks( Frame *dst )
 
 
 
+int Sampler::updateVideoFrame( Frame *dst )
+{
+	int i, j;
+	Clip *c = NULL;
+	int nframes = 0;
+	double margin = currentScene->getProfile().getVideoFrameDuration() / 4.0;
+	
+	if ( !dst->sample )
+		return 0;
+
+	QMutexLocker ml( &currentScene->mutex );
+	
+	for ( j = 0; j < currentScene->tracks.count(); ++j ) {
+		c = NULL;
+		Track *t = currentScene->tracks[j];
+		if ( currentScene->update )
+			return 0;
+		
+		// find the clip at dst->pts
+		c = searchCurrentClip( i, t, t->currentClipIndex(), dst->pts(), margin );
+		if ( dst->sample->frames.count() - 1 < j ) {
+			return 0;
+		}
+		if ( c && c->getProfile().hasVideo() ) {
+			FrameSample *fs = dst->sample->frames.at( j );
+			if ( !fs->frame )
+				return 0;
+			++nframes;
+			fs->clear( false );
+			fs->videoFilters = c->getSource()->videoFilters.copy();
+			fs->videoFilters.append( c->videoFilters.copy() );
+			// Check for transition
+			if ( playBackward ? i > 0 : i < t->clipCount() - 1 ) {
+				Clip *ct = playBackward ? t->clipAt( i - 1 ) : t->clipAt( i + 1 );
+				if ( (ct->position() - margin) <= dst->pts() && (ct->position() + ct->length() - margin) > dst->pts() ) {
+					if ( !fs->transitionFrame.frame )
+						return 0;
+					if ( !playBackward ) {
+						fs->transitionFrame.videoFilters = ct->getSource()->videoFilters.copy();
+						fs->transitionFrame.videoFilters.append( ct->videoFilters.copy() );
+						Transition *trans;
+						if ( (trans = ct->getTransition()) ) {
+							if ( ct->position() + trans->length() + margin > dst->pts() )
+								fs->transitionFrame.videoTransitionFilter = trans->getVideoFilter();
+						}
+					}
+					else {
+						fs->transitionFrame.videoFilters = fs->videoFilters;
+						fs->videoFilters = ct->getSource()->videoFilters.copy();
+						fs->videoFilters.append( ct->videoFilters.copy() );
+						Transition *trans;
+						if ( (trans = c->getTransition()) ) {
+							if ( c->position() + trans->length() + margin > dst->pts() )
+								fs->transitionFrame.videoTransitionFilter = trans->getVideoFilter();
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return nframes;
+}
+
+
+
 void Sampler::getAudioTracks( Frame *dst, int nSamples )
 {
 	int i, j;
@@ -703,6 +702,7 @@ void Sampler::getAudioTracks( Frame *dst, int nSamples )
 	ProjectSample *ps = playbackBuffer.getAudioSample( currentScene->currentPTSAudio );
 	if ( ps ) {
 		dst->sample = ps;
+		updateAudioFrame( dst );
 		return;
 	}
 
@@ -764,6 +764,60 @@ void Sampler::getAudioTracks( Frame *dst, int nSamples )
 	}
 	
 	currentScene->update = false;
+}
+
+
+
+void Sampler::updateAudioFrame( Frame *dst )
+{
+	int i, j;
+	Clip *c = NULL;
+	double margin = currentScene->getProfile().getVideoFrameDuration() / 4.0;
+	
+	if ( !dst->sample )
+		return;
+
+	QMutexLocker ml( &currentScene->mutex );
+	
+	for ( j = 0; j < currentScene->tracks.count(); ++j ) {
+		c = NULL;
+		Track *t = currentScene->tracks[j];
+		if ( currentScene->update )
+			return;
+		// find the clip at currentScene->currentPTSAudio
+		c = searchCurrentClip( i, t, t->currentClipIndexAudio(), dst->pts(), margin );
+		if ( dst->sample->frames.count() - 1 < j ) {
+			return;
+		}
+		if ( c && c->getProfile().hasAudio() ) {
+			FrameSample *fs = dst->sample->frames.at( j );
+			if ( !fs->frame )
+				return;
+			fs->clear( false );
+			fs->audioFilters = c->getSource()->audioFilters.copy();
+			fs->audioFilters.append( c->audioFilters.copy() );
+			// Check for transition
+			if ( playBackward ? i > 0 : i < t->clipCount() - 1 ) {
+				Clip *ct = playBackward ? t->clipAt( i - 1 ) : t->clipAt( i + 1 );
+				Transition *trans = playBackward ? c->getTransition() : ct->getTransition();
+				if ( trans && (ct->position() - margin) <= dst->pts() && (ct->position() + ct->length() - margin) > dst->pts() ) {
+					if ( !playBackward ) {
+						fs->transitionFrame.audioFilters = ct->getSource()->audioFilters.copy();
+						fs->transitionFrame.audioFilters.append( ct->audioFilters.copy() );
+						if ( ct->position() + trans->length() + margin > dst->pts() )
+							fs->transitionFrame.audioTransitionFilter = trans->getAudioFilter();
+					}
+					else {
+						fs->transitionFrame.audioFilters = fs->audioFilters;
+						fs->audioFilters = ct->getSource()->audioFilters.copy();
+						fs->audioFilters.append( ct->audioFilters.copy() );
+						if ( c->position() + trans->length() + margin > dst->pts() )
+							fs->transitionFrame.audioTransitionFilter = trans->getAudioFilter();
+					}
+				}
+			}
+		}
+	}
 }
 
 

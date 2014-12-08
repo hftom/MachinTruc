@@ -62,7 +62,8 @@ private:
 	Clip* searchCurrentClip( int &i, Track *t, int clipIndex, double pts, double margin );
 	void prepareInputsBackward();
 	double sceneDuration( Scene *s );
-	int updateLastFrame( Frame *dst );
+	int updateVideoFrame( Frame *dst );
+	void updateAudioFrame( Frame *dst );
 	InputBase* getInput( QString fn, InputBase::InputType type );
 	InputBase* getClipInput( Clip *c, double pts );
 
