@@ -498,7 +498,7 @@ bool FFDecoder::seekTo( double p, Frame *f, AudioFrame *af )
 					hdur = (f->profile.getVideoFrameDuration() / 2.);
 					if ( cur == lastpts )
 						++loop;
-					//printf("frame PTS=%f, wanted PTS=%f, hdur=%f, delta=%f\n", cur, p, hdur, delta );
+					printf("frame PTS=%f, wanted PTS=%f, hdur=%f, delta=%f\n", cur, p, hdur, delta );
 				} while ( (cur < p) && (delta > hdur) && (loop < maxloop) );
 
 				if ( (cur > p) && ( delta > hdur && !before ) )
@@ -752,7 +752,7 @@ bool FFDecoder::decodeAudio( AudioFrame *f, int sync, double *pts )
 				}
 
 				// We have to convert in order to get the exact number of out samples
-				// and swr_convert writes directly into the ringbuffer.
+				// but we want swr_convert to write directly into the AudioFrame buffer.
 				// So, if all samples have to be skipped, don't call f->writeDone,
 				// thus the write pointer isn't increased and next time we will overwrite this chunk.
 				uint8_t* dst = f->write( writtenSamples, outSamples );
@@ -772,7 +772,7 @@ bool FFDecoder::decodeAudio( AudioFrame *f, int sync, double *pts )
 						return false;
 					}
 					else if ( ns < outSamples ) {
-						// Tell the ringbuffer that "ns" samples are skipped
+						// Tell AudioFrame that "ns" samples are skipped
 						f->writeDone( *pts, writtenSamples, ns );
 						if ( (currentAudioPacket.packet->size - len) <= 0 )
 							freeCurrentAudioPacket();
