@@ -29,15 +29,18 @@ FilterCollection::FilterCollection()
 	videoFilters.append( FilterEntry( "GLVignette", QObject::tr("Vignette"), &Maker<GLVignette>::make ) );
 	videoFilters.append( FilterEntry( "GLDiffusion", QObject::tr("Diffusion"), &Maker<GLDiffusion>::make ) );
 	videoFilters.append( FilterEntry( "GLGlow", QObject::tr("Glow"), &Maker<GLGlow>::make ) );
+	videoFilters.append( FilterEntry( "GLDefish", QObject::tr("Defish"), &Maker<GLDefish>::make ) );
 	videoFilters.append( FilterEntry( "GLWater", QObject::tr("Water"), &Maker<GLWater>::make ) );
 	videoFilters.append( FilterEntry( "GLEdge", QObject::tr("Edge"), &Maker<GLEdge>::make ) );
 	
 	// source video filters, a subset of videoFilters
 	sourceVideoFilters.append( FilterEntry( "GLSaturation", QObject::tr("Saturation"), &Maker<GLSaturation>::make ) );
+	sourceVideoFilters.append( FilterEntry( "GLWhiteBalance", QObject::tr("White balance"), &Maker<GLWhiteBalance>::make ) );
 	sourceVideoFilters.append( FilterEntry( "GLLiftGammaGain", QObject::tr("Lift Gamma Gain"), &Maker<GLLiftGammaGain>::make ) );
 	sourceVideoFilters.append( FilterEntry( "GLDeconvolutionSharpen", QObject::tr("Sharpen"), &Maker<GLDeconvolutionSharpen>::make ) );
 	sourceVideoFilters.append( FilterEntry( "GLSharpen", QObject::tr("Sharpen (fast)"), &Maker<GLSharpen>::make ) );
 	sourceVideoFilters.append( FilterEntry( "GLCrop", QObject::tr("Crop"), &Maker<GLCrop>::make ) );
+	sourceVideoFilters.append( FilterEntry( "GLDefish", QObject::tr("Defish"), &Maker<GLDefish>::make ) );
 	
 	// video transitions
 	videoTransitions.append( FilterEntry( "GLMix", QObject::tr("Crossfade"), &Maker<GLMix>::make ) );

@@ -15,6 +15,7 @@
 #include "vfx/glcut.h"
 #include "vfx/gldeconvolutionsharpen.h"
 #include "vfx/gldiffusion.h"
+#include "vfx/gldefish.h"
 #include "vfx/gldropshadow.h"
 #include "vfx/gledge.h"
 #include "vfx/glglow.h"
