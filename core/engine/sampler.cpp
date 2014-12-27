@@ -477,9 +477,18 @@ InputBase* Sampler::getInput( QString fn, InputBase::InputType type )
 InputBase* Sampler::getClipInput( Clip *c, double pts )
 {
 	InputBase *in = getInput( c->getSource()->getFileName(), c->getSource()->getType() );
-	double pos = c->start();
-	if ( c->position() < pts )
-		pos += pts - c->position();
+	double pos;
+	if ( playBackward ) {
+		if ( pts < c->position() + c->length() )
+			pos = c->start() + pts - c->position();
+		else
+			pos = c->start() + c->length() - currentScene->getProfile().getVideoFrameDuration();
+	}
+	else {
+		pos = c->start();
+		if ( c->position() < pts )
+			pos += pts - c->position();
+	}
 	printf("%f %s cpos:%f, cstart:%f, seek:%f\n", pts, c->sourcePath().toLatin1().data(), c->position(), c->start(), pos);
 	Profile p = c->getProfile();
 	Profile cur = currentScene->getProfile();
@@ -553,6 +562,7 @@ void Sampler::getVideoTracks( Frame *dst )
 	ProjectSample *ps = playbackBuffer.getVideoSample( currentScene->currentPTS );
 	if ( ps ) {
 		dst->sample = ps;
+		dst->setPts( currentScene->currentPTS );
 		updateVideoFrame( dst );
 		return;
 	}
@@ -702,6 +712,7 @@ void Sampler::getAudioTracks( Frame *dst, int nSamples )
 	ProjectSample *ps = playbackBuffer.getAudioSample( currentScene->currentPTSAudio );
 	if ( ps ) {
 		dst->sample = ps;
+		dst->setPts( currentScene->currentPTSAudio );
 		updateAudioFrame( dst );
 		return;
 	}

@@ -473,12 +473,12 @@ bool FFDecoder::seekTo( double p, Frame *f, AudioFrame *af )
 			if ( cur == lastpts )
 				++loop;
 
-			// If p is near the end, we can get funky negative pts with some formats;
+			/*// If p is near the end, we can get funky negative pts with some formats;
 			// if so, seek back.
 			if ( p >= 0 && cur < 0 ) {
 				timestamp -= seekinc * hdur;
 			}
-			else if ( cur > p ) {
+			else */if ( cur > p ) {
 				if ( delta > hdur && !before )
 					timestamp -= (timestampinc++ * (cur - p));
 				else if ( haveAudio && !decodeAudio( af, DECODEAUDIOSYNC, &cur ) )
@@ -516,7 +516,6 @@ bool FFDecoder::seekTo( double p, Frame *f, AudioFrame *af )
 			lastpts = cur;
 		}
 		p = f->pts();
-		//resample( f );
 	}
 
 	return true;
