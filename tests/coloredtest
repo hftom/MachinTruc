@@ -3,25 +3,25 @@
 green=$(tput setaf 2)
 red=$(tput setaf 1)
 normal=$(tput sgr0)
-format="%s\n"
+printer="echo"
+format=""
 sep="-----------------------------------------------------------------"
 
 old_IFS=$IFS	# sauvegarde du séparateur de champ  
 IFS=$'\n'		# nouveau séparateur de champ, le caractère fin de ligne  
 
-for line in $(cat)
-do
+while read line; do
 	if [[ "$line" == *PASS* ]]; then
-		printf $format "${green}$sep";
-		printf $format "$line";
-		printf $format "$sep${normal}";
+		$printer $format "${green}$sep";
+		$printer $format "$line";
+		$printer $format "$sep${normal}";
 	elif [[ "$line" == *FAIL* ]]; then
-		printf $format "${red}$sep";
-		printf $format "$line";
-		printf $format "$sep${normal}";
+		$printer $format "${red}$sep";
+		$printer $format "$line";
+		$printer $format "$sep${normal}";
 	else
-		printf $format $line;
+		$printer $format $line;
 	fi
-done
+done </dev/stdin
 
 IFS=$old_IFS	# rétablissement du séparateur de champ par défaut
