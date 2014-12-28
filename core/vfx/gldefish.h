@@ -10,12 +10,12 @@
 
 
 static const char *MyDefishEffect_shader=
+"uniform float PREFIX(radius);\n"
 "uniform vec2 PREFIX(size);\n"
 "uniform vec2 PREFIX(half_size);\n"
 "vec4 FUNCNAME(vec2 tc) {\n"
-"	float cr = length( PREFIX(size) ) / PREFIX(factor);\n"
 "	vec2 new = tc * PREFIX(size) - PREFIX(half_size);\n"
-"	float r = length( new ) / cr;\n"
+"	float r = length( new ) / PREFIX(radius);\n"
 "	float theta = 1.0;\n"
 "	if  ( r != 0.0 )\n"
 "		theta = atan( r ) / r;\n"
@@ -30,10 +30,10 @@ public:
 	MyDefishEffect()
 		: iwidth( 1 ),
 		iheight( 1 ),
-		factor( 2.0 ),
+		amount( 2.0 ),
 		scale( 1.0 )
 	{
-		register_float("factor", &factor);
+		register_float("amount", &amount);
 		register_float("scale", &scale);
 	}
 	
@@ -47,6 +47,7 @@ public:
 	
 	virtual void set_gl_state( GLuint glsl_program_num, const std::string &prefix, unsigned *sampler_num ) {
 		Effect::set_gl_state( glsl_program_num, prefix, sampler_num );
+		set_uniform_float( glsl_program_num, prefix, "radius", sqrt( iwidth * iwidth + iheight * iheight ) / amount );
 		float size[2] = { iwidth, iheight };
 		set_uniform_vec2( glsl_program_num, prefix, "size", size );
 		float half_size[2] = { iwidth / 2.0f, iheight / 2.0f };
@@ -55,7 +56,7 @@ public:
 
 private:
 	float iwidth, iheight;
-	float factor, scale;
+	float amount, scale;
 };
 
 
@@ -70,7 +71,7 @@ public:
 	QList<Effect*> getMovitEffects();
 	
 private:
-	Parameter *factor;
+	Parameter *amount;
 	Parameter *scale;
 };
 

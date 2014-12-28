@@ -1,10 +1,11 @@
+#include "glborder.h"
 #include "gldefish.h"
 
 
 
 GLDefish::GLDefish( QString id, QString name ) : GLFilter( id, name )
 {
-	factor = addParameter( "factor", tr("Factor:"), Parameter::PDOUBLE, 2.0, 0.0, 10.0, true );
+	amount = addParameter( "amount", tr("Amount:"), Parameter::PDOUBLE, 2.0, 0.0, 10.0, true );
 	scale = addParameter( "scale", tr("Scale:"), Parameter::PDOUBLE, 1.0, 1.0, 10.0, true );
 }
 
@@ -13,8 +14,8 @@ GLDefish::GLDefish( QString id, QString name ) : GLFilter( id, name )
 bool GLDefish::process( const QList<Effect*> &el, Frame *src, Profile *p )
 {
 	Q_UNUSED( p );
-	return el[0]->set_float( "factor", getParamValue( factor, src->pts() ).toDouble() )
-		&& el[0]->set_float( "scale", getParamValue( scale, src->pts() ).toDouble() );
+	return el[1]->set_float( "amount", getParamValue( amount, src->pts() ).toDouble() )
+		&& el[1]->set_float( "scale", getParamValue( scale, src->pts() ).toDouble() );
 }
 
 
@@ -22,6 +23,11 @@ bool GLDefish::process( const QList<Effect*> &el, Frame *src, Profile *p )
 QList<Effect*> GLDefish::getMovitEffects()
 {
 	QList<Effect*> list;
+	Effect *border = new MyBorderEffect();
+	RGBATuple col = RGBATuple( 0, 0, 0, 0 );
+	bool ok = border->set_vec4( "color", (float*)&col );
+	Q_UNUSED( ok );
+	list.append( border );
 	list.append( new MyDefishEffect() );
 	return list;
 }
