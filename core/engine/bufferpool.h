@@ -9,6 +9,7 @@
 
 
 
+class MPool;
 class BufferPool;
 
 class Buffer
@@ -20,37 +21,48 @@ public:
 	
 private:
 	friend class BufferPool;
-	explicit Buffer( int size ) {
-		bufSize = size;
+	friend class MPool;
+	explicit Buffer( int size, int index ) : bufSize(size), poolIndex(index), refCount(1) {
 		buf = (uint8_t*)malloc( bufSize );
-		refCount = 1;
 	}
 	~Buffer() {
 		free( buf );
-	}
-	int getBufferSize() {
-		return bufSize;
-	}
-	void resizeBuffer( int size ) {
-		if ( size <= 0 )
-			return;
-		bufSize = size;
-		buf = (uint8_t*)realloc( buf, bufSize );
-		if ( !buf )
-			qDebug() << "FATAL! Realloc failed. Expect a crash very soon." << size;
 	}
 	void use() {
 		++refCount;
 	}
 	bool release() {
-		releasedTime = QTime::currentTime();
 		return --refCount == 0;
 	}
 
 	int bufSize;
+	int poolIndex;
 	uint8_t *buf;
 	int refCount;
-	QTime releasedTime;
+};
+
+
+
+class MPool
+{
+public:
+	MPool( int size, int index ) : bufsize(size), poolIndex(index), totalBuffers(0) {
+	}
+	Buffer *getBuffer() {
+		if ( bufferList.count() ) {
+			Buffer *b = bufferList.takeLast();
+			b->use();
+			return b;
+		}
+		
+		++totalBuffers;
+		return new Buffer( bufsize, poolIndex );
+	}
+		
+	int bufsize;
+	int poolIndex;
+	QList<Buffer*> bufferList;
+	int totalBuffers;
 };
 
 
@@ -62,17 +74,15 @@ public:
 	~BufferPool();
 	
 	Buffer* getBuffer( int size );
-	void enlargeBuffer( Buffer *buf, int size );
+	Buffer* enlargeBuffer( Buffer *buf, int size );
 	void releaseBuffer( Buffer *buf );
 	void useBuffer( Buffer *buf );
 	
 	static BufferPool* globalInstance();
 	
 private:
-	QList<Buffer*> freeBuffers;
+	QList<MPool*> freeBuffers;
 	QMutex mutex;
-	quint64 totalBytes, totalBuffers;
-	QTime time;
 };
 
 #endif // BUFFERPOOL_H

@@ -44,7 +44,7 @@ public:
 		}
 		else if ( bufSize < size ) {
 			bufSize = size;
-			BufferPool::globalInstance()->enlargeBuffer( buffer, bufSize );
+			buffer = BufferPool::globalInstance()->enlargeBuffer( buffer, bufSize );
 		}
 
 		return buffer->data() + (writtenSamples * bytesPerSample);

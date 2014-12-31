@@ -309,7 +309,10 @@ void TestInputFF::memLeakTest()
 	for ( int i = 0; i < path.count(); ++i )
 		delete prof[i];*/
 	
-	/*InputFF *in = new InputFF();
+	/*QTime time;
+	time.start();
+	
+	InputFF *in = new InputFF();
 	InputFF *in1 = new InputFF();
 	InputFF *in2 = new InputFF();
 	Profile prof;
@@ -342,7 +345,7 @@ void TestInputFF::memLeakTest()
 			delete f;
 		++loop;
 	}
-	qDebug() << "LOOP" << loop;
+	qDebug() << "LOOP" << loop << "elapsed:" << time.elapsed();
 	in->play( false );
 	delete in;
 	in1->play( false );
