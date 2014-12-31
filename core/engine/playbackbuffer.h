@@ -16,6 +16,14 @@ public:
 		sample = f->sample;
 		f->sample = NULL;
 		f->release();
+		// release all PBO
+		for ( int i = 0; i < sample->frames.count(); ++i ) {
+			FrameSample *fs = sample->frames[i];
+			if ( fs->frame )
+				fs->frame->setPBO( NULL );
+			if ( fs->transitionFrame.frame )
+				fs->transitionFrame.frame->setPBO( NULL );
+		}
 	}
 	~BufferedSample() {
 		if ( sample )
