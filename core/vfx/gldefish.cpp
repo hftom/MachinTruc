@@ -5,7 +5,7 @@
 
 GLDefish::GLDefish( QString id, QString name ) : GLFilter( id, name )
 {
-	amount = addParameter( "amount", tr("Amount:"), Parameter::PDOUBLE, 2.0, 0.0, 10.0, true );
+	amount = addParameter( "amount", tr("Amount:"), Parameter::PDOUBLE, 2.0, 0.01, 10.0, true );
 	scale = addParameter( "scale", tr("Scale:"), Parameter::PDOUBLE, 1.0, 1.0, 10.0, true );
 }
 
