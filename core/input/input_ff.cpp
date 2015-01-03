@@ -15,6 +15,7 @@ InputFF::InputFF() : InputBase(),
 	seekAndPlayPTS( 0 ),
 	seekAndPlay( false ),
 	backwardAudioSamples( 0 ),
+	samplesInBackwardAudioFrames(0),
 	playBackward( false ),
 	backwardPts( 0 ),
 	backwardStartPts( 0 ),
@@ -51,6 +52,7 @@ void InputFF::flush()
 	eofVideo = eofAudio = false;
 	backwardEof = false;
 	backwardAudioSamples = 0;
+	samplesInBackwardAudioFrames = 0;
 }
 
 
@@ -95,6 +97,7 @@ double InputFF::seekTo( double p )
 		if ( af->buffer ) {
 			backwardAudioFrames.append( af );
 			backwardAudioSamples += af->available;
+			samplesInBackwardAudioFrames += af->available;
 		}
 		else
 			delete af;
@@ -330,6 +333,8 @@ void InputFF::runBackward()
 					delete f;
 					endVideoSequence = true;
 				}
+				if ( backwardVideoFrames.count() > inProfile.getVideoFrameRate() * 2 ) // broken stream ?
+					endVideoSequence = true;
 				doWait = 0;
 			}
 		}
@@ -340,7 +345,11 @@ void InputFF::runBackward()
 			if ( yes ) {
 				AudioFrame *af = new AudioFrame( audioFrameList.getBytesPerSample(), outProfile.getAudioSampleRate() );
 				decoder->decodeAudio( af );
-				if ( af->available ) {
+				if ( samplesInBackwardAudioFrames > outProfile.getAudioSampleRate() * 2 ) { // broken stream ?
+					delete af;
+					endAudioSequence = true;
+				}
+				else if ( af->available ) {
 					double dpts = (double)(backwardAudioSamples + af->available) * MICROSECOND / (double)outProfile.getAudioSampleRate();
 					if ( backwardAudioFrames.count() && backwardAudioFrames.first()->bufPts + dpts >= backwardStartPts ) {
 						af->available -= ((backwardAudioFrames.first()->bufPts + dpts - backwardStartPts) * (double)outProfile.getAudioSampleRate() / MICROSECOND) - 0.5;
@@ -348,12 +357,14 @@ void InputFF::runBackward()
 							delete af;
 						else {
 							backwardAudioSamples += af->available;
+							samplesInBackwardAudioFrames += af->available;
 							backwardAudioFrames.append( af );
 						}
 						endAudioSequence = true;
 					}
 					else {
 						backwardAudioSamples += af->available;
+						samplesInBackwardAudioFrames += af->available;
 						backwardAudioFrames.append( af );
 					}
 				}
@@ -429,6 +440,7 @@ void InputFF::runBackward()
 
 				audioFrameList.append( af );
 			}
+			samplesInBackwardAudioFrames = 0;
 
 			if ( backwardEof ) {
 				eofVideo = eofAudio = true;
@@ -446,6 +458,7 @@ void InputFF::runBackward()
 				bool ok = decoder->seekTo( target, f, af );
 				if ( af->buffer ) {
 					backwardAudioSamples += af->available;
+					samplesInBackwardAudioFrames += af->available;
 					if ( !decoder->haveVideo && af->bufPts == 0 )
 						af->bufPts = target;
 					backwardAudioFrames.append( af );

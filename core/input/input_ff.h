@@ -253,6 +253,7 @@ private:
 	MQueue<Frame*> reorderedVideoFrames;
 	QList<AudioFrame*> backwardAudioFrames;
 	int backwardAudioSamples;
+	int samplesInBackwardAudioFrames;
 	bool playBackward;
 	double backwardPts, backwardStartPts;
 	bool backwardEof;
