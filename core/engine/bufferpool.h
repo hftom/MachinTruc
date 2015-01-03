@@ -2,6 +2,7 @@
 #define BUFFERPOOL_H
 
 #include <stdint.h>
+#include <math.h>
 
 #include <QList>
 #include <QMutex>
@@ -9,7 +10,20 @@
 
 
 
-class MPool;
+/* We now allocate chunks that are stored in pools.
+ * A Buffer then gets assigned a set of contiguous chunk's slices.
+ * Each chunk is made of 128 slices, and we have 3 pools of
+ * different slice size : 10K, 100K and 1M.
+ * This reduces memory fragmentation better than malloc/free
+ * while allowing a better reusability than non sliced pools.
+ * We haven't observed any significant slowdown, 
+ * even on an old Celeron M 430 laptop.
+ * 
+ * At that time, unused chunks are not freed.
+ * */
+
+
+class MemChunk;
 class BufferPool;
 
 class Buffer
@@ -21,12 +35,15 @@ public:
 	
 private:
 	friend class BufferPool;
-	friend class MPool;
-	explicit Buffer( int size, int index ) : bufSize(size), poolIndex(index), refCount(1) {
-		buf = (uint8_t*)malloc( bufSize );
+	friend class MemChunk;
+	explicit Buffer( uint8_t *b, int cpos, int ns, MemChunk *mchunk )
+		: posInChunk(cpos),
+		numSlices( ns ),
+		buf(b),
+		chunk(mchunk),
+		refCount(1) {
 	}
 	~Buffer() {
-		free( buf );
 	}
 	void use() {
 		++refCount;
@@ -35,34 +52,59 @@ private:
 		return --refCount == 0;
 	}
 
-	int bufSize;
-	int poolIndex;
+	int posInChunk;
+	int numSlices;
 	uint8_t *buf;
+	MemChunk *chunk;
 	int refCount;
 };
 
 
 
-class MPool
+class MemChunk
 {
 public:
-	MPool( int size, int index ) : bufsize(size), poolIndex(index), totalBuffers(0) {
+	MemChunk( int ssize ) : sliceSize(ssize), freeSlices(128) {
+		buf = (uint8_t*)malloc( 128 * sliceSize );
+		memset( used, 0, sizeof(bool) * 128 );
 	}
-	Buffer *getBuffer() {
-		if ( bufferList.count() ) {
-			Buffer *b = bufferList.takeLast();
-			b->use();
-			return b;
+	Buffer *getBuffer( int size ) {
+		int i, j;		
+		int n = ceil( (float)size / (float)sliceSize );
+		if ( n > freeSlices )
+			return NULL;
+
+		for ( i = 0; i < 128; ++i ) {
+			if ( !used[i] && i < 128 - n ) {
+				bool u = false;
+				for ( j = 0; j < n; ++j ) {
+					if ( used[i + j] ) {
+						u = true;
+						break;
+					}
+				}
+				if ( !u ) {
+					for ( j = 0; j < n; ++j ) {
+						used[i + j] = true;
+						--freeSlices;
+					}
+					return new Buffer( buf + (i * sliceSize), i, n, this );
+				}
+			}
 		}
-		
-		++totalBuffers;
-		return new Buffer( bufsize, poolIndex );
+		return NULL;
 	}
-		
-	int bufsize;
-	int poolIndex;
-	QList<Buffer*> bufferList;
-	int totalBuffers;
+	void release( Buffer *buffer ) {
+		for ( int i = 0; i < buffer->numSlices; ++i ) {
+			used[buffer->posInChunk + i] = false;
+			++freeSlices;
+		}
+	}
+	
+	uint8_t *buf;
+	int sliceSize;
+	int freeSlices;
+	bool used[128];
 };
 
 
@@ -80,8 +122,8 @@ public:
 	
 	static BufferPool* globalInstance();
 	
-private:
-	QList<MPool*> freeBuffers;
+//private:
+	QList<MemChunk*>* chunkList[3];
 	QMutex mutex;
 };
 

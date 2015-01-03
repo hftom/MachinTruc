@@ -4,8 +4,11 @@
 
 #include "bufferpool.h"
 
-#define MINSHIFT 12
-#define MAXSHIFT 29
+#define SMALLSLICE 10240
+#define SMALLMAX 51200
+#define MEDIUMSLICE 102400
+#define MEDIUMMAX 512000
+#define BIGSLICE 1048576
 
 
 
@@ -15,8 +18,8 @@ static BufferPool globalBufferPool;
 
 BufferPool::BufferPool()
 {
-	/*for ( int i = MINSHIFT; i < MAXSHIFT; ++i )
-		freeBuffers.append( new MPool( 1 << i, i - MINSHIFT ) );*/
+	for ( int i = 0; i < 3; ++i )
+		chunkList[i] = new QList<MemChunk*>;
 }
 
 
@@ -31,13 +34,25 @@ Buffer* BufferPool::getBuffer( int size )
 {
 	QMutexLocker ml( &mutex );
 	
-	return new Buffer( size, 0 );
+	int list = 0, s = SMALLSLICE;
+	if ( size >= MEDIUMMAX ) {
+		list = 2;
+		s = BIGSLICE;
+	}
+	else if ( size >= SMALLMAX ) {
+		list = 1;
+		s = MEDIUMSLICE;
+	}
 	
-	/*int index = MINSHIFT;
-	while ( (1 << index) < size )
-		++index;
-
-	return freeBuffers[index - MINSHIFT]->getBuffer();*/
+	for ( int i = 0; i < chunkList[list]->count(); ++i ) {
+		Buffer *b = chunkList[list]->at(i)->getBuffer( size );
+		if ( b )
+			return b;
+	}
+	
+	MemChunk *m = new MemChunk( s );
+	chunkList[list]->append( m );
+	return m->getBuffer( size );
 }
 
 
@@ -46,25 +61,34 @@ Buffer* BufferPool::enlargeBuffer( Buffer *buf, int size )
 {
 	QMutexLocker ml( &mutex );
 	
-	Buffer *b = new Buffer( size, 0 );
-	memcpy( b->data(), buf->data(), buf->bufSize );
-	if ( buf->release() )
-		delete buf;
-	return b;
-	
-	/*int index = MINSHIFT;
-	while ( (1 << index) < size )
-		++index;
-
-	if ( buf->poolIndex != index - MINSHIFT ) {
-		Buffer *b = freeBuffers[index - MINSHIFT]->getBuffer();
-		memcpy( b->data(), buf->data(), buf->bufSize );
-		if ( buf->release() )
-			freeBuffers[buf->poolIndex]->bufferList.append( buf );
-		return b;
+	int list = 0, s = SMALLSLICE;
+	if ( size >= MEDIUMMAX ) {
+		list = 2;
+		s = BIGSLICE;
+	}
+	else if ( size >= SMALLMAX ) {
+		list = 1;
+		s = MEDIUMSLICE;
 	}
 	
-	return buf;*/
+	Buffer *b = NULL;
+	for ( int i = 0; i < chunkList[list]->count(); ++i ) {
+		b = chunkList[list]->at(i)->getBuffer( size );
+		if ( b )
+			break;
+	}
+	if ( !b ) {
+		MemChunk *m = new MemChunk( s );
+		chunkList[list]->append( m );
+		b = m->getBuffer( size );
+	}
+
+	memcpy( b->data(), buf->data(), buf->numSlices * buf->chunk->sliceSize );
+	if ( buf->release() ) {
+		buf->chunk->release( buf );
+		delete buf;
+	}
+	return b;
 }
 
 
@@ -73,11 +97,10 @@ void BufferPool::releaseBuffer( Buffer *buf )
 {
 	QMutexLocker ml( &mutex );
 
-	if ( buf->release() )
+	if ( buf->release() ) {
+		buf->chunk->release( buf );
 		delete buf;
-	
-	/*if ( buf->release() )
-		freeBuffers[buf->poolIndex]->bufferList.append( buf );*/
+	}
 }
 
 
