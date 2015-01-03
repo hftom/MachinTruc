@@ -1,5 +1,6 @@
 #include <QMessageBox>
 #include <QFileDialog>
+#include <QShortcut>
 
 #include "gui/topwindow.h"
 #include "renderingdialog.h"
@@ -122,7 +123,18 @@ TopWindow::TopWindow()
 	connect( actionSaveImage, SIGNAL(triggered()), vw, SLOT(shot()) );
 	connect( actionRenderToFile, SIGNAL(triggered()), this, SLOT(renderDialog()) );
 	
+	new QShortcut( QKeySequence( "Ctrl+M" ), this, SLOT(showMemoryInfo()) );
+	
 	timeline->setScene( sampler->getCurrentScene() );
+}
+
+
+
+void TopWindow::showMemoryInfo()
+{
+	MemDialog *d = new MemDialog( this );
+	d->setModal( false );
+	d->show();
 }
 
 

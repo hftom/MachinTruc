@@ -20,6 +20,80 @@
 
 
 
+class MemoryFrame : public QFrame
+{
+	Q_OBJECT
+public:
+	MemoryFrame( QWidget *parent, MemChunk *c ) : QFrame( parent ), chunk(c) {
+		setFixedSize( 128, 10 );
+		setFrameStyle( QFrame::NoFrame );
+	}
+	virtual void paintEvent ( QPaintEvent* ) {
+		int h = height();
+		QPainter p;
+		p.begin( this );
+		for ( int i = 0; i < 128; ++i ) {
+			if ( chunk->used[i] ) {
+				if ( chunk->sliceSize == 1048576 )
+					p.setPen( QColor("orange") );
+				else if ( chunk->sliceSize == 102400 )
+					p.setPen( QColor("cyan") );
+				else
+					p.setPen( QColor("white") );
+			}
+			else
+				p.setPen( QColor("black") );
+			p.drawLine( i, 0, i, h );
+		}	
+	}
+	
+	MemChunk *chunk;
+};
+
+
+
+class MemDialog : public QDialog
+{
+	Q_OBJECT
+public:
+	MemDialog( QWidget *parent ) : QDialog( parent ) {
+		box = new QBoxLayout( QBoxLayout::TopToBottom );
+		check();
+		setLayout( box );
+		
+		connect( &timer, SIGNAL(timeout()), this, SLOT(refresh()) );
+		timer.start( 300 );
+	}
+	
+private slots:
+	void refresh() {
+		check();
+		for ( int i = 0; i < memFrames.count(); ++i )
+			memFrames[i]->update();
+	}
+	
+private:
+	void check() {
+		while( !memFrames.isEmpty() )
+			delete memFrames.takeFirst();
+
+		BufferPool *p = BufferPool::globalInstance();
+		for ( int i = 0; i < 3; ++i ) {
+			for ( int j = 0; j < p->chunkList[i]->count(); ++j ) {
+				MemoryFrame *m = new MemoryFrame( this, p->chunkList[i]->at( j ) );
+				box->addWidget( m );
+				memFrames.append( m );
+			}
+		}
+	}
+	
+	QBoxLayout* box;
+	QTimer timer;
+	QList<MemoryFrame*> memFrames;
+};
+
+
+
 class SeekSlider : public QSlider
 {
 	Q_OBJECT
@@ -53,6 +127,8 @@ public:
 	Sampler* getSampler() { return sampler; };
 
 private slots:
+	void showMemoryInfo();
+	
 	void renderDialog();
 	void renderStart( double startPts );
 	void renderFinished( double pts );
