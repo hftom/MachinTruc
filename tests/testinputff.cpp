@@ -312,46 +312,44 @@ void TestInputFF::memLeakTest()
 	/*QTime time;
 	time.start();
 	
-	InputFF *in = new InputFF();
-	InputFF *in1 = new InputFF();
-	InputFF *in2 = new InputFF();
+	QList<InputFF*> in;
+	int numInputs = 4;
+	for ( int i = 0; i < numInputs; ++i )
+		in.append( new InputFF() );
+
 	Profile prof;
-	QString video = "/home/cris/Canal+4k.Demo.Trailer.2160p.HDTV.H.264.MP3.2.0-jTV.avi";
-	in->probe( video, &prof );
-	in->setProfile( prof, prof );
-	in1->setProfile( prof, prof );
-	in2->setProfile( prof, prof );
+	QString video = "/partage/Films/NEIL_YOUNG-HEART_OF_GOLD.vob";//"/home/cris/Canal+4k.Demo.Trailer.2160p.HDTV.H.264.MP3.2.0-jTV.avi";
+	in[0]->probe( video, &prof );
+	for ( int i = 0; i < numInputs; ++i )
+		in[i]->setProfile( prof, prof );
 	double pts = prof.getStreamStartTime() + prof.getStreamDuration() - (prof.getVideoFrameDuration() * 2.0);
 	int samples = prof.getAudioSampleRate() * prof.getVideoFrameDuration() / MICROSECOND;
 	Frame *f;
 	int loop = 0;
-	in->openSeekPlay( video, pts, true );
-	in1->openSeekPlay( video, pts, true );
-	in2->openSeekPlay( video, pts, true );
-	while ( pts > prof.getStreamStartTime() ) {
-		if ( (f = in->getVideoFrame()) ) {
-			pts = f->pts();
-			delete f;
+	for ( int i = 0; i < numInputs; ++i )
+		in[i]->openSeekPlay( video, pts, true );
+
+	while ( pts > prof.getStreamStartTime() + (prof.getVideoFrameDuration() * 2.0) ) {
+		for ( int i = 0; i < numInputs; ++i ) {
+			if ( (f = in[i]->getVideoFrame()) ) {
+				pts = f->pts();
+				delete f;
+			}
+			if ( (f = in[i]->getAudioFrame( samples )) ) {
+				pts = f->pts();
+				delete f;
+			}
+			//printf("PTS : %f\n", pts);
 		}
-		if ( (f = in->getAudioFrame( samples )) )
-			delete f;
-		if ( (f = in1->getVideoFrame()) )
-			delete f;
-		if ( (f = in1->getAudioFrame( samples )) )
-			delete f;
-		if ( (f = in2->getVideoFrame()) )
-			delete f;
-		if ( (f = in2->getAudioFrame( samples )) )
-			delete f;
 		++loop;
 	}
 	qDebug() << "LOOP" << loop << "elapsed:" << time.elapsed();
-	in->play( false );
-	delete in;
-	in1->play( false );
-	delete in1;
-	in2->play( false );
-	delete in2;*/
+	
+	while ( !in.isEmpty() ) {
+		InputFF *input = in.takeLast();
+		input->play( false );
+		delete input;
+	}*/
 	
 #define DONTCARE true
     QVERIFY( DONTCARE );
