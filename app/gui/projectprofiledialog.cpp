@@ -102,9 +102,9 @@ ProjectProfileDialog::ProjectProfileDialog( QWidget *parent, Profile &p, int war
 			.arg( QString::number( fpsPresets[ vPresets[i].framerate ], 'f', 2 )  ) );
 	}
 
-	widthSpinBox->setRange( 64, 1920 );
+	widthSpinBox->setRange( 64, 3840 );
 	widthSpinBox->setSingleStep( 2 );
-	heightSpinBox->setRange( 64, 1080 );
+	heightSpinBox->setRange( 64, 2160 );
 	heightSpinBox->setSingleStep( 2 );
 	
 	ratioCombo->addItem( "16:9" );
