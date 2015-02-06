@@ -69,13 +69,13 @@ public:
 		memset( used, 0, sizeof(bool) * 128 );
 	}
 	Buffer *getBuffer( int size ) {
-		int i, j;		
-		int n = ceil( (float)size / (float)sliceSize );
+		int i, j;
+		int n = qMax( 1, (int)ceil( (float)size / (float)sliceSize ) );
 		if ( n > freeSlices )
 			return NULL;
 
-		for ( i = 0; i < 128; ++i ) {
-			if ( !used[i] && i < 128 - n ) {
+		for ( i = 0; i < 128 - n + 1; ++i ) {
+			if ( !used[i] ) {
 				bool u = false;
 				for ( j = 0; j < n; ++j ) {
 					if ( used[i + j] ) {
@@ -84,10 +84,8 @@ public:
 					}
 				}
 				if ( !u ) {
-					for ( j = 0; j < n; ++j ) {
-						used[i + j] = true;
-						--freeSlices;
-					}
+					memset( &used[i], 1, n * sizeof(bool) );
+					freeSlices -= n;
 					return new Buffer( buf + (i * sliceSize), i, n, this );
 				}
 			}
@@ -95,10 +93,8 @@ public:
 		return NULL;
 	}
 	void release( Buffer *buffer ) {
-		for ( int i = 0; i < buffer->numSlices; ++i ) {
-			used[buffer->posInChunk + i] = false;
-			++freeSlices;
-		}
+		memset( &used[buffer->posInChunk], 0, buffer->numSlices * sizeof(bool) );
+		freeSlices += buffer->numSlices;
 	}
 	
 	uint8_t *buf;
