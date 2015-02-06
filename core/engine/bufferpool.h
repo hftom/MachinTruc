@@ -77,7 +77,7 @@ public:
 		for ( i = 0; i < 128 - n + 1; ++i ) {
 			if ( !used[i] ) {
 				bool u = false;
-				for ( j = 0; j < n; ++j ) {
+				for ( j = 1; j < n; ++j ) {
 					if ( used[i + j] ) {
 						u = true;
 						break;
