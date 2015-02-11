@@ -377,20 +377,20 @@ void InputFF::runBackward()
 		}
 
 		if ( endVideoSequence && endAudioSequence ) {
+			double bpts = backwardPts;
 			if ( backwardVideoFrames.count() ) {
-				backwardPts = backwardVideoFrames.first()->pts();
+				bpts = backwardVideoFrames.first()->pts();
 				if ( backwardVideoFrames.first()->pts() <= inProfile.getStreamStartTime() )
 					backwardEof = true;
 			}
 			else if ( backwardAudioFrames.count() ) {
-				backwardPts = backwardAudioFrames.first()->bufPts;
+				bpts = backwardAudioFrames.first()->bufPts;
 				if ( backwardAudioFrames.first()->bufPts <= inProfile.getStreamStartTime() )
 					backwardEof = true;
 			}
 			else
 				backwardEof = true;
 
-			double bpts = backwardPts;
 			while ( !backwardVideoFrames.isEmpty() ) {
 				// resample if necessary
 				if ( videoResampler.repeat && lastFrame.valid() ) {
@@ -414,7 +414,12 @@ void InputFF::runBackward()
 				}
 				bpts = videoResampler.outputPts + videoResampler.outputDuration;
 			}
-			backwardPts = bpts;
+
+			// we don't want to freeze for ever in broken streams
+			if ( bpts >= backwardPts )
+				backwardPts -= BACKWARDLEN / 2.0;
+			else
+				backwardPts = bpts;
 
 			while ( !backwardAudioFrames.isEmpty() ) {
 				AudioFrame *af = backwardAudioFrames.takeLast();
