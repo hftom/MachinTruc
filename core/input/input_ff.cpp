@@ -5,6 +5,7 @@
 #include "input/input_ff.h"
 
 #define BACKWARDLEN MICROSECOND
+#define AUDIODRIFTMAX 100000
 
 
 
@@ -14,6 +15,8 @@ InputFF::InputFF() : InputBase(),
 	running( false ),
 	seekAndPlayPTS( 0 ),
 	seekAndPlay( false ),
+	forwardAudioSamples( 0 ),
+	forwardStartPts( 0 ),
 	backwardAudioSamples( 0 ),
 	samplesInBackwardAudioFrames(0),
 	playBackward( false ),
@@ -51,6 +54,7 @@ void InputFF::flush()
 	videoResampler.reset( outProfile.getVideoFrameDuration() );
 	eofVideo = eofAudio = false;
 	backwardEof = false;
+	forwardAudioSamples = 0;
 	backwardAudioSamples = 0;
 	samplesInBackwardAudioFrames = 0;
 }
@@ -115,8 +119,11 @@ double InputFF::seekTo( double p )
 		Frame *f = new Frame();
 		AudioFrame *af = new AudioFrame( audioFrameList.getBytesPerSample(), outProfile.getAudioSampleRate() );
 		bool ok = decoder->seekTo( p, f, af );
-		if ( af->buffer )
+		if ( af->buffer ) {
 			audioFrameList.append( af );
+			forwardAudioSamples += af->available;
+			forwardStartPts = p;
+		}
 		else
 			delete af;
 		if ( ok && f->getBuffer() ) {
@@ -230,6 +237,7 @@ void InputFF::runForward()
 {
 	int doWait;
 	Frame *f;
+	double oasr = outProfile.getAudioSampleRate();
 
 	while ( running ) {
 		doWait = 1;
@@ -268,10 +276,35 @@ void InputFF::runForward()
 
 		if ( decoder->haveAudio && !eofAudio ) {
 			if ( audioFrameList.writable() ) {
-				AudioFrame *af = new AudioFrame( audioFrameList.getBytesPerSample(), outProfile.getAudioSampleRate() );
+				AudioFrame *af = new AudioFrame( audioFrameList.getBytesPerSample(), oasr );
 				decoder->decodeAudio( af );
-				if ( af->buffer )
-					audioFrameList.append( af );
+				if ( af->buffer ) {
+					double expectedPts = forwardStartPts + ((double)forwardAudioSamples * MICROSECOND / oasr);
+					double dpts = af->bufPts - expectedPts;
+					if ( dpts > AUDIODRIFTMAX  ) {
+						qDebug() << "Inserting silence to compensate audio pts drift : expected" << expectedPts << "got" << af->bufPts;
+						AudioFrame *silence = new AudioFrame( audioFrameList.getBytesPerSample(), oasr );
+						int ns = qMin( dpts * oasr / MICROSECOND, oasr );
+						uint8_t* dst = silence->write( 0, ns );
+						memset( dst, 0, ns * silence->bytesPerSample );
+						silence->writeDone( expectedPts, ns );
+						audioFrameList.append( silence );
+						forwardAudioSamples += silence->available;
+						audioFrameList.append( af );
+						forwardAudioSamples += af->available;
+					}
+					else if ( dpts < -AUDIODRIFTMAX ) {
+						qDebug() << "Dropping samples to compensate audio pts drift : expected" << expectedPts << "got" << af->bufPts;
+						int ns = qMin( -dpts * oasr / MICROSECOND, (double)af->available );
+						af->available -= ns;
+						audioFrameList.append( af );
+						forwardAudioSamples += af->available;
+					}
+					else {
+						audioFrameList.append( af );
+						forwardAudioSamples += af->available;
+					}
+				}
 				else
 					delete af;
 
