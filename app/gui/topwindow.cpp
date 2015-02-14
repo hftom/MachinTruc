@@ -509,7 +509,14 @@ void TopWindow::setThumbContext( QGLWidget *context )
 {
 	thumbnailer->setSharedContext( context );
 	connect( thumbnailer, SIGNAL(resultReady()), thumbnailer, SLOT(gotResult()) );
-	connect( thumbnailer, SIGNAL(thumbReady(ThumbResult)), this, SLOT(thumbResultReady(ThumbResult)) );
+	connect( thumbnailer, SIGNAL(thumbReady(ThumbRequest)), this, SLOT(thumbResultReady(ThumbRequest)) );
+}
+
+
+
+void TopWindow::clipThumbRequest( ThumbRequest request )
+{
+	thumbnailer->pushRequest( request );
 }
 
 
@@ -550,12 +557,17 @@ void TopWindow::unsupportedDuplicateMessage()
 
 		
 
-void TopWindow::thumbResultReady( ThumbResult result )
+void TopWindow::thumbResultReady( ThumbRequest result )
 {
+	if ( result.typeOfRequest == ThumbRequest::THUMB ) {
+		timeline->thumbResultReady( result );
+		return;
+	}
+
 	if ( projectLoader ) {
 		Source *source = NULL;
 		for ( int i = 0; i < projectLoader->sourcesList.count(); ++i ) {
-			if ( projectLoader->sourcesList[i]->getFileName() == result.path ) {
+			if ( projectLoader->sourcesList[i]->getFileName() == result.filePath ) {
 				source = projectLoader->sourcesList.takeAt( i );
 				break;
 			}
@@ -564,7 +576,7 @@ void TopWindow::thumbResultReady( ThumbResult result )
 		if ( !source ) // what happens???
 			return;
 		
-		if ( result.isValid ) {
+		if ( !result.thumb.isNull() ) {
 			source->setAfter( (InputBase::InputType)result.inputType, result.profile );
 			sourcePage->addSource( QPixmap::fromImage( result.thumb ), source );
 		}
@@ -609,13 +621,13 @@ void TopWindow::thumbResultReady( ThumbResult result )
 		}
 	}
 	else {
-		if ( result.isValid ) {
-			Source *source = new Source( (InputBase::InputType)result.inputType, result.path, result.profile );
+		if ( !result.thumb.isNull() ) {
+			Source *source = new Source( (InputBase::InputType)result.inputType, result.filePath, result.profile );
 			sourcePage->addSource( QPixmap::fromImage( result.thumb ), source );
 		}
 		else
-			unsupportedOpenSources.append( QFileInfo( result.path ).fileName() );
-	
+			unsupportedOpenSources.append( QFileInfo( result.filePath ).fileName() );
+		
 		if ( --openSourcesCounter == 0 ) {
 			if ( unsupportedOpenSources.count() || duplicateOpenSources.count() )
 				unsupportedDuplicateMessage();

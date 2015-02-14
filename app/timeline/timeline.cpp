@@ -295,6 +295,7 @@ void Timeline::clipItemResized( ClipViewItem *clip, int way )
 		scene->resize( clip->getClip(), clip->getLength(), getTrack( clip->sceneBoundingRect().topLeft() ) );
 	else
 		scene->resizeStart( clip->getClip(), clip->getPosition(), clip->getLength(), getTrack( clip->sceneBoundingRect().topLeft() ) );
+	clipThumbRequest( clip, way != 2 );
 	QTimer::singleShot ( 1, this, SIGNAL(updateFrame()) );
 	QTimer::singleShot ( 1, this, SLOT(updateLength()) );
 }
@@ -500,6 +501,8 @@ void Timeline::setScene( Scene *s )
 			Transition *trans = c->getTransition();
 			if ( trans )
 				it->updateTransition( trans->length() );	
+			clipThumbRequest( it, true );
+			clipThumbRequest( it, false );
 		}
 	}
 	
@@ -541,6 +544,9 @@ void Timeline::splitCurrentClip()
 			it->setParentItem( tracks.at( t ) );
 			cv->setLength( current_clip->length() );
 			itemSelected( (ClipViewItem*)it );
+			clipThumbRequest( cv, false );
+			clipThumbRequest( (ClipViewItem*)it, true );
+			clipThumbRequest( (ClipViewItem*)it, false );
 			emit updateFrame();
 		}
 	}
@@ -699,6 +705,8 @@ void Timeline::dropEvent( QGraphicsSceneDragDropEvent *event )
 		if ( droppedCut.shown ) {
 			bool empty = topParent->getSampler()->isProjectEmpty();
 			scene->addClip( droppedCut.clip, getTrack( droppedCut.clipItem->sceneBoundingRect().topLeft() ) );
+			clipThumbRequest( droppedCut.clipItem, true );
+			clipThumbRequest( droppedCut.clipItem, false );
 			emit updateFrame();
 			QTimer::singleShot( 1, this, SLOT(updateLength()) );
 			if ( empty ) {
@@ -712,4 +720,27 @@ void Timeline::dropEvent( QGraphicsSceneDragDropEvent *event )
 	}
 	else
 		QGraphicsScene::dropEvent( event );
+}
+
+
+
+void Timeline::clipThumbRequest( ClipViewItem *it, bool start )
+{
+	Clip *c = it->getClip();
+	if ( start )
+		topParent->clipThumbRequest( ThumbRequest( (void*)it, c->getType(), c->sourcePath(), c->getProfile(), c->start() ) );
+	else
+		topParent->clipThumbRequest( ThumbRequest( (void*)it, c->getType(), c->sourcePath(), c->getProfile(), c->start() + c->length() - c->getProfile().getVideoFrameDuration() ) );
+}
+
+
+
+void Timeline::thumbResultReady( ThumbRequest result )
+{
+	if ( !result.thumb.isNull() && result.caller != NULL ) {
+		ClipViewItem *it = (ClipViewItem*)result.caller;
+		if ( items().contains( it ) ) {
+			it->setThumb( result );
+		}
+	}
 }

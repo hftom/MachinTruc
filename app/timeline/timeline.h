@@ -59,6 +59,8 @@ public:
 	void trackRemoved( int index );
 	void trackAdded( int index );
 	
+	void thumbResultReady( ThumbRequest result );
+	
 public slots:
 	void viewSizeChanged( const QSize &size );
 	void setCursorPos( double pts );
@@ -90,6 +92,8 @@ private:
 	void snapResize( ClipViewItem *item, int way, double &len, double mouseX, double itemScenePos );
 
 	void updateTransitions( ClipViewItem *clip, bool remove );
+	
+	void clipThumbRequest( ClipViewItem *it, bool start );
 	
 	CursorViewItem *cursor;
 	double zoom;

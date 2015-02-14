@@ -4,6 +4,7 @@
 #include <QGraphicsSceneMouseEvent>
 
 #include "engine/clip.h"
+#include "engine/thumbnailer.h"
 #include "transitionviewitem.h"
 
 #define SNAPWIDTH 8
@@ -19,6 +20,7 @@ public:
 
 	void paint( QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget );
 	void setSelected( bool b );
+	void setThumb( ThumbRequest res );
 	
 	void setClip( Clip *c ) { clip = c; }
 	Clip* getClip() { return clip; }
@@ -45,6 +47,8 @@ private:
 	int moveResize;
 	bool firstMove;
 	bool multiMove;
+	
+	QImage startThumb, endThumb;
 	
 	TransitionViewItem *transition;
 };

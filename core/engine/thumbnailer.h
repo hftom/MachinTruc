@@ -13,19 +13,6 @@ class QGLWidget;
 
 
 
-class ThumbResult
-{
-public:
-	bool isValid;
-	int inputType;
-	QString path;
-	Profile profile;
-	QImage thumb;
-	double thumbPTS;
-};
-
-
-
 class ThumbRequest
 {
 public:
@@ -33,19 +20,25 @@ public:
 
 	ThumbRequest( QString path )
 		: typeOfRequest( PROBE ),
+		caller( NULL ),
 		filePath( path ),
 		thumbPTS( 0 ) {}
 		
-	ThumbRequest( QString path, double pts )
+	ThumbRequest( void *from, int inType, QString path, Profile prof, double pts )
 		: typeOfRequest( THUMB ),
+		caller( from ),
+		inputType( inType ),
 		filePath( path ),
+		profile( prof ),
 		thumbPTS( pts ) {}
 	
 	int typeOfRequest;
+	void *caller;
+	int inputType;
 	QString filePath;
+	Profile profile;
 	double thumbPTS;
-	
-	ThumbResult result;
+	QImage thumb;
 };
 
 
@@ -56,6 +49,7 @@ class Thumbnailer : public QThread
 	Q_OBJECT
 public:
 	Thumbnailer();
+	~Thumbnailer();
 	void setSharedContext( QGLWidget *sharedContext );
 	
 	bool pushRequest( ThumbRequest req );
@@ -67,10 +61,10 @@ private slots:
 	void gotResult();
 	
 private:	
-	//void probe( QStringList files, QList<Source*> *sources, QList<QImage> *thumbs );
 	void probe( ThumbRequest &request );
+	void makeThumb( ThumbRequest &request );
 	
-	QImage getSourceThumb( Frame *f );
+	QImage getSourceThumb( Frame *f, bool border );
 	
 	QList<ThumbRequest> requestList;
 	QList<ThumbRequest> resultList;
@@ -81,6 +75,6 @@ private:
 	
 signals:
 	void resultReady();
-	void thumbReady( ThumbResult );
+	void thumbReady( ThumbRequest );
 };
 #endif // THUMBNAILER_H

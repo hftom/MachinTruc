@@ -125,6 +125,8 @@ public:
 	
 	Source* getDroppedCut( int index, QString mime, QString filename, double &start, double &len );
 	Sampler* getSampler() { return sampler; };
+	
+	void clipThumbRequest( ThumbRequest request );
 
 private slots:
 	void showMemoryInfo();
@@ -134,7 +136,7 @@ private slots:
 	void renderFinished( double pts );
 	
 	void openSources();
-	void thumbResultReady( ThumbResult result );
+	void thumbResultReady( ThumbRequest result );
 	
 	void trackRequest( bool rm, int index );
 	void clipAddedToTimeline( Profile );

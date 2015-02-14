@@ -93,10 +93,23 @@ void ClipViewItem::updateTransition( double len )
 
 
 
+void ClipViewItem::setThumb( ThumbRequest res )
+{
+	if ( res.thumbPTS == clip->start() ) {
+		startThumb = res.thumb;
+	}
+	else if ( res.thumbPTS == clip->start() + clip->length() - clip->getProfile().getVideoFrameDuration() ) {
+		endThumb = res.thumb;
+	}
+	update();
+}
+
+
+
 void ClipViewItem::paint( QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget )
 {
 	QGraphicsRectItem::paint( painter, option, widget );
-		
+
 	QRectF inside = rect();
 	inside.moveLeft( inside.x() + 1 );
 	inside.moveTop( inside.y() + 1 );
@@ -107,7 +120,37 @@ void ClipViewItem::paint( QPainter *painter, const QStyleOptionGraphicsItem *opt
 		r.setX( inside.x() );
 		r.setWidth( inside.width() );
 	}
+
+	// draw thumbs
+	inside.setWidth( inside.width() + 1 );
+	inside.setHeight( inside.height() + 1 );
+	qreal w = inside.width();
+	if ( !endThumb.isNull() && w > 1 ) {
+		QRectF th = endThumb.rect();
+		QRectF ir( inside ); 
+		ir.setWidth( ir.height() * th.width() / th.height() );
+		if ( ir.width() > w ) {
+			th.setX( (ir.width() - w) * th.height() / ir.height() );
+			painter->drawImage( inside, endThumb, th );
+		}
+		else {
+			ir.moveLeft( w - ir.width() );
+			painter->drawImage( ir, endThumb );
+		}
+	}
+	if ( !startThumb.isNull() && w > 1 ) {
+		QRectF th = startThumb.rect();
+		QRectF ir( inside ); 
+		ir.setWidth( ir.height() * th.width() / th.height() );
+		if ( ir.width() > w ) {
+			th.setWidth( th.width() - (ir.width() - w) * th.height() / ir.height() );
+			painter->drawImage( inside, startThumb, th );
+		}
+		else
+			painter->drawImage( ir, startThumb );
+	}
 	
+	// draw title
 	painter->setPen( QColor(0,0,0,0) );
 	if ( selected )
 		painter->setBrush( titleSelectionBrush );

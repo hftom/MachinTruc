@@ -33,6 +33,8 @@ InputFF::InputFF() : InputBase(),
 
 InputFF::~InputFF()
 {
+	play( false );
+	wait();
 	delete decoder;
 	flush();
 }
@@ -124,8 +126,10 @@ double InputFF::seekTo( double p )
 			forwardAudioSamples += af->available;
 			forwardStartPts = p;
 		}
-		else
+		else {
 			delete af;
+			eofAudio = true;
+		}
 		if ( ok && f->getBuffer() ) {
 			lastFrame.set( f );
 			videoResampler.reset( outProfile.getVideoFrameDuration() );
@@ -135,6 +139,7 @@ double InputFF::seekTo( double p )
 		}
 		else {
 			delete f;
+			eofVideo = true;
 		}
 	}
 
