@@ -122,16 +122,18 @@ void ClipViewItem::paint( QPainter *painter, const QStyleOptionGraphicsItem *opt
 	}
 
 	// draw thumbs
+#if QT_VERSION < 0x050000
 	inside.setWidth( inside.width() + 1 );
+#endif
 	inside.setHeight( inside.height() + 1 );
 	qreal w = inside.width();
 	if ( !endThumb.isNull() && w > 1 ) {
-		QRectF th = endThumb.rect();
+		QRectF src = endThumb.rect();
 		QRectF ir( inside ); 
-		ir.setWidth( ir.height() * th.width() / th.height() );
+		ir.setWidth( ir.height() * src.width() / src.height() );
 		if ( ir.width() > w ) {
-			th.setX( (ir.width() - w) * th.height() / ir.height() );
-			painter->drawImage( inside, endThumb, th );
+			src.setX( (ir.width() - w) * src.height() / src.height() );
+			painter->drawImage( inside, endThumb, src );
 		}
 		else {
 			ir.moveLeft( w - ir.width() );
@@ -139,12 +141,12 @@ void ClipViewItem::paint( QPainter *painter, const QStyleOptionGraphicsItem *opt
 		}
 	}
 	if ( !startThumb.isNull() && w > 1 ) {
-		QRectF th = startThumb.rect();
+		QRectF src = startThumb.rect();
 		QRectF ir( inside ); 
-		ir.setWidth( ir.height() * th.width() / th.height() );
+		ir.setWidth( ir.height() * src.width() / src.height() );
 		if ( ir.width() > w ) {
-			th.setWidth( th.width() - (ir.width() - w) * th.height() / ir.height() );
-			painter->drawImage( inside, startThumb, th );
+			src.setWidth( src.width() - (ir.width() - w) * src.height() / ir.height() );
+			painter->drawImage( inside, startThumb, src );
 		}
 		else
 			painter->drawImage( ir, startThumb );

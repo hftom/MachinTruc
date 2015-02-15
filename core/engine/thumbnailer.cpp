@@ -225,7 +225,7 @@ QImage Thumbnailer::getSourceThumb( Frame *f, bool border )
 	movitChain->chain->set_dither_bits( 8 );
 	ImageFormat output_format;
 	output_format.color_space = COLORSPACE_sRGB;
-	output_format.gamma_curve = GAMMA_sRGB;
+	output_format.gamma_curve = GAMMA_REC_709;
 	movitChain->chain->add_output( output_format, OUTPUT_ALPHA_FORMAT_POSTMULTIPLIED );
 	movitChain->chain->finalize();
 	
