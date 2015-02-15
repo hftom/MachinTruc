@@ -101,7 +101,7 @@ bool OutputFF::openVideo( Profile &prof, int vrate, bool mpeg )
 			break;
 		}
 	}
-	videoCodecCtx->gop_size = 12;
+	videoCodecCtx->gop_size = prof.getVideoFrameRate();
 	videoCodecCtx->max_b_frames = 2;
 	videoCodecCtx->pix_fmt = AV_PIX_FMT_YUV420P;
 	int sw = (double)prof.getVideoWidth() * prof.getVideoSAR();
