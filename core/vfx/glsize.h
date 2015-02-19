@@ -70,16 +70,19 @@ public:
 
 		
 private:
-	void preProcessResize( Frame *src, Profile *p );
-	void preProcessRotate( Frame *src, Profile *p );
-	void preProcessPadding( Frame *src, Profile *p );
-
+	void findPoints( double &x1, double &x2, double first, double last );
+	
 	Parameter *sizePercent;
 	bool resizeActive;
+	int resizeOutputWidth, resizeOutputHeight;
+	double resizeZoomX, resizeZoomY;
+	double resizeLeft, resizeTop;
+	double resizeZoomCenterX, resizeZoomCenterY;
 	
 	Parameter *rotateAngle, *softBorder;
 	bool rotateActive;
 	double rotateLeft, rotateTop;
+	double rotateSize;
 	
 	Parameter *xOffsetPercent, *yOffsetPercent;
 	double left, top;
