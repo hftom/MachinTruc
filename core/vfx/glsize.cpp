@@ -28,7 +28,7 @@ GLSize::GLSize( QString id, QString name ) : GLFilter( id, name ),
 	xOffsetPercent = addParameter( "xOffsetPercent", tr("X:"), Parameter::PDOUBLE, 0.0, -100.0, 100.0, true, "%" );
 	yOffsetPercent = addParameter( "yOffsetPercent", tr("Y:"), Parameter::PDOUBLE, 0.0, -100.0, 100.0, true, "%" );
 	rotateAngle = addParameter( "rotateAngle", tr("Rotation angle:"), Parameter::PDOUBLE, 0.0, -360.0, 360.0, true );
-	softBorder = addParameter( "softBorder", tr("Soft border:"), Parameter::PINT, 2.0, 0, 10, false );
+	softBorder = addParameter( "softBorder", tr("Soft border:"), Parameter::PINT, 2, 0, 10, false );
 }
 
 
@@ -44,7 +44,7 @@ QString GLSize::getDescriptor( Frame *src, Profile *p )
 	QString s;
 	bool samesar = qAbs( p->getVideoSAR() - src->glSAR ) < 1e-3;
 
-	if ( samesar && !sizePercent->graph.keys.count() && 100.0 == getParamValue( sizePercent ).toDouble() ) {
+	if ( samesar && !sizePercent->graph.keys.count() && getParamValue( sizePercent ).toDouble() == 100.0 ) {
 		resizeActive = false;
 	}
 	else {
@@ -77,95 +77,102 @@ bool GLSize::process( const QList<Effect*> &el, Frame *src, Profile *p )
 	double zoom = getParamValue( sizePercent, pts ).toDouble() / 100.0;
 	double xoff = getParamValue( xOffsetPercent, pts ).toDouble() / 100.0;
 	double yoff = getParamValue( yOffsetPercent, pts ).toDouble() / 100.0;
-	// scaled image size
-	double sw = qMax( (double)src->glWidth * src->glSAR  / p->getVideoSAR() * zoom, 1.0 );
-	double sh = qMax( (double)src->glHeight * zoom, 1.0 );
-	// project size (screen)
+	// screen size (project)
 	double pw = p->getVideoWidth();
 	double ph = p->getVideoHeight();
+	double psar = p->getVideoSAR();
+	// scaled centered image
+	double sw = qMax( (double)src->glWidth * src->glSAR  / psar * zoom, 1.0 );
+	double sh = qMax( (double)src->glHeight * zoom, 1.0 );
 	left = xoff * pw;
 	top = yoff * ph;
 	
-	// We want to find the image subrect that will be visible.
-	// We rotate and translate the screen,
-	// using Eigen3 since it's already a Movit requirement.
-	Vector2d vec1( -pw / 2.0, - ph / 2.0 );     // bottom left
-	Vector2d vec2( vec1.x() + pw, vec1.y() );   // bottom right
-	Vector2d vec3( vec1.x(), vec1.y() + ph );   // top left
-	Vector2d vec4( vec2.x(), vec3.y() );        // top right
-	Rotation2D<double> rot( -rad );
-	Translation<double,2> trans( Vector2d(-left, -top) );
-	vec1 = trans * rot * vec1;
-	vec2 = trans * rot * vec2;
-	vec3 = trans * rot * vec3;
-	vec4 = trans * rot * vec4;
+	double imageWidth = resizeOutputWidth = src->glWidth;
+	double imageHeight = resizeOutputHeight = src->glHeight;
 	
-	// init the subrect to image size
-	double x1 = -sw / 2.0, x2 = sw / 2.0, y1 = -sh / 2.0, y2 = sh / 2.0;
-	// QMap sorts in ascending key order
-	QMap<double,int> map;
-	map.insert( vec1.x(), 0 );
-	map.insert( vec2.x(), 0 );
-	map.insert( vec3.x(), 0 );
-	map.insert( vec4.x(), 0 );
-	// get the sorted values
-	QList<double> keys = map.keys();
-	// find x1 and x2
-	findPoints( x1, x2, keys.first(), keys.last() );
-	// adjust horizontal padding
-	//left += x1 - keys.first();
+	if ( resizeActive ) {
+		// We translate and rotate the screen using Eigen3
+		// since it's already a Movit requirement.
+		// When an image edge is outside the screen,
+		// we cut at the nearest screen corner.
+		// This ensures that width/height are never more
+		// than the screen diagonal.
+		Vector2d vec1( -pw * psar / 2.0, - ph / 2.0 );     // bottom left
+		Vector2d vec2( vec1.x() + pw * psar, vec1.y() );   // bottom right
+		Vector2d vec3( vec1.x(), vec1.y() + ph );   // top left
+		Vector2d vec4( vec2.x(), vec3.y() );        // top right
+		Translation<double,2> trans( Vector2d(-left, top) ); // GL y axis direction is inverted, so -(-top)
+		Rotation2D<double> rot( -rad );
+		vec1 = rot * trans * vec1;
+		vec2 = rot * trans * vec2;
+		vec3 = rot * trans * vec3;
+		vec4 = rot * trans * vec4;
 	
-	// do the same for y1 and y2
-	map.clear();
-	keys.clear();
-	map.insert( vec1.y(), 0 );
-	map.insert( vec2.y(), 0 );
-	map.insert( vec3.y(), 0 );
-	map.insert( vec4.y(), 0 );
-	keys = map.keys();
-	findPoints( y1, y2, keys.first(), keys.last() );
-	//top += y1 - keys.first();
+		// init the subrect to the scaled image size
+		double x1 = -sw / 2.0, x2 = sw / 2.0, y1 = -sh / 2.0, y2 = sh / 2.0;
+		// QMap sorts in ascending key order
+		QMap<double,int> map;
+		map.insert( vec1.x(), 0 );
+		map.insert( vec2.x(), 0 );
+		map.insert( vec3.x(), 0 );
+		map.insert( vec4.x(), 0 );
+		// get the sorted values
+		QList<double> keys = map.keys();
+		// find x1 and x2
+		findPoints( x1, x2, keys.first(), keys.last() );
 	
-	double deltaCenterX = (x2 + x1) / 2.0;
-	double deltaCenterY = (y2 + y1) / 2.0;
+		// do the same for y1 and y2
+		map.clear();
+		keys.clear();
+		map.insert( vec1.y(), 0 );
+		map.insert( vec2.y(), 0 );
+		map.insert( vec3.y(), 0 );
+		map.insert( vec4.y(), 0 );
+		keys = map.keys();
+		findPoints( y1, y2, keys.first(), keys.last() );
 
-	// the origin was at the center
-	x1 += sw / 2.0;
-	x2 += sw / 2.0;
-	// round up
-	resizeOutputWidth = x2 - x1;
-	if ( resizeOutputWidth < x2 - x1 || resizeOutputWidth == 0 )
-		++resizeOutputWidth;
-	resizeZoomX = sw / (double)resizeOutputWidth;
-	resizeLeft = x1 / sw * src->glWidth;
-	
-	y1 += sh / 2.0;
-	y2 += sh / 2.0;	
-	resizeOutputHeight = y2 - y1;
-	if ( resizeOutputHeight < x2 - x1 || resizeOutputHeight == 0 )
-		++resizeOutputHeight;
-	resizeZoomY = sh / (double)resizeOutputHeight;
-	resizeTop = y1 / sh * src->glHeight;
+		// compensate the center offset
+		Vector2d newCenter( (x2 + x1) / 2.0, (y2 + y1) / 2.0 );
+		newCenter = Rotation2D<double>( rad ) * newCenter;
+		left += newCenter.x();
+		top -= newCenter.y();
+
+		// the origin was at the center
+		x1 += sw / 2.0;
+		x2 += sw / 2.0;
+		y1 += sh / 2.0;
+		y2 += sh / 2.0;	
+		imageWidth = x2 - x1;
+		imageHeight = y2 - y1;
+		// round to nearest integer
+		resizeOutputWidth = qMax( imageWidth + 0.5, 1.0 );
+		resizeZoomX = sw / (double)resizeOutputWidth;
+		resizeLeft = x1 / sw * (double)src->glWidth;
+		
+		resizeOutputHeight = qMax( imageHeight + 0.5, 1.0 );
+		resizeZoomY = sh / (double)resizeOutputHeight;
+		resizeTop = (sh - y2) / sh * (double)src->glHeight;
+	}
 
 	if ( rotateActive ) {
-		rotateSize = sqrt( (double)resizeOutputWidth * (double)resizeOutputWidth + (double)resizeOutputHeight * (double)resizeOutputHeight ) + 1;
-		rotateLeft = (rotateSize - (double)resizeOutputWidth) / 2.0;
-		rotateTop = (rotateSize - (double)resizeOutputHeight) / 2.0;
+		rotateSize = sqrt( resizeOutputWidth * psar * resizeOutputWidth * psar + resizeOutputHeight * resizeOutputHeight ) + 1;
+		rotateLeft = (rotateSize - imageWidth) / 2.0;
+		rotateTop = (rotateSize - imageHeight) / 2.0;
 		left -= (rotateSize - pw) / 2.0;
 		top -= (rotateSize - ph) / 2.0;
 	}
 	else {
-		left -= ((double)resizeOutputWidth - pw) / 2.0;
-		top -= ((double)resizeOutputHeight - ph) / 2.0;
+		left -= (imageWidth - pw) / 2.0;
+		top -= (imageHeight - ph) / 2.0;
 	}
-	left += deltaCenterX;
-	top += deltaCenterY;
 	
 	src->glWidth = pw;
 	src->glHeight = ph;
-	src->glSAR = p->getVideoSAR();
+	src->glSAR = psar;
 	
 	if ( resizeActive ) {
+		qDebug() << "resizeOutputWidth" << resizeOutputWidth << "\nresizeOutputHeight" << resizeOutputHeight;
+		qDebug() << "resizeLeft" << resizeLeft << "\nresizeTop" << resizeTop;
 		Effect *e = el[0];
 		ok = e->set_int( "width", resizeOutputWidth )
 			&& e->set_int( "height", resizeOutputHeight )
@@ -194,6 +201,7 @@ bool GLSize::process( const QList<Effect*> &el, Frame *src, Profile *p )
 		++index;
 	}
 	
+	qDebug() << "left" << left << "\ntop" << top;
 	Effect *e = el[index];
 	return ok && e->set_int( "width", src->glWidth )
 		&& e->set_int( "height", src->glHeight )
@@ -226,7 +234,8 @@ void GLSize::findPoints( double &x1, double &x2, double first, double last )
 		if ( x1 > last ) {
 			x1 = x2 = 0;
 			return;
-		}	
+		}
+		//else x1 = x1
 	}
 	else
 		x1 = first;
@@ -236,6 +245,7 @@ void GLSize::findPoints( double &x1, double &x2, double first, double last )
 			x1 = x2 = 0;
 			return;
 		}
+		// else x2 = x2
 	}
 	else
 		x2 = last;
