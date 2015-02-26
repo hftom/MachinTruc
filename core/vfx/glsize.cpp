@@ -146,12 +146,12 @@ bool GLSize::process( const QList<Effect*> &el, Frame *src, Profile *p )
 		imageHeight = y2 - y1;
 		// round to nearest integer
 		resizeOutputWidth = qMax( imageWidth + 0.5, 1.0 );
-		resizeZoomX = sw / (double)resizeOutputWidth;
-		resizeLeft = x1 / sw * (double)src->glWidth;
+		resizeZoomX = sw / resizeOutputWidth;
+		resizeLeft = x1 / sw * src->glWidth;
 		
 		resizeOutputHeight = qMax( imageHeight + 0.5, 1.0 );
-		resizeZoomY = sh / (double)resizeOutputHeight;
-		resizeTop = (sh - y2) / sh * (double)src->glHeight;
+		resizeZoomY = sh / resizeOutputHeight;
+		resizeTop = (sh - y2) / sh * src->glHeight;
 	}
 
 	if ( rotateActive ) {
@@ -171,8 +171,6 @@ bool GLSize::process( const QList<Effect*> &el, Frame *src, Profile *p )
 	src->glSAR = psar;
 	
 	if ( resizeActive ) {
-		qDebug() << "resizeOutputWidth" << resizeOutputWidth << "\nresizeOutputHeight" << resizeOutputHeight;
-		qDebug() << "resizeLeft" << resizeLeft << "\nresizeTop" << resizeTop;
 		Effect *e = el[0];
 		ok = e->set_int( "width", resizeOutputWidth )
 			&& e->set_int( "height", resizeOutputHeight )
@@ -200,8 +198,7 @@ bool GLSize::process( const QList<Effect*> &el, Frame *src, Profile *p )
 			&& el[index]->set_float( "SAR", src->glSAR );
 		++index;
 	}
-	
-	qDebug() << "left" << left << "\ntop" << top;
+
 	Effect *e = el[index];
 	return ok && e->set_int( "width", src->glWidth )
 		&& e->set_int( "height", src->glHeight )

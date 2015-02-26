@@ -82,7 +82,7 @@ private:
 	Parameter *rotateAngle, *softBorder;
 	bool rotateActive;
 	double rotateLeft, rotateTop;
-	double rotateSize;
+	int rotateSize;
 	
 	Parameter *xOffsetPercent, *yOffsetPercent;
 	double left, top;
