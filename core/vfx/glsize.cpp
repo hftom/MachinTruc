@@ -235,7 +235,7 @@ void GLSize::findPoints( double &x1, double &x2, double first, double last )
 		//else x1 = x1
 	}
 	else
-		x1 = first;
+		x1 = qMax(first - 1.0, x1);
 	
 	if ( x2 <= last ) {
 		if ( x2 < first ) {
@@ -245,6 +245,6 @@ void GLSize::findPoints( double &x1, double &x2, double first, double last )
 		// else x2 = x2
 	}
 	else
-		x2 = last;
+		x2 = qMin(last + 1.0, x2);
 }
 
