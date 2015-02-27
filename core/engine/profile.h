@@ -4,6 +4,9 @@
 #include <QObject>
 #include <QString>
 
+#define MAXPROJECTWIDTH 3840
+#define MAXPROJECTHEIGHT 2160
+
 #define MILLISECOND 1000.0
 #define MICROSECOND 1000000.0
 

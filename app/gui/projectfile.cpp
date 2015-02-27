@@ -26,11 +26,11 @@ bool ProjectFile::loadProject( QString filename )
 	}
 	
 	QString s = rootElement.attribute( "width" );
-	if ( s.isEmpty() || s.toInt() < 1 || s.toInt() > 1920 )
+	if ( s.isEmpty() || s.toInt() < 1 || s.toInt() > MAXPROJECTWIDTH )
 		return false;
 	projectProfile.setVideoWidth( s.toInt() );
 	s = rootElement.attribute( "height" );
-	if ( s.isEmpty() || s.toInt() < 1 || s.toInt() > 1080 )
+	if ( s.isEmpty() || s.toInt() < 1 || s.toInt() > MAXPROJECTHEIGHT )
 		return false;
 	projectProfile.setVideoHeight( s.toInt() );
 	s = rootElement.attribute( "sar" );
