@@ -101,7 +101,7 @@ bool GLSize::process( const QList<Effect*> &el, Frame *src, Profile *p )
 		Vector2d vec2( vec1.x() + pw * psar, vec1.y() );   // bottom right
 		Vector2d vec3( vec1.x(), vec1.y() + ph );   // top left
 		Vector2d vec4( vec2.x(), vec3.y() );        // top right
-		Translation<double,2> trans( Vector2d(-left, top) ); // GL y axis direction is inverted, so -(-top)
+		Translation<double,2> trans( Vector2d(-left, top) ); // PaddingEffect origin is top_left so -(-top)
 		Rotation2D<double> rot( -rad );
 		vec1 = rot * trans * vec1;
 		vec2 = rot * trans * vec2;
