@@ -183,13 +183,6 @@ bool GLSize::process( const QList<Effect*> &el, Frame *src, Profile *p )
 	if ( rotateActive ) {
 		ok |= el[index]->set_float( "borderSize", getParamValue( softBorder ).toInt() );
 		++index;
-
-		/*Effect *e = el[index];
-		ok |= e->set_int( "width", rotateSize )
-			&& e->set_int( "height", rotateSize )
-			&& e->set_float( "top", rotateTop )
-			&& e->set_float( "left", rotateLeft );
-		++index;*/
 		
 		Effect *e = el[index];
 		ok |= e->set_float( "angle", rad )
