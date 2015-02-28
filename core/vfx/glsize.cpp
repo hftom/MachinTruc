@@ -18,9 +18,8 @@ GLSize::GLSize( QString id, QString name ) : GLFilter( id, name ),
 	resizeZoomY( 1 ),
 	resizeLeft( 0 ),
 	resizeTop( 0 ),
-	rotateActive( false ),
-	rotateLeft( 0 ),
-	rotateTop( 0 ),
+	centerOffsetX(0),
+	centerOffsetY(0),
 	left( 0 ),
 	top( 0 )
 {
@@ -28,7 +27,7 @@ GLSize::GLSize( QString id, QString name ) : GLFilter( id, name ),
 	xOffsetPercent = addParameter( "xOffsetPercent", tr("X:"), Parameter::PDOUBLE, 0.0, -100.0, 100.0, true, "%" );
 	yOffsetPercent = addParameter( "yOffsetPercent", tr("Y:"), Parameter::PDOUBLE, 0.0, -100.0, 100.0, true, "%" );
 	rotateAngle = addParameter( "rotateAngle", tr("Rotation angle:"), Parameter::PDOUBLE, 0.0, -360.0, 360.0, true );
-	softBorder = addParameter( "softBorder", tr("Soft border:"), Parameter::PINT, 2, 0, 10, false );
+	softBorder = addParameter( "softBorder", tr("Soft border:"), Parameter::PINT, 2, 1, 10, false );
 }
 
 
@@ -52,8 +51,10 @@ QString GLSize::getDescriptor( Frame *src, Profile *p )
 		resizeActive = true;
 	}
 	
-	if ( !rotateAngle->graph.keys.count() && getParamValue( rotateAngle ).toDouble() == 0.0 )
+	if ( !rotateAngle->graph.keys.count() && getParamValue( rotateAngle ).toDouble() == 0.0 ) {
 		rotateActive = false;
+		s += "Padding";
+	}
 	else {
 		s += "Rotate";
 		rotateActive = true;
@@ -62,7 +63,7 @@ QString GLSize::getDescriptor( Frame *src, Profile *p )
 	src->glWidth = p->getVideoWidth();
 	src->glHeight = p->getVideoHeight();
 	src->glSAR = p->getVideoSAR();
-	return s + "Padding";
+	return s;
 }
 
 
@@ -148,30 +149,26 @@ bool GLSize::process( const QList<Effect*> &el, Frame *src, Profile *p )
 		resizeOutputWidth = qMax( imageWidth + 0.5, 1.0 );
 		resizeZoomX = sw / resizeOutputWidth;
 		resizeLeft = x1 / sw * src->glWidth;
-		
 		resizeOutputHeight = qMax( imageHeight + 0.5, 1.0 );
 		resizeZoomY = sh / resizeOutputHeight;
 		resizeTop = (sh - y2) / sh * src->glHeight;
 	}
 
+	// compensate rounded resample size
 	if ( rotateActive ) {
-		rotateSize = sqrt( resizeOutputWidth * psar * resizeOutputWidth * psar + resizeOutputHeight * resizeOutputHeight ) + 1;
-		rotateLeft = (rotateSize - imageWidth) / 2.0;
-		rotateTop = (rotateSize - imageHeight) / 2.0;
-		left -= (rotateSize - pw) / 2.0;
-		top -= (rotateSize - ph) / 2.0;
+		centerOffsetX = (imageWidth - resizeOutputWidth) / 2.0;
+		centerOffsetY = (resizeOutputHeight - imageHeight) / 2.0;
 	}
-	else {
-		left -= (imageWidth - pw) / 2.0;
-		top -= (imageHeight - ph) / 2.0;
-	}
+
+	left -= (imageWidth - pw) / 2.0;
+	top -= (imageHeight - ph) / 2.0;
 	
 	src->glWidth = pw;
 	src->glHeight = ph;
 	src->glSAR = psar;
 	
 	if ( resizeActive ) {
-		Effect *e = el[0];
+		Effect *e = el[index];
 		ok = e->set_int( "width", resizeOutputWidth )
 			&& e->set_int( "height", resizeOutputHeight )
 			&& e->set_float( "zoom_x", resizeZoomX )
@@ -187,23 +184,33 @@ bool GLSize::process( const QList<Effect*> &el, Frame *src, Profile *p )
 		ok |= el[index]->set_float( "borderSize", getParamValue( softBorder ).toInt() );
 		++index;
 
-		Effect *e = el[index];
+		/*Effect *e = el[index];
 		ok |= e->set_int( "width", rotateSize )
 			&& e->set_int( "height", rotateSize )
 			&& e->set_float( "top", rotateTop )
 			&& e->set_float( "left", rotateLeft );
-		++index;
+		++index;*/
 		
-		ok |= el[index]->set_float( "angle", rad )
-			&& el[index]->set_float( "SAR", src->glSAR );
-		++index;
+		Effect *e = el[index];
+		ok |= e->set_float( "angle", rad )
+			&& e->set_float( "SAR", src->glSAR )
+			&& e->set_int( "width", src->glWidth )
+			&& e->set_int( "height", src->glHeight )
+			&& e->set_float( "top", top )
+			&& e->set_float( "left", left )
+			&& e->set_float( "centerOffsetX", centerOffsetX )
+			&& e->set_float( "centerOffsetY", centerOffsetY );
+			
 	}
-
-	Effect *e = el[index];
-	return ok && e->set_int( "width", src->glWidth )
-		&& e->set_int( "height", src->glHeight )
-		&& e->set_float( "top", top )
-		&& e->set_float( "left", left );
+	else {
+		Effect *e = el[index];
+		ok |= e->set_int( "width", src->glWidth )
+			&& e->set_int( "height", src->glHeight )
+			&& e->set_float( "top", top )
+			&& e->set_float( "left", left );
+	}
+	
+	return ok;
 }
 
 
@@ -215,10 +222,11 @@ QList<Effect*> GLSize::getMovitEffects()
 		list.append( new ResampleEffect() );
 	if ( rotateActive ) {
 		list.append( new MySoftBorderEffect() );
-		list.append( new PaddingEffect() );
+		//list.append( new PaddingEffect() );
 		list.append( new MyRotateEffect() );
 	}
-	list.append( new PaddingEffect() );
+	else
+		list.append( new PaddingEffect() );
 
 	return list;
 }
