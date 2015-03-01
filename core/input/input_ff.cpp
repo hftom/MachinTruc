@@ -88,6 +88,7 @@ double InputFF::seekTo( double p )
 {
 	flush();
 	mmiSeek();
+	--mmi;
 
 	if ( playBackward ) {
 		p = qMin( p, inProfile.getStreamStartTime() + inProfile.getStreamDuration() - inProfile.getVideoFrameDuration() );
@@ -257,14 +258,12 @@ void InputFF::runForward()
 					videoResampler.duplicate( f );
 					f->mmi = mmi;
 					f->mmiProvider = mmiProvider;
-					if ( !videoResampler.repeat )
-						mmiIncrement();
 					reorderedVideoFrames.enqueue( f );
 				}
 				else {
+					mmiIncrement();
 					f->mmi = mmi;
 					f->mmiProvider = mmiProvider;
-					mmiIncrement();
 					if ( decoder->decodeVideo( f ) ) {
 						lastFrame.set( f );
 						resample ( f );
@@ -438,15 +437,13 @@ void InputFF::runBackward()
 					videoResampler.duplicate( f, true );
 					f->mmi = mmi;
 					f->mmiProvider = mmiProvider;
-					if ( !videoResampler.repeat )
-						mmiIncrement();
 					reorderedVideoFrames.enqueue( f );
 				}
 				else {
 					Frame *f = backwardVideoFrames.takeLast();
+					mmiIncrement();
 					f->mmi = mmi;
 					f->mmiProvider = mmiProvider;
-					mmiIncrement();
 					lastFrame.set( f );
 					resampleBackward( f );
 				}
