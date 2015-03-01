@@ -44,6 +44,7 @@ FilterCollection::FilterCollection()
 	
 	// video transitions
 	videoTransitions.append( FilterEntry( "GLMix", QObject::tr("Crossfade"), &Maker<GLMix>::make ) );
+	videoTransitions.append( FilterEntry( "GLPush", QObject::tr("Push"), &Maker<GLPush>::make ) );
 
 
 

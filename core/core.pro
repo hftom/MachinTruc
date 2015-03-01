@@ -33,6 +33,7 @@ SOURCES = \
 	vfx/movitbackground.cpp \
 	vfx/gltest.cpp \
 	vfx/glmix.cpp \
+	vfx/glpush.cpp \
 	vfx/gloverlay.cpp \
 	vfx/glsaturation.cpp \
 	vfx/glvignette.cpp \
@@ -104,6 +105,7 @@ HEADERS = \
 	vfx/gltest.h \
 	vfx/glfilter.h \
 	vfx/glmix.h \
+	vfx/glpush.h \
 	vfx/gloverlay.h \
 	vfx/glsaturation.h \
 	vfx/glvignette.h \

@@ -33,6 +33,7 @@
 
 // video compositions
 #include "vfx/glmix.h"
+#include "vfx/glpush.h"
 #include "vfx/gloverlay.h"
 
 // audio filters
