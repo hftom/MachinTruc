@@ -32,6 +32,8 @@ void Clip::setPosition( double p )
 	
 	for ( int i = 0; i< videoFilters.count(); ++i )
 		videoFilters.at( i )->setPosition( posInTrack );
+	for ( int i = 0; i< audioFilters.count(); ++i )
+		audioFilters.at( i )->setPosition( posInTrack );
 	if ( transition )
 		transition->setPosition( posInTrack );
 }
@@ -44,6 +46,8 @@ void Clip::setLength( double len )
 	
 	for ( int i = 0; i< videoFilters.count(); ++i )
 		videoFilters.at( i )->setLength( length() );
+	for ( int i = 0; i< audioFilters.count(); ++i )
+		audioFilters.at( i )->setLength( length() );
 }
 
 
@@ -60,6 +64,8 @@ void Clip::setFrameDuration( double d )
 	frameDuration = d;
 	for ( int i = 0; i< videoFilters.count(); ++i )
 		videoFilters.at( i )->setLength( length() );
+	for ( int i = 0; i< audioFilters.count(); ++i )
+		audioFilters.at( i )->setLength( length() );
 	if ( transition )
 		transition->setFrameDuration( frameDuration );
 }
