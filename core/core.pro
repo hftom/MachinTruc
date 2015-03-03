@@ -35,6 +35,7 @@ SOURCES = \
 	vfx/glmix.cpp \
 	vfx/glpush.cpp \
 	vfx/glcover.cpp \
+	vfx/glfrostedglass.cpp \
 	vfx/gloverlay.cpp \
 	vfx/glsaturation.cpp \
 	vfx/glvignette.cpp \
@@ -108,6 +109,7 @@ HEADERS = \
 	vfx/glmix.h \
 	vfx/glpush.h \
 	vfx/glcover.h \
+	vfx/glfrostedglass.h \
 	vfx/gloverlay.h \
 	vfx/glsaturation.h \
 	vfx/glvignette.h \

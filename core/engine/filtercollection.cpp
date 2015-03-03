@@ -46,8 +46,7 @@ FilterCollection::FilterCollection()
 	videoTransitions.append( FilterEntry( "GLMix", QObject::tr("Crossfade"), &Maker<GLMix>::make ) );
 	videoTransitions.append( FilterEntry( "GLPush", QObject::tr("Push"), &Maker<GLPush>::make ) );
 	videoTransitions.append( FilterEntry( "GLCover", QObject::tr("Cover"), &Maker<GLCover>::make ) );
-
-
+	videoTransitions.append( FilterEntry( "GLFrostedGlass", QObject::tr("Frosted glass"), &Maker<GLFrostedGlass>::make ) );
 
 	// audio filters
 	audioFilters.append( FilterEntry( "AudioVolume", QObject::tr("Volume"), &Maker<AudioVolume>::make ) );
