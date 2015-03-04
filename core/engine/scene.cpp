@@ -317,7 +317,7 @@ void Scene::moveMulti( Clip *clip, int clipTrack, double newPos )
 		++k;
 	}
 
-	removeTransitions( clip, clipTrack, clipTrack, clipIndex, newPos, clip->length(), margin );
+	removeTransitions( clip, clipTrack, clipTrack, clipIndex, newPos, clip->length(), margin, true );
 	clip->setPosition( clip->position() + delta );
 	while ( ++k < count ) {
 		Clip *c = t->clipAt( k );
@@ -428,7 +428,7 @@ void Scene::updateTransitions( Clip *clip, int track, double margin )
 
 
 
-void Scene::removeTransitions( Clip *clip, int oldTrack, int newTrack, int newIndex, double clipPos, double clipLength, double margin )
+void Scene::removeTransitions( Clip *clip, int oldTrack, int newTrack, int newIndex, double clipPos, double clipLength, double margin, bool multi )
 {
 	Track *ot = tracks[oldTrack];
 
@@ -441,7 +441,7 @@ void Scene::removeTransitions( Clip *clip, int oldTrack, int newTrack, int newIn
 		}
 	}
 	else {
-		if ( index < ot->clipCount() - 1 ) {
+		if ( !multi && index < ot->clipCount() - 1 ) {
 			Clip *c = ot->clipAt( index + 1 );
 			if ( clipPos + clipLength - margin < c->position() )
 				c->removeTransition();

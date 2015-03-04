@@ -44,7 +44,7 @@ public:
 	
 private:
 	bool checkPlacement( Clip *clip, int track, double clipPos, double clipLength );
-	void removeTransitions( Clip *clip, int oldTrack, int newTrack, int newIndex, double clipPos, double clipLength, double margin );
+	void removeTransitions( Clip *clip, int oldTrack, int newTrack, int newIndex, double clipPos, double clipLength, double margin, bool multi = false );
 	void updateTransitions( Clip *clip, int newTrack, double margin );
 	bool clipLessThan( double margin, double cpos, double clen, double pos );	
 	bool collidesWith( double margin, double cpos, double pos, double len );
