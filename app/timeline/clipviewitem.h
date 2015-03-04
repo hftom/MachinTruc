@@ -25,6 +25,8 @@ public:
 	void setClip( Clip *c ) { clip = c; }
 	Clip* getClip() { return clip; }
 	
+	TransitionViewItem* getTransition() { return transition; }
+	
 protected:
 	void mousePressEvent( QGraphicsSceneMouseEvent *event );
 	void mouseMoveEvent( QGraphicsSceneMouseEvent *event );

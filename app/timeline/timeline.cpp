@@ -167,6 +167,31 @@ void Timeline::trackAdded( int index )
 
 
 
+void Timeline::transitionChanged( TransitionViewItem *it, QString transitionName )
+{
+	QList<QGraphicsItem*> list = items( it->mapToScene( it->rect().topLeft() ), Qt::IntersectsItemBoundingRect, Qt::AscendingOrder );
+	for ( int i = 0; i < list.count(); ++i ) {
+		QGraphicsItem *item = list.at( i );
+		if ( item->data( DATAITEMTYPE ).toInt() == TYPECLIP ) {
+			ClipViewItem *cv = (ClipViewItem*)item;
+			if ( cv->getTransition() == it )  {
+				FilterCollection *fc = FilterCollection::getGlobalInstance();
+				for ( int j = 0; j < fc->videoTransitions.count(); ++j ) {
+					if ( fc->videoTransitions[ j ].name == transitionName ) {
+						QSharedPointer<Filter> f = fc->videoTransitions[ j ].create();
+						cv->getClip()->getTransition()->setVideoFilter( f.staticCast<GLFilter>() );
+						emit updateFrame();
+						break;
+					}
+				}
+				break;
+			}
+		}
+	}
+}
+
+
+
 void Timeline::updateTransitions( ClipViewItem *clip, bool remove )
 {
 	// begin

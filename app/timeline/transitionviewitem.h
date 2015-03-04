@@ -14,6 +14,9 @@ public:
 
 	void paint( QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget );
 	void setSelected( bool b ) { selected = b; }
+	
+protected:
+	void mousePressEvent( QGraphicsSceneMouseEvent *event );	
 
 private:	
 	QPen normalPen, selectionPen;

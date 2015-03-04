@@ -6,31 +6,13 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>582</width>
-    <height>622</height>
+    <width>440</width>
+    <height>485</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout_2">
-   <property name="margin">
-    <number>0</number>
-   </property>
-   <property name="spacing">
-    <number>0</number>
-   </property>
-   <item row="0" column="0">
-    <layout class="QVBoxLayout" name="verticalLayout">
-     <property name="spacing">
-      <number>0</number>
-     </property>
-     <item>
-      <widget class="QListWidget" name="listWidget"/>
-     </item>
-    </layout>
-   </item>
-  </layout>
  </widget>
  <resources/>
  <connections/>

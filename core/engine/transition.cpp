@@ -24,6 +24,8 @@ Transition::Transition( double posInTrackPTS, double len )
 void Transition::setVideoFilter( QSharedPointer<GLFilter> f )
 {
 	videoFilter = f;
+	videoFilter->setPosition( posInTrack );
+	videoFilter->setLength( transitionLength );
 }
 
 
@@ -31,6 +33,8 @@ void Transition::setVideoFilter( QSharedPointer<GLFilter> f )
 void Transition::setAudioFilter( QSharedPointer<AudioFilter> f )
 {
 	audioFilter = f;
+	audioFilter->setPosition( posInTrack );
+	audioFilter->setLength( transitionLength );
 }
 
 

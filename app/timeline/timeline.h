@@ -7,6 +7,7 @@
 #include "clipviewitem.h"
 #include "cursorviewitem.h"
 #include "trackviewitem.h"
+#include "transitionviewitem.h"
 
 
 
@@ -51,6 +52,8 @@ public:
 	void clipItemCanResize( ClipViewItem *clip, int way, QPointF mouse, double clipStartPos, double clipStartLen, QPointF clipStartMouse, bool unsnap );
 	void clipItemResized( ClipViewItem *clip, int way );
 	void addFilter( ClipViewItem *clip, QString fx );
+	
+	void transitionChanged( TransitionViewItem *it, QString transitionName );
 	
 	void trackPressed( QPointF p );
 	void trackPressedRightBtn( TrackViewItem *t, QPoint p );

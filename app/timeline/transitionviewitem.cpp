@@ -1,7 +1,10 @@
 #include <math.h>
 
 #include <QCursor>
+#include <QMenu>
 
+#include "engine/filtercollection.h"
+#include "timeline.h"
 #include "transitionviewitem.h"
 
 
@@ -34,4 +37,31 @@ TransitionViewItem::TransitionViewItem( QGraphicsItem *parent, double pos, doubl
 void TransitionViewItem::paint( QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget )
 {
 	QGraphicsRectItem::paint( painter, option, widget );
+}
+
+
+
+void TransitionViewItem::mousePressEvent( QGraphicsSceneMouseEvent *event )
+{
+	if ( event->buttons() & Qt::RightButton ) {
+		FilterCollection *fc = FilterCollection::getGlobalInstance();
+		QMenu menu;
+		for ( int i = 0; i < fc->videoTransitions.count(); ++i ) {
+			menu.addAction( fc->videoTransitions[ i ].name );
+		}
+		QAction *action = menu.exec( QCursor::pos() );
+		if ( action ) {
+			for ( int i = 0; i < fc->videoTransitions.count(); ++i ) {
+				if ( action->text() == fc->videoTransitions[ i ].name ) {
+					Timeline *t = (Timeline*)scene();
+					t->transitionChanged( this, fc->videoTransitions[ i ].name );
+					break;
+				}
+			}
+		}
+		
+		event->accept();
+	}
+	
+	event->ignore();
 }
