@@ -30,6 +30,7 @@ public:
 protected:	
 	Parameter* addParameter( QString id, QString name, int type, QVariant def, QVariant min, QVariant max, bool keyframeable, const QString &suffix = QString() );
 	QVariant getParamValue( Parameter *param, double pts = 0 );
+	double getNormalizedTime( double pts );
 	
 private:
 	QList<Parameter*> parameters;

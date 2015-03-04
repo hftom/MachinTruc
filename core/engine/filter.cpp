@@ -41,6 +41,13 @@ Parameter* Filter::addParameter( QString id, QString name, int type, QVariant de
 
 
 
+double Filter::getNormalizedTime( double pts )
+{
+	return (pts - posInTrack) / length;
+}
+
+
+
 QVariant Filter::getParamValue( Parameter *p, double pts )
 {
 	if ( !p->graph.keys.count() ) {
@@ -48,8 +55,7 @@ QVariant Filter::getParamValue( Parameter *p, double pts )
 	}
 	
 	double range = qAbs( -p->min.toDouble() + p->max.toDouble() );
-	double time = (pts - posInTrack) / length;
-	return (range * p->graph.valueAt( time )) + p->min.toDouble();
+	return (range * p->graph.valueAt( getNormalizedTime( pts ) )) + p->min.toDouble();
 }
 
 
