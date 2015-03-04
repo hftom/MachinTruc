@@ -44,9 +44,17 @@ FilterCollection::FilterCollection()
 	
 	// video transitions
 	videoTransitions.append( FilterEntry( "GLMix", QObject::tr("Crossfade"), &Maker<GLMix>::make ) );
-	videoTransitions.append( FilterEntry( "GLPush", QObject::tr("Push"), &Maker<GLPush>::make ) );
-	videoTransitions.append( FilterEntry( "GLCover", QObject::tr("Cover"), &Maker<GLCover>::make ) );
-	videoTransitions.append( FilterEntry( "GLHardCut", QObject::tr("Hard cut"), &Maker<GLHardCut>::make ) );
+	videoTransitions.append( FilterEntry( "GLPush", QObject::tr("Push left to right"), &Maker<GLPush>::make ) );
+	videoTransitions.append( FilterEntry( "GLPushRL", QObject::tr("Push right to left"), &Maker<GLPushRL>::make ) );
+	videoTransitions.append( FilterEntry( "GLPushTB", QObject::tr("Push top to bottom"), &Maker<GLPushTB>::make ) );
+	videoTransitions.append( FilterEntry( "GLPushBT", QObject::tr("Push bottom to top"), &Maker<GLPushBT>::make ) );
+	videoTransitions.append( FilterEntry( "GLCover", QObject::tr("Cover left to right"), &Maker<GLCover>::make ) );
+	videoTransitions.append( FilterEntry( "GLCoverRL", QObject::tr("Cover right to left"), &Maker<GLCoverRL>::make ) );
+	videoTransitions.append( FilterEntry( "GLCoverTB", QObject::tr("Cover top to bottom"), &Maker<GLCoverTB>::make ) );
+	videoTransitions.append( FilterEntry( "GLCoverBT", QObject::tr("Cover bottom to top"), &Maker<GLCoverBT>::make ) );
+	videoTransitions.append( FilterEntry( "GLHardCut", QObject::tr("Hard cut start"), &Maker<GLHardCut>::make ) );
+	videoTransitions.append( FilterEntry( "GLHardCutMiddle", QObject::tr("Hard cut middle"), &Maker<GLHardCutMiddle>::make ) );
+	videoTransitions.append( FilterEntry( "GLHardCutEnd", QObject::tr("Hard cut end"), &Maker<GLHardCutEnd>::make ) );
 	videoTransitions.append( FilterEntry( "GLFrostedGlass", QObject::tr("Frosted glass"), &Maker<GLFrostedGlass>::make ) );
 
 	// audio filters

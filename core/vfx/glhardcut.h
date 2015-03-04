@@ -38,8 +38,24 @@ public:
 	bool process( const QList<Effect*>&, Frame *src, Frame *dst, Profile *p );
 	QList<Effect*> getMovitEffects();
 
-private:
+protected:
 	Parameter *position;
+};
+
+class GLHardCutMiddle : public GLHardCut
+{
+public:
+	GLHardCutMiddle( QString id, QString name ) : GLHardCut( id, name ) {
+		position->value = 1;
+	}
+};
+
+class GLHardCutEnd : public GLHardCut
+{
+public:
+	GLHardCutEnd( QString id, QString name ) : GLHardCut( id, name ) {
+		position->value = 2;
+	}
 };
 
 #endif //GLHARDCUT_H

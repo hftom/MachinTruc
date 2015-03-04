@@ -75,8 +75,33 @@ public:
 	bool process( const QList<Effect*>&, Frame *src, Frame *dst, Profile *p );
 	QList<Effect*> getMovitEffects();
 
-private:
+protected:
 	Parameter *position, *vertical, *reversed;
+};
+
+class GLPushRL : public GLPush
+{
+public:
+	GLPushRL( QString id, QString name ) : GLPush( id, name ) {
+		reversed->value = 1;
+	}
+};
+
+class GLPushTB : public GLPush
+{
+public:
+	GLPushTB( QString id, QString name ) : GLPush( id, name ) {
+		vertical->value = 1;
+	}
+};
+
+class GLPushBT : public GLPush
+{
+public:
+	GLPushBT( QString id, QString name ) : GLPush( id, name ) {
+		reversed->value = 1;
+		vertical->value = 1;
+	}
 };
 
 #endif //GLPUSH_H

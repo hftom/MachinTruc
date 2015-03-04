@@ -75,8 +75,33 @@ public:
 	bool process( const QList<Effect*>&, Frame *src, Frame *dst, Profile *p );
 	QList<Effect*> getMovitEffects();
 
-private:
+protected:
 	Parameter *position, *vertical, *reversed;
+};
+
+class GLCoverRL : public GLCover
+{
+public:
+	GLCoverRL( QString id, QString name ) : GLCover( id, name ) {
+		reversed->value = 1;
+	}
+};
+
+class GLCoverTB : public GLCover
+{
+public:
+	GLCoverTB( QString id, QString name ) : GLCover( id, name ) {
+		vertical->value = 1;
+	}
+};
+
+class GLCoverBT : public GLCover
+{
+public:
+	GLCoverBT( QString id, QString name ) : GLCover( id, name ) {
+		vertical->value = 1;
+		reversed->value = 1;
+	}
 };
 
 #endif //GLCOVER_H
