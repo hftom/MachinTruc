@@ -11,12 +11,12 @@ ColorChooser::ColorChooser( bool rgba, QWidget *parent, Parameter *p, bool keyfr
 	
 	QBoxLayout *b1 = new QBoxLayout( QBoxLayout::LeftToRight );
 	b1->setContentsMargins( 0, 0, 0, 0 );
-	widgets.append( label = new QLabel( p->name, parent ) );
+	widgets.append( label = new QLabel( p->name ) );
 	b1->addWidget( label );
 	
 	QBoxLayout *b2 = new QBoxLayout( QBoxLayout::LeftToRight );
 	b2->setContentsMargins( 0, 0, 0, 0 );
-	widgets.append( btn = new QPushButton( "...", parent ) );
+	widgets.append( btn = new QPushButton( "..." ) );
 	b2->addWidget( btn );
 	
 	box = new QBoxLayout( QBoxLayout::TopToBottom );

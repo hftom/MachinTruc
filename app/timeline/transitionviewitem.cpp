@@ -2,6 +2,7 @@
 
 #include <QCursor>
 #include <QMenu>
+#include <QApplication>
 
 #include "engine/filtercollection.h"
 #include "timeline.h"
@@ -15,8 +16,6 @@ TransitionViewItem::TransitionViewItem( QGraphicsItem *parent, double pos, doubl
 	setParentItem( parent );
 	setZValue( ZTRANSITION );
 
-	//setAcceptHoverEvents(true);
-	
 	setCuts( pos, len, scale );
 	
 	normalPen.setJoinStyle( Qt::MiterJoin );
@@ -30,6 +29,8 @@ TransitionViewItem::TransitionViewItem( QGraphicsItem *parent, double pos, doubl
 	
 	setPen( normalPen );
 	setBrush( normalBrush );
+	
+	lastTime = QDateTime::currentDateTime();
 }
 
 
@@ -43,24 +44,15 @@ void TransitionViewItem::paint( QPainter *painter, const QStyleOptionGraphicsIte
 
 void TransitionViewItem::mousePressEvent( QGraphicsSceneMouseEvent *event )
 {
-	if ( event->buttons() & Qt::RightButton ) {
-		FilterCollection *fc = FilterCollection::getGlobalInstance();
-		QMenu menu;
-		for ( int i = 0; i < fc->videoTransitions.count(); ++i ) {
-			menu.addAction( fc->videoTransitions[ i ].name );
+	if ( event->buttons() & Qt::LeftButton ) {
+		QDateTime old = lastTime;
+		lastTime = QDateTime::currentDateTime();
+		if ( old.msecsTo( lastTime ) <= qApp->doubleClickInterval() ) {
+			Timeline *t = (Timeline*)scene();
+			t->transitionSelected( this );
+			event->accept();
+			return;
 		}
-		QAction *action = menu.exec( QCursor::pos() );
-		if ( action ) {
-			for ( int i = 0; i < fc->videoTransitions.count(); ++i ) {
-				if ( action->text() == fc->videoTransitions[ i ].name ) {
-					Timeline *t = (Timeline*)scene();
-					t->transitionChanged( this, fc->videoTransitions[ i ].name );
-					break;
-				}
-			}
-		}
-		
-		event->accept();
 	}
 	
 	event->ignore();

@@ -33,7 +33,27 @@ Parameter* Filter::addParameter( QString id, QString name, int type, QVariant de
 	param->max = max;
 	param->value = def;
 	param->keyframeable = keyframeable;
+	param->hidden = false;
 	param->suffix = suffix;
+	parameters.append( param );
+	
+	return param;
+}
+
+
+
+Parameter* Filter::addBooleanParameter( QString id, QString name, QVariant def )
+{
+	Parameter *param = new Parameter();
+	param->id = id;
+	param->name = name;
+	param->type = Parameter::PBOOL;
+	param->defValue = def;
+	param->min = 0;
+	param->max = 1;
+	param->value = def;
+	param->keyframeable = false;
+	param->hidden = false;
 	parameters.append( param );
 	
 	return param;

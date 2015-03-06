@@ -1,6 +1,7 @@
 #ifndef ABSTRACTVIEWITEM_H
 #define ABSTRACTVIEWITEM_H
 
+#include <QDateTime>
 #include <QGraphicsRectItem>
 
 #include "typeitem.h"

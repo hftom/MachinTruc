@@ -29,6 +29,7 @@ public:
 
 protected:	
 	Parameter* addParameter( QString id, QString name, int type, QVariant def, QVariant min, QVariant max, bool keyframeable, const QString &suffix = QString() );
+	Parameter* addBooleanParameter( QString id, QString name, QVariant def );
 	QVariant getParamValue( Parameter *param, double pts = 0 );
 	double getNormalizedTime( double pts );
 	

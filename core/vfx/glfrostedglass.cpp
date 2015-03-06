@@ -8,10 +8,12 @@ GLFrostedGlass::GLFrostedGlass( QString id, QString name ) : GLFilter( id, name 
 	position->graph.keys.append( AnimationKey( AnimationKey::CURVE, 0, 0 ) );
 	position->graph.keys.append( AnimationKey( AnimationKey::CURVE, 0.5, 0.5 ) );
 	position->graph.keys.append( AnimationKey( AnimationKey::CURVE, 1, 0 ) );
+	position->hidden = true;
 	
 	mixAmount = addParameter( "mixAmount", tr("Amount:"), Parameter::PDOUBLE, 0.0, 0.0, 1.0, true );
 	mixAmount->graph.keys.append( AnimationKey( AnimationKey::CURVE, 0, 1 ) );
 	mixAmount->graph.keys.append( AnimationKey( AnimationKey::CURVE, 1, 0 ) );
+	mixAmount->hidden = true;
 }
 
 

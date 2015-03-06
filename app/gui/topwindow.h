@@ -183,6 +183,7 @@ private:
 	
 	ProjectSourcesPage *sourcePage;
 	FxPage *fxPage;
+	FxSettingsPage *fxSettingsPage;
 	
 	TimelineGraphicsView *timelineView;
 	Timeline *timeline;

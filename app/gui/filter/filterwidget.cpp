@@ -5,10 +5,11 @@
 #include "sliderdouble.h"
 #include "sliderint.h"
 #include "colorchooser.h"
+#include "checkbox.h"
 
 
 
-FilterWidget::FilterWidget( QWidget *parent, Clip *c, QSharedPointer<Filter> f ) : QWidget( parent ),
+FilterWidget::FilterWidget( QWidget *parent, Clip *c, QSharedPointer<Filter> f, bool transition ) : QWidget( parent ),
 	clip( c ),
 	filter( f )
 {	
@@ -17,15 +18,19 @@ FilterWidget::FilterWidget( QWidget *parent, Clip *c, QSharedPointer<Filter> f )
 	QBoxLayout* box = new QBoxLayout( QBoxLayout::TopToBottom );
 	box->setContentsMargins( 0, 0, 0, 0 );
 	
-	HeaderEffect *header = new HeaderEffect( filter->getFilterName(), clip!=NULL ? true : false );
-	box->addWidget( header );
-	connect( header, SIGNAL(deleteFilter()), this, SLOT(deleteFilter()) );
-	connect( header, SIGNAL(moveUp()), this, SLOT(moveUp()) );
-	connect( header, SIGNAL(moveDown()), this, SLOT(moveDown()) );
+	if ( !transition ) {
+		HeaderEffect *header = new HeaderEffect( filter->getFilterName(), clip!=NULL ? true : false );
+		box->addWidget( header );
+		connect( header, SIGNAL(deleteFilter()), this, SLOT(deleteFilter()) );
+		connect( header, SIGNAL(moveUp()), this, SLOT(moveUp()) );
+		connect( header, SIGNAL(moveDown()), this, SLOT(moveDown()) );
+	}
 	
 	int i;
 	for ( i = 0; i < parameters.count(); ++i ) {
 		Parameter *p = parameters[i];
+		if ( p->hidden )
+			continue;
 		ParameterWidget *pw = NULL;
 		switch ( p->type ) {
 			case Parameter::PDOUBLE: {
@@ -34,6 +39,10 @@ FilterWidget::FilterWidget( QWidget *parent, Clip *c, QSharedPointer<Filter> f )
 			}
 			case Parameter::PINT: {
 				pw = new SliderInt( this, p, clip != 0 );
+				break;
+			}
+			case Parameter::PBOOL: {
+				pw = new CheckBox( this, p );
 				break;
 			}
 			case Parameter::PRGBCOLOR: {

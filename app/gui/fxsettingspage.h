@@ -3,6 +3,7 @@
 
 #include <QWidget>
 
+#include "engine/clip.h"
 #include "ui_fxsettingspage.h"
 
 
@@ -13,11 +14,25 @@ class FxSettingsPage : public QWidget, private Ui::StackFxSettings
 public:
 	FxSettingsPage();
 
+public slots:
+	void clipSelected( Clip *clip );
+	
 private slots:
-
+	void videoFilterActivated( const QString& text );
+	void audioFilterActivated( const QString& text );
 
 private:
-
-
+	void setComboItems( Transition *t );
+	
+	QWidget *currentEffectWidget;
+	QGridLayout *effectWidgetLayout;
+	
+	QWidget *currentEffectWidgetAudio;
+	QGridLayout *effectWidgetLayoutAudio;
+	
+	Clip *currentClip;
+	
+signals:
+	void updateFrame();
 };
 #endif // FXSETTINGSPAGE_H

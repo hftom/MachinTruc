@@ -167,7 +167,14 @@ void Timeline::trackAdded( int index )
 
 
 
-void Timeline::transitionChanged( TransitionViewItem *it, QString transitionName )
+void Timeline::clipDoubleClicked()
+{
+	emit showEffects();
+}
+
+
+
+void Timeline::transitionSelected( TransitionViewItem *it )
 {
 	QList<QGraphicsItem*> list = items( it->mapToScene( it->rect().topLeft() ), Qt::IntersectsItemBoundingRect, Qt::AscendingOrder );
 	for ( int i = 0; i < list.count(); ++i ) {
@@ -175,15 +182,8 @@ void Timeline::transitionChanged( TransitionViewItem *it, QString transitionName
 		if ( item->data( DATAITEMTYPE ).toInt() == TYPECLIP ) {
 			ClipViewItem *cv = (ClipViewItem*)item;
 			if ( cv->getTransition() == it )  {
-				FilterCollection *fc = FilterCollection::getGlobalInstance();
-				for ( int j = 0; j < fc->videoTransitions.count(); ++j ) {
-					if ( fc->videoTransitions[ j ].name == transitionName ) {
-						QSharedPointer<Filter> f = fc->videoTransitions[ j ].create();
-						cv->getClip()->getTransition()->setVideoFilter( f.staticCast<GLFilter>() );
-						emit updateFrame();
-						break;
-					}
-				}
+				itemSelected( cv );
+				emit showTransition();
 				break;
 			}
 		}

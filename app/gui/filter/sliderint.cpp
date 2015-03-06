@@ -6,13 +6,13 @@ SliderInt::SliderInt( QWidget *parent, Parameter *p, bool keyframeable ) : Param
 {
 	QBoxLayout *b1 = new QBoxLayout( QBoxLayout::LeftToRight );
 	b1->setContentsMargins( 0, 0, 0, 0 );
-	widgets.append( label = new QLabel( p->name, parent ) );
+	widgets.append( label = new QLabel( p->name ) );
 	b1->addWidget( label );
 	
 	QBoxLayout *b2 = new QBoxLayout( QBoxLayout::LeftToRight );
 	b2->setContentsMargins( 0, 0, 0, 0 );
-	widgets.append( fs = new FSlider( parent ) );
-	widgets.append( spin = new QSpinBox( parent ) );
+	widgets.append( fs = new FSlider( NULL ) );
+	widgets.append( spin = new QSpinBox() );
 	fs->setRange( p->min.toInt(), p->max.toInt() );
 	spin->setRange( p->min.toInt(), p->max.toInt() );
 	spin->setSuffix( p->suffix );
@@ -20,7 +20,7 @@ SliderInt::SliderInt( QWidget *parent, Parameter *p, bool keyframeable ) : Param
 	b2->addWidget( spin );
 	
 	if ( keyframeable && p->keyframeable ) {
-		addAnimBtn( parent );
+		addAnimBtn( NULL );
 		b1->addWidget( animBtn );
 	}
 	

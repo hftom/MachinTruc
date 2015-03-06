@@ -59,14 +59,20 @@ TopWindow::TopWindow()
 	
 	fxPage = new FxPage();
 	connect( timeline, SIGNAL(clipSelected(Clip*)), fxPage, SLOT(clipSelected(Clip*)) );
+	connect( timeline, SIGNAL(showEffects()), this, SLOT(showFxPage()) );
 	connect( fxPage, SIGNAL(filterDeleted(Clip*,QSharedPointer<Filter>)), timeline, SLOT(filterDeleted(Clip*,QSharedPointer<Filter>)) );
 	connect( fxPage, SIGNAL(filterDeleted(Clip*,QSharedPointer<Filter>)), animEditor, SLOT(filterDeleted(Clip*,QSharedPointer<Filter>)) );
 	connect( fxPage, SIGNAL(updateFrame()), sampler, SLOT(updateFrame()) );
 	connect( fxPage, SIGNAL(editAnimation(FilterWidget*,ParameterWidget*,Parameter*)), this, SLOT(editAnimation(FilterWidget*,ParameterWidget*,Parameter*)) );
 	
+	fxSettingsPage = new FxSettingsPage();
+	connect( timeline, SIGNAL(clipSelected(Clip*)), fxSettingsPage, SLOT(clipSelected(Clip*)) );
+	connect( timeline, SIGNAL(showTransition()), this, SLOT(showFxSettingsPage()) );
+	connect( fxSettingsPage, SIGNAL(updateFrame()), sampler, SLOT(updateFrame()) );
+	
 	stackedWidget->addWidget( sourcePage );
 	stackedWidget->addWidget( fxPage );
-	stackedWidget->addWidget( new FxSettingsPage() );
+	stackedWidget->addWidget( fxSettingsPage );
 
 	QHBoxLayout *layout = new QHBoxLayout;
 	layout->setContentsMargins( 0, 0, 0, 0 );

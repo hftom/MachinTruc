@@ -1,5 +1,6 @@
 #include <math.h>
 
+#include <QApplication>
 #include <QFileInfo>
 #include <QMimeData>
 #include <QCursor>
@@ -189,6 +190,15 @@ void ClipViewItem::setSelected( bool b )
 
 void ClipViewItem::mousePressEvent( QGraphicsSceneMouseEvent *event )
 {
+	if ( event->buttons() & Qt::LeftButton ) {
+		QDateTime old = lastTime;
+		lastTime = QDateTime::currentDateTime();
+		if ( old.msecsTo( lastTime ) <= qApp->doubleClickInterval() ) {
+			Timeline *t = (Timeline*)scene();
+			t->clipDoubleClicked();
+		}
+	}
+	
 	firstMove = true;
 	multiMove = event->modifiers() & Qt::ShiftModifier;
 	if ( event->pos().x() < SNAPWIDTH ) {

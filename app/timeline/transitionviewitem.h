@@ -21,6 +21,8 @@ protected:
 private:	
 	QPen normalPen, selectionPen;
 	QBrush normalBrush, selectionBrush;
+	
+	QDateTime lastTime;
 };
 
 #endif // TRANSITIONVIEWITEM_H

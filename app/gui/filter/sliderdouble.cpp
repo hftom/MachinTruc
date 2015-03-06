@@ -6,13 +6,13 @@ SliderDouble::SliderDouble( QWidget *parent, Parameter *p, bool keyframeable ) :
 {
 	QBoxLayout *b1 = new QBoxLayout( QBoxLayout::LeftToRight );
 	b1->setContentsMargins( 0, 0, 0, 0 );
-	widgets.append( label = new QLabel( p->name, parent ) );
+	widgets.append( label = new QLabel( p->name ) );
 	b1->addWidget( label );
 	
 	QBoxLayout *b2 = new QBoxLayout( QBoxLayout::LeftToRight );
 	b2->setContentsMargins( 0, 0, 0, 0 );
-	widgets.append( fs = new FSlider( parent ) );
-	widgets.append( spin = new QDoubleSpinBox( parent ) );
+	widgets.append( fs = new FSlider( NULL ) );
+	widgets.append( spin = new QDoubleSpinBox() );
 	fs->setRange( p->min.toDouble() * 100, p->max.toDouble() * 100 );
 	spin->setRange( p->min.toDouble(), p->max.toDouble() );
 	spin->setSuffix( p->suffix );
@@ -21,7 +21,7 @@ SliderDouble::SliderDouble( QWidget *parent, Parameter *p, bool keyframeable ) :
 	b2->addWidget( spin );
 	
 	if ( keyframeable && p->keyframeable ) {
-		addAnimBtn( parent );
+		addAnimBtn( NULL );
 		b1->addWidget( animBtn );
 	}
 	

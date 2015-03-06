@@ -53,6 +53,8 @@ private:
 	QImage startThumb, endThumb;
 	
 	TransitionViewItem *transition;
+	
+	QDateTime lastTime;
 };
 
 #endif // CLIPVIEWITEM_H

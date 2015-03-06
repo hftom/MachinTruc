@@ -32,7 +32,7 @@ public:
 class Parameter
 {
 public:
-	enum ParameterType{ PDOUBLE, PINT, PRGBCOLOR, PRGBACOLOR };
+	enum ParameterType{ PDOUBLE, PINT, PBOOL, PRGBCOLOR, PRGBACOLOR };
 	
 	double getUnnormalizedKeyValue( int keyIndex ) {
 		double range = qAbs( -min.toDouble() + max.toDouble() );
@@ -50,6 +50,7 @@ public:
 	QVariant defValue;
 	QVariant max;
 	bool keyframeable;
+	bool hidden; // only an UI flag
 	QString suffix;
 	
 	QVariant value;

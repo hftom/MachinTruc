@@ -53,7 +53,8 @@ public:
 	void clipItemResized( ClipViewItem *clip, int way );
 	void addFilter( ClipViewItem *clip, QString fx );
 	
-	void transitionChanged( TransitionViewItem *it, QString transitionName );
+	void transitionSelected( TransitionViewItem *it );
+	void clipDoubleClicked();
 	
 	void trackPressed( QPointF p );
 	void trackPressedRightBtn( TrackViewItem *t, QPoint p );
@@ -117,6 +118,8 @@ signals:
 	void seekTo( double );
 	void updateFrame();
 	void clipSelected( Clip* );
+	void showTransition();
+	void showEffects();
 	void clipAddedToTimeline( Profile );
 	void trackRequest( bool, int );
 };

@@ -11,6 +11,7 @@ public:
 	AudioCrossFade( QString id, QString name ) : AudioFilter( id, name ) {
 		firstVol = new AudioVolume( "AudioVolume", "AudioVolume" );
 		Parameter* p = firstVol->getParameters().first();
+		p->hidden = true;
 		double one = p->defValue.toDouble() / p->max.toDouble();
 		p->name = tr( "Volume A:" );
 		p->id = "volumeA";
@@ -19,6 +20,7 @@ public:
 		
 		secondVol = new AudioVolume( "AudioVolume", "AudioVolume" );
 		p = secondVol->getParameters().first();
+		p->hidden = true;
 		p->name = tr( "Volume B:" );
 		p->id = "volumeB";
 		p->graph.keys.append( AnimationKey( AnimationKey::CURVE, 0, 0 ) );

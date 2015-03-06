@@ -7,8 +7,9 @@ GLPush::GLPush( QString id, QString name ) : GLFilter( id, name )
 	position = addParameter( "position", tr("Position:"), Parameter::PDOUBLE, 0.0, 0.0, 1.0, true );
 	position->graph.keys.append( AnimationKey( AnimationKey::CURVE, 0, 0 ) );
 	position->graph.keys.append( AnimationKey( AnimationKey::CURVE, 1, 1 ) );
-	vertical = addParameter( "vertical", tr("Vertical:"), Parameter::PINT, 0, 0, 1, false );
-	reversed = addParameter( "reversed", tr("Reversed:"), Parameter::PINT, 0, 0, 1, false );
+	position->hidden = true;
+	vertical = addBooleanParameter( "vertical", tr("Vertical"), 0 );
+	direction = addBooleanParameter( "direction", tr("Opposite direction"), 0 );
 }
 
 
@@ -17,7 +18,7 @@ QString GLPush::getDescriptor( Frame *src, Profile *p )
 {
 	Q_UNUSED( src );
 	Q_UNUSED( p );
-	return QString("%1 %2 %3").arg( getIdentifier() ).arg( getParamValue( vertical ).toInt() ).arg( getParamValue( reversed ).toInt() );
+	return QString("%1 %2 %3").arg( getIdentifier() ).arg( getParamValue( vertical ).toInt() ).arg( getParamValue( direction ).toInt() );
 }
 
 
@@ -35,7 +36,7 @@ QList<Effect*> GLPush::getMovitEffects()
 {
 	Effect *e = new MyPushEffect();
 	bool ok = e->set_int( "vertical", getParamValue( vertical ).toInt() )
-				&& e->set_int( "reversed", getParamValue( reversed ).toInt() );
+				&& e->set_int( "direction", getParamValue( direction ).toInt() );
 	Q_UNUSED( ok );
 	QList<Effect*> list;
 	list.append( e );
