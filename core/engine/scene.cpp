@@ -513,6 +513,8 @@ bool Scene::removeClip( Clip *clip )
 		Track *t = tracks[ i ];
 		for ( j = 0; j < t->clipCount(); ++j ) {
 			if ( clip == t->clipAt( j ) ) {
+				if ( j < t->clipCount() - 1 )
+					t->clipAt( j + 1 )->removeTransition();
 				Clip *c = t->removeClip( j );
 				if ( c ) {
 					update = true;
