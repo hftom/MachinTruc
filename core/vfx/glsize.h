@@ -23,7 +23,7 @@ static const char *MyRotateEffect_shader=
 "	tc *= mat2( PREFIX(cosSin).x, PREFIX(cosSin).y, -PREFIX(cosSin).y, PREFIX(cosSin).x );\n"
 "	tc /= PREFIX(factor);\n"
 "	tc += PREFIX(centerOffset);\n"
-"	return INPUT( tc );\n"
+"	return clamp( INPUT( tc ), vec4(0.0), vec4(1.0) );\n"
 "}\n";
 
 
