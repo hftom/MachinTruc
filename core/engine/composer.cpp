@@ -348,7 +348,7 @@ int Composer::process( Frame **frame )
 		sampler->shiftCurrentPTS();
 	}
 	
-	if ( !oneShot)
+	if ( !oneShot && ret == PROCESSCONTINUE )
 		sampler->prepareInputs();
 
 	if ( video ) {

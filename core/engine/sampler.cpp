@@ -844,6 +844,7 @@ void Sampler::prepareInputs()
 	Clip *c = NULL;
 	InputBase *in = NULL;
 	double minPTS, maxPTS;
+	double margin = currentScene->getProfile().getVideoFrameDuration() / 4.0;
 
 	if ( bufferedPlaybackPts != -1 )
 		minPTS = maxPTS = bufferedPlaybackPts;
@@ -870,7 +871,7 @@ void Sampler::prepareInputs()
 
 		for ( ; i < t->clipCount(); ++i ) {
 			c = t->clipAt( i );
-			if ( (c->position() + c->length()) < minPTS ) {
+			if ( (c->position() + c->length()) < minPTS - margin ) {
 				c->setInput( NULL );
 			}
 			else if ( c->position() <= (maxPTS + FORWARDLOOKUP) ) {
@@ -899,6 +900,7 @@ void Sampler::prepareInputsBackward()
 	Clip *c = NULL;
 	InputBase *in = NULL;
 	double minPTS, maxPTS;
+	double margin = currentScene->getProfile().getVideoFrameDuration() / 4.0;
 	
 	if ( bufferedPlaybackPts != -1 )
 		minPTS = maxPTS = bufferedPlaybackPts;
@@ -925,7 +927,7 @@ void Sampler::prepareInputsBackward()
 
 		for ( ; i >= 0; --i ) {
 			c = t->clipAt( i );
-			if ( c->position() > maxPTS ) {
+			if ( c->position() > maxPTS + margin ) {
 				c->setInput( NULL );
 			}
 			else if ( (c->position() + c->length()) >= (minPTS - FORWARDLOOKUP) ) {
