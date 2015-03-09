@@ -439,36 +439,34 @@ void Sampler::rewardPTS()
 
 InputBase* Sampler::getInput( QString fn, InputBase::InputType type )
 {
-	int j;
 	InputBase *in = NULL, *candidate = NULL;
 
-	for ( j = 0; j < inputs.count(); ++j ) {
+	for ( int j = 0; j < inputs.count(); ++j ) {
 		in = inputs.at( j );
 		if ( !in->isUsed() && in->getType() == type ) {
 			if ( in->getSource() == fn )
-				break;
-			else if ( !candidate )
+				return in;
+			if ( !candidate )
 				candidate = in;
 		}
-		in = NULL;
 	}
-	if ( !in && candidate )
-		in = candidate;
-	if ( !in ) {
-		switch ( type ) {
-			case InputBase::FFMPEG:
-				in = new InputFF();
-				break;
-			case InputBase::OPENGL:
-				in = new InputGL();
-				break;
-			case InputBase::IMAGE:
-			default:
-				in = new InputImage();
-				break;
-		}
-		inputs.append( in );
+	
+	if ( candidate )
+		return candidate;
+	
+	switch ( type ) {
+		case InputBase::FFMPEG:
+			in = new InputFF();
+			break;
+		case InputBase::OPENGL:
+			in = new InputGL();
+			break;
+		case InputBase::IMAGE:
+		default:
+			in = new InputImage();
+			break;
 	}
+	inputs.append( in );
 	return in;
 }
 
