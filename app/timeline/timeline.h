@@ -55,6 +55,7 @@ public:
 	
 	void transitionSelected( TransitionViewItem *it );
 	void clipDoubleClicked();
+	void clipRightClick( ClipViewItem *cv );
 	
 	void trackPressed( QPointF p );
 	void trackPressedRightBtn( TrackViewItem *t, QPoint p );

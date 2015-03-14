@@ -115,10 +115,17 @@ bool Scene::canResizeStart( Clip *clip, double &newPos, double endPos, int track
 	newPos = nearestPTS( newPos, profile.getVideoFrameDuration() );
 	double newLength = endPos - newPos;
 	double start = clip->getSource()->getProfile().getStreamStartTime();
+	double end = clip->getSource()->getProfile().getStreamStartTime() + clip->getSource()->getProfile().getStreamDuration();
 	if ( newLength < profile.getVideoFrameDuration() )
 		return false;
-	if ( clip->getSource()->getType() == InputBase::FFMPEG && clip->start() + newPos - clip->position() < start )
-		return false;
+	if ( clip->getSpeed() < 0 ) {
+		if ( clip->getSource()->getType() == InputBase::FFMPEG && clip->start() + (newLength * qAbs(clip->getSpeed())) > end )
+			return false;
+	}
+	else {
+		if ( clip->getSource()->getType() == InputBase::FFMPEG && clip->start() + ((newPos - clip->position()) * qAbs(clip->getSpeed())) < start )
+			return false;
+	}
 	
 	return checkPlacement( clip, track, newPos, newLength );
 }
@@ -153,8 +160,8 @@ void Scene::resizeStart( Clip *clip, double newPos, double newLength, int track 
 	removeTransitions( clip, track, track, insert, newPos, newLength, margin );
 	t->removeClip( clip );
 	t->insertClipAt( clip, insert );
-	if ( clip->getSource()->getType() == InputBase::FFMPEG )
-		clip->setStart( clip->start() + clip->length() - newLength );
+	if ( clip->getSource()->getType() == InputBase::FFMPEG && clip->getSpeed() >= 0 )
+		clip->setStart( clip->start() + ((clip->length() - newLength) * qAbs(clip->getSpeed())) );
 	clip->setLength( newLength );
 	clip->setPosition( newPos );
 	updateTransitions( clip, track, margin );
@@ -167,11 +174,18 @@ void Scene::resizeStart( Clip *clip, double newPos, double newLength, int track 
 bool Scene::canResize( Clip *clip, double &newLength, int track )
 {
 	newLength = nearestPTS( newLength, profile.getVideoFrameDuration() );
+	double start = clip->getSource()->getProfile().getStreamStartTime();
 	double end = clip->getSource()->getProfile().getStreamStartTime() + clip->getSource()->getProfile().getStreamDuration();
 	if ( newLength < profile.getVideoFrameDuration() )
 		return false;
-	if ( clip->getSource()->getType() == InputBase::FFMPEG && clip->start() + newLength > end )
-		return false;
+	if ( clip->getSpeed() < 0 ) {
+		if ( clip->getSource()->getType() == InputBase::FFMPEG && clip->start() + ((clip->length() - newLength) * qAbs(clip->getSpeed())) < start )
+			return false;
+	}
+	else {
+		if ( clip->getSource()->getType() == InputBase::FFMPEG && clip->start() + (newLength * qAbs(clip->getSpeed())) > end )
+			return false;
+	}
 	
 	return checkPlacement( clip, track, clip->position(), newLength );
 }
@@ -188,6 +202,8 @@ void Scene::resize( Clip *clip, double newLength, int track )
 	double margin = profile.getVideoFrameDuration() / 4.0;
 	removeTransitions( clip, track, track, tracks[track]->indexOf( clip ), clip->position(), newLength, margin );
 	double old = clip->position() + clip->length();
+	if ( clip->getSource()->getType() == InputBase::FFMPEG && clip->getSpeed() < 0 )
+		clip->setStart( clip->start() + ((clip->length() - newLength) * qAbs(clip->getSpeed())) );
 	clip->setLength( newLength );
 	updateTransitions( clip, track, margin );
 	clip->setInput( NULL );

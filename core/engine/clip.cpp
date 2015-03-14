@@ -10,7 +10,8 @@ Clip::Clip( Source *src, double posInTrackPTS, double strt, double len )
 	clipLength( len ),
 	frameDuration( MICROSECOND / 25.0 ),
 	in( NULL ),
-	transition( NULL )
+	transition( NULL ),
+	speed( 1 )
 {
 }
 

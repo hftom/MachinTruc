@@ -18,7 +18,8 @@ public:
 		haveVideo( false ),
 		usedByClip( false ),
 		inputType( UNDEF ),
-		mmi( 0 )
+		mmi( 0 ),
+		speed( 1 )
 	{
 		mmiProvider = QString().sprintf("%p", this);
 	}
@@ -38,6 +39,8 @@ public:
 	InputType getType() { return inputType; }
 	bool isUsed() { return usedByClip; }
 	void setUsed( bool b ) { usedByClip = b; }
+	
+	void setSpeed( double s ) { speed = s; }
 
 	// mmi (memory management indicator) gives some indication to the video composer about this frame data.
 	// Call mmiSeek when seeking, then if data is the same than previous frame call mmiDuplicate
@@ -61,6 +64,8 @@ protected:
 	InputType inputType;
 	quint32 mmi;
 	QString mmiProvider;
+	
+	double speed;
 
 	Profile inProfile, outProfile;
 };

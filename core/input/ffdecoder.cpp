@@ -755,7 +755,7 @@ bool FFDecoder::decodeAudio( AudioFrame *f, int sync, double *pts )
 				// So, if all samples have to be skipped, don't call f->writeDone,
 				// thus the write pointer isn't increased and next time we will overwrite this chunk.
 				uint8_t* dst = f->write( writtenSamples, outSamples );
-				outSamples = swr_convert( swr, &dst, outSamples, (const uint8_t**)&audioAvframe->data[0], audioAvframe->nb_samples );
+				outSamples = swr_convert( swr, &dst, outSamples, (const uint8_t**)audioAvframe->extended_data, audioAvframe->nb_samples );
 				writtenSamples += outSamples;
 				if ( sync ) {
 					if ( sync == DECODEAUDIOPROBE ) {

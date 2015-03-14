@@ -1,5 +1,7 @@
 #include <QDebug>
 #include <QMimeData>
+#include <QInputDialog>
+#include <QMessageBox>
 
 #include "engine/filtercollection.h"
 #include "gui/mimetypes.h"
@@ -186,6 +188,49 @@ void Timeline::transitionSelected( TransitionViewItem *it )
 				emit showTransition();
 				break;
 			}
+		}
+	}
+}
+
+
+
+void Timeline::clipRightClick( ClipViewItem *cv )
+{
+	QMenu menu;
+	menu.addAction( tr("Clip speed") );
+	QAction *action = menu.exec( QCursor::pos() );
+	if ( !action )
+		return;
+
+	double oldSpeed = cv->getClip()->getSpeed();
+	double speed = QInputDialog::getDouble( topParent, tr("Clip speed"), tr("Set a negative value to reverse."), oldSpeed, -10.0, 10.0, 2 );
+	if ( speed == 0 )
+		speed = 0.01;
+	if ( speed != oldSpeed ) {
+		double newLength = (1.0 / qAbs(speed)) * cv->getClip()->length() / (1.0 / qAbs(oldSpeed));
+		int track = getTrack( cv->sceneBoundingRect().topLeft() );
+		// set new speed now, since scene->canResize needs it
+		// and restore oldSpeed if we can't resize
+		// We set a positive speed so that scene->canResize
+		// does not change clip->start
+		cv->getClip()->setSpeed( qAbs(speed) );
+		if ( scene->canResize( cv->getClip(), newLength, track ) ) {
+			updateTransitions( cv, true );
+			cv->setLength( newLength );
+			updateTransitions( cv, false );
+			scene->resize( cv->getClip(), newLength, track );
+			// set the real speed now
+			cv->getClip()->setSpeed( speed );
+			clipThumbRequest( cv, true );
+			clipThumbRequest( cv, false );
+			// force scene update
+			scene->update = true;
+			QTimer::singleShot ( 1, this, SIGNAL(updateFrame()) );
+			QTimer::singleShot ( 1, this, SLOT(updateLength()) );
+		}
+		else {
+			QMessageBox::warning( topParent, tr("Warning"), tr("There is not enougth room to resize this clip. Move next clips and try again.") );
+			cv->getClip()->setSpeed( oldSpeed );
 		}
 	}
 }
@@ -752,10 +797,12 @@ void Timeline::dropEvent( QGraphicsSceneDragDropEvent *event )
 void Timeline::clipThumbRequest( ClipViewItem *it, bool start )
 {
 	Clip *c = it->getClip();
-	if ( start )
-		topParent->clipThumbRequest( ThumbRequest( (void*)it, c->getType(), c->sourcePath(), c->getProfile(), c->start() ) );
-	else
-		topParent->clipThumbRequest( ThumbRequest( (void*)it, c->getType(), c->sourcePath(), c->getProfile(), c->start() + c->length() - c->getProfile().getVideoFrameDuration() ) );
+	double pts = c->start();
+	bool neg = c->getSpeed() < 0;
+	if ( (neg && start) || (!neg && !start) )
+		pts = c->start() + (c->length() * qAbs(c->getSpeed())) - c->getProfile().getVideoFrameDuration();
+
+	topParent->clipThumbRequest( ThumbRequest( (void*)it, c->getType(), c->sourcePath(), c->getProfile(), pts ) );
 }
 
 

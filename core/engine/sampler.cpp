@@ -475,29 +475,56 @@ InputBase* Sampler::getInput( QString fn, InputBase::InputType type )
 InputBase* Sampler::getClipInput( Clip *c, double pts )
 {
 	InputBase *in = getInput( c->getSource()->getFileName(), c->getSource()->getType() );
-	double pos;
-	if ( playBackward ) {
-		if ( pts < c->position() + c->length() )
-			pos = c->start() + pts - c->position();
-		else
-			pos = c->start() + c->length() - currentScene->getProfile().getVideoFrameDuration();
-	}
-	else {
-		pos = c->start();
-		if ( c->position() < pts )
-			pos += pts - c->position();
-	}
-	printf("%f %s cpos:%f, cstart:%f, seek:%f\n", pts, c->sourcePath().toLatin1().data(), c->position(), c->start(), pos);
+	double speed = c->getSpeed();
+	double absSpeed = qAbs( speed );
 	Profile p = c->getProfile();
 	Profile cur = currentScene->getProfile();
-	p.setVideoFrameRate( cur.getVideoFrameRate() );
-	p.setVideoFrameDuration( cur.getVideoFrameDuration() );
-	p.setAudioSampleRate( cur.getAudioSampleRate() );
 	p.setAudioChannels( cur.getAudioChannels() );
 	p.setAudioLayout( cur.getAudioLayout() );
 	p.setAudioFormat( cur.getAudioFormat() );
+	if ( speed != 1 ) {
+		p.setVideoFrameRate( cur.getVideoFrameRate() / absSpeed );
+		p.setVideoFrameDuration( MICROSECOND / p.getVideoFrameRate() );
+		p.setAudioSampleRate( cur.getAudioSampleRate() / absSpeed );
+	}
+	else {
+		p.setVideoFrameRate( cur.getVideoFrameRate() );
+		p.setVideoFrameDuration( cur.getVideoFrameDuration() );
+		p.setAudioSampleRate( cur.getAudioSampleRate() );
+	}
+	
+	double pos;
+	if ( playBackward ) {
+		if ( speed < 0 ) {
+			if ( pts < c->position() + c->length() )
+				pos = c->start() + ((c->position() + c->length() - pts) * absSpeed);
+			else
+				pos = c->start();
+		}
+		else {
+			if ( pts < c->position() + c->length() )
+				pos = c->start() + ((pts - c->position()) * absSpeed);
+			else
+				pos = c->start() + (c->length() * absSpeed) - currentScene->getProfile().getVideoFrameDuration();
+		}
+	}
+	else {
+		if ( speed < 0 ) {
+			pos = c->start() + (c->length() * absSpeed) - currentScene->getProfile().getVideoFrameDuration();
+			if ( c->position() < pts )
+				pos -= (pts - c->position()) * absSpeed;
+		}
+		else {
+			pos = c->start();
+			if ( c->position() < pts )
+				pos += (pts - c->position()) * absSpeed;
+		}
+	}
+	printf("%f %s cpos:%f, cstart:%f, seek:%f\n", pts, c->sourcePath().toLatin1().data(), c->position(), c->start(), pos);
+	
+	in->setSpeed( c->getSpeed() );
 	in->setProfile( c->getProfile(), p );
-	in->openSeekPlay( c->sourcePath(), pos, playBackward );
+	in->openSeekPlay( c->sourcePath(), pos, speed < 0 ? !playBackward : playBackward );
 	c->setInput( in );
 
 	return in;

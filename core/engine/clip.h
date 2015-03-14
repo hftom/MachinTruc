@@ -31,6 +31,9 @@ public:
 	double length();
 	void setLength( double len );
 	
+	double getSpeed() { return speed; }
+	void setSpeed( double s ) { speed = s; }
+	
 	void setInput( InputBase *i );
 	InputBase *getInput() { return in; }
 	InputBase::InputType getType() { return source->getType(); }
@@ -50,6 +53,8 @@ private:
 	double frameDuration;
 	InputBase *in;
 	Transition *transition;
+	
+	double speed;
 };
 
 #endif //CLIP_H

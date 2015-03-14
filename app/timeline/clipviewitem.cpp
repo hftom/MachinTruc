@@ -96,11 +96,18 @@ void ClipViewItem::updateTransition( double len )
 
 void ClipViewItem::setThumb( ThumbRequest res )
 {
+	qDebug() << "setThumb" << res.thumbPTS << clip->start() << clip->start() + (clip->length() * qAbs(clip->getSpeed())) - clip->getProfile().getVideoFrameDuration();
 	if ( res.thumbPTS == clip->start() ) {
-		startThumb = res.thumb;
+		if ( clip->getSpeed() < 0 )
+			endThumb = res.thumb;
+		else
+			startThumb = res.thumb;
 	}
-	else if ( res.thumbPTS == clip->start() + clip->length() - clip->getProfile().getVideoFrameDuration() ) {
-		endThumb = res.thumb;
+	else if ( res.thumbPTS == clip->start() + (clip->length() * qAbs(clip->getSpeed())) - clip->getProfile().getVideoFrameDuration() ) {
+		if ( clip->getSpeed() < 0 )
+			startThumb = res.thumb;
+		else
+			endThumb = res.thumb;
 	}
 	update();
 }
@@ -197,6 +204,10 @@ void ClipViewItem::mousePressEvent( QGraphicsSceneMouseEvent *event )
 			Timeline *t = (Timeline*)scene();
 			t->clipDoubleClicked();
 		}
+	}
+	else if ( event->buttons() & Qt::RightButton ) {
+		Timeline* t = (Timeline*)scene();
+		t->clipRightClick( this );
 	}
 	
 	firstMove = true;

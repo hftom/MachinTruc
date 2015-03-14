@@ -619,7 +619,7 @@ Frame* InputFF::getAudioFrame( int nSamples )
 			}
 			// complete with silence
 			memset( f->data() + ( n * audioFrameList.getBytesPerSample() ), 0, (nSamples - n) * audioFrameList.getBytesPerSample() );
-			f->audioReversed = playBackward;
+			f->audioReversed = speed < 0 ? !playBackward : playBackward;
 			return f;
 		}
 		//qDebug() << "wait audio";
@@ -628,7 +628,7 @@ Frame* InputFF::getAudioFrame( int nSamples )
 
 	f->setAudioFrame( outProfile.getAudioChannels(), outProfile.getAudioSampleRate(), Profile::bytesPerChannel( &outProfile ), nSamples, audioFrameList.readPts() );
 	audioFrameList.read( f->data(), nSamples );
-	f->audioReversed = playBackward;
+	f->audioReversed = speed < 0 ? !playBackward : playBackward;
 
 	return f;
 }
