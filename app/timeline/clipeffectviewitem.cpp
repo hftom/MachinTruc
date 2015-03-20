@@ -11,12 +11,12 @@ ClipEffectViewItem::ClipEffectViewItem()
 	setAcceptHoverEvents(true);
 
 	normalPen.setJoinStyle( Qt::MiterJoin );
-	normalPen.setColor( "lime" );
+	normalPen.setColor( QColor(100,44,0) );
 
 	QLinearGradient grad( QPointF(0, 0), QPointF(0, 1) );
 	grad.setCoordinateMode( QGradient::ObjectBoundingMode );
-	grad.setColorAt( 0, QColor(200,255,0,180) );
-	grad.setColorAt( 1, QColor(128,178,0,180) );
+	grad.setColorAt( 0, QColor(255,128,0,220) );
+	grad.setColorAt( 1, QColor(128,64,0,220) );
 	normalBrush = QBrush( grad );
 	
 	setPen( normalPen );

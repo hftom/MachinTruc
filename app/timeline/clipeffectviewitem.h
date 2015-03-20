@@ -12,6 +12,7 @@ class ClipEffectViewItem : public AbstractViewItem
 {
 public:
 	ClipEffectViewItem();
+	virtual void setSelected( bool b ) {}	
 	
 protected:
 	void mousePressEvent( QGraphicsSceneMouseEvent *event );
