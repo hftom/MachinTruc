@@ -2,6 +2,7 @@
 
 #include "engine/filtercollection.h"
 #include "gui/fxpage.h"
+#include "effectlistview.h"
 
 
 
@@ -14,32 +15,19 @@ FxPage::FxPage()
 	setupUi( this );
 	
 	FilterCollection *fc = FilterCollection::getGlobalInstance();
-	int i;
 	
-	for ( i = 0; i < fc->videoFilters.count(); ++i ) {
-		QListWidgetItem *it = new QListWidgetItem( fc->videoFilters[ i ].name );
-		it->setData( 100, fc->videoFilters[ i ].identifier );
-		videoListWidget->addItem( it );
-	}
-	
-	for ( i = 0; i < fc->audioFilters.count(); ++i ) {
-		QListWidgetItem *it = new QListWidgetItem( fc->audioFilters[ i ].name );
-		it->setData( 100, fc->audioFilters[ i ].identifier );
-		audioListWidget->addItem( it );
-	}
+	videoEffectsListView->setModel( new EffectListModel( &fc->videoFilters ) );
+	videoGraph = new Graph();
+	videoGraphView->setScene( videoGraph );
+	connect( videoGraphView, SIGNAL(sizeChanged(const QSize&)), videoGraph, SLOT(viewSizeChanged(const QSize&)) );
+	connect( videoGraph, SIGNAL(filterSelected(Clip*,int)), this, SLOT(videoFilterSelected(Clip*,int)) );
+	connect( videoGraph, SIGNAL(filterDeleted(Clip*,QSharedPointer<Filter>)), this, SIGNAL(filterDeleted(Clip*,QSharedPointer<Filter>)) );
 }
 
 
 
 void FxPage::clipSelected( Clip *clip )
 {
-	if ( currentEffectsWidget ) {
-		delete currentEffectsWidget;
-		currentEffectsWidget = NULL;
-		effectsWidgetLayout = NULL;
-		filterWidgets.clear();
-	}
-	
 	if ( currentEffectsWidgetAudio ) {
 		delete currentEffectsWidgetAudio;
 		currentEffectsWidgetAudio = NULL;
@@ -47,7 +35,9 @@ void FxPage::clipSelected( Clip *clip )
 		filterWidgetsAudio.clear();
 	}
 	
-	if ( clip ) {
+	videoGraph->setCurrentClip( clip );
+	
+	/*if ( clip ) {
 		int i;
 		currentEffectsWidget = new QWidget();
 		currentEffectsWidget->setMinimumWidth( 150 );
@@ -82,7 +72,33 @@ void FxPage::clipSelected( Clip *clip )
 		}
 		effectsWidgetLayoutAudio->setRowStretch( i, 1 );
 		audioEffectsWidget->setWidget( currentEffectsWidgetAudio );
+	}*/
+}
+
+
+
+void FxPage::videoFilterSelected( Clip *c, int index )
+{
+	if ( currentEffectsWidget ) {
+		delete currentEffectsWidget;
+		currentEffectsWidget = NULL;
+		effectsWidgetLayout = NULL;
+		filterWidgets.clear();
 	}
+	
+	if ( !c || index < 0 || index >= c->videoFilters.count() )
+		return;
+	
+	currentEffectsWidget = new QWidget();
+	currentEffectsWidget->setMinimumWidth( 150 );
+	effectsWidgetLayout = new QGridLayout( currentEffectsWidget );
+	effectsWidgetLayout->setContentsMargins( 0, 0, 0, 0 );
+	FilterWidget *fw = new FilterWidget( currentEffectsWidget, c, c->videoFilters.at( index ) );
+	connect( fw, SIGNAL(updateFrame()), this, SIGNAL(updateFrame()) );
+	connect( fw, SIGNAL(editAnimation(FilterWidget*,ParameterWidget*,Parameter*)), this, SIGNAL(editAnimation(FilterWidget*,ParameterWidget*,Parameter*)) );
+	effectsWidgetLayout->addWidget( fw, 0, 1 );
+	effectsWidgetLayout->setRowStretch( 1, 1 );
+	videoEffectsWidget->setWidget( currentEffectsWidget );
 }
 
 

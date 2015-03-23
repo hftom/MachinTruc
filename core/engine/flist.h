@@ -14,6 +14,8 @@ template <class T>
 class FList
 {
 public:
+	FList() : current( -1 ) {}
+	
 	~FList() {
 		QMutexLocker ml( &mutex );
 		list.clear();
@@ -22,16 +24,26 @@ public:
 	void append( T t ) {
 		QMutexLocker ml( &mutex );
 		list.append( t );
+		current = list.count() - 1;
 	}
 	
 	void removeAt( int i ) {
 		QMutexLocker ml( &mutex );
-		return list.removeAt( i );
+		list.removeAt( i );
+		current = list.count() - 1;
 	}
 	
 	bool remove( T t ) {
 		QMutexLocker ml( &mutex );
-		return list.removeOne( t );
+		int id = list.indexOf( t );
+		if ( list.removeOne( t ) ) {
+			if ( id == current )
+				current = list.count() - 1;
+			else if ( current > id )
+				--current;				
+			return true;
+		}
+		return false;
 	}
 	
 	void swap( int i, int j ) {
@@ -64,9 +76,20 @@ public:
 		return s;
 	}
 	
+	int currentIndex() {
+		return current;
+	}
+	
+	int setCurrentIndex( int cur ) {
+		QMutexLocker ml( &mutex );
+		current = qMax( qMin( cur, list.count() - 1 ), -1 );
+		return current;
+	}
+	
 private:
 	QList<T> list;
 	QMutex mutex;
+	int current;
 };
 
 #endif // FLIST_H

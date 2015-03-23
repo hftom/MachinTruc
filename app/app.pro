@@ -13,6 +13,8 @@ SOURCES = \
 	gui/fxpage.cpp \
 	gui/fxsettingspage.cpp \
 	gui/filtersdialog.cpp \
+	gui/graph.cpp \
+	gui/grapheffectitem.cpp \
 	\
 	gui/filter/headereffect.cpp \
 	gui/filter/sliderdouble.cpp \
@@ -46,6 +48,9 @@ HEADERS = \
 	gui/filtersdialog.h \
 	gui/sourcelistwidget.h \
 	gui/effectlistwidget.h \
+	gui/effectlistview.h \
+	gui/graph.h \
+	gui/grapheffectitem.h \
 	\
 	gui/filter/parameterwidget.h \
 	gui/filter/headereffect.h \

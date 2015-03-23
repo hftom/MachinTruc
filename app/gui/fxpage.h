@@ -6,6 +6,7 @@
 #include "ui_fxpage.h"
 #include "engine/clip.h"
 #include "gui/filter/filterwidget.h"
+#include "graph.h"
 
 
 
@@ -22,6 +23,8 @@ private slots:
 	void deletedFilter( Clip *c, QSharedPointer<Filter> f );
 	void filterMoveUp( Clip *c, QSharedPointer<Filter> f );
 	void filterMoveDown( Clip *c, QSharedPointer<Filter> f );
+	
+	void videoFilterSelected( Clip *c, int index );
 
 private:
 	QWidget *currentEffectsWidget;
@@ -31,6 +34,8 @@ private:
 	QWidget *currentEffectsWidgetAudio;
 	QGridLayout *effectsWidgetLayoutAudio;
 	QList<FilterWidget*> filterWidgetsAudio;
+	
+	Graph *videoGraph;
 	
 signals:
 	void filterDeleted( Clip*, QSharedPointer<Filter> );

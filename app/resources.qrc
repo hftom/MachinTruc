@@ -30,5 +30,9 @@
   </qresource>
   <qresource prefix="images">
     <file>icons/sound.png</file>
+    <file>icons/color.png</file>
+	<file>icons/alpha.png</file>
+	<file>icons/lens.png</file>
+	<file>icons/size.png</file>
   </qresource>
 </RCC>

@@ -61,9 +61,10 @@ public:
 class FilterEntry
 {
 public:
-	FilterEntry( QString id, QString n, Filter* (*p)(QString,QString) )
+	FilterEntry( QString ic, QString id, QString n, Filter* (*p)(QString,QString) )
 		: identifier( id ),
 		name( n ),
+		icon( ic ),
 		makeFilter( p )
 	{}
 	
@@ -71,6 +72,7 @@ public:
 
 	QString identifier; // must be unique
 	QString name; // translated UI name
+	QString icon;
 
 private:
 	Filter* (*makeFilter)(QString,QString);

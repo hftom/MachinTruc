@@ -7,6 +7,11 @@
 
 #include "profile.h"
 
+#define ICONSIZEWIDTH 80.
+#define ICONSIZEHEIGHT 45.
+
+
+
 class Source;
 class Frame;
 class QGLWidget;

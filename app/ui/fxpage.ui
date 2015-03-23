@@ -6,14 +6,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>524</width>
-    <height>440</height>
+    <width>647</width>
+    <height>603</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout_2">
+  <layout class="QGridLayout" name="gridLayout_3">
    <property name="margin">
     <number>0</number>
    </property>
@@ -30,33 +30,79 @@
       <attribute name="title">
        <string>Video effects</string>
       </attribute>
-      <layout class="QGridLayout" name="gridLayout">
+      <layout class="QGridLayout" name="gridLayout_2">
        <property name="margin">
         <number>0</number>
        </property>
        <item row="0" column="0">
         <widget class="QSplitter" name="videoSplitter">
          <property name="orientation">
-          <enum>Qt::Horizontal</enum>
+          <enum>Qt::Vertical</enum>
          </property>
-         <widget class="EffectListWidget" name="videoListWidget">
+         <widget class="EffectListView" name="videoEffectsListView">
           <property name="focusPolicy">
            <enum>Qt::NoFocus</enum>
           </property>
-         </widget>
-         <widget class="QScrollArea" name="videoEffectsWidget">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-            <horstretch>1</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
+          <property name="dragDropMode">
+           <enum>QAbstractItemView::DragOnly</enum>
           </property>
-          <property name="focusPolicy">
-           <enum>Qt::NoFocus</enum>
+          <property name="textElideMode">
+           <enum>Qt::ElideNone</enum>
           </property>
-          <property name="widgetResizable">
+          <property name="resizeMode">
+           <enum>QListView::Adjust</enum>
+          </property>
+          <property name="spacing">
+           <number>4</number>
+          </property>
+          <property name="viewMode">
+           <enum>QListView::IconMode</enum>
+          </property>
+          <property name="uniformItemSizes">
+           <bool>false</bool>
+          </property>
+          <property name="wordWrap">
            <bool>true</bool>
           </property>
+          <property name="selectionRectVisible">
+           <bool>false</bool>
+          </property>
+         </widget>
+         <widget class="QSplitter" name="videoGraphSplitter">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <widget class="TimelineGraphicsView" name="videoGraphView">
+           <property name="minimumSize">
+            <size>
+             <width>120</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="focusPolicy">
+            <enum>Qt::NoFocus</enum>
+           </property>
+           <property name="horizontalScrollBarPolicy">
+            <enum>Qt::ScrollBarAlwaysOff</enum>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignHCenter|Qt::AlignTop</set>
+           </property>
+          </widget>
+          <widget class="QScrollArea" name="videoEffectsWidget">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+             <horstretch>1</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="focusPolicy">
+            <enum>Qt::NoFocus</enum>
+           </property>
+           <property name="widgetResizable">
+            <bool>true</bool>
+           </property>
+          </widget>
          </widget>
         </widget>
        </item>
@@ -111,6 +157,16 @@
    <class>EffectListWidget</class>
    <extends>QListWidget</extends>
    <header>gui/effectlistwidget.h</header>
+  </customwidget>
+  <customwidget>
+   <class>EffectListView</class>
+   <extends>QListView</extends>
+   <header>gui/effectlistview.h</header>
+  </customwidget>
+  <customwidget>
+   <class>TimelineGraphicsView</class>
+   <extends>QGraphicsView</extends>
+   <header>timeline/timelinegraphicsview.h</header>
   </customwidget>
  </customwidgets>
  <resources>
