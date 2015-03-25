@@ -1,7 +1,5 @@
 #include "filterwidget.h"
 
-#include "headereffect.h"
-
 #include "sliderdouble.h"
 #include "sliderint.h"
 #include "colorchooser.h"
@@ -9,7 +7,7 @@
 
 
 
-FilterWidget::FilterWidget( QWidget *parent, Clip *c, QSharedPointer<Filter> f, bool transition ) : QWidget( parent ),
+FilterWidget::FilterWidget( QWidget *parent, Clip *c, QSharedPointer<Filter> f ) : QWidget( parent ),
 	clip( c ),
 	filter( f )
 {	
@@ -17,14 +15,6 @@ FilterWidget::FilterWidget( QWidget *parent, Clip *c, QSharedPointer<Filter> f, 
 	
 	QBoxLayout* box = new QBoxLayout( QBoxLayout::TopToBottom );
 	box->setContentsMargins( 0, 0, 0, 0 );
-	
-	/*if ( !transition ) {
-		HeaderEffect *header = new HeaderEffect( filter->getFilterName(), clip!=NULL ? true : false );
-		box->addWidget( header );
-		connect( header, SIGNAL(deleteFilter()), this, SLOT(deleteFilter()) );
-		connect( header, SIGNAL(moveUp()), this, SLOT(moveUp()) );
-		connect( header, SIGNAL(moveDown()), this, SLOT(moveDown()) );
-	}*/
 	
 	int i;
 	for ( i = 0; i < parameters.count(); ++i ) {

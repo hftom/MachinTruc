@@ -16,7 +16,6 @@ SOURCES = \
 	gui/graph.cpp \
 	gui/grapheffectitem.cpp \
 	\
-	gui/filter/headereffect.cpp \
 	gui/filter/sliderdouble.cpp \
 	gui/filter/sliderint.cpp \
 	gui/filter/checkbox.cpp \
@@ -47,13 +46,11 @@ HEADERS = \
 	gui/profiledialog.h \
 	gui/filtersdialog.h \
 	gui/sourcelistwidget.h \
-	gui/effectlistwidget.h \
 	gui/effectlistview.h \
 	gui/graph.h \
 	gui/grapheffectitem.h \
 	\
 	gui/filter/parameterwidget.h \
-	gui/filter/headereffect.h \
 	gui/filter/sliderdouble.h \
 	gui/filter/sliderint.h \
 	gui/filter/checkbox.h \
@@ -83,7 +80,6 @@ FORMS = \
 	ui/fxsettingspage.ui \
 	ui/profile.ui \
 	ui/filters.ui \
-	ui/effectheader.ui \
 	ui/animeditor.ui \
 	ui/render.ui
 

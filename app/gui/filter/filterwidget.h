@@ -13,7 +13,7 @@ class FilterWidget : public QWidget
 {
 	Q_OBJECT
 public:
-	FilterWidget( QWidget *parent, Clip *c, QSharedPointer<Filter> f, bool transition = false );
+	FilterWidget( QWidget *parent, Clip *c, QSharedPointer<Filter> f );
 	QSharedPointer<Filter> getFilter() { return filter; }
 	void setAnimActive( Parameter *p );
 	

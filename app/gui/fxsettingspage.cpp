@@ -53,7 +53,7 @@ void FxSettingsPage::clipSelected( ClipViewItem *clip )
 		currentEffectWidget->setMinimumWidth( 150 );
 		effectWidgetLayout = new QGridLayout( currentEffectWidget );
 		effectWidgetLayout->setContentsMargins( 0, 0, 0, 0 );
-		FilterWidget *fw = new FilterWidget( currentEffectWidget, clip->getClip(), clip->getClip()->getTransition()->getVideoFilter(), true );
+		FilterWidget *fw = new FilterWidget( currentEffectWidget, clip->getClip(), clip->getClip()->getTransition()->getVideoFilter() );
 		connect( fw, SIGNAL(updateFrame()), this, SIGNAL(updateFrame()) );
 		effectWidgetLayout->addWidget( fw, 0, 1 );
 		effectWidgetLayout->setRowStretch( 1, 1 );
@@ -63,7 +63,7 @@ void FxSettingsPage::clipSelected( ClipViewItem *clip )
 		currentEffectWidgetAudio->setMinimumWidth( 150 );
 		effectWidgetLayoutAudio = new QGridLayout( currentEffectWidgetAudio );
 		effectWidgetLayoutAudio->setContentsMargins( 0, 0, 0, 0 );
-		fw = new FilterWidget( currentEffectWidgetAudio, clip->getClip(), clip->getClip()->getTransition()->getAudioFilter(), true );
+		fw = new FilterWidget( currentEffectWidgetAudio, clip->getClip(), clip->getClip()->getTransition()->getAudioFilter() );
 		connect( fw, SIGNAL(updateFrame()), this, SIGNAL(updateFrame()) );
 		effectWidgetLayoutAudio->addWidget( fw, 0, 1 );
 		effectWidgetLayoutAudio->setRowStretch( 1, 1 );
