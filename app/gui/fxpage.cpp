@@ -22,57 +22,25 @@ FxPage::FxPage()
 	connect( videoGraphView, SIGNAL(sizeChanged(const QSize&)), videoGraph, SLOT(viewSizeChanged(const QSize&)) );
 	connect( videoGraph, SIGNAL(filterSelected(Clip*,int)), this, SLOT(videoFilterSelected(Clip*,int)) );
 	connect( videoGraph, SIGNAL(filterDeleted(Clip*,QSharedPointer<Filter>)), this, SIGNAL(filterDeleted(Clip*,QSharedPointer<Filter>)) );
+	connect( videoGraph, SIGNAL(filterAdded(ClipViewItem*,QString,int)), this, SIGNAL(filterAdded(ClipViewItem*,QString,int)) );
+	connect( videoGraph, SIGNAL(updateFrame()), this, SIGNAL(updateFrame()) );
+	
+	audioEffectsListView->setModel( new EffectListModel( &fc->audioFilters ) );
+	audioGraph = new Graph( true );
+	audioGraphView->setScene( audioGraph );
+	connect( audioGraphView, SIGNAL(sizeChanged(const QSize&)), audioGraph, SLOT(viewSizeChanged(const QSize&)) );
+	connect( audioGraph, SIGNAL(filterSelected(Clip*,int)), this, SLOT(audioFilterSelected(Clip*,int)) );
+	connect( audioGraph, SIGNAL(filterDeleted(Clip*,QSharedPointer<Filter>)), this, SIGNAL(filterDeleted(Clip*,QSharedPointer<Filter>)) );
+	connect( audioGraph, SIGNAL(filterAdded(ClipViewItem*,QString,int)), this, SIGNAL(filterAdded(ClipViewItem*,QString,int)) );
+	connect( audioGraph, SIGNAL(updateFrame()), this, SIGNAL(updateFrame()) );
 }
 
 
 
-void FxPage::clipSelected( Clip *clip )
+void FxPage::clipSelected( ClipViewItem *clip )
 {
-	if ( currentEffectsWidgetAudio ) {
-		delete currentEffectsWidgetAudio;
-		currentEffectsWidgetAudio = NULL;
-		effectsWidgetLayoutAudio = NULL;
-		filterWidgetsAudio.clear();
-	}
-	
 	videoGraph->setCurrentClip( clip );
-	
-	/*if ( clip ) {
-		int i;
-		currentEffectsWidget = new QWidget();
-		currentEffectsWidget->setMinimumWidth( 150 );
-		effectsWidgetLayout = new QGridLayout( currentEffectsWidget );
-		effectsWidgetLayout->setContentsMargins( 0, 0, 0, 0 );
-		for ( i = 0; i < clip->videoFilters.count(); ++i ) {
-			FilterWidget *fw = new FilterWidget( currentEffectsWidget, clip, clip->videoFilters.at( i ) );
-			connect( fw, SIGNAL(filterDeleted(Clip*,QSharedPointer<Filter>)), this, SLOT(deletedFilter(Clip*,QSharedPointer<Filter>)) );
-			connect( fw, SIGNAL(filterMoveUp(Clip*,QSharedPointer<Filter>)), this, SLOT(filterMoveUp(Clip*,QSharedPointer<Filter>)) );
-			connect( fw, SIGNAL(filterMoveDown(Clip*,QSharedPointer<Filter>)), this, SLOT(filterMoveDown(Clip*,QSharedPointer<Filter>)) );
-			connect( fw, SIGNAL(updateFrame()), this, SIGNAL(updateFrame()) );
-			connect( fw, SIGNAL(editAnimation(FilterWidget*,ParameterWidget*,Parameter*)), this, SIGNAL(editAnimation(FilterWidget*,ParameterWidget*,Parameter*)) );
-			effectsWidgetLayout->addWidget( fw, i, 1 );
-			filterWidgets.append( fw );
-		}
-		effectsWidgetLayout->setRowStretch( i, 1 );
-		videoEffectsWidget->setWidget( currentEffectsWidget );
-		
-		currentEffectsWidgetAudio = new QWidget();
-		currentEffectsWidgetAudio->setMinimumWidth( 150 );
-		effectsWidgetLayoutAudio = new QGridLayout( currentEffectsWidgetAudio );
-		effectsWidgetLayoutAudio->setContentsMargins( 0, 0, 0, 0 );
-		for ( i = 0; i < clip->audioFilters.count(); ++i ) {
-			FilterWidget *fw = new FilterWidget( currentEffectsWidgetAudio, clip, clip->audioFilters.at( i ) );
-			connect( fw, SIGNAL(filterDeleted(Clip*,QSharedPointer<Filter>)), this, SLOT(deletedFilter(Clip*,QSharedPointer<Filter>)) );
-			connect( fw, SIGNAL(filterMoveUp(Clip*,QSharedPointer<Filter>)), this, SLOT(filterMoveUp(Clip*,QSharedPointer<Filter>)) );
-			connect( fw, SIGNAL(filterMoveDown(Clip*,QSharedPointer<Filter>)), this, SLOT(filterMoveDown(Clip*,QSharedPointer<Filter>)) );
-			connect( fw, SIGNAL(updateFrame()), this, SIGNAL(updateFrame()) );
-			connect( fw, SIGNAL(editAnimation(FilterWidget*,ParameterWidget*,Parameter*)), this, SIGNAL(editAnimation(FilterWidget*,ParameterWidget*,Parameter*)) );
-			effectsWidgetLayoutAudio->addWidget( fw, i, 1 );
-			filterWidgetsAudio.append( fw );
-		}
-		effectsWidgetLayoutAudio->setRowStretch( i, 1 );
-		audioEffectsWidget->setWidget( currentEffectsWidgetAudio );
-	}*/
+	audioGraph->setCurrentClip( clip );
 }
 
 
@@ -83,7 +51,6 @@ void FxPage::videoFilterSelected( Clip *c, int index )
 		delete currentEffectsWidget;
 		currentEffectsWidget = NULL;
 		effectsWidgetLayout = NULL;
-		filterWidgets.clear();
 	}
 	
 	if ( !c || index < 0 || index >= c->videoFilters.count() )
@@ -92,7 +59,6 @@ void FxPage::videoFilterSelected( Clip *c, int index )
 	currentEffectsWidget = new QWidget();
 	currentEffectsWidget->setMinimumWidth( 150 );
 	effectsWidgetLayout = new QGridLayout( currentEffectsWidget );
-	effectsWidgetLayout->setContentsMargins( 0, 0, 0, 0 );
 	FilterWidget *fw = new FilterWidget( currentEffectsWidget, c, c->videoFilters.at( index ) );
 	connect( fw, SIGNAL(updateFrame()), this, SIGNAL(updateFrame()) );
 	connect( fw, SIGNAL(editAnimation(FilterWidget*,ParameterWidget*,Parameter*)), this, SIGNAL(editAnimation(FilterWidget*,ParameterWidget*,Parameter*)) );
@@ -103,94 +69,24 @@ void FxPage::videoFilterSelected( Clip *c, int index )
 
 
 
-void FxPage::deletedFilter( Clip *c, QSharedPointer<Filter> f )
+void FxPage::audioFilterSelected( Clip *c, int index )
 {
-	int i;
-	for ( i = 0; i < filterWidgets.count(); ++i ) {
-		if ( filterWidgets[i]->getFilter() == f ) {
-			emit filterDeleted( c, f );
-			delete filterWidgets.takeAt( i );
-			return;
-		}
+	if ( currentEffectsWidgetAudio ) {
+		delete currentEffectsWidgetAudio;
+		currentEffectsWidgetAudio = NULL;
+		effectsWidgetLayoutAudio = NULL;
 	}
 	
-	for ( i = 0; i < filterWidgetsAudio.count(); ++i ) {
-		if ( filterWidgetsAudio[i]->getFilter() == f ) {
-			emit filterDeleted( c, f );
-			delete filterWidgetsAudio.takeAt( i );
-			return;
-		}
-	}
-}
-
-
-
-void FxPage::filterMoveUp( Clip *c, QSharedPointer<Filter> f )
-{
-	int i;
-	for ( i = 0; i < filterWidgets.count(); ++i ) {
-		if ( filterWidgets[i]->getFilter() == f ) {
-			if ( i == 0 )
-				return;
-			c->videoFilters.swap( i, i - 1 );
-			filterWidgets.swap( i, i - 1 );
-			effectsWidgetLayout->removeWidget( filterWidgets[i] );
-			effectsWidgetLayout->removeWidget( filterWidgets[i - 1] );
-			effectsWidgetLayout->addWidget( filterWidgets[i], i, 1 );
-			effectsWidgetLayout->addWidget( filterWidgets[i - 1], i - 1, 1 );
-			emit updateFrame();
-			return;
-		}
-	}
+	if ( !c || index < 0 || index >= c->audioFilters.count() )
+		return;
 	
-	for ( i = 0; i < filterWidgetsAudio.count(); ++i ) {
-		if ( filterWidgetsAudio[i]->getFilter() == f ) {
-			if ( i == 0 )
-				return;
-			c->audioFilters.swap( i, i - 1 );
-			filterWidgetsAudio.swap( i, i - 1 );
-			effectsWidgetLayoutAudio->removeWidget( filterWidgetsAudio[i] );
-			effectsWidgetLayoutAudio->removeWidget( filterWidgetsAudio[i - 1] );
-			effectsWidgetLayoutAudio->addWidget( filterWidgetsAudio[i], i, 1 );
-			effectsWidgetLayoutAudio->addWidget( filterWidgetsAudio[i - 1], i - 1, 1 );
-			emit updateFrame();
-			return;
-		}
-	}
-}
-
-
-
-void FxPage::filterMoveDown( Clip *c, QSharedPointer<Filter> f )
-{
-	int i;
-	for ( i = 0; i < filterWidgets.count(); ++i ) {
-		if ( filterWidgets[i]->getFilter() == f ) {
-			if ( i > filterWidgets.count() - 2 )
-				return;
-			c->videoFilters.swap( i, i + 1 );
-			filterWidgets.swap( i, i + 1 );
-			effectsWidgetLayout->removeWidget( filterWidgets[i] );
-			effectsWidgetLayout->removeWidget( filterWidgets[i + 1] );
-			effectsWidgetLayout->addWidget( filterWidgets[i], i, 1 );
-			effectsWidgetLayout->addWidget( filterWidgets[i + 1], i + 1, 1 );
-			emit updateFrame();
-			return;
-		}
-	}
-	
-	for ( i = 0; i < filterWidgetsAudio.count(); ++i ) {
-		if ( filterWidgetsAudio[i]->getFilter() == f ) {
-			if ( i > filterWidgetsAudio.count() - 2 )
-				return;
-			c->audioFilters.swap( i, i + 1 );
-			filterWidgetsAudio.swap( i, i + 1 );
-			effectsWidgetLayoutAudio->removeWidget( filterWidgetsAudio[i] );
-			effectsWidgetLayoutAudio->removeWidget( filterWidgetsAudio[i + 1] );
-			effectsWidgetLayoutAudio->addWidget( filterWidgetsAudio[i], i, 1 );
-			effectsWidgetLayoutAudio->addWidget( filterWidgetsAudio[i + 1], i + 1, 1 );
-			emit updateFrame();
-			return;
-		}
-	}
+	currentEffectsWidgetAudio = new QWidget();
+	currentEffectsWidgetAudio->setMinimumWidth( 150 );
+	effectsWidgetLayoutAudio = new QGridLayout( currentEffectsWidgetAudio );
+	FilterWidget *fw = new FilterWidget( currentEffectsWidgetAudio, c, c->audioFilters.at( index ) );
+	connect( fw, SIGNAL(updateFrame()), this, SIGNAL(updateFrame()) );
+	connect( fw, SIGNAL(editAnimation(FilterWidget*,ParameterWidget*,Parameter*)), this, SIGNAL(editAnimation(FilterWidget*,ParameterWidget*,Parameter*)) );
+	effectsWidgetLayoutAudio->addWidget( fw, 0, 1 );
+	effectsWidgetLayoutAudio->setRowStretch( 1, 1 );
+	audioEffectsWidget->setWidget( currentEffectsWidgetAudio );
 }

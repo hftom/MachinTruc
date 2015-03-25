@@ -3,7 +3,7 @@
 
 #include <QWidget>
 
-#include "engine/clip.h"
+#include "timeline/clipviewitem.h"
 #include "ui_fxsettingspage.h"
 
 
@@ -15,7 +15,7 @@ public:
 	FxSettingsPage();
 
 public slots:
-	void clipSelected( Clip *clip );
+	void clipSelected( ClipViewItem *clip );
 	
 private slots:
 	void videoFilterActivated( const QString& text );
@@ -30,7 +30,7 @@ private:
 	QWidget *currentEffectWidgetAudio;
 	QGridLayout *effectWidgetLayoutAudio;
 	
-	Clip *currentClip;
+	ClipViewItem *currentClip;
 	
 signals:
 	void updateFrame();

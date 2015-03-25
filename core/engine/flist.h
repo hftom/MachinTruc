@@ -27,6 +27,12 @@ public:
 		current = list.count() - 1;
 	}
 	
+	void insert( int index, T t ) {
+		QMutexLocker ml( &mutex );
+		list.insert( index, t );
+		current = index;
+	}	
+	
 	void removeAt( int i ) {
 		QMutexLocker ml( &mutex );
 		list.removeAt( i );
@@ -44,6 +50,13 @@ public:
 			return true;
 		}
 		return false;
+	}
+	
+	void move( int from, int to ) {
+		QMutexLocker ml( &mutex );
+		T t = list.takeAt( from );
+		list.insert( to, t );
+		current = to;
 	}
 	
 	void swap( int i, int j ) {

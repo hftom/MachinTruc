@@ -10,7 +10,36 @@
 
 
 
-class GraphEffectItem : public QGraphicsRectItem
+class GraphItem : public QGraphicsRectItem
+{
+public:
+	GraphItem( bool fx ) : QGraphicsRectItem(), isEffect( fx ) {}
+	
+	bool isEffect;
+};
+
+
+
+class GraphThumb : public GraphItem
+{
+public:
+	GraphThumb( QImage &img ) : GraphItem( false ), thumb( img ) {
+		setRect( 0, 0, ICONSIZEWIDTH, ICONSIZEHEIGHT );
+	}
+	void paint( QPainter *painter, const QStyleOptionGraphicsItem*, QWidget* ) {
+		QRectF inside = rect();
+		painter->drawImage( inside, thumb );
+		painter->setPen( "black" );
+		painter->drawRect( inside );
+	}
+	
+private:
+	QImage thumb;
+};
+
+
+
+class GraphEffectItem : public GraphItem
 {
 public:
 	GraphEffectItem( QString name, QString icon, int id );
@@ -23,7 +52,6 @@ protected:
 	void mousePressEvent( QGraphicsSceneMouseEvent *event );
 	void mouseMoveEvent( QGraphicsSceneMouseEvent *event );
 	void mouseReleaseEvent( QGraphicsSceneMouseEvent *event );
-	void hoverMoveEvent( QGraphicsSceneHoverEvent *event );
 	
 private:
 	QImage image;
@@ -35,6 +63,8 @@ private:
 	bool selected;
 	
 	QDateTime lastTime;
+	bool firstMove;
+	qreal mouseOffset, moveStart;
 };
 
 #endif // GRAPHEFFECTITEM_H

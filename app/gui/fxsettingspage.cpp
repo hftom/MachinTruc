@@ -30,7 +30,7 @@ FxSettingsPage::FxSettingsPage()
 
 
 
-void FxSettingsPage::clipSelected( Clip *clip )
+void FxSettingsPage::clipSelected( ClipViewItem *clip )
 {
 	currentClip = clip;
 	if ( currentEffectWidget ) {
@@ -44,16 +44,16 @@ void FxSettingsPage::clipSelected( Clip *clip )
 		effectWidgetLayoutAudio = NULL;
 	}
 	
-	if ( clip && clip->getTransition() ) {
+	if ( clip && clip->getClip()->getTransition() ) {
 		videoFiltersCombo->setHidden( false );
 		audioFiltersCombo->setHidden( false );
-		setComboItems( clip->getTransition() );
+		setComboItems( clip->getClip()->getTransition() );
 		
 		currentEffectWidget = new QWidget();
 		currentEffectWidget->setMinimumWidth( 150 );
 		effectWidgetLayout = new QGridLayout( currentEffectWidget );
 		effectWidgetLayout->setContentsMargins( 0, 0, 0, 0 );
-		FilterWidget *fw = new FilterWidget( currentEffectWidget, clip, clip->getTransition()->getVideoFilter(), true );
+		FilterWidget *fw = new FilterWidget( currentEffectWidget, clip->getClip(), clip->getClip()->getTransition()->getVideoFilter(), true );
 		connect( fw, SIGNAL(updateFrame()), this, SIGNAL(updateFrame()) );
 		effectWidgetLayout->addWidget( fw, 0, 1 );
 		effectWidgetLayout->setRowStretch( 1, 1 );
@@ -63,7 +63,7 @@ void FxSettingsPage::clipSelected( Clip *clip )
 		currentEffectWidgetAudio->setMinimumWidth( 150 );
 		effectWidgetLayoutAudio = new QGridLayout( currentEffectWidgetAudio );
 		effectWidgetLayoutAudio->setContentsMargins( 0, 0, 0, 0 );
-		fw = new FilterWidget( currentEffectWidgetAudio, clip, clip->getTransition()->getAudioFilter(), true );
+		fw = new FilterWidget( currentEffectWidgetAudio, clip->getClip(), clip->getClip()->getTransition()->getAudioFilter(), true );
 		connect( fw, SIGNAL(updateFrame()), this, SIGNAL(updateFrame()) );
 		effectWidgetLayoutAudio->addWidget( fw, 0, 1 );
 		effectWidgetLayoutAudio->setRowStretch( 1, 1 );
@@ -99,7 +99,7 @@ void FxSettingsPage::videoFilterActivated( const QString& text )
 {
 	if ( !currentClip )
 		return;
-	Transition *t = currentClip->getTransition();
+	Transition *t = currentClip->getClip()->getTransition();
 	if ( !t )
 		return;
 
@@ -125,7 +125,7 @@ void FxSettingsPage::audioFilterActivated( const QString& text )
 {
 	if ( !currentClip )
 		return;
-	Transition *t = currentClip->getTransition();
+	Transition *t = currentClip->getClip()->getTransition();
 	if ( !t )
 		return;
 

@@ -51,7 +51,6 @@ public:
 	void clipItemMoved( ClipViewItem *clip, QPointF clipMouseStart, bool multiMove );
 	void clipItemCanResize( ClipViewItem *clip, int way, QPointF mouse, double clipStartPos, double clipStartLen, QPointF clipStartMouse, bool unsnap );
 	void clipItemResized( ClipViewItem *clip, int way );
-	void addFilter( ClipViewItem *clip, QString fx );
 	
 	void transitionSelected( TransitionViewItem *it );
 	void clipDoubleClicked();
@@ -72,6 +71,7 @@ public slots:
 	void addTrack( int index );
 	
 	void setScene( Scene *s );
+	void addFilter( ClipViewItem *clip, QString fx, int index = -1 );
 	void deleteClip();
 	void splitCurrentClip();
 	
@@ -118,7 +118,7 @@ signals:
 	void centerOn( const QGraphicsItem* );
 	void seekTo( double );
 	void updateFrame();
-	void clipSelected( Clip* );
+	void clipSelected( ClipViewItem* );
 	void showTransition();
 	void showEffects();
 	void clipAddedToTimeline( Profile );

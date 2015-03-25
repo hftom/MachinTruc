@@ -90,8 +90,7 @@ void Timeline::itemSelected( AbstractViewItem *it )
 		it->setSelected (true );
 		selectedItem = it;
 		if ( it->data( DATAITEMTYPE ).toInt() == TYPECLIP ) {
-			ClipViewItem *c = (ClipViewItem*)it;
-			emit clipSelected( c->getClip() );
+			emit clipSelected( (ClipViewItem*)it );
 		}
 	}
 	else {
@@ -624,7 +623,7 @@ void Timeline::splitCurrentClip()
 
 
 
-void Timeline::addFilter( ClipViewItem *clip, QString fx )
+void Timeline::addFilter( ClipViewItem *clip, QString fx, int index )
 {
 	int i;
 	FilterCollection *fc = FilterCollection::getGlobalInstance();
@@ -633,7 +632,10 @@ void Timeline::addFilter( ClipViewItem *clip, QString fx )
 			QSharedPointer<Filter> f = fc->videoFilters[ i ].create();
 			f->setPosition( clip->getClip()->position() );
 			f->setLength( clip->getClip()->length() );
-			clip->getClip()->videoFilters.append( f.staticCast<GLFilter>() );
+			if ( index == -1 )
+				clip->getClip()->videoFilters.append( f.staticCast<GLFilter>() );
+			else
+				clip->getClip()->videoFilters.insert( index, f.staticCast<GLFilter>() );
 			itemSelected( clip );
 			emit updateFrame();
 			return;
@@ -645,7 +647,10 @@ void Timeline::addFilter( ClipViewItem *clip, QString fx )
 			QSharedPointer<Filter> f = fc->audioFilters[ i ].create();
 			f->setPosition( clip->getClip()->position() );
 			f->setLength( clip->getClip()->length() );
-			clip->getClip()->audioFilters.append( f.staticCast<AudioFilter>() );
+			if ( index == -1 )
+				clip->getClip()->audioFilters.append( f.staticCast<AudioFilter>() );
+			else
+				clip->getClip()->audioFilters.insert( index, f.staticCast<AudioFilter>() );
 			itemSelected( clip );
 			emit updateFrame();
 			return;

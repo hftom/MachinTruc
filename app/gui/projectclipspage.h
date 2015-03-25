@@ -14,8 +14,6 @@
 #include "engine/sampler.h"
 #include "gui/mimetypes.h"
 
-#define ICONSIZEWIDTH 80.
-#define ICONSIZEHEIGHT 45.
 #define THUMBHEIGHT 60.
 
 

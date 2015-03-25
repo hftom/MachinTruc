@@ -9,7 +9,7 @@
 
 
 
-GraphEffectItem::GraphEffectItem( QString name, QString icon, int id ) : QGraphicsRectItem()
+GraphEffectItem::GraphEffectItem( QString name, QString icon, int id ) : GraphItem( true )
 {
 	image = QImage( QString(":/images/icons/%1.png").arg( icon ) );
 	text = name;
@@ -72,27 +72,29 @@ void GraphEffectItem::mousePressEvent( QGraphicsSceneMouseEvent *event )
 	}
 
 	g->itemSelected( this );
+	
+	firstMove = true;
+	moveStart = event->scenePos().y();
+	mouseOffset = moveStart - y();
 }
 
 
 
 void GraphEffectItem::mouseMoveEvent( QGraphicsSceneMouseEvent *event )
 {
+	if ( firstMove && qAbs(event->scenePos().y() - moveStart) < 8 )
+		return;
+	
+	firstMove = false;
 	Graph* g = (Graph*)scene();
-	//g->effectMoved( this, event->scenePos(), moveStartPosition, moveStartMouse, unsnap, multiMove );
+	g->effectMoved( this, event->scenePos().y() - mouseOffset );
 }
 
 
 
 void GraphEffectItem::mouseReleaseEvent( QGraphicsSceneMouseEvent * )
 {
+	firstMove = false;
 	Graph* g = (Graph*)scene();
-	//g->effectReleased( this, moveStartMouse, multiMove );
-}
-
-
-
-void GraphEffectItem::hoverMoveEvent( QGraphicsSceneHoverEvent * )
-{
-	setCursor( QCursor(Qt::PointingHandCursor) );
+	g->effectReleased( this );
 }

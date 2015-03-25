@@ -96,6 +96,7 @@ protected:
 			p.end();
 		}
 		drag->setPixmap( pix );
+		drag->setHotSpot( QPoint(0,0) );
 		drag->exec( supportedActions );
 	}
 

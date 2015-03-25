@@ -96,7 +96,6 @@ void ClipViewItem::updateTransition( double len )
 
 void ClipViewItem::setThumb( ThumbRequest res )
 {
-	qDebug() << "setThumb" << res.thumbPTS << clip->start() << clip->start() + (clip->length() * qAbs(clip->getSpeed())) - clip->getProfile().getVideoFrameDuration();
 	if ( res.thumbPTS == clip->start() ) {
 		if ( clip->getSpeed() < 0 )
 			endThumb = res.thumb;

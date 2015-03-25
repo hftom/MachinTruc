@@ -58,15 +58,16 @@ TopWindow::TopWindow()
 	connect( sourcePage, SIGNAL(openSourcesBtnClicked()), this, SLOT(openSources()) );
 	
 	fxPage = new FxPage();
-	connect( timeline, SIGNAL(clipSelected(Clip*)), fxPage, SLOT(clipSelected(Clip*)) );
+	connect( timeline, SIGNAL(clipSelected(ClipViewItem*)), fxPage, SLOT(clipSelected(ClipViewItem*)) );
 	connect( timeline, SIGNAL(showEffects()), this, SLOT(showFxPage()) );
 	connect( fxPage, SIGNAL(filterDeleted(Clip*,QSharedPointer<Filter>)), timeline, SLOT(filterDeleted(Clip*,QSharedPointer<Filter>)) );
 	connect( fxPage, SIGNAL(filterDeleted(Clip*,QSharedPointer<Filter>)), animEditor, SLOT(filterDeleted(Clip*,QSharedPointer<Filter>)) );
+	connect( fxPage, SIGNAL(filterAdded(ClipViewItem*,QString,int)), timeline, SLOT(addFilter(ClipViewItem*,QString,int)) );
 	connect( fxPage, SIGNAL(updateFrame()), sampler, SLOT(updateFrame()) );
 	connect( fxPage, SIGNAL(editAnimation(FilterWidget*,ParameterWidget*,Parameter*)), this, SLOT(editAnimation(FilterWidget*,ParameterWidget*,Parameter*)) );
 	
 	fxSettingsPage = new FxSettingsPage();
-	connect( timeline, SIGNAL(clipSelected(Clip*)), fxSettingsPage, SLOT(clipSelected(Clip*)) );
+	connect( timeline, SIGNAL(clipSelected(ClipViewItem*)), fxSettingsPage, SLOT(clipSelected(ClipViewItem*)) );
 	connect( timeline, SIGNAL(showTransition()), this, SLOT(showFxSettingsPage()) );
 	connect( fxSettingsPage, SIGNAL(updateFrame()), sampler, SLOT(updateFrame()) );
 	

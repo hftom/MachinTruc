@@ -7,8 +7,8 @@
 
 #include "profile.h"
 
-#define ICONSIZEWIDTH 80.
-#define ICONSIZEHEIGHT 45.
+#define ICONSIZEWIDTH 80.0
+#define ICONSIZEHEIGHT 45.0
 
 
 

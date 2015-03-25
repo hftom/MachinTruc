@@ -8,6 +8,7 @@
 
 #include "input/input_ff.h"
 #include "input/input_image.h"
+#include "engine/thumbnailer.h"
 #include "gui/projectclipspage.h"
 #include "gui/profiledialog.h"
 #include "gui/filtersdialog.h"

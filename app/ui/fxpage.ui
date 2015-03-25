@@ -123,26 +123,72 @@
        <item row="0" column="0">
         <widget class="QSplitter" name="audioSplitter">
          <property name="orientation">
-          <enum>Qt::Horizontal</enum>
+          <enum>Qt::Vertical</enum>
          </property>
-         <widget class="EffectListWidget" name="audioListWidget">
+         <widget class="EffectListView" name="audioEffectsListView">
           <property name="focusPolicy">
            <enum>Qt::NoFocus</enum>
           </property>
-         </widget>
-         <widget class="QScrollArea" name="audioEffectsWidget">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-            <horstretch>1</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
+          <property name="dragDropMode">
+           <enum>QAbstractItemView::DragDrop</enum>
           </property>
-          <property name="focusPolicy">
-           <enum>Qt::NoFocus</enum>
+          <property name="textElideMode">
+           <enum>Qt::ElideNone</enum>
           </property>
-          <property name="widgetResizable">
+          <property name="resizeMode">
+           <enum>QListView::Adjust</enum>
+          </property>
+          <property name="spacing">
+           <number>4</number>
+          </property>
+          <property name="viewMode">
+           <enum>QListView::IconMode</enum>
+          </property>
+          <property name="uniformItemSizes">
+           <bool>false</bool>
+          </property>
+          <property name="wordWrap">
            <bool>true</bool>
           </property>
+          <property name="selectionRectVisible">
+           <bool>false</bool>
+          </property>
+         </widget>
+         <widget class="QSplitter" name="audioGraphSplitter">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <widget class="TimelineGraphicsView" name="audioGraphView">
+           <property name="minimumSize">
+            <size>
+             <width>120</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="focusPolicy">
+            <enum>Qt::NoFocus</enum>
+           </property>
+           <property name="horizontalScrollBarPolicy">
+            <enum>Qt::ScrollBarAlwaysOff</enum>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignHCenter|Qt::AlignTop</set>
+           </property>
+          </widget>
+          <widget class="QScrollArea" name="audioEffectsWidget">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+             <horstretch>1</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="focusPolicy">
+            <enum>Qt::NoFocus</enum>
+           </property>
+           <property name="widgetResizable">
+            <bool>true</bool>
+           </property>
+          </widget>
          </widget>
         </widget>
        </item>
@@ -153,11 +199,6 @@
   </layout>
  </widget>
  <customwidgets>
-  <customwidget>
-   <class>EffectListWidget</class>
-   <extends>QListWidget</extends>
-   <header>gui/effectlistwidget.h</header>
-  </customwidget>
   <customwidget>
    <class>EffectListView</class>
    <extends>QListView</extends>
