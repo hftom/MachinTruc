@@ -51,6 +51,7 @@ signals:
 	void filterDeleted( Clip*, QSharedPointer<Filter> );
 	void filterAdded( ClipViewItem*, QString, int );
 	void updateFrame();
+	void showVerticalScrollBar( bool );
 };
 
 #endif // GRAPH_H

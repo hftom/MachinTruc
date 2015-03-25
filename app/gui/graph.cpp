@@ -15,7 +15,10 @@ Graph::Graph( bool audio )
 	currentClip( NULL ),
 	selectedItem( NULL )
 {
-	setBackgroundBrush( QBrush( QColor(255,220,166) ) );
+	if ( isAudio )
+		setBackgroundBrush( QBrush( QColor(192,255,255) ) );
+	else
+		setBackgroundBrush( QBrush( QColor(255,220,166) ) );
 }
 
 
@@ -159,6 +162,8 @@ void Graph::updateLength()
 		maxlen = viewHeight;
 	
 	setSceneRect( 0, 0, ICONSIZEWIDTH, maxlen );
+	emit showVerticalScrollBar( maxlen > viewHeight );
+		
 }
 
 

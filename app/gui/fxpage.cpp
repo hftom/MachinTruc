@@ -19,6 +19,7 @@ FxPage::FxPage()
 	videoEffectsListView->setModel( new EffectListModel( &fc->videoFilters ) );
 	videoGraph = new Graph();
 	videoGraphView->setScene( videoGraph );
+	connect( videoGraph, SIGNAL(showVerticalScrollBar(bool)), videoGraphView, SLOT(showVerticalScrollBar(bool)) );
 	connect( videoGraphView, SIGNAL(sizeChanged(const QSize&)), videoGraph, SLOT(viewSizeChanged(const QSize&)) );
 	connect( videoGraph, SIGNAL(filterSelected(Clip*,int)), this, SLOT(videoFilterSelected(Clip*,int)) );
 	connect( videoGraph, SIGNAL(filterDeleted(Clip*,QSharedPointer<Filter>)), this, SIGNAL(filterDeleted(Clip*,QSharedPointer<Filter>)) );
@@ -28,6 +29,7 @@ FxPage::FxPage()
 	audioEffectsListView->setModel( new EffectListModel( &fc->audioFilters ) );
 	audioGraph = new Graph( true );
 	audioGraphView->setScene( audioGraph );
+	connect( audioGraph, SIGNAL(showVerticalScrollBar(bool)), audioGraphView, SLOT(showVerticalScrollBar(bool)) );
 	connect( audioGraphView, SIGNAL(sizeChanged(const QSize&)), audioGraph, SLOT(viewSizeChanged(const QSize&)) );
 	connect( audioGraph, SIGNAL(filterSelected(Clip*,int)), this, SLOT(audioFilterSelected(Clip*,int)) );
 	connect( audioGraph, SIGNAL(filterDeleted(Clip*,QSharedPointer<Filter>)), this, SIGNAL(filterDeleted(Clip*,QSharedPointer<Filter>)) );
