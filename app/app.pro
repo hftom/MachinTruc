@@ -2,6 +2,7 @@ TEMPLATE = app
 
 QT += opengl
 QT += xml
+QT += svg
 
 SOURCES = \
 	main.cpp \
@@ -81,7 +82,8 @@ FORMS = \
 	ui/profile.ui \
 	ui/filters.ui \
 	ui/animeditor.ui \
-	ui/render.ui
+	ui/render.ui \
+	ui/blankdialog.ui
 
 TARGET = ../machintruc
 

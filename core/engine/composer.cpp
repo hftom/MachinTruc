@@ -5,7 +5,6 @@
 #include <movit/init.h>
 
 #include "engine/composer.h"
-#include "input/input_color.h"
 
 
 

@@ -115,13 +115,6 @@ void InputImage::openSeekPlay( QString fn, double p, bool backward )
 
 
 
-void InputImage::seekFast( float percent )
-{
-	seekTo( DEFAULTLENGTH * percent / 100.0 );
-}
-
-
-
 double InputImage::seekTo( double p )
 {
 	mmiSeek();

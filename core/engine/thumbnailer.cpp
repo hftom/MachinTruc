@@ -10,6 +10,7 @@
 
 #include "input/input_ff.h"
 #include "input/input_image.h"
+#include "input/input_blank.h"
 #include "engine/source.h"
 
 #include "thumbnailer.h"
@@ -114,11 +115,17 @@ void Thumbnailer::run()
 
 void Thumbnailer::probe( ThumbRequest &request )
 {
-	InputBase *input = new InputImage();
+	InputBase *input = new InputBlank();
 	bool probed = false;
 	if ( input->probe( request.filePath, &request.profile ) )
 		probed = true;
 	else {
+		delete input;
+		input = new InputImage();
+		if ( input->probe( request.filePath, &request.profile ) )
+			probed = true;
+	}
+	if ( !probed ) {
 		delete input;
 		input = new InputFF();
 		if ( input->probe( request.filePath, &request.profile ) )
@@ -146,7 +153,9 @@ void Thumbnailer::probe( ThumbRequest &request )
 void Thumbnailer::makeThumb( ThumbRequest &request )
 {
 	InputBase *input;
-	if ( request.inputType == InputBase::IMAGE )
+	if ( request.inputType == InputBase::GLSL )
+		input = new InputBlank();
+	else if ( request.inputType == InputBase::IMAGE )
 		input = new InputImage();
 	else 
 		input = new InputFF();
@@ -202,11 +211,11 @@ QImage Thumbnailer::getSourceThumb( Frame *f, bool border )
 	int iw, ih;
 	if ( ar >= ICONSIZEWIDTH / ICONSIZEHEIGHT ) {
 		iw = ICONSIZEWIDTH;
-		ih = iw / ar;
+		ih = qMax( 1.0, iw / ar );
 	}
 	else {
 		ih = ICONSIZEHEIGHT;
-		iw = ih * ar;
+		iw = qMax( 1.0, ih * ar );
 	}
 	// resize
 	Effect *e = new ResampleEffect();
@@ -233,6 +242,12 @@ QImage Thumbnailer::getSourceThumb( Frame *f, bool border )
 	fbo->bind();
 	glReadPixels(0, 0, iw, ih, GL_BGRA, GL_UNSIGNED_BYTE, data);
 	fbo->release();
+	
+	if ( f->type() == Frame::GLSL ) {
+		QImage trans(":/images/icons/transparency.png");
+		for ( int i = 0; i < ih; ++i )
+			memcpy( data + iw * 4 * i, trans.constScanLine( i ), iw * 4 );
+	}
 	
 	QImage img;
 	if ( border ) {

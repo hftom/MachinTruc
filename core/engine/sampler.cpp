@@ -458,8 +458,8 @@ InputBase* Sampler::getInput( QString fn, InputBase::InputType type )
 		case InputBase::FFMPEG:
 			in = new InputFF();
 			break;
-		case InputBase::OPENGL:
-			in = new InputGL();
+		case InputBase::GLSL:
+			in = new InputBlank();
 			break;
 		case InputBase::IMAGE:
 		default:

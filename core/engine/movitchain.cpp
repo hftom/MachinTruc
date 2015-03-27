@@ -103,6 +103,9 @@ bool MovitInput::process( Frame *src, GLResource *gl )
 				flat->set_pixel_data( data );
 			return true;
 		}
+		case Frame::GLSL:{
+			return true;
+		}
 	}
 
 	return false;
@@ -190,6 +193,10 @@ Input* MovitInput::getMovitInput( Frame *src )
 			input = new FlatInput( input_format, FORMAT_BGR, GL_UNSIGNED_BYTE, src->profile.getVideoWidth(), src->profile.getVideoHeight() );
 			return input;
 		}
+		case Frame::GLSL: {
+			input = new BlankInput( src->profile.getVideoWidth(), src->profile.getVideoHeight() );
+			return input;
+		}
 	}
 	return NULL;
 }
@@ -211,6 +218,8 @@ QString MovitInput::getDescriptor( Frame *src )
 			return QString("FLATINPUT RGB %1 %2").arg( src->profile.getVideoWidth() ).arg( src->profile.getVideoHeight() );
 		case Frame::RGBA:
 			return QString("FLATINPUT RGBA %1 %2").arg( src->profile.getVideoWidth() ).arg( src->profile.getVideoHeight() );
+		case Frame::GLSL:
+			return QString("BLANKINPUT %1 %2").arg( src->profile.getVideoWidth() ).arg( src->profile.getVideoHeight() );
 	}
 	return QString();
 }

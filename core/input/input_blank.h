@@ -1,24 +1,18 @@
-// kate: tab-indent on; indent-width 4; mixedindent off; indent-mode cstyle; remove-trailing-space on;
-
-#ifndef INPUTGL_H
-#define INPUTGL_H
+#ifndef INPUT_BLANK_H
+#define INPUT_BLANK_H
 
 #include "input/input.h"
 
 
 
-class InputGL : public InputBase
+class InputBlank : public InputBase
 {
 	Q_OBJECT
 public:
-	InputGL();
-	~InputGL();
+	InputBlank();
 	bool open( QString fn );
 	void openSeekPlay( QString fn, double p, bool backward = false );
-	void close() {}
-	void flush() {}
 	void seekFast( float percent );
-	void seekNext() {}
 	double seekTo( double p );
 	void play( bool ) {}
 	Frame *getVideoFrame();
@@ -27,10 +21,10 @@ public:
 	bool probe( QString fn, Profile *prof );
 
 private:
-	bool process( Frame *f );
-	
+	void upload( Frame *f );
+
 	double fps;
 	double currentVideoPTS;
+	int width, height;
 };
-
-#endif //INPUTGL_H
+#endif // INPUT_BLANK_H

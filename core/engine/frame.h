@@ -96,7 +96,7 @@ public:
 	// video or audio data
 	Buffer* getBuffer() { return buffer; }
 	void setSharedBuffer( Buffer *b );
-	uint8_t *data() { return buffer->data(); }
+	uint8_t *data() { return (buffer ? buffer->data() : NULL); }
 
 	// The list of input Frame used to compose this output one.
 	ProjectSample *sample;

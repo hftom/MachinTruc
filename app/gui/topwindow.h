@@ -6,6 +6,7 @@
 #include <QProgressDialog>
 
 #include "ui_mainwindow.h"
+#include "ui_blankdialog.h"
 
 #include "gui/projectclipspage.h"
 #include "gui/fxpage.h"
@@ -17,6 +18,22 @@
 #include "timeline/timeline.h"
 #include "animation/animeditor.h"
 #include "projectfile.h"
+
+
+
+class BlankDialog : public QDialog, private Ui::BlankDialog
+{
+	Q_OBJECT
+public:
+	BlankDialog( QWidget *parent, int w, int h ) : QDialog( parent ) {
+		setupUi( this );
+		widthSpinBox->setValue( w );
+		heightSpinBox->setValue( h );
+	}
+	
+	int getWidth() { return widthSpinBox->value(); }
+	int getHeight() { return heightSpinBox->value(); }
+};
 
 
 
@@ -136,6 +153,7 @@ private slots:
 	void renderFinished( double pts );
 	
 	void openSources();
+	void openBlank();
 	void thumbResultReady( ThumbRequest result );
 	
 	void trackRequest( bool rm, int index );

@@ -22,8 +22,8 @@ SOURCES = \
 	\
 	input/ffdecoder.cpp \
 	input/input_ff.cpp \
-	input/input_gl.cpp \
 	input/input_image.cpp \
+	input/input_blank.cpp \
 	\
 	output/common_ff.cpp \
 	output/output_ff.cpp \
@@ -64,6 +64,7 @@ SOURCES = \
 	vfx/glorientation.cpp \
 	vfx/glwhitebalance.cpp \
 	vfx/gldefish.cpp \
+	vfx/glfiber.cpp \
 	\
 	videoout/videowidget.cpp
 
@@ -90,8 +91,8 @@ HEADERS = \
 	input/input.h \
 	input/ffdecoder.h \
 	input/input_ff.h \
-	input/input_gl.h \
 	input/input_image.h \
+	input/input_blank.h \
 	\
 	output/common_ff.h \
 	output/output_ff.h \
@@ -139,6 +140,7 @@ HEADERS = \
 	vfx/glorientation.h \
 	vfx/glwhitebalance.h \
 	vfx/gldefish.h \
+	vfx/glfiber.h \
 	\
 	videoout/videowidget.h
 

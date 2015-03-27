@@ -27,6 +27,7 @@
     <file>icons/edit-redo.png</file>
     <file>icons/applications-multimedia.png</file>
     <file>icons/tools-wizard.png</file>
+	<file>icons/page-simple.png</file>
   </qresource>
   <qresource prefix="images">
     <file>icons/sound.png</file>
@@ -34,5 +35,6 @@
 	<file>icons/alpha.png</file>
 	<file>icons/lens.png</file>
 	<file>icons/size.png</file>
+	<file>icons/transparency.png</file>
   </qresource>
 </RCC>

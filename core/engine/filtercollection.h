@@ -18,6 +18,7 @@
 #include "vfx/gldefish.h"
 #include "vfx/gldropshadow.h"
 #include "vfx/gledge.h"
+#include "vfx/glfiber.h"
 #include "vfx/glglow.h"
 #include "vfx/glliftgammagain.h"
 #include "vfx/glopacity.h"

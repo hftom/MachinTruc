@@ -209,6 +209,7 @@ private slots:
 signals:
 	void sourceActivated();
 	void openSourcesBtnClicked();
+	void openBlankBtnClicked();
 
 private:
 	CutListModel model;

@@ -2,8 +2,8 @@
 #define SAMPLER_H
 
 #include "input/input_ff.h"
-#include "input/input_gl.h"
 #include "input/input_image.h"
+#include "input/input_blank.h"
 
 #include "engine/scene.h"
 #include "engine/metronom.h"

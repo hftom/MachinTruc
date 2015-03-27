@@ -32,6 +32,7 @@ FilterCollection::FilterCollection()
 	videoFilters.append( FilterEntry( "lens", "GLGlow", QObject::tr("Glow"), &Maker<GLGlow>::make ) );
 	videoFilters.append( FilterEntry( "lens", "GLWater", QObject::tr("Water"), &Maker<GLWater>::make ) );
 	videoFilters.append( FilterEntry( "lens", "GLEdge", QObject::tr("Edge"), &Maker<GLEdge>::make ) );
+	videoFilters.append( FilterEntry( "lens", "GLFiber", QObject::tr("Optical fiber"), &Maker<GLFiber>::make ) );
 	
 	// source video filters, a subset of videoFilters
 	sourceVideoFilters.append( FilterEntry( "color", "GLSaturation", QObject::tr("Saturation"), &Maker<GLSaturation>::make ) );

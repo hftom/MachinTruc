@@ -56,6 +56,7 @@ TopWindow::TopWindow()
 	sourcePage = new ProjectSourcesPage( sampler );
 	connect( sourcePage, SIGNAL(sourceActivated()), this, SLOT(sourceActivated()) );
 	connect( sourcePage, SIGNAL(openSourcesBtnClicked()), this, SLOT(openSources()) );
+	connect( sourcePage, SIGNAL(openBlankBtnClicked()), this, SLOT(openBlank()) );
 	
 	fxPage = new FxPage();
 	connect( timeline, SIGNAL(clipSelected(ClipViewItem*)), fxPage, SLOT(clipSelected(ClipViewItem*)) );
@@ -524,6 +525,29 @@ void TopWindow::setThumbContext( QGLWidget *context )
 void TopWindow::clipThumbRequest( ThumbRequest request )
 {
 	thumbnailer->pushRequest( request );
+}
+
+
+
+void TopWindow::openBlank()
+{
+	Profile p = sampler->getCurrentScene()->getProfile();
+	BlankDialog dlg( this, p.getVideoWidth(), p.getVideoHeight() );
+	int ret = dlg.exec();
+	if ( ret != QDialog::Accepted )
+		return;
+
+	int w = dlg.getWidth();
+	int h = dlg.getHeight();
+	QString s = QString( "Blank %1 %2" ).arg( w ).arg( h );
+	if ( sourcePage->exists( s ) )
+		duplicateOpenSources.append( s );
+	else {
+		if ( thumbnailer->pushRequest( ThumbRequest( s ) ) )
+			++openSourcesCounter;
+	}
+	if ( !openSourcesCounter )
+		unsupportedDuplicateMessage();
 }
 
 
