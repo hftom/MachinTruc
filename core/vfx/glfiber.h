@@ -19,7 +19,7 @@ static const char *MyFiberEffect_shader=
 "		float stripColor = 1.0 / sqrt( abs( value ) );\n"
 "		vertColor += stripColor / 14.0 / PREFIX(iterations);\n"
 "	}\n"
-"	return clamp( vec4( vec3( vertColor * 0.5, vertColor / 10.0, vertColor / 15.0 ), 1.0 ), vec4(0.0), vec4(1.0) );\n"
+"	return clamp( vec4( vec3( vertColor * 0.7, vertColor / 15.0, vertColor / 20.0 ), 1.0 ), vec4(0.0), vec4(1.0) );\n"
 "}\n";
 
 

@@ -31,10 +31,12 @@
   </qresource>
   <qresource prefix="images">
     <file>icons/sound.png</file>
-    <file>icons/color.png</file>
+    <file>icons/colors.png</file>
+	<file>icons/draw.png</file>
 	<file>icons/alpha.png</file>
 	<file>icons/lens.png</file>
 	<file>icons/size.png</file>
+	<file>icons/deform.png</file>
 	<file>icons/transparency.png</file>
   </qresource>
 </RCC>
