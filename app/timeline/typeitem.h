@@ -12,9 +12,11 @@
 #define ZCLIP 1
 #define ZCLIPSELECTED 2
 #define ZTRANSITION 3
+#define ZFILTER 4
 #define ZCURSOR 10
 
 #define TRACKVIEWITEMHEIGHT 42
+#define SNAPWIDTH 8
 
 
 

@@ -65,6 +65,7 @@ SOURCES = \
 	vfx/glwhitebalance.cpp \
 	vfx/gldefish.cpp \
 	vfx/glfiber.cpp \
+	vfx/glnoise.cpp \
 	\
 	videoout/videowidget.cpp
 
@@ -141,6 +142,7 @@ HEADERS = \
 	vfx/glwhitebalance.h \
 	vfx/gldefish.h \
 	vfx/glfiber.h \
+	vfx/glnoise.h \
 	\
 	videoout/videowidget.h
 

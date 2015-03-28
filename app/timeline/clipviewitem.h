@@ -7,8 +7,6 @@
 #include "engine/thumbnailer.h"
 #include "transitionviewitem.h"
 
-#define SNAPWIDTH 8
-
 
 
 class ClipViewItem : public AbstractViewItem
