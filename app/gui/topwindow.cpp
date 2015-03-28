@@ -60,7 +60,7 @@ TopWindow::TopWindow()
 	
 	fxPage = new FxPage();
 	connect( timeline, SIGNAL(clipSelected(ClipViewItem*)), fxPage, SLOT(clipSelected(ClipViewItem*)) );
-	connect( timeline, SIGNAL(showEffects()), this, SLOT(showFxPage()) );
+	connect( timeline, SIGNAL(showEffects()), fxToolButton, SLOT(click()) );
 	connect( fxPage, SIGNAL(filterDeleted(Clip*,QSharedPointer<Filter>)), timeline, SLOT(filterDeleted(Clip*,QSharedPointer<Filter>)) );
 	connect( fxPage, SIGNAL(filterDeleted(Clip*,QSharedPointer<Filter>)), animEditor, SLOT(filterDeleted(Clip*,QSharedPointer<Filter>)) );
 	connect( fxPage, SIGNAL(filterAdded(ClipViewItem*,QString,int)), timeline, SLOT(addFilter(ClipViewItem*,QString,int)) );
@@ -69,7 +69,7 @@ TopWindow::TopWindow()
 	
 	fxSettingsPage = new FxSettingsPage();
 	connect( timeline, SIGNAL(clipSelected(ClipViewItem*)), fxSettingsPage, SLOT(clipSelected(ClipViewItem*)) );
-	connect( timeline, SIGNAL(showTransition()), this, SLOT(showFxSettingsPage()) );
+	connect( timeline, SIGNAL(showTransition()), fxSettingsToolButton, SLOT(click()) );
 	connect( fxSettingsPage, SIGNAL(updateFrame()), sampler, SLOT(updateFrame()) );
 	
 	stackedWidget->addWidget( sourcePage );
@@ -387,7 +387,6 @@ void TopWindow::showFxSettingsPage()
 {
 	stackedWidget->setCurrentIndex( 2 );
 }
-
 
 
 void TopWindow::currentFramePts( double d )
