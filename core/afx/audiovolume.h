@@ -30,8 +30,38 @@ public:
 		return true;
 	}
 
-private:
+protected:
 	Parameter *volume;
+};
+
+
+
+class AudioFadeIn : public AudioVolume
+{
+public:
+	AudioFadeIn( QString id, QString name ) : AudioVolume( id, name ) {
+		setSnap( SNAPSTART );
+		setLength( MICROSECOND * 2 );
+		double one = volume->defValue.toDouble() / volume->max.toDouble();
+		volume->graph.keys.append( AnimationKey( AnimationKey::CURVE, 0, 0 ) );
+		volume->graph.keys.append( AnimationKey( AnimationKey::CURVE, 1, one ) );
+		volume->hidden = true;
+	}
+};
+
+
+
+class AudioFadeOut : public AudioVolume
+{
+public:
+	AudioFadeOut( QString id, QString name ) : AudioVolume( id, name ) {
+		setSnap( SNAPEND );
+		setLength( MICROSECOND * 2 );
+		double one = volume->defValue.toDouble() / volume->max.toDouble();
+		volume->graph.keys.append( AnimationKey( AnimationKey::CURVE, 0, one ) );
+		volume->graph.keys.append( AnimationKey( AnimationKey::CURVE, 1, 0 ) );
+		volume->hidden = true;
+	}
 };
 
 #endif //AUDIOVOLUME_H
