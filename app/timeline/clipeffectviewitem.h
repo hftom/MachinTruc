@@ -12,7 +12,8 @@
 class ClipEffectViewItem : public AbstractViewItem
 {
 public:
-	ClipEffectViewItem( Clip *c, bool video, int id, double scale );
+	ClipEffectViewItem( Clip *c, QString name, bool video, int id, double scale );
+	void paint( QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget );
 	virtual void setSelected( bool ) {}
 	Clip* getClip() { return clip; }
 	bool isVideoEffect() { return isVideo; }
@@ -26,7 +27,7 @@ protected:
 
 private:	
 	QPen normalPen;
-	QBrush normalBrush;
+	QBrush normalBrush, titleBrush;
 	
 	double moveStartPosition;
 	double moveStartLength;
@@ -35,6 +36,7 @@ private:
 	bool firstMove;
 	
 	Clip *clip;
+	QString filterName;
 	bool isVideo;
 	int index;
 };

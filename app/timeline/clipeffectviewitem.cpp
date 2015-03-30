@@ -7,9 +7,10 @@
 
 
 
-ClipEffectViewItem::ClipEffectViewItem( Clip *c, bool video, int id, double scale )
+ClipEffectViewItem::ClipEffectViewItem( Clip *c, QString name, bool video, int id, double scale )
 	: AbstractViewItem( 0.75 ),
 	clip( c ),
+	filterName( name ),
 	isVideo( video ),
 	index( id )
 {
@@ -29,12 +30,41 @@ ClipEffectViewItem::ClipEffectViewItem( Clip *c, bool video, int id, double scal
 
 	QLinearGradient grad( QPointF(0, 0), QPointF(0, 1) );
 	grad.setCoordinateMode( QGradient::ObjectBoundingMode );
-	grad.setColorAt( 0, QColor(255,128,0,220) );
-	grad.setColorAt( 1, QColor(128,64,0,220) );
+	grad.setColorAt( 1, QColor(255,128,0,220) );
+	grad.setColorAt( 0, QColor(128,64,0,220) );
 	normalBrush = QBrush( grad );
+	
+	titleBrush = QBrush( QColor(64,32,0) );
 	
 	setPen( normalPen );
 	setBrush( normalBrush );
+}
+
+
+
+void ClipEffectViewItem::paint( QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget )
+{
+	QGraphicsRectItem::paint( painter, option, widget );
+	
+	QRectF inside = rect();
+	inside.moveLeft( inside.x() + 1 );
+	inside.moveTop( inside.y() + 1 );
+	inside.setWidth( inside.width() - 2 );
+	inside.setHeight( inside.height() - 2 );
+	QRectF r = painter->boundingRect( inside, Qt::AlignCenter, filterName );
+	if ( r.width() > inside.width() ) {
+		r.setX( inside.x() );
+		r.setWidth( inside.width() );
+	}
+	// draw title	
+	if ( r.width() > 0 ) {
+		painter->setPen( QColor(0,0,0,0) );
+		painter->setBrush( titleBrush );
+		painter->drawRect( r );
+		painter->setPen( QColor(255,255,255) );
+		painter->setFont( QFont( "Sans", 8 ) );
+		painter->drawText( r, Qt::AlignCenter, filterName );
+	}
 }
 
 

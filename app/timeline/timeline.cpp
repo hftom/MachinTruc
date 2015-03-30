@@ -184,7 +184,6 @@ void Timeline::clipDoubleClicked()
 
 void Timeline::showEffect( bool isVideo, int index )
 {
-	qDebug() << "showEffect" << isVideo << index;
 	if ( effectItem ) {
 		removeItem( effectItem );
 		delete effectItem;
@@ -192,8 +191,14 @@ void Timeline::showEffect( bool isVideo, int index )
 	}
 	if ( index == -1 )
 		return;
+	
 	ClipViewItem *cv = (ClipViewItem*)selectedItem;
-	effectItem = new ClipEffectViewItem( cv->getClip(), isVideo, index, zoom );
+	QSharedPointer<Filter> f;
+	if ( isVideo )
+		f = cv->getClip()->videoFilters.at( index );
+	else
+		f = cv->getClip()->audioFilters.at( index );
+	effectItem = new ClipEffectViewItem( cv->getClip(), f->getFilterName(), isVideo, index, zoom );
 	effectItem->setParentItem( tracks.at( getTrack( cv->sceneBoundingRect().topLeft() ) ) );
 }
 
