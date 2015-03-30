@@ -8,7 +8,9 @@ Filter::Filter( QString id, QString name )
 	: identifier( id ),
 	filterName( name ),
 	posInTrack( 0 ),
-	length( 0 )
+	length( 0 ),
+	posOffset( 0 ),
+	snap( SNAPALL )
 {
 }
 
@@ -63,7 +65,7 @@ Parameter* Filter::addBooleanParameter( QString id, QString name, QVariant def )
 
 double Filter::getNormalizedTime( double pts )
 {
-	return (pts - posInTrack) / length;
+	return (pts - (posInTrack + posOffset) ) / length;
 }
 
 

@@ -18,7 +18,7 @@ public:
 
 	void paint( QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget );
 	void setSelected( bool b );
-	void setThumb( ThumbRequest res );
+	bool setThumb( ThumbRequest res );
 	QImage& getStartThumb() { return startThumb; }
 	
 	void setClip( Clip *c ) { clip = c; }

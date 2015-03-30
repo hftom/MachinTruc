@@ -46,6 +46,8 @@ public:
 	void setFrameDuration( double d );
 
 private:
+	void newLength( Filter *f );
+	
 	Source *source;
 	double posInTrack;
 	double clipStart;

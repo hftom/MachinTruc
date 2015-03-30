@@ -32,6 +32,7 @@ private:
 	void writeFilter( QDomNode &parent, bool audio, QSharedPointer<Filter> f );
 	
 	void createText( QDomNode &parent, QString name, QString val );
+	void createInt( QDomNode &parent, QString name, int val );
 	void createDouble( QDomNode &parent, QString name, double val );
 	
 	QDomDocument document;

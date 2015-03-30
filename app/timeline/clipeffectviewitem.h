@@ -4,6 +4,7 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QPainter>
 
+#include "engine/clip.h"
 #include "abstractviewitem.h"
 
 
@@ -11,8 +12,11 @@
 class ClipEffectViewItem : public AbstractViewItem
 {
 public:
-	ClipEffectViewItem();
-	virtual void setSelected( bool b ) {}	
+	ClipEffectViewItem( Clip *c, bool video, int id, double scale );
+	virtual void setSelected( bool ) {}
+	Clip* getClip() { return clip; }
+	bool isVideoEffect() { return isVideo; }
+	int getIndex() { return index; }
 	
 protected:
 	void mousePressEvent( QGraphicsSceneMouseEvent *event );
@@ -29,6 +33,10 @@ private:
 	QPointF moveStartMouse;
 	int moveResize;
 	bool firstMove;
+	
+	Clip *clip;
+	bool isVideo;
+	int index;
 };
 
 #endif // CLIPEFFECTVIEWITEM_H

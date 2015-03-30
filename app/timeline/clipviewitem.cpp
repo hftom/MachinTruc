@@ -94,21 +94,28 @@ void ClipViewItem::updateTransition( double len )
 
 
 
-void ClipViewItem::setThumb( ThumbRequest res )
+bool ClipViewItem::setThumb( ThumbRequest res )
 {
+	bool isStart = false;
 	if ( res.thumbPTS == clip->start() ) {
 		if ( clip->getSpeed() < 0 )
 			endThumb = res.thumb;
-		else
+		else {
+			isStart = true;
 			startThumb = res.thumb;
+		}
 	}
 	else if ( res.thumbPTS == clip->start() + (clip->length() * qAbs(clip->getSpeed())) - clip->getProfile().getVideoFrameDuration() ) {
-		if ( clip->getSpeed() < 0 )
+		if ( clip->getSpeed() < 0 ) {
+			isStart = true;
 			startThumb = res.thumb;
+		}
 		else
 			endThumb = res.thumb;
 	}
 	update();
+	
+	return isStart;
 }
 
 

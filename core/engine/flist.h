@@ -74,6 +74,18 @@ public:
 		return list.at( index );
 	}
 	
+	QList<T> getCurrentFilters( double pts, double frameDuration ) {
+		QMutexLocker ml( &mutex );
+		QList<T> cur;
+		for ( int i = 0; i < list.count(); ++i ) {
+			T f = list.at( i );
+			if ( f->getPosition() + f->getPositionOffset() <= pts + (frameDuration / 4 )
+				&& f->getPosition() + f->getPositionOffset() + f->getLength() - frameDuration >= pts - (frameDuration / 4) )
+				cur.append( f );
+		}
+		return cur;
+	}
+	
 	QList<T> copy() {
 		QMutexLocker ml( &mutex );
 		return list;

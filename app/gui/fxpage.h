@@ -20,8 +20,11 @@ public slots:
 	void clipSelected( ClipViewItem *clip );
 	
 private slots:
+	void tabChanged( int index );
 	void videoFilterSelected( Clip *c, int index );
 	void audioFilterSelected( Clip *c, int index );
+	void showVideoEffect( int index );
+	void showAudioEffect( int index );
 
 private:
 	QWidget *currentEffectsWidget;
@@ -38,6 +41,7 @@ signals:
 	void filterAdded( ClipViewItem*, QString, int );
 	void editAnimation( FilterWidget*, ParameterWidget*, Parameter* );
 	void updateFrame();
+	void showEffect( bool isVideo, int index );
 };
 
 #endif // FXPAGE_H

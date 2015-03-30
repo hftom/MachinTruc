@@ -107,10 +107,130 @@ Clip* Scene::sceneSplitClip( Clip *clip, int track, double pts )
 
 	return NULL;
 }
+
+
+
+bool Scene::effectCanMove( Clip *clip, double &newPos, bool isVideo, int index )
+{
+	double margin = profile.getVideoFrameDuration() / 4.0;
+	QSharedPointer<Filter> f;
+	if ( isVideo )
+		f = clip->videoFilters.at( index );
+	else
+		f = clip->audioFilters.at( index );
+
+	if ( f->getSnap() == Filter::SNAPSTART || f->getSnap() == Filter::SNAPEND )
+		return false;
+
+	newPos = nearestPTS( newPos, profile.getVideoFrameDuration() );
+	if ( newPos < clip->position() - margin )
+		newPos = clip->position();
+	if ( newPos + f->getLength() > clip->position() + clip->length() + margin )
+		newPos = clip->position() + clip->length() - f->getLength();
+	
+	return true;
+}
+
+
+
+void Scene::effectMove( Clip *clip, double newPos, bool isVideo, int index )
+{
+	QSharedPointer<Filter> f;
+	if ( isVideo )
+		f = clip->videoFilters.at( index );
+	else
+		f = clip->audioFilters.at( index );
+
+	f->setPositionOffset( newPos - f->getPosition() );
+	if ( f->getSnap() == Filter::SNAPALL && f->getPositionOffset() != 0 )
+		f->setSnap( Filter::SNAPNONE );
+}
+
+
+
+bool Scene::effectCanResizeStart( Clip *clip, double &newPos, double endPos, bool isVideo, int index )
+{
+	double margin = profile.getVideoFrameDuration() / 4.0;
+	QSharedPointer<Filter> f;
+	if ( isVideo )
+		f = clip->videoFilters.at( index );
+	else
+		f = clip->audioFilters.at( index );
+	
+	if ( f->getSnap() == Filter::SNAPSTART )
+		return false;
+	
+	newPos = nearestPTS( newPos, profile.getVideoFrameDuration() );
+	if ( newPos < clip->position() - margin )
+		newPos = clip->position();
+	if ( endPos - newPos < profile.getVideoFrameDuration() )
+		newPos = endPos - profile.getVideoFrameDuration();
+	
+	return true;
+}
+
+
+
+void Scene::effectResizeStart( Clip *clip, double newPos, double newLength, bool isVideo, int index )
+{
+	QSharedPointer<Filter> f;
+	if ( isVideo )
+		f = clip->videoFilters.at( index );
+	else
+		f = clip->audioFilters.at( index );
+	
+	f->setPositionOffset( newPos - f->getPosition() );
+	f->setLength( newLength );
+	if ( f->getSnap() == Filter::SNAPALL && f->getLength() != clip->length() )
+		f->setSnap( Filter::SNAPNONE );
+	else if ( f->getSnap() == Filter::SNAPNONE && f->getLength() == clip->length() )
+		f->setSnap( Filter::SNAPALL );
+}
+
+
+
+bool Scene::effectCanResize( Clip *clip, double &newLength, bool isVideo, int index )
+{
+	double margin = profile.getVideoFrameDuration() / 4.0;
+	QSharedPointer<Filter> f;
+	if ( isVideo )
+		f = clip->videoFilters.at( index );
+	else
+		f = clip->audioFilters.at( index );
+	
+	if ( f->getSnap() == Filter::SNAPEND )
+		return false;
+	
+	newLength = nearestPTS( newLength, profile.getVideoFrameDuration() );
+	if ( f->getPositionOffset() + newLength > clip->length() + margin )
+		newLength = clip->length() - f->getPositionOffset();
+	if ( newLength < profile.getVideoFrameDuration() )
+		newLength = profile.getVideoFrameDuration();
+	
+	return true;
+}
+
+
+
+void Scene::effectResize( Clip *clip, double newLength, bool isVideo, int index )
+{
+	QSharedPointer<Filter> f;
+	if ( isVideo )
+		f = clip->videoFilters.at( index );
+	else
+		f = clip->audioFilters.at( index );
+	
+	f->setLength( newLength );
+	if ( f->getSnap() == Filter::SNAPALL && f->getLength() != clip->length() )
+		f->setSnap( Filter::SNAPNONE );
+	else if ( f->getSnap() == Filter::SNAPNONE && f->getLength() == clip->length() )
+		f->setSnap( Filter::SNAPALL );
+}
 	
 
 
-bool Scene::canResizeStart( Clip *clip, double &newPos, double endPos, int track ) {
+bool Scene::canResizeStart( Clip *clip, double &newPos, double endPos, int track )
+{
 	QMutexLocker ml( &mutex );
 	newPos = nearestPTS( newPos, profile.getVideoFrameDuration() );
 	double newLength = endPos - newPos;

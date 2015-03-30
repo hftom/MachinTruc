@@ -1,13 +1,27 @@
 #include <math.h>
 
+#include <QCursor>
+
+#include "timeline.h"
 #include "clipeffectviewitem.h"
 
 
 
-ClipEffectViewItem::ClipEffectViewItem()
+ClipEffectViewItem::ClipEffectViewItem( Clip *c, bool video, int id, double scale )
+	: AbstractViewItem( 0.75 ),
+	clip( c ),
+	isVideo( video ),
+	index( id )
 {
 	setData( DATAITEMTYPE, TYPEFILTER );
+	setZValue( ZFILTER );
 	
+	QSharedPointer<Filter> f;
+	if ( isVideo )
+		f = clip->videoFilters.at( index );
+	else
+		f = clip->audioFilters.at( index );
+	setCuts( f->getPosition() + f->getPositionOffset(), f->getLength(), scale );
 	setAcceptHoverEvents(true);
 
 	normalPen.setJoinStyle( Qt::MiterJoin );
@@ -27,9 +41,7 @@ ClipEffectViewItem::ClipEffectViewItem()
 
 void ClipEffectViewItem::mousePressEvent( QGraphicsSceneMouseEvent *event )
 {
-	Q_UNUSED( event );
-	
-	/*firstMove = true;
+	firstMove = true;
 	if ( event->pos().x() < SNAPWIDTH ) {
 		moveResize = 1;
 		moveStartLength = length;
@@ -45,51 +57,44 @@ void ClipEffectViewItem::mousePressEvent( QGraphicsSceneMouseEvent *event )
 		moveStartPosition = position;
 	}		
 	moveStartMouse = event->scenePos();
-	Timeline* t = (Timeline*)scene();
-	t->itemSelected( this );*/
 }
 
 
 
 void ClipEffectViewItem::mouseMoveEvent( QGraphicsSceneMouseEvent *event )
 {
-	Q_UNUSED( event );
-	
-	/*if ( firstMove && fabs( event->scenePos().x() - moveStartMouse.x() ) < SNAPWIDTH )
+	bool unsnap = event->modifiers() & Qt::ControlModifier;
+	if ( firstMove && !unsnap && fabs( event->scenePos().x() - moveStartMouse.x() ) < SNAPWIDTH )
 		return;
 	firstMove = false;
 	Timeline* t = (Timeline*)scene();
 	if ( moveResize )
-		t->clipItemCanResize( this, moveResize, event->scenePos(), moveStartPosition, moveStartLength, moveStartMouse );
+		t->effectCanResize( moveResize, event->scenePos(), moveStartPosition, moveStartLength, moveStartMouse, unsnap );
 	else
-		t->clipItemCanMove( this, event->scenePos(), moveStartPosition, moveStartMouse );*/
+		t->effectCanMove( event->scenePos(), moveStartPosition, moveStartMouse, unsnap );
 }
 
 
 
 void ClipEffectViewItem::mouseReleaseEvent( QGraphicsSceneMouseEvent *event )
 {
-	Q_UNUSED( event );
-	
-	/*if ( firstMove )
+	if ( firstMove )
 		return;
 	Timeline* t = (Timeline*)scene();
 	if ( moveResize )
-		t->clipItemResized( this, moveResize );
+		t->effectResized( moveResize );
 	else
-		t->clipItemMoved( this, moveStartMouse );*/
+		t->effectMoved( moveStartMouse );
 }
 
 
 
 void ClipEffectViewItem::hoverMoveEvent( QGraphicsSceneHoverEvent *event )
 {
-	Q_UNUSED( event );
-	
-	/*if ( event->pos().x() < SNAPWIDTH || event->pos().x() > rect().width() - SNAPWIDTH ) {
+	if ( event->pos().x() < SNAPWIDTH || event->pos().x() > rect().width() - SNAPWIDTH ) {
 		setCursor( Qt::SplitHCursor );
 	}
 	else {
 		setCursor( Qt::PointingHandCursor );
-	}*/
+	}
 }

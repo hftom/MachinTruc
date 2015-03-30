@@ -41,14 +41,51 @@ void Clip::setPosition( double p )
 
 
 
+void Clip::newLength( Filter *f )
+{
+	switch ( f->getSnap() ) {
+		case Filter::SNAPSTART: {
+			if ( f->getLength() > length() )
+				f->setLength( length() );
+			break;
+		}
+		case Filter::SNAPEND: {
+			double npos = length() - f->getLength();
+			if ( npos < 0 ) {
+				f->setPositionOffset( 0 );
+				f->setLength( length() );
+			}
+			else
+				f->setPositionOffset( npos );
+			break;
+		}
+		case Filter::SNAPNONE: {
+			if ( f->getPositionOffset() + f->getLength() > length() ) {
+				double npos = length() - f->getLength();
+				if ( npos < 0 ) {
+					f->setPositionOffset( 0 );
+					f->setLength( length() );
+				}
+				else
+					f->setPositionOffset( npos );
+			}
+			break;
+		}
+		default:
+			f->setLength( length() );
+	}
+}
+
+
+
 void Clip::setLength( double len )
 {
 	clipLength = len;
 	
 	for ( int i = 0; i< videoFilters.count(); ++i )
-		videoFilters.at( i )->setLength( length() );
+		newLength( videoFilters.at( i ).data() );
 	for ( int i = 0; i< audioFilters.count(); ++i )
-		audioFilters.at( i )->setLength( length() );
+		newLength( audioFilters.at( i ).data() );
 }
 
 
@@ -63,10 +100,16 @@ double Clip::length()
 void Clip::setFrameDuration( double d )
 {
 	frameDuration = d;
-	for ( int i = 0; i< videoFilters.count(); ++i )
-		videoFilters.at( i )->setLength( length() );
-	for ( int i = 0; i< audioFilters.count(); ++i )
-		audioFilters.at( i )->setLength( length() );
+	for ( int i = 0; i< videoFilters.count(); ++i ) {
+		Filter *f = videoFilters.at( i ).data();
+		f->setLength( nearestPTS( f->getLength(), frameDuration ) );
+		newLength( f );
+	}
+	for ( int i = 0; i< audioFilters.count(); ++i ) {
+		Filter *f = audioFilters.at( i ).data();
+		f->setLength( nearestPTS( f->getLength(), frameDuration ) );
+		newLength( f );
+	}
 	if ( transition )
 		transition->setFrameDuration( frameDuration );
 }

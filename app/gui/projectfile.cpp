@@ -402,8 +402,14 @@ QSharedPointer<Filter> ProjectFile::readFilter( QDomElement &element, bool audio
 		if ( e.tagName() == "PosInTrack" ) {
 			filter->setPosition( e.text().toDouble() );
 		}
+		else if ( e.tagName() == "PosOffset" ) {
+			filter->setPositionOffset( e.text().toDouble() );
+		}
 		else if ( e.tagName() == "Length" ) {
 			filter->setLength( e.text().toDouble() );
+		}
+		else if ( e.tagName() == "SnapMode" ) {
+			filter->setSnap( e.text().toInt() );
 		}
 		else if ( e.tagName() == "Parameter" ) {
 			readParameter( e, filter );
@@ -619,7 +625,10 @@ void ProjectFile::writeFilter( QDomNode &parent, bool audio, QSharedPointer<Filt
 
 	createText( n1, "Name", f->getIdentifier() );
 	createDouble( n1, "PosInTrack", f->getPosition() );
+	if ( f->getPositionOffset() > 0 )
+		createDouble( n1, "PosOffset", f->getPositionOffset() );
 	createDouble( n1, "Length", f->getLength() );
+	createInt( n1, "SnapMode", f->getSnap() );
 	
 	QList<Parameter*> params = f->getParameters();
 	for ( int i = 0; i < params.count(); ++i ) {
@@ -673,6 +682,16 @@ void ProjectFile::createText( QDomNode &parent, QString name, QString val )
 {
 	QDomElement e = document.createElement( name );
 	QDomText t = document.createTextNode( val );
+	e.appendChild( t );
+	parent.appendChild( e );
+}
+
+
+
+void ProjectFile::createInt( QDomNode &parent, QString name, int val )
+{
+	QDomElement e = document.createElement( name );
+	QDomText t = document.createTextNode( QString::number( val ) );
 	e.appendChild( t );
 	parent.appendChild( e );
 }

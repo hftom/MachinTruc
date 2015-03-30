@@ -16,6 +16,8 @@ FxPage::FxPage()
 	
 	FilterCollection *fc = FilterCollection::getGlobalInstance();
 	
+	connect( tabWidget, SIGNAL(currentChanged( int)), this, SLOT(tabChanged(int)) );
+	
 	videoEffectsListView->setModel( new EffectListModel( &fc->videoFilters ) );
 	videoGraph = new Graph();
 	videoGraphView->setScene( videoGraph );
@@ -25,6 +27,7 @@ FxPage::FxPage()
 	connect( videoGraph, SIGNAL(filterDeleted(Clip*,QSharedPointer<Filter>)), this, SIGNAL(filterDeleted(Clip*,QSharedPointer<Filter>)) );
 	connect( videoGraph, SIGNAL(filterAdded(ClipViewItem*,QString,int)), this, SIGNAL(filterAdded(ClipViewItem*,QString,int)) );
 	connect( videoGraph, SIGNAL(updateFrame()), this, SIGNAL(updateFrame()) );
+	connect( videoGraph, SIGNAL(showEffect(int)), this, SLOT(showVideoEffect(int)) );
 	
 	audioEffectsListView->setModel( new EffectListModel( &fc->audioFilters ) );
 	audioGraph = new Graph( true );
@@ -35,6 +38,7 @@ FxPage::FxPage()
 	connect( audioGraph, SIGNAL(filterDeleted(Clip*,QSharedPointer<Filter>)), this, SIGNAL(filterDeleted(Clip*,QSharedPointer<Filter>)) );
 	connect( audioGraph, SIGNAL(filterAdded(ClipViewItem*,QString,int)), this, SIGNAL(filterAdded(ClipViewItem*,QString,int)) );
 	connect( audioGraph, SIGNAL(updateFrame()), this, SIGNAL(updateFrame()) );
+	connect( audioGraph, SIGNAL(showEffect(int)), this, SLOT(showAudioEffect(int)) );
 }
 
 
@@ -91,4 +95,30 @@ void FxPage::audioFilterSelected( Clip *c, int index )
 	effectsWidgetLayoutAudio->addWidget( fw, 0, 1 );
 	effectsWidgetLayoutAudio->setRowStretch( 1, 1 );
 	audioEffectsWidget->setWidget( currentEffectsWidgetAudio );
+}
+
+
+
+void FxPage::tabChanged( int index )
+{
+	Q_UNUSED( index );
+	audioGraph->hiddenEffect();
+	videoGraph->hiddenEffect();
+	emit showEffect( true, -1 );
+}
+
+
+
+void FxPage::showVideoEffect( int index )
+{
+	audioGraph->hiddenEffect();
+	emit showEffect( true, index );
+}
+
+
+
+void FxPage::showAudioEffect( int index )
+{
+	videoGraph->hiddenEffect();
+	emit showEffect( false, index );
 }

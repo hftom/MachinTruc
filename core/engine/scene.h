@@ -25,6 +25,13 @@ public:
 	
 	Clip* createClip( Source *src, double posInTrackPTS, double strt, double len );
 	
+	bool effectCanMove( Clip *clip, double &newPos, bool isVideo, int index );
+	void effectMove( Clip *clip, double newPos, bool isVideo, int index );
+	bool effectCanResizeStart( Clip *clip, double &newPos, double endPos, bool isVideo, int index );
+	void effectResizeStart( Clip *clip, double newPos, double newLength, bool isVideo, int index );
+	bool effectCanResize( Clip *clip, double &newLength, bool isVideo, int index );
+	void effectResize( Clip *clip, double newLength, bool isVideo, int index );
+	
 	bool canResizeStart( Clip *clip, double &newPos, double endPos, int track );
 	void resizeStart( Clip *clip, double newPos, double newLength, int track );
 	bool canResize( Clip *clip, double &newLength, int track );

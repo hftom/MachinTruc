@@ -2,12 +2,13 @@
 
 
 
-AbstractViewItem::AbstractViewItem()
+AbstractViewItem::AbstractViewItem( double heightFactor )
 	: selected( false ),
 	position( 0 ),
 	length( 0 ),
 	scaleFactor( 1 )
 {
+	height = heightFactor * TRACKVIEWITEMHEIGHT;
 }
 
 
@@ -71,5 +72,5 @@ void AbstractViewItem::updateGeometry()
 	if ( width < 0 )
 		width = 0;
 	setPos( x, 2 );
-	setRect( 0, 0, width, TRACKVIEWITEMHEIGHT - 3 );
+	setRect( 0, 0, width, height - 3 );
 }

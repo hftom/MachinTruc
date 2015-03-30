@@ -1,6 +1,7 @@
 #ifndef GRAPHEFFECTITEM_H
 #define GRAPHEFFECTITEM_H
 
+#include <QApplication>
 #include <QGraphicsRectItem>
 #include <QGraphicsSceneMouseEvent>
 #include <QPainter>
@@ -13,9 +14,14 @@
 class GraphItem : public QGraphicsRectItem
 {
 public:
-	GraphItem( bool fx ) : QGraphicsRectItem(), isEffect( fx ) {}
+	GraphItem( bool fx ) : QGraphicsRectItem(), isEffect( fx ), selected( false ) {}
+	bool isSelected() { return selected; }
 	
 	bool isEffect;
+	
+protected:
+	QDateTime lastTime;
+	bool selected;
 };
 
 
@@ -29,8 +35,27 @@ public:
 	void paint( QPainter *painter, const QStyleOptionGraphicsItem*, QWidget* ) {
 		QRectF inside = rect();
 		painter->drawImage( inside, thumb );
-		painter->setPen( "black" );
+		if ( selected )
+			painter->setPen( QPen( QBrush(QColor("red")), 2 ) );
+		else
+			painter->setPen( QPen( QBrush(QColor("black")), 1 ) );
 		painter->drawRect( inside );
+	}
+	void setSelected( bool b ) {
+		selected = b;
+		update();
+	}
+	
+protected:
+	void mousePressEvent( QGraphicsSceneMouseEvent *event ) {
+		if ( event->buttons() & Qt::LeftButton ) {
+			QDateTime old = lastTime;
+			lastTime = QDateTime::currentDateTime();
+			if ( old.msecsTo( lastTime ) <= qApp->doubleClickInterval() ) {
+				Graph* g = (Graph*)scene();
+				g->itemDoubleClicked();
+			}
+		}
 	}
 	
 private:
@@ -45,7 +70,6 @@ public:
 	GraphEffectItem( QString name, QString icon, int id );
 	void paint( QPainter *painter, const QStyleOptionGraphicsItem*, QWidget* );
 	void setSelected( bool b );
-	bool isSelected() { return selected; }
 	int index() { return filterIndex; }
 	
 protected:
@@ -60,9 +84,6 @@ private:
 	QPen textPen, backPen;
 	QBrush backBrush, selectedBrush;
 	
-	bool selected;
-	
-	QDateTime lastTime;
 	bool firstMove;
 	qreal mouseOffset, moveStart;
 };

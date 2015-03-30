@@ -13,6 +13,7 @@ Graph::Graph( bool audio )
 	: isAudio( audio ),
 	viewHeight( 0 ),
 	currentClip( NULL ),
+	currentThumb( NULL ),
 	selectedItem( NULL )
 {
 	if ( isAudio )
@@ -54,9 +55,9 @@ void Graph::setCurrentClip( ClipViewItem *c )
 	}
 	
 	FilterCollection *fc = FilterCollection::getGlobalInstance();
-	GraphThumb *thumb = new GraphThumb( c->getStartThumb() );
-	addItem( thumb );
-	thumb->setPos( 0, ITEMSPACING / 2 );
+	currentThumb = new GraphThumb( c->getStartThumb() );
+	addItem( currentThumb );
+	currentThumb->setPos( 0, ITEMSPACING / 2 );
 	int y = ITEMSPACING * 3 / 2 + ICONSIZEHEIGHT;
 	GraphEffectItem *it = NULL;
 	
@@ -125,6 +126,38 @@ void Graph::itemSelected( GraphEffectItem *it )
 		selectedItem = NULL;
 		emit filterSelected( currentClip->getClip(), -1 );
 	}
+	
+	if ( currentThumb && currentThumb->isSelected() ) {
+		currentThumb->setSelected( false );
+		showEffect( -1 ); 
+	}
+}
+
+
+
+void Graph::itemDoubleClicked()
+{
+	if ( !selectedItem )
+		return;
+	
+	int id = selectedItem->index();
+	if ( currentThumb->isSelected() && id == currentEffectIndex ) {
+		currentThumb->setSelected( false );
+		emit showEffect( -1 );
+	}
+	else {
+		currentThumb->setSelected( true );
+		emit showEffect( id );
+	}
+	currentEffectIndex = id;
+}
+
+
+
+void Graph::hiddenEffect()
+{
+	if ( currentThumb )
+		currentThumb->setSelected( false );
 }
 
 
@@ -141,6 +174,7 @@ void Graph::effectRightClick( GraphEffectItem *it )
 		emit filterDeleted( currentClip->getClip(), currentClip->getClip()->audioFilters.at( it->index() ) );
 	else
 		emit filterDeleted( currentClip->getClip(), currentClip->getClip()->videoFilters.at( it->index() ) );
+	emit showEffect( -1 );
 	QTimer::singleShot ( 1, this, SLOT(rebuildGraph()) );
 }
 

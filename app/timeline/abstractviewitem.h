@@ -11,7 +11,7 @@
 class AbstractViewItem : public QGraphicsRectItem
 {
 public:
-	AbstractViewItem();
+	AbstractViewItem( double heightFactor = 1.0 );
 	virtual ~AbstractViewItem() {}
 	
 	void setPosition( double pos );
@@ -33,6 +33,8 @@ protected:
 	
 private:
 	void updateGeometry();
+	
+	int height;
 };
 
 #endif // ABSTRACTVIEWITEM_H

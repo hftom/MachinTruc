@@ -1,5 +1,3 @@
-#include <QApplication>
-
 #include "grapheffectitem.h"
 
 
@@ -19,7 +17,6 @@ GraphEffectItem::GraphEffectItem( QString name, QString icon, int id ) : GraphIt
 	backBrush = QBrush( QColor(0,0,0,180) );
 	selectedBrush = QBrush( QColor(128,0,0,180) );
 	setRect( 0, 0, ICONSIZEWIDTH, ICONSIZEHEIGHT );
-	selected = false;
 }
 
 
@@ -56,14 +53,16 @@ void GraphEffectItem::setSelected( bool b )
 
 void GraphEffectItem::mousePressEvent( QGraphicsSceneMouseEvent *event )
 {
-	Graph* g = (Graph*)scene();
+	Graph *g = (Graph*)scene();
 	
 	if ( event->buttons() & Qt::LeftButton ) {
-		QDateTime old = lastTime;
-		lastTime = QDateTime::currentDateTime();
-		if ( old.msecsTo( lastTime ) <= qApp->doubleClickInterval() ) {
-			//g->effectDoubleClicked( this );
-			//return;
+		if ( event->buttons() & Qt::LeftButton ) {
+			QDateTime old = lastTime;
+			lastTime = QDateTime::currentDateTime();
+			if ( old.msecsTo( lastTime ) <= qApp->doubleClickInterval() ) {
+				g->itemDoubleClicked();
+				return;
+			}
 		}
 	}
 	else if ( event->buttons() & Qt::RightButton ) {
@@ -94,7 +93,8 @@ void GraphEffectItem::mouseMoveEvent( QGraphicsSceneMouseEvent *event )
 
 void GraphEffectItem::mouseReleaseEvent( QGraphicsSceneMouseEvent * )
 {
-	firstMove = false;
+	if ( firstMove )
+		return;
 	Graph* g = (Graph*)scene();
 	g->effectReleased( this );
 }

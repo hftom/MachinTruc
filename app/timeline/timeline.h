@@ -8,6 +8,7 @@
 #include "cursorviewitem.h"
 #include "trackviewitem.h"
 #include "transitionviewitem.h"
+#include "clipeffectviewitem.h"
 
 
 
@@ -52,6 +53,11 @@ public:
 	void clipItemCanResize( ClipViewItem *clip, int way, QPointF mouse, double clipStartPos, double clipStartLen, QPointF clipStartMouse, bool unsnap );
 	void clipItemResized( ClipViewItem *clip, int way );
 	
+	void effectCanMove( QPointF mouse, double clipStartPos, QPointF clipStartMouse, bool unsnap );
+	void effectMoved( QPointF clipMouseStart );
+	void effectCanResize( int way, QPointF mouse, double clipStartPos, double clipStartLen, QPointF clipStartMouse, bool unsnap );
+	void effectResized( int way );
+	
 	void transitionSelected( TransitionViewItem *it );
 	void clipDoubleClicked();
 	void clipRightClick( ClipViewItem *cv );
@@ -77,6 +83,8 @@ public slots:
 	
 	void filterDeleted( Clip *c, QSharedPointer<Filter> f );
 	
+	void showEffect( bool isVideo, int index );
+	
 protected:
 	/*void mousePressEvent ( QGraphicsSceneMouseEvent *e );
 	void mouseMoveEvent( QGraphicsSceneMouseEvent *e );
@@ -93,8 +101,8 @@ private slots:
 	
 private:
 	int getTrack( const QPointF &p );
-	void snapMove( ClipViewItem *item, double &pos, double mouseX, double itemScenePos, bool limit = false );
-	void snapResize( ClipViewItem *item, int way, double &len, double mouseX, double itemScenePos );
+	void snapMove( AbstractViewItem *item, double &pos, double mouseX, double itemScenePos, bool limit = false );
+	void snapResize( AbstractViewItem *item, int way, double &len, double mouseX, double itemScenePos );
 
 	void updateTransitions( ClipViewItem *clip, bool remove );
 	
@@ -107,6 +115,7 @@ private:
 	QList<TrackViewItem*> tracks;
 	
 	AbstractViewItem *selectedItem;
+	ClipEffectViewItem *effectItem;
 	
 	Scene *scene;
 	TopWindow *topParent;

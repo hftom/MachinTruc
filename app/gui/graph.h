@@ -8,7 +8,7 @@
 #include "engine/thumbnailer.h"
 
 
-
+class GraphThumb;
 class GraphEffectItem;
 
 
@@ -23,6 +23,9 @@ public:
 	ClipViewItem *getClip() { return currentClip; }
 	void effectMoved( GraphEffectItem *it, qreal y );
 	void effectReleased( GraphEffectItem *it );
+	void itemDoubleClicked();
+	
+	void hiddenEffect();
 	
 public slots:
 	void viewSizeChanged( const QSize &size );
@@ -43,6 +46,8 @@ private:
 	bool isAudio;
 	int viewHeight;
 	ClipViewItem *currentClip;
+	GraphThumb *currentThumb;
+	int currentEffectIndex;
 	GraphEffectItem *selectedItem;
 	QList<GraphEffectItem*> dragList;
 	
@@ -52,6 +57,7 @@ signals:
 	void filterAdded( ClipViewItem*, QString, int );
 	void updateFrame();
 	void showVerticalScrollBar( bool );
+	void showEffect( int index );
 };
 
 #endif // GRAPH_H

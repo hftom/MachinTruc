@@ -13,6 +13,8 @@
 class Filter : public QObject // for easier translations
 {
 public:
+	enum snapType{ SNAPALL, SNAPNONE, SNAPSTART, SNAPEND };
+
 	Filter( QString id, QString name );
 	virtual ~Filter();
 	
@@ -21,8 +23,12 @@ public:
 
 	virtual void setPosition( double p ) { posInTrack = p; }
 	virtual double getPosition() { return posInTrack; }
+	virtual void setPositionOffset( double p ) { posOffset = p; }
+	virtual double getPositionOffset() { return posOffset; }
 	virtual void setLength( double len ) { length = len; }
 	virtual double getLength() { return length; }
+	int getSnap() { return snap; }
+	void setSnap( int s ) { snap = s; }
 	
 	QString getFilterName() { return filterName; }
 	QString getIdentifier() { return identifier; }
@@ -37,6 +43,8 @@ private:
 	QList<Parameter*> parameters;
 	QString identifier, filterName;
 	double posInTrack, length;
+	double posOffset;
+	int snap;
 };
 
 #endif // FILTER_H

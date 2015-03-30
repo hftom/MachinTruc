@@ -19,6 +19,7 @@ Timeline::Timeline( TopWindow *parent ) : QGraphicsScene(),
 	zoom( DEFAULTZOOM ),
 	viewWidth( 0 ),
 	selectedItem( NULL ),
+	effectItem( NULL ),
 	scene( NULL ),
 	topParent( parent )
 {
@@ -84,6 +85,12 @@ void Timeline::wheelEvent( QGraphicsSceneWheelEvent *e )
 
 void Timeline::itemSelected( AbstractViewItem *it )
 {
+	if ( effectItem ) {
+		removeItem( effectItem );
+		delete effectItem;
+		effectItem = NULL;
+	}
+
 	if ( selectedItem )
 		selectedItem->setSelected( false );
 	if ( it ) {
@@ -175,6 +182,23 @@ void Timeline::clipDoubleClicked()
 
 
 
+void Timeline::showEffect( bool isVideo, int index )
+{
+	qDebug() << "showEffect" << isVideo << index;
+	if ( effectItem ) {
+		removeItem( effectItem );
+		delete effectItem;
+		effectItem = NULL;
+	}
+	if ( index == -1 )
+		return;
+	ClipViewItem *cv = (ClipViewItem*)selectedItem;
+	effectItem = new ClipEffectViewItem( cv->getClip(), isVideo, index, zoom );
+	effectItem->setParentItem( tracks.at( getTrack( cv->sceneBoundingRect().topLeft() ) ) );
+}
+
+
+
 void Timeline::transitionSelected( TransitionViewItem *it )
 {
 	QList<QGraphicsItem*> list = items( it->mapToScene( it->rect().topLeft() ), Qt::IntersectsItemBoundingRect, Qt::AscendingOrder );
@@ -232,6 +256,64 @@ void Timeline::clipRightClick( ClipViewItem *cv )
 			cv->getClip()->setSpeed( oldSpeed );
 		}
 	}
+}
+
+
+
+void Timeline::effectCanMove( QPointF mouse, double clipStartPos, QPointF clipStartMouse, bool unsnap )
+{
+	double newPos = ( mouse.x() * zoom ) - ( (clipStartMouse.x() * zoom) - clipStartPos );
+		
+	if ( !unsnap )
+		snapMove( effectItem, newPos, mouse.x(), ( clipStartMouse.x() - (clipStartPos / zoom) ), false );
+
+	if ( scene->effectCanMove( effectItem->getClip(), newPos, effectItem->isVideoEffect(), effectItem->getIndex() ) ) {
+		effectItem->setPosition( newPos );
+	}
+}
+
+
+
+void Timeline::effectMoved( QPointF clipMouseStart )
+{
+	scene->effectMove( effectItem->getClip(), effectItem->getPosition(), effectItem->isVideoEffect(), effectItem->getIndex() );
+	QTimer::singleShot ( 1, this, SIGNAL(updateFrame()) );
+}
+
+
+
+void Timeline::effectCanResize( int way, QPointF mouse, double clipStartPos, double clipStartLen, QPointF clipStartMouse, bool unsnap )
+{
+	if ( way == 2 ) {
+		double newLength = clipStartLen + ( mouse.x() * zoom ) - ( clipStartMouse.x() * zoom);
+		if ( !unsnap )
+			snapResize( effectItem, way, newLength, mouse.x(), ( clipStartMouse.x() - ((effectItem->getPosition() + clipStartLen) / zoom) ) );
+		if ( scene->effectCanResize( effectItem->getClip(), newLength, effectItem->isVideoEffect(), effectItem->getIndex() ) ) {
+			effectItem->setLength( newLength );
+		}
+	}
+	else {
+		double newPos = ( mouse.x() * zoom ) - ( (clipStartMouse.x() * zoom) - clipStartPos );
+		if ( !unsnap )
+			snapResize( effectItem, way, newPos, mouse.x(), ( clipStartMouse.x() - ( clipStartPos / zoom ) ) );
+		if ( newPos < 0 )
+			newPos = 0;
+		double endPos = clipStartPos + clipStartLen;
+		if ( scene->effectCanResizeStart( effectItem->getClip(), newPos, endPos, effectItem->isVideoEffect(), effectItem->getIndex() ) ) {
+			effectItem->setGeometry( newPos, endPos - newPos );
+		}
+	}
+}
+
+
+
+void Timeline::effectResized( int way )
+{
+	if ( way == 2 )
+		scene->effectResize( effectItem->getClip(), effectItem->getLength(), effectItem->isVideoEffect(), effectItem->getIndex() );
+	else
+		scene->effectResizeStart( effectItem->getClip(), effectItem->getPosition(), effectItem->getLength(), effectItem->isVideoEffect(), effectItem->getIndex() );
+	QTimer::singleShot ( 1, this, SIGNAL(updateFrame()) );
 }
 
 
@@ -371,7 +453,7 @@ void Timeline::clipItemResized( ClipViewItem *clip, int way )
 
 
 
-void Timeline::snapResize( ClipViewItem *item, int way, double &poslen, double mouseX, double itemScenePos )
+void Timeline::snapResize( AbstractViewItem *item, int way, double &poslen, double mouseX, double itemScenePos )
 {
 	QRectF src = item->mapRectToScene( item->rect() );
 	double delta = fabs( itemScenePos - ( mouseX - ( way == 2 ? src.right() : src.left() ) ) );
@@ -427,7 +509,7 @@ void Timeline::snapResize( ClipViewItem *item, int way, double &poslen, double m
 
 
 
-void Timeline::snapMove( ClipViewItem *item, double &pos, double mouseX, double itemScenePos, bool limit )
+void Timeline::snapMove( AbstractViewItem *item, double &pos, double mouseX, double itemScenePos, bool limit )
 {
 	QRectF src = item->mapRectToScene( item->rect() );
 	double delta = fabs( itemScenePos - ( mouseX - src.left() ) );
@@ -553,6 +635,7 @@ void Timeline::setScene( Scene *s )
 
 	scene = s;
 	selectedItem = NULL;
+	effectItem = NULL;
 
 	while ( tracks.count() ) {
 		QGraphicsItem *it = tracks.takeFirst();
@@ -817,7 +900,8 @@ void Timeline::thumbResultReady( ThumbRequest result )
 	if ( !result.thumb.isNull() && result.caller != NULL ) {
 		ClipViewItem *it = (ClipViewItem*)result.caller;
 		if ( items().contains( it ) ) {
-			it->setThumb( result );
+			if ( it->setThumb( result ) && it == selectedItem )
+				emit clipSelected( it );
 		}
 	}
 }
