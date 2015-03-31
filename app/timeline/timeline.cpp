@@ -715,45 +715,45 @@ void Timeline::addFilter( ClipViewItem *clip, QString fx, int index )
 {
 	int i;
 	FilterCollection *fc = FilterCollection::getGlobalInstance();
+	QSharedPointer<Filter> f;
 	for ( i = 0; i < fc->videoFilters.count(); ++i ) {
 		if ( fc->videoFilters[ i ].identifier == fx ) {
-			QSharedPointer<Filter> f = fc->videoFilters[ i ].create();
-			f->setPosition( clip->getClip()->position() );
-			if ( f->getSnap() == Filter::SNAPEND )
-				f->setPositionOffset( clip->getClip()->length() - f->getLength() );
-			else if ( f->getSnap() == Filter::SNAPSTART )
-				f->setPositionOffset( 0 );
-			else
-				f->setLength( clip->getClip()->length() );
+			f = fc->videoFilters[ i ].create();
 			if ( index == -1 )
 				clip->getClip()->videoFilters.append( f.staticCast<GLFilter>() );
 			else
 				clip->getClip()->videoFilters.insert( index, f.staticCast<GLFilter>() );
-			itemSelected( clip );
-			emit updateFrame();
-			return;
+			break;
+		}
+	}
+	if ( f.isNull() ) {
+		for ( i = 0; i < fc->audioFilters.count(); ++i ) {
+			if ( fc->audioFilters[ i ].identifier == fx ) {
+				f = fc->audioFilters[ i ].create();
+				if ( index == -1 )
+					clip->getClip()->audioFilters.append( f.staticCast<AudioFilter>() );
+				else
+					clip->getClip()->audioFilters.insert( index, f.staticCast<AudioFilter>() );
+				break;
+			}
 		}
 	}
 	
-	for ( i = 0; i < fc->audioFilters.count(); ++i ) {
-		if ( fc->audioFilters[ i ].identifier == fx ) {
-			QSharedPointer<Filter> f = fc->audioFilters[ i ].create();
-			f->setPosition( clip->getClip()->position() );
-			if ( f->getSnap() == Filter::SNAPEND )
-				f->setPositionOffset( clip->getClip()->length() - f->getLength() );
-			else if ( f->getSnap() == Filter::SNAPSTART )
-				f->setPositionOffset( 0 );
-			else
-				f->setLength( clip->getClip()->length() );
-			if ( index == -1 )
-				clip->getClip()->audioFilters.append( f.staticCast<AudioFilter>() );
-			else
-				clip->getClip()->audioFilters.insert( index, f.staticCast<AudioFilter>() );
-			itemSelected( clip );
-			emit updateFrame();
-			return;
-		}
-	}
+	if ( f.isNull() )
+		return;
+	
+	f->setPosition( clip->getClip()->position() );
+	if ( f->getLength() > clip->getClip()->length() )
+		f->setLength( clip->getClip()->length() );
+	if ( f->getSnap() == Filter::SNAPEND )
+		f->setPositionOffset( clip->getClip()->length() - f->getLength() );
+	else if ( f->getSnap() == Filter::SNAPSTART )
+		f->setPositionOffset( 0 );
+	else
+		f->setLength( clip->getClip()->length() );
+			
+	itemSelected( clip );
+	emit updateFrame();
 }
 
 
