@@ -117,6 +117,16 @@ void Timeline::trackPressed( QPointF p )
 }
 
 
+
+void Timeline::playheadMoved( double p )
+{
+	double pts = p * zoom;
+	qint64 i = pts / scene->getProfile().getVideoFrameDuration();
+	pts = i;
+	emit seekTo( pts * scene->getProfile().getVideoFrameDuration() );
+}
+
+
 #define ADDABOVE 100
 #define ADDBELOW 101
 #define RMTRACK 102

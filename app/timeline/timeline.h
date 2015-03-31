@@ -66,6 +66,8 @@ public:
 	void trackPressedRightBtn( TrackViewItem *t, QPoint p );
 	void itemSelected( AbstractViewItem *it );
 	
+	void playheadMoved( double p );
+	
 	void trackRemoved( int index );
 	void trackAdded( int index );
 	
