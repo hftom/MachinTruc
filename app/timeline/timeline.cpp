@@ -715,14 +715,15 @@ void Timeline::addFilter( ClipViewItem *clip, QString fx, int index )
 {
 	int i;
 	FilterCollection *fc = FilterCollection::getGlobalInstance();
+	Clip *c = clip->getClip();
 	QSharedPointer<Filter> f;
 	for ( i = 0; i < fc->videoFilters.count(); ++i ) {
 		if ( fc->videoFilters[ i ].identifier == fx ) {
 			f = fc->videoFilters[ i ].create();
 			if ( index == -1 )
-				clip->getClip()->videoFilters.append( f.staticCast<GLFilter>() );
+				c->videoFilters.append( f.staticCast<GLFilter>() );
 			else
-				clip->getClip()->videoFilters.insert( index, f.staticCast<GLFilter>() );
+				c->videoFilters.insert( index, f.staticCast<GLFilter>() );
 			break;
 		}
 	}
@@ -731,9 +732,9 @@ void Timeline::addFilter( ClipViewItem *clip, QString fx, int index )
 			if ( fc->audioFilters[ i ].identifier == fx ) {
 				f = fc->audioFilters[ i ].create();
 				if ( index == -1 )
-					clip->getClip()->audioFilters.append( f.staticCast<AudioFilter>() );
+					c->audioFilters.append( f.staticCast<AudioFilter>() );
 				else
-					clip->getClip()->audioFilters.insert( index, f.staticCast<AudioFilter>() );
+					c->audioFilters.insert( index, f.staticCast<AudioFilter>() );
 				break;
 			}
 		}
@@ -742,15 +743,15 @@ void Timeline::addFilter( ClipViewItem *clip, QString fx, int index )
 	if ( f.isNull() )
 		return;
 	
-	f->setPosition( clip->getClip()->position() );
-	if ( f->getLength() > clip->getClip()->length() )
-		f->setLength( clip->getClip()->length() );
+	f->setPosition( c->position() );
+	if ( f->getLength() > c->length() )
+		f->setLength( c->length() );
 	if ( f->getSnap() == Filter::SNAPEND )
-		f->setPositionOffset( clip->getClip()->length() - f->getLength() );
+		f->setPositionOffset( c->length() - f->getLength() );
 	else if ( f->getSnap() == Filter::SNAPSTART )
 		f->setPositionOffset( 0 );
 	else
-		f->setLength( clip->getClip()->length() );
+		f->setLength( c->length() );
 			
 	itemSelected( clip );
 	emit updateFrame();
