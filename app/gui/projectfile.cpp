@@ -452,6 +452,11 @@ void ProjectFile::readParameter( QDomElement &element, QSharedPointer<Filter> f 
 			return;
 		p->value = value.toInt();
 	}
+	if ( type == "bool" ) {
+		if ( p->type != Parameter::PBOOL )
+			return;
+		p->value = value.toInt();
+	}
 	if ( type == "rgb" ) {
 		if ( p->type != Parameter::PRGBCOLOR )
 			return;
@@ -644,6 +649,11 @@ void ProjectFile::writeFilter( QDomNode &parent, bool audio, QSharedPointer<Filt
 			}
 			case Parameter::PINT: {
 				pel.setAttribute( "type", "int" );
+				pel.setAttribute( "value", QString::number( p->value.toInt() ) );
+				break;
+			}
+			case Parameter::PBOOL: {
+				pel.setAttribute( "type", "bool" );
 				pel.setAttribute( "value", QString::number( p->value.toInt() ) );
 				break;
 			}
