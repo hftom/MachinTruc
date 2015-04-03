@@ -6,6 +6,8 @@
 #include <QGridLayout>
 #include <QLabel>
 #include <QPainter>
+#include <QDoubleSpinBox>
+#include <QSpinBox>
 #include <QDebug>
 
 #include "parameterwidget.h"
@@ -30,6 +32,7 @@ public slots:
 	void setValue( double angle, double radius ) {
 		x = cos( angle ) * radius * wheelRadius + width() / 2;
 		y = -sin( angle ) * radius * wheelRadius + height() / 2;
+		update();
 	}
 	
 protected:
@@ -63,7 +66,6 @@ protected:
 			a += M_PI * 2;
 		setValue( a, len );
 		emit valueChanged( a, len );
-		update();
 	}
 	
 private:
@@ -78,19 +80,19 @@ signals:
 
 
 #define CURSORMID 5
-#define CURSORWIDTH 9
-#define CURSORHEIGHT 7
-#define BARHEIGHT 18
+#define CURSORWIDTH 7
+#define CURSORHEIGHT 9
+#define BARWIDTH 15
 class ColorValueWidget : public QFrame
 {
 	Q_OBJECT
 public:
 	ColorValueWidget( QWidget *parent = 0 ) : QFrame( parent ) {
-		setMinimumSize( QSize( WHEELSIZE + SELECTORSIZE, BARHEIGHT + CURSORHEIGHT + 2 ) );
-		barRect = QRect( CURSORMID, CURSORHEIGHT, width() - CURSORMID * 2 , BARHEIGHT );
+		setMinimumSize( QSize( BARWIDTH + 2, WHEELSIZE + SELECTORSIZE ) );
+		barRect = QRect( 0, CURSORMID, BARWIDTH, height() - CURSORMID * 2 );
 		setValue( 0 );
 		cursor = QPixmap(":/images/icons/cursor.png");
-		gradient = QLinearGradient( QPointF(0, 0), QPointF(1, 0) );
+		gradient = QLinearGradient( QPointF(0, 1), QPointF(0, 0) );
 		gradient.setCoordinateMode( QGradient::ObjectBoundingMode );
 		gradient.setColorAt( 0, QColor("black") );
 		gradient.setColorAt( 1, QColor("white") );
@@ -106,6 +108,7 @@ public slots:
 
 	void setValue( double val ) {
 		value = qMax( qMin( 1.0, val ), 0.0 );
+		update();
 	}
 	
 protected:
@@ -113,9 +116,9 @@ protected:
 		QPainter p(this);
 		p.setPen( "black" );
 		p.setBrush( barBrush );
-		barRect.setWidth( width() - CURSORMID * 2 );
+		barRect.setHeight( height() - CURSORMID * 2 );
 		p.drawRect( barRect );
-		p.drawPixmap( value * (width() - CURSORMID * 2) + 1, 1, cursor );
+		p.drawPixmap( 0, height() - CURSORHEIGHT - (value * (height() - CURSORMID * 2)), cursor );
 	}
 	
 	/*virtual void mouseDoubleClickEvent( QMouseEvent* ) {
@@ -131,10 +134,10 @@ protected:
 	}
 	
 	void move( QPoint p ) {
-		double x = p.x() - CURSORMID;
-		setValue( x / (width() - CURSORMID * 2) );
+		double y = p.y() - CURSORMID;
+		y /= height() - CURSORMID * 2;
+		setValue( 1.0 - y );
 		emit valueChanged( value );
-		update();
 	}
 	
 private:
@@ -143,7 +146,6 @@ private:
 	QBrush barBrush;
 	QRect barRect;
 	qreal value;
-	bool pressed;
 	
 signals:
 	void valueChanged( double val );
@@ -163,10 +165,17 @@ public:
 private slots:
 	void colorChanged( double angle, double radius );
 	void hsvValueChanged( double val );
+	void hueValueChanged( int v );
+	void saturationValueChanged( double v );
+	void valueValueChanged( double v );
 	
 private:
+	void newValues();
+	
 	ColorWheelWidget *wheel;
 	ColorValueWidget *valueBar;
+	QSpinBox *hueSpin;
+	QDoubleSpinBox *saturationSpin, *valueSpin;
 	QGridLayout *grid;
 	double hAngle, sRadius, vValue;
 };
