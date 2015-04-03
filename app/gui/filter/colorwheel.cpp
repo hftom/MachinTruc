@@ -28,7 +28,7 @@ ColorWheel::ColorWheel( QWidget *parent, Parameter *p, bool keyframeable ) : Par
 	grid->addWidget( hueSpin = new QSpinBox(), 2, 1 );
 	hueSpin->setRange( 0, 359 );
 	hueSpin->setSingleStep( 1 );
-	//hueSpin->setSuffix( "°" );
+	hueSpin->setSuffix( QString::fromUtf8( "°" ) );
 	hueSpin->setValue( hAngle * 359 );
 	grid->addWidget( new QLabel("S:"), 3, 0 );
 	grid->addWidget( saturationSpin = new QDoubleSpinBox(), 3, 1 );
