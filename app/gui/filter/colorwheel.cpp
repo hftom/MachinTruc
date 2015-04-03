@@ -33,12 +33,14 @@ ColorWheel::ColorWheel( QWidget *parent, Parameter *p, bool keyframeable ) : Par
 	grid->addWidget( new QLabel("S:"), 3, 0 );
 	grid->addWidget( saturationSpin = new QDoubleSpinBox(), 3, 1 );
 	saturationSpin->setRange( 0, 1 );
-	saturationSpin->setSingleStep( 0.01 );
+	saturationSpin->setDecimals( 3 );
+	saturationSpin->setSingleStep( 0.001 );
 	saturationSpin->setValue( sRadius );
 	grid->addWidget( new QLabel("V:"), 4, 0 );
 	grid->addWidget( valueSpin = new QDoubleSpinBox(), 4, 1 );
 	valueSpin->setRange( 0, 1 );
-	valueSpin->setSingleStep( 0.01 );
+	valueSpin->setDecimals( 3 );
+	valueSpin->setSingleStep( 0.001 );
 	valueSpin->setValue( vValue );
 	
 	valueBar = new ColorValueWidget();
@@ -47,7 +49,7 @@ ColorWheel::ColorWheel( QWidget *parent, Parameter *p, bool keyframeable ) : Par
 	grid->addWidget( valueBar, 1, 2, 4, 1 );
 	
 	float r, g, b;
-	movit::hsv2rgb(  M_PI * 2 * (1.0 - hAngle), pow( sRadius, 2 ), 1.0f, &r, &g, &b );
+	movit::hsv2rgb(  M_PI * 2 * hAngle, pow( sRadius, 2 ), 1.0f, &r, &g, &b );
 	init.setRgbF( r, g, b );
 	valueBar->setColor( init );
 
@@ -123,7 +125,7 @@ void ColorWheel::newValues()
 {
 	QColor col;
 	float r, g, b;
-	movit::hsv2rgb(  M_PI * 2 - (M_PI * 2 * hAngle), pow( sRadius, 2 ), 1.0f, &r, &g, &b );
+	movit::hsv2rgb(  M_PI * 2 * hAngle, pow( sRadius, 2 ), 1.0f, &r, &g, &b );
 	col.setRgbF( r, g, b );
 	valueBar->setColor( col );
 	col.setRgbF( hAngle, sRadius, vValue );

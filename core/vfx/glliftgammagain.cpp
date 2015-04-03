@@ -28,16 +28,16 @@ bool GLLiftGammaGain::process( const QList<Effect*> &el, Frame *src, Profile *p 
 	Q_UNUSED( p );
 	QColor clift = getParamValue( lift ).value<QColor>();
 	RGBTriplet liftRgb(0.0f, 0.0f, 0.0f);
-	hsv2rgb_normalized( M_PI * 2 * ( 1.0 - clift.redF() ), pow( clift.greenF(), 2 ), clift.blueF(), &liftRgb.r, &liftRgb.g, &liftRgb.b );
+	hsv2rgb_normalized( M_PI * 2 * clift.redF(), pow( clift.greenF(), 2 ), clift.blueF(), &liftRgb.r, &liftRgb.g, &liftRgb.b );
 	
 	QColor cgamma = getParamValue( gamma ).value<QColor>();
 	RGBTriplet gammaRgb(0.0f, 0.0f, 0.0f);
-	hsv2rgb_normalized( M_PI * 2 * ( 1.0 - cgamma.redF() ), pow( cgamma.greenF(), 2 ), cgamma.blueF() * 2, &gammaRgb.r, &gammaRgb.g, &gammaRgb.b );
+	hsv2rgb_normalized( M_PI * 2 * cgamma.redF(), pow( cgamma.greenF(), 2 ), cgamma.blueF() * 2, &gammaRgb.r, &gammaRgb.g, &gammaRgb.b );
 	
 	QColor cgain = getParamValue( gain ).value<QColor>();
 	RGBTriplet gainRgb(0.0f, 0.0f, 0.0f);
-	hsv2rgb_normalized( M_PI * 2 * ( 1.0 - cgain.redF() ), pow( cgain.greenF(), 2 ), cgain.blueF() * 4, &gainRgb.r, &gainRgb.g, &gainRgb.b );
-
+	hsv2rgb_normalized( M_PI * 2 * cgain.redF(), pow( cgain.greenF(), 2 ), cgain.blueF() * 4, &gainRgb.r, &gainRgb.g, &gainRgb.b );
+	
 	Effect *e = el[0];
 	return e->set_vec3( "lift", (float*)&liftRgb )
 		&& e->set_vec3( "gamma", (float*)&gammaRgb )
