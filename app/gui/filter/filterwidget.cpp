@@ -4,6 +4,7 @@
 #include "sliderint.h"
 #include "colorchooser.h"
 #include "checkbox.h"
+#include "colorwheel.h"
 
 
 
@@ -13,8 +14,9 @@ FilterWidget::FilterWidget( QWidget *parent, Clip *c, QSharedPointer<Filter> f )
 {	
 	QList<Parameter*> parameters = filter->getParameters();
 	
-	QBoxLayout* box = new QBoxLayout( QBoxLayout::TopToBottom );
-	box->setContentsMargins( 0, 0, 0, 0 );
+	QGridLayout* grid = new QGridLayout();
+	grid->setContentsMargins( 0, 0, 0, 0 );
+	int row = 0;
 	
 	int i;
 	for ( i = 0; i < parameters.count(); ++i ) {
@@ -43,16 +45,24 @@ FilterWidget::FilterWidget( QWidget *parent, Clip *c, QSharedPointer<Filter> f )
 				pw = new ColorChooser( true, this, p, clip != 0 );
 				break;
 			}
+			case Parameter::PCOLORWHEEL: {
+				pw = new ColorWheel( this, p, clip != 0 );
+				break;
+			}
 		}
 		if ( pw ) {
 			paramWidgets.append( pw );
 			connect( pw, SIGNAL(valueChanged(Parameter*,QVariant)), this, SLOT(valueChanged(Parameter*,QVariant)) );
 			connect( pw, SIGNAL(showAnimation(ParameterWidget*,Parameter*)), this, SLOT(showAnimation(ParameterWidget*,Parameter*)) );
-			box->addLayout( pw->getLayout() );
+			if ( p->layout.row != -1 )
+				grid->addLayout( pw->getLayout(), p->layout.row, p->layout.column, p->layout.rowSpan, p->layout.columnSpan );
+			else 
+				grid->addLayout( pw->getLayout(), row++, 0 );
 		}
+		++row;
 	}
 	
-	setLayout( box );
+	setLayout( grid );
 }
 
 

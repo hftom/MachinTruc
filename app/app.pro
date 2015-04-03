@@ -22,6 +22,7 @@ SOURCES = \
 	gui/filter/checkbox.cpp \
 	gui/filter/colorchooser.cpp \
 	gui/filter/filterwidget.cpp \
+	gui/filter/colorwheel.cpp \
 	\
 	timeline/timeline.cpp \
 	timeline/abstractviewitem.cpp \
@@ -57,6 +58,7 @@ HEADERS = \
 	gui/filter/checkbox.h \
 	gui/filter/colorchooser.h \
 	gui/filter/filterwidget.h \
+	gui/filter/colorwheel.h \
 	\
 	timeline/timelinegraphicsview.h \
 	timeline/timeline.h \

@@ -38,5 +38,7 @@
 	<file>icons/size.png</file>
 	<file>icons/deform.png</file>
 	<file>icons/transparency.png</file>
+	<file>icons/color-wheel.png</file>
+	<file>icons/cursor.png</file>
   </qresource>
 </RCC>

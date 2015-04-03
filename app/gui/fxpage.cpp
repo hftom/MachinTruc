@@ -63,7 +63,6 @@ void FxPage::videoFilterSelected( Clip *c, int index )
 		return;
 	
 	currentEffectsWidget = new QWidget();
-	currentEffectsWidget->setMinimumWidth( 150 );
 	effectsWidgetLayout = new QGridLayout( currentEffectsWidget );
 	FilterWidget *fw = new FilterWidget( currentEffectsWidget, c, c->videoFilters.at( index ) );
 	connect( fw, SIGNAL(updateFrame()), this, SIGNAL(updateFrame()) );
@@ -87,7 +86,6 @@ void FxPage::audioFilterSelected( Clip *c, int index )
 		return;
 	
 	currentEffectsWidgetAudio = new QWidget();
-	currentEffectsWidgetAudio->setMinimumWidth( 150 );
 	effectsWidgetLayoutAudio = new QGridLayout( currentEffectsWidgetAudio );
 	FilterWidget *fw = new FilterWidget( currentEffectsWidgetAudio, c, c->audioFilters.at( index ) );
 	connect( fw, SIGNAL(updateFrame()), this, SIGNAL(updateFrame()) );

@@ -426,9 +426,18 @@ void ProjectFile::readParameter( QDomElement &element, QSharedPointer<Filter> f 
 	QString type = element.attribute( "type" );
 	QString name = element.attribute( "name" );
 	QString value = element.attribute( "value" );
+	QString hue;
+	QString saturation;
 	
 	if ( type.isEmpty() || name.isEmpty() || value.isEmpty() )
 		return;
+	
+	if ( type == "colorwheel" ) {
+		hue = element.attribute( "hue" );
+		saturation = element.attribute( "saturation" );
+		if ( hue.isEmpty() || saturation.isEmpty() )
+			return;
+	}
 	
 	Parameter *p = NULL;
 	QList<Parameter*> params = f->getParameters();
@@ -473,6 +482,13 @@ void ProjectFile::readParameter( QDomElement &element, QSharedPointer<Filter> f 
 		QColor col;
 		col.setNamedColor( sl[ 0 ] );
 		col.setAlpha( sl[ 1 ].toInt() );
+		p->value = col;
+	}
+	if ( type == "colorwheel" ) {
+		if ( p->type != Parameter::PCOLORWHEEL )
+			return;
+		QColor col;
+		col.setRgbF( hue.toDouble(), saturation.toDouble(), value.toDouble() );
 		p->value = col;
 	}
 	
@@ -666,6 +682,14 @@ void ProjectFile::writeFilter( QDomNode &parent, bool audio, QSharedPointer<Filt
 				QColor col = p->value.value<QColor>();
 				pel.setAttribute( "type", "rgba" );
 				pel.setAttribute( "value", col.name() + "." + QString::number( col.alpha() ) );
+				break;
+			}
+			case Parameter::PCOLORWHEEL: {
+				QColor col = p->value.value<QColor>();
+				pel.setAttribute( "type", "colorwheel" );
+				pel.setAttribute( "value", QString::number( col.blueF(), 'e', 17 ) );
+				pel.setAttribute( "hue", QString::number( col.redF(), 'e', 17 ) );
+				pel.setAttribute( "saturation", QString::number( col.greenF(), 'e', 17 ) );
 				break;
 			}
 		}

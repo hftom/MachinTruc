@@ -21,7 +21,6 @@ private slots:
 	void stateChanged( int val );
 	
 private:
-	FSlider *fs;
 	QCheckBox *check;
 	QBoxLayout *box;
 };

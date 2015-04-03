@@ -44,7 +44,7 @@
            <enum>Qt::NoFocus</enum>
           </property>
           <property name="dragDropMode">
-           <enum>QAbstractItemView::DragOnly</enum>
+           <enum>QAbstractItemView::DragDrop</enum>
           </property>
           <property name="textElideMode">
            <enum>Qt::ElideNone</enum>
