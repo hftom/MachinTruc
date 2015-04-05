@@ -34,6 +34,7 @@
 	<file>icons/format-justify-center.png</file>
 	<file>icons/format-justify-left.png</file>
 	<file>icons/format-justify-right.png</file>
+	<file>icons/fill-color.png</file>
   </qresource>
   <qresource prefix="images">
     <file>icons/sound.png</file>

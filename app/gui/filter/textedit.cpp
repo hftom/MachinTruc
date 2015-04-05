@@ -9,6 +9,7 @@
 TextEdit::TextEdit( QWidget *parent, Parameter *p ) : ParameterWidget( parent, p )
 {
 	fontColor.setRgb( 0, 0, 0 );
+	backgroundColor.setRgb( 0, 0, 0, 0 );
 	outlineColor.setRgb( 0, 0, 0 );
 
 	box = new QBoxLayout( QBoxLayout::TopToBottom );
@@ -41,6 +42,11 @@ TextEdit::TextEdit( QWidget *parent, Parameter *p ) : ParameterWidget( parent, p
 	widgets.append( colorBtn );
 	colorBtn->setIcon( QIcon(":/toolbar/icons/format-text-color.png") );
 	fontLayout->addWidget( colorBtn );
+	
+	backgroundColorBtn = new QToolButton();
+	widgets.append( backgroundColorBtn );
+	backgroundColorBtn->setIcon( QIcon(":/toolbar/icons/fill-color.png") );
+	fontLayout->addWidget( backgroundColorBtn );
 	
 	fontLayout->insertStretch( -1, 1 );
 	box->addLayout( fontLayout );
@@ -91,7 +97,7 @@ TextEdit::TextEdit( QWidget *parent, Parameter *p ) : ParameterWidget( parent, p
 	QStringList sl = p->value.toString().split("\n");
 	if ( sl.count() ) {
 		QStringList desc = sl[0].split("|");
-		if ( desc.count() == 8 ) {
+		if ( desc.count() == 9 ) {
 			QFont f;
 			f.fromString( desc[0] );
 			f.setPointSize( desc[1].toInt() );
@@ -107,17 +113,23 @@ TextEdit::TextEdit( QWidget *parent, Parameter *p ) : ParameterWidget( parent, p
 				fontColor.setNamedColor( fc[ 0 ] );
 				fontColor.setAlpha( fc[ 1 ].toInt() );
 			}
+			
+			QStringList bc = desc[5].split( "." );
+			if ( bc.count() == 2 ) {
+				backgroundColor.setNamedColor( bc[ 0 ] );
+				backgroundColor.setAlpha( bc[ 1 ].toInt() );
+			}
 
 			alignLeftBtn->setChecked( false );
-			switch ( desc[5].toInt() ) {
+			switch ( desc[6].toInt() ) {
 				case 1: alignLeftBtn->setChecked( true ); break;
 				case 2: alignCenterBtn->setChecked( true ); break;
 				case 3: alignRightBtn->setChecked( true ); break;
 			}					
 			
-			outlineSizeSpin->setValue( desc[6].toInt() );
+			outlineSizeSpin->setValue( desc[7].toInt() );
 			
-			QStringList oc = desc[7].split( "." );
+			QStringList oc = desc[8].split( "." );
 			if ( oc.count() == 2 ) {
 				outlineColor.setNamedColor( oc[ 0 ] );
 				outlineColor.setAlpha( oc[ 1 ].toInt() );
@@ -136,6 +148,7 @@ TextEdit::TextEdit( QWidget *parent, Parameter *p ) : ParameterWidget( parent, p
 	connect( alignRightBtn, SIGNAL(clicked()), this, SLOT(textChanged()) );
 	connect( alignCenterBtn, SIGNAL(clicked()), this, SLOT(textChanged()) );
 	connect( colorBtn, SIGNAL(clicked()), this, SLOT(showColorDialog()) );
+	connect( backgroundColorBtn, SIGNAL(clicked()), this, SLOT(showBackgroundColorDialog()) );
 	connect( outlineSizeSpin, SIGNAL(valueChanged(int)), this, SLOT(outlineSizeChanged(int)) );
 	connect( outlineColorBtn, SIGNAL(clicked()), this, SLOT(showOutlineColorDialog()) );
 	connect( editor, SIGNAL(textChanged()), this, SLOT(textChanged()) );
@@ -158,6 +171,26 @@ void TextEdit::showColorDialog()
 void TextEdit::colorChanged( const QColor &col )
 {
 	fontColor = col;
+	textChanged();
+}
+
+
+
+void TextEdit::showBackgroundColorDialog()
+{
+	QColorDialog dlg;
+	dlg.setOption( QColorDialog::ShowAlphaChannel );
+	dlg.setOption( QColorDialog::NoButtons );
+	dlg.setCurrentColor( backgroundColor );
+	connect( &dlg, SIGNAL(currentColorChanged(const QColor&)), this, SLOT(backgroundColorChanged(const QColor&)) );
+	dlg.exec();
+}
+
+
+
+void TextEdit::backgroundColorChanged( const QColor &col )
+{
+	backgroundColor = col;
 	textChanged();
 }
 
@@ -212,11 +245,12 @@ void TextEdit::textChanged()
 	else if ( alignRightBtn->isChecked() )
 		align = 3;
 
-	QString s = QString( "%1|%2|%3|%4|%5|%6|%7|%8\n" ).arg( fontCombo->currentFont().toString() )
+	QString s = QString( "%1|%2|%3|%4|%5|%6|%7|%8|%9\n" ).arg( fontCombo->currentFont().toString() )
 												.arg( fontSizeSpin->value() )
 												.arg( boldBtn->isChecked() )
 												.arg( italicBtn->isChecked() )
 												.arg( fontColor.name() + "." + QString::number( fontColor.alpha() ) )
+												.arg( backgroundColor.name() + "." + QString::number( backgroundColor.alpha() ) )
 												.arg( align )
 												.arg( outlineSizeSpin->value() )
 												.arg( outlineColor.name() + "." + QString::number( outlineColor.alpha() ) );

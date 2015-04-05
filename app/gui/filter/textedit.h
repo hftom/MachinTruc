@@ -24,22 +24,24 @@ private slots:
 	void fontChanged( const QFont &font );
 	void fontSizeChanged( int val );
 	void showColorDialog();
+	void showBackgroundColorDialog();
 	void outlineSizeChanged( int val );
 	void showOutlineColorDialog();
 	void textChanged();
 	
 	void outlineColorChanged( const QColor& );
 	void colorChanged( const QColor& );
+	void backgroundColorChanged( const QColor& );
 	
 private:
 	QTextEdit *editor;
 	QFontComboBox *fontCombo;
 	QSpinBox *fontSizeSpin, *outlineSizeSpin;
-	QToolButton *boldBtn, *italicBtn, *colorBtn, *outlineColorBtn;
+	QToolButton *boldBtn, *italicBtn, *colorBtn, *backgroundColorBtn, *outlineColorBtn;
 	QToolButton *alignLeftBtn, *alignCenterBtn, *alignRightBtn;
 	QBoxLayout *box;
 	
-	QColor fontColor, outlineColor;
+	QColor fontColor, backgroundColor, outlineColor;
 };
 
 #endif // TEXTEDIT_H

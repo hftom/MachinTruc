@@ -42,13 +42,14 @@ QImage* MyTextEffect::drawImage()
 	QFont myFont;
 	QPen myPen;
 	QBrush myBrush( QColor(0,0,0,0) );
+	QColor backgroundColor(0,0,0,0);
 	int outline = 0;
 	int align = 1;
 		
 	QStringList sl = currentText.split("\n");
 	if ( sl.count() ) {
 		QStringList desc = sl[0].split("|");
-		if ( desc.count() == 8 ) {
+		if ( desc.count() == 9 ) {
 			myFont.fromString( desc[0] );
 			myFont.setPointSize( desc[1].toInt() );
 			myFont.setBold( desc[2].toInt() );
@@ -62,12 +63,18 @@ QImage* MyTextEffect::drawImage()
 				myPen.setColor( col );
 				myBrush.setColor( col );
 			}
-				
-			align = desc[5].toInt();
 			
-			int osize = desc[6].toInt();
+			QStringList bc = desc[5].split( "." );
+			if ( bc.count() == 2 ) {
+				backgroundColor.setNamedColor( bc[ 0 ] );
+				backgroundColor.setAlpha( bc[ 1 ].toInt() );
+			}
+				
+			align = desc[6].toInt();
+			
+			int osize = desc[7].toInt();
 			if ( osize > 0 ) {					
-				QStringList oc = desc[7].split( "." );
+				QStringList oc = desc[8].split( "." );
 				if ( oc.count() == 2 ) {
 					outline = osize;
 					myPen.setWidth( osize );
@@ -124,6 +131,11 @@ QImage* MyTextEffect::drawImage()
 	image->fill( QColor(0,0,0,0) );
 	painter.begin( image );
 	painter.setRenderHints( QPainter::Antialiasing | QPainter::TextAntialiasing );
+	if ( backgroundColor.alpha() > 0 ) {
+		painter.setPen( QColor(0,0,0,0) );
+		painter.setBrush( backgroundColor );
+		painter.drawRect( 1, 1, w - 2, h - 2 );
+	}	
 	painter.setPen( myPen );
 	painter.setBrush( myBrush );
 	painter.setFont( myFont );
