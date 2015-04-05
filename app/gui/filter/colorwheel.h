@@ -16,6 +16,12 @@
 #define WHEELSIZE 112
 #define SELECTORRADIUS 5
 #define SELECTORSIZE SELECTORRADIUS * 2
+// A linear function makes the wheel quite useless
+// for setting the Saturation since interesting values
+// are too close to the center.
+// A pow function is more suited.
+#define POWEROF 2.5
+
 class ColorWheelWidget : public QFrame
 {
 	Q_OBJECT
@@ -30,6 +36,7 @@ public:
 	
 public slots:
 	void setValue( double angle, double radius ) {
+		radius = pow( radius, 1.0 / POWEROF );
 		x = cos( angle ) * radius * wheelRadius + width() / 2;
 		y = -sin( angle ) * radius * wheelRadius + height() / 2;
 		update();
@@ -64,8 +71,10 @@ protected:
 		double a = atan2( -y1 , x1 );
 		if ( a < 0 )
 			a += M_PI * 2;
-		setValue( a, len );
-		emit valueChanged( a, len );
+		x = cos( a ) * len * wheelRadius + width() / 2;
+		y = -sin( a ) * len * wheelRadius + height() / 2;
+		update();
+		emit valueChanged( a, pow( len, POWEROF ) );
 	}
 	
 private:
@@ -83,6 +92,7 @@ signals:
 #define CURSORWIDTH 7
 #define CURSORHEIGHT 9
 #define BARWIDTH 15
+
 class ColorValueWidget : public QFrame
 {
 	Q_OBJECT

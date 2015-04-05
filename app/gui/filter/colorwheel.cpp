@@ -49,7 +49,7 @@ ColorWheel::ColorWheel( QWidget *parent, Parameter *p, bool keyframeable ) : Par
 	grid->addWidget( valueBar, 1, 2, 4, 1 );
 	
 	float r, g, b;
-	movit::hsv2rgb(  M_PI * 2 * hAngle, pow( sRadius, 2 ), 1.0f, &r, &g, &b );
+	movit::hsv2rgb(  M_PI * 2 * hAngle, sRadius, 1.0f, &r, &g, &b );
 	init.setRgbF( r, g, b );
 	valueBar->setColor( init );
 
@@ -125,7 +125,7 @@ void ColorWheel::newValues()
 {
 	QColor col;
 	float r, g, b;
-	movit::hsv2rgb(  M_PI * 2 * hAngle, pow( sRadius, 2 ), 1.0f, &r, &g, &b );
+	movit::hsv2rgb(  M_PI * 2 * hAngle, sRadius, 1.0f, &r, &g, &b );
 	col.setRgbF( r, g, b );
 	valueBar->setColor( col );
 	col.setRgbF( hAngle, sRadius, vValue );
