@@ -495,7 +495,6 @@ void ProjectFile::readParameter( QDomElement &element, QSharedPointer<Filter> f 
 		if ( p->type != Parameter::PSTRING )
 			return;
 		p->value = value.replace( QString::fromUtf8("¶"), "\n" );
-		qDebug() << p->value.toString();
 	}
 	
 	p->graph.keys.clear();

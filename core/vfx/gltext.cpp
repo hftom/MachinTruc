@@ -9,6 +9,8 @@
 GLText::GLText( QString id, QString name ) : GLFilter( id, name )
 {
 	editor = addParameter( "editor", tr("Editor:"), Parameter::PSTRING, "", "", "", false );
+	xOffsetPercent = addParameter( "xOffsetPercent", tr("X:"), Parameter::PDOUBLE, 0.0, -100.0, 100.0, true, "%" );
+	yOffsetPercent = addParameter( "yOffsetPercent", tr("Y:"), Parameter::PDOUBLE, 0.0, -100.0, 100.0, true, "%" );
 }
 
 
@@ -16,11 +18,12 @@ GLText::GLText( QString id, QString name ) : GLFilter( id, name )
 bool GLText::process( const QList<Effect*> &el, Frame *src, Profile *p )
 {
 	Q_UNUSED( p );
-	Q_UNUSED( src );
+	double pts = src->pts();
 	
 	MyTextEffect *e = (MyTextEffect*)el[0];
 	e->setText( getParamValue( editor ).toString() );	
-	return true;
+	return e->set_float( "left", getParamValue( xOffsetPercent, pts ).toDouble() / 100.0 )
+		&& e->set_float( "top", getParamValue( yOffsetPercent, pts ).toDouble() / 100.0 );
 }
 
 

@@ -25,8 +25,11 @@ static const char *MyTextEffect_shader=
 
 class MyTextEffect : public Effect {
 public:
-	MyTextEffect() : iwidth(1), iheight(1), imgWidth( 1 ), imgHeight( 1 ), reload( true )
+	MyTextEffect() : iwidth(1), iheight(1), imgWidth( 1 ), imgHeight( 1 ),
+		top( 0 ), left( 0 ), reload( true )
 	{
+		register_float( "top", &top );
+		register_float( "left", &left );
 		glGenTextures( 1, &texnum );
 	}
 	
@@ -62,8 +65,10 @@ public:
 			delete currentImage;
 		}
 		
-		float left = (iwidth - imgWidth) / 2.0f;
-		float top = (iheight - imgHeight) / 2.0f;
+		left *= iwidth;
+		top *= iheight;
+		left -= (imgWidth - iwidth) / 2.0f;
+		top -= (imgHeight - iheight) / 2.0f;
 		float offset[2] = { left / iwidth, ( iheight - imgHeight - top ) / iheight };
 		set_uniform_vec2( glsl_program_num, prefix, "offset", offset );
 
@@ -88,6 +93,7 @@ public:
 private:
 	float iwidth, iheight;
 	float imgWidth, imgHeight;
+	float top, left;
 	
 	GLuint texnum;
 	QString currentText;
@@ -107,6 +113,7 @@ public:
 	
 private:
 	Parameter *editor;
+	Parameter *xOffsetPercent, *yOffsetPercent;
 };
 
 #endif // GLTEXT_H
