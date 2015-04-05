@@ -28,6 +28,12 @@
     <file>icons/applications-multimedia.png</file>
     <file>icons/tools-wizard.png</file>
 	<file>icons/page-simple.png</file>
+	<file>icons/format-text-color.png</file>
+	<file>icons/format-text-bold.png</file>
+	<file>icons/format-text-italic.png</file>
+	<file>icons/format-justify-center.png</file>
+	<file>icons/format-justify-left.png</file>
+	<file>icons/format-justify-right.png</file>
   </qresource>
   <qresource prefix="images">
     <file>icons/sound.png</file>

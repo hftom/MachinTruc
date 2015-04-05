@@ -456,24 +456,24 @@ void ProjectFile::readParameter( QDomElement &element, QSharedPointer<Filter> f 
 			return;
 		p->value = value.toDouble();
 	}
-	if ( type == "int" ) {
+	else if ( type == "int" ) {
 		if ( p->type != Parameter::PINT )
 			return;
 		p->value = value.toInt();
 	}
-	if ( type == "bool" ) {
+	else if ( type == "bool" ) {
 		if ( p->type != Parameter::PBOOL )
 			return;
 		p->value = value.toInt();
 	}
-	if ( type == "rgb" ) {
+	else if ( type == "rgb" ) {
 		if ( p->type != Parameter::PRGBCOLOR )
 			return;
 		QColor col;
 		col.setNamedColor( value );
 		p->value = col;
 	}
-	if ( type == "rgba" ) {
+	else if ( type == "rgba" ) {
 		if ( p->type != Parameter::PRGBACOLOR )
 			return;
 		QStringList sl = value.split( "." );
@@ -484,12 +484,18 @@ void ProjectFile::readParameter( QDomElement &element, QSharedPointer<Filter> f 
 		col.setAlpha( sl[ 1 ].toInt() );
 		p->value = col;
 	}
-	if ( type == "colorwheel" ) {
+	else if ( type == "colorwheel" ) {
 		if ( p->type != Parameter::PCOLORWHEEL )
 			return;
 		QColor col;
 		col.setRgbF( hue.toDouble(), saturation.toDouble(), value.toDouble() );
 		p->value = col;
+	}
+	else if ( type == "string" ) {
+		if ( p->type != Parameter::PSTRING )
+			return;
+		p->value = value.replace( QString::fromUtf8("¶"), "\n" );
+		qDebug() << p->value.toString();
 	}
 	
 	p->graph.keys.clear();
@@ -690,6 +696,11 @@ void ProjectFile::writeFilter( QDomNode &parent, bool audio, QSharedPointer<Filt
 				pel.setAttribute( "value", QString::number( col.blueF(), 'e', 17 ) );
 				pel.setAttribute( "hue", QString::number( col.redF(), 'e', 17 ) );
 				pel.setAttribute( "saturation", QString::number( col.greenF(), 'e', 17 ) );
+				break;
+			}
+			case Parameter::PSTRING: {
+				pel.setAttribute( "type", "string" );
+				pel.setAttribute( "value", p->value.toString().replace( "\n", QString::fromUtf8("¶") ) );
 				break;
 			}
 		}

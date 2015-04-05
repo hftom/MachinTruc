@@ -10,7 +10,7 @@ static FilterCollection globalFilterCollection;
 FilterCollection::FilterCollection()
 {
 	// video filters
-	videoFilters.append( FilterEntry( "lens", "GLTest", QObject::tr("Test"), &Maker<GLTest>::make ) );
+	//videoFilters.append( FilterEntry( "lens", "GLTest", QObject::tr("Test"), &Maker<GLTest>::make ) );
 	videoFilters.append( FilterEntry( "colors", "GLSaturation", QObject::tr("Saturation"), &Maker<GLSaturation>::make ) );
 	videoFilters.append( FilterEntry( "colors", "GLWhiteBalance", QObject::tr("White balance"), &Maker<GLWhiteBalance>::make ) );
 	videoFilters.append( FilterEntry( "colors", "GLLiftGammaGain", QObject::tr("Color grading"), &Maker<GLLiftGammaGain>::make ) );
@@ -23,6 +23,7 @@ FilterCollection::FilterCollection()
 	videoFilters.append( FilterEntry( "size", "GLCrop", QObject::tr("Crop"), &Maker<GLCrop>::make ) );
 	videoFilters.append( FilterEntry( "size", "GLCut", QObject::tr("Cut"), &Maker<GLCut>::make ) );
 	videoFilters.append( FilterEntry( "size", "GLVignette", QObject::tr("Vignette"), &Maker<GLVignette>::make ) );
+	videoFilters.append( FilterEntry( "draw", "GLText", QObject::tr("Text"), &Maker<GLText>::make ) );
 	videoFilters.append( FilterEntry( "draw", "GLBorder", QObject::tr("Border color"), &Maker<GLBorder>::make ) );
 	videoFilters.append( FilterEntry( "draw", "GLBackgroundColor", QObject::tr("Background color"), &Maker<GLBackgroundColor>::make ) );
 	videoFilters.append( FilterEntry( "draw", "GLFiber", QObject::tr("Optical fiber"), &Maker<GLFiber>::make ) );

@@ -23,6 +23,7 @@ SOURCES = \
 	gui/filter/colorchooser.cpp \
 	gui/filter/filterwidget.cpp \
 	gui/filter/colorwheel.cpp \
+	gui/filter/textedit.cpp \
 	\
 	timeline/timeline.cpp \
 	timeline/abstractviewitem.cpp \
@@ -59,6 +60,7 @@ HEADERS = \
 	gui/filter/colorchooser.h \
 	gui/filter/filterwidget.h \
 	gui/filter/colorwheel.h \
+	gui/filter/textedit.h \
 	\
 	timeline/timelinegraphicsview.h \
 	timeline/timeline.h \

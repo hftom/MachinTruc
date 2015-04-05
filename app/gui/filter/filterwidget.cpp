@@ -5,6 +5,7 @@
 #include "colorchooser.h"
 #include "checkbox.h"
 #include "colorwheel.h"
+#include "textedit.h"
 
 
 
@@ -47,6 +48,10 @@ FilterWidget::FilterWidget( QWidget *parent, Clip *c, QSharedPointer<Filter> f )
 			}
 			case Parameter::PCOLORWHEEL: {
 				pw = new ColorWheel( this, p, clip != 0 );
+				break;
+			}
+			case Parameter::PSTRING: {
+				pw = new TextEdit( this, p );
 				break;
 			}
 		}

@@ -52,7 +52,7 @@ public:
 class Parameter
 {
 public:
-	enum ParameterType{ PDOUBLE, PINT, PBOOL, PRGBCOLOR, PRGBACOLOR, PCOLORWHEEL };
+	enum ParameterType{ PDOUBLE, PINT, PBOOL, PRGBCOLOR, PRGBACOLOR, PCOLORWHEEL, PSTRING };
 	
 	double getUnnormalizedKeyValue( int keyIndex ) {
 		double range = qAbs( -min.toDouble() + max.toDouble() );

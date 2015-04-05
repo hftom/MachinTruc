@@ -66,6 +66,7 @@ SOURCES = \
 	vfx/gldefish.cpp \
 	vfx/glfiber.cpp \
 	vfx/glnoise.cpp \
+	vfx/gltext.cpp \
 	\
 	videoout/videowidget.cpp
 
@@ -143,6 +144,7 @@ HEADERS = \
 	vfx/gldefish.h \
 	vfx/glfiber.h \
 	vfx/glnoise.h \
+	vfx/gltext.h \
 	\
 	videoout/videowidget.h
 
