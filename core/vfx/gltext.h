@@ -25,11 +25,8 @@ static const char *MyTextEffect_shader=
 
 class MyTextEffect : public Effect {
 public:
-	MyTextEffect() : iwidth(1), iheight(1), 
-		currentImage( NULL ), reload( 1 )
+	MyTextEffect() : iwidth(1), iheight(1), imgWidth( 1 ), imgHeight( 1 ), reload( true )
 	{
-		register_int( "reload", &reload );
-		
 		glGenTextures( 1, &texnum );
 	}
 	
@@ -47,34 +44,31 @@ public:
 	
 	virtual void set_gl_state( GLuint glsl_program_num, const std::string &prefix, unsigned *sampler_num ) {
 		Effect::set_gl_state( glsl_program_num, prefix, sampler_num );
-		
-		float w;
-		float h;
-		if ( currentImage ) {
-			w = currentImage->width();
-			h = currentImage->height();
-		}
-		else
-			w = h = 1;
-		
-		float left = (iwidth - w) / 2.0f;
-		float top = (iheight - h) / 2.0f;
-		float offset[2] = { left / iwidth, ( iheight - h - top ) / iheight };
-		set_uniform_vec2( glsl_program_num, prefix, "offset", offset );
 
-		float scale[2] = { iwidth / w, iheight / h };
-		set_uniform_vec2( glsl_program_num, prefix, "scale", scale );
-		
-		if ( currentImage && reload ) {
+		if ( reload ) {
+			QImage *currentImage = drawImage();
+			imgWidth = currentImage->width();
+			imgHeight = currentImage->height();
+
 			glActiveTexture( GL_TEXTURE0 + *sampler_num );
 			glBindTexture( GL_TEXTURE_2D, texnum );
 			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
 			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
 			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
-			glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_BGRA, GL_UNSIGNED_BYTE, currentImage->constBits() );
-			reload = 0;
+			glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, imgWidth, imgHeight, 0, GL_BGRA, GL_UNSIGNED_BYTE, currentImage->constBits() );
+			
+			reload = false;
+			delete currentImage;
 		}
+		
+		float left = (iwidth - imgWidth) / 2.0f;
+		float top = (iheight - imgHeight) / 2.0f;
+		float offset[2] = { left / iwidth, ( iheight - imgHeight - top ) / iheight };
+		set_uniform_vec2( glsl_program_num, prefix, "offset", offset );
+
+		float scale[2] = { iwidth / imgWidth, iheight / imgHeight };
+		set_uniform_vec2( glsl_program_num, prefix, "scale", scale );
 		
 		glActiveTexture( GL_TEXTURE0 + *sampler_num );
 		glBindTexture( GL_TEXTURE_2D, texnum );
@@ -82,18 +76,22 @@ public:
 		++*sampler_num;
 	}
 	
-	void setImage( QImage *img ) {
-		if ( img != currentImage )
-			reload = 1;
-		currentImage = img;
+	QImage* drawImage();
+
+	void setText( const QString &text ) {
+		if ( text != currentText ) {
+			currentText = text;
+			reload = true;
+		}
 	}
 
 private:
 	float iwidth, iheight;
+	float imgWidth, imgHeight;
 	
 	GLuint texnum;
-	QImage *currentImage;
-	int reload;
+	QString currentText;
+	bool reload;
 };
 
 
@@ -109,8 +107,6 @@ public:
 	
 private:
 	Parameter *editor;
-	QImage image;
-	QString currentText;
 };
 
 #endif // GLTEXT_H
