@@ -3,6 +3,7 @@
 
 #include <QGraphicsView>
 #include <QResizeEvent>
+#include <QDebug>
 
 
 
@@ -10,7 +11,9 @@ class TimelineGraphicsView : public QGraphicsView
 {
 	Q_OBJECT
 public:
-	TimelineGraphicsView( QWidget *parent ) : QGraphicsView( parent ) {}
+	TimelineGraphicsView( QWidget *parent ) : QGraphicsView( parent ) {
+		setMouseTracking( true );
+	}
 	
 public slots:
 	void showVerticalScrollBar( bool b ) {
@@ -26,8 +29,14 @@ protected:
 		emit sizeChanged( e->size() ); 
 	}
 	
+	virtual void mouseMoveEvent( QMouseEvent * event ) {
+		emit mouseMoveTracking( mapToScene( event->pos() ) );
+		QGraphicsView::mouseMoveEvent( event );
+	}
+	
 signals:
 	void sizeChanged( const QSize& );
+	void mouseMoveTracking( QPointF pos );
 };
 
 #endif //TIMELINEGRAPHICSVIEW_H

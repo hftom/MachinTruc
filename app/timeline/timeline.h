@@ -74,6 +74,7 @@ public:
 	void thumbResultReady( ThumbRequest result );
 	
 public slots:
+	void mouseMoveTracking( QPointF pos );
 	void viewSizeChanged( const QSize &size );
 	void setCursorPos( double pts );
 	void addTrack( int index );

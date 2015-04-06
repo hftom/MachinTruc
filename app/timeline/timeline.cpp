@@ -39,6 +39,13 @@ Timeline::~Timeline()
 
 
 
+void Timeline::mouseMoveTracking( QPointF pos )
+{
+	qDebug() << "mouseMoveTracking" << pos;
+}
+
+
+
 void Timeline::viewSizeChanged( const QSize &size )
 {
 	viewWidth = size.width();

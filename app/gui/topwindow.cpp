@@ -47,6 +47,7 @@ TopWindow::TopWindow()
 	connect( timeline, SIGNAL(clipAddedToTimeline(Profile)), this, SLOT(clipAddedToTimeline(Profile)) );
 	connect( timeline, SIGNAL(trackRequest(bool,int)), this, SLOT(trackRequest(bool,int)) );
 	connect( timelineView, SIGNAL(sizeChanged(const QSize&)), timeline, SLOT(viewSizeChanged(const QSize&)) );
+	connect( timelineView, SIGNAL(mouseMoveTracking(QPointF)), timeline, SLOT(mouseMoveTracking(QPointF)) );
 	
 	animEditor = new AnimEditor( 0 );
 	connect( animEditor, SIGNAL(quitEditor()), this, SLOT(quitEditor()) );
