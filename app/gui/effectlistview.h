@@ -20,6 +20,24 @@ public:
 	EffectListModel( QList<FilterEntry> *f ) : QAbstractListModel()
 	{
 		filters = f;
+		QPen pen;
+		pen.setColor( QColor(0,0,0,0) );
+		for ( int i = 0; i < filters->count(); ++i ) {
+			QString s = filters->at(i).icon;
+			if ( !iconMap.contains( s ) ) {
+				QImage src( QString(":/images/icons/%1.png").arg( s ) );
+				QImage icon( src.width(), src.height(), QImage::Format_ARGB32 );
+				icon.fill( QColor(0,0,0,0) );
+				QPainter p;
+				p.begin( &icon );
+				p.setRenderHints( QPainter::Antialiasing );
+				p.setBrush( QBrush( src ) );
+				p.setPen( pen );
+				p.drawRoundedRect( 0, 0, icon.width(), icon.height(), 7, 7 );
+				p.end();
+				iconMap.insert( s, icon );
+			}
+		}
 	}
 	int rowCount( const QModelIndex &parent = QModelIndex() ) const {
 		Q_UNUSED( parent );
@@ -30,7 +48,7 @@ public:
 		if ( !index.isValid() )
 			return QVariant();
 		if ( role == Qt::DecorationRole && index.row() < filters->count() )
-			return QVariant( QImage( QString(":/images/icons/%1.png").arg( filters->at( index.row() ).icon ) ) );
+			return QVariant( iconMap.value( filters->at( index.row() ).icon ) );
 		if ( role == Qt::DisplayRole && index.row() < filters->count() ) {
 			return QVariant( filters->at( index.row() ).name );
 		}
@@ -68,6 +86,7 @@ public:
 	
 private:
 	QList<FilterEntry> *filters;
+	QMap<QString, QImage> iconMap;
 };
 
 
