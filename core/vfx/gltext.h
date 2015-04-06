@@ -25,8 +25,8 @@ static const char *MyTextEffect_shader=
 
 class MyTextEffect : public Effect {
 public:
-	MyTextEffect() : iwidth(1), iheight(1), imgWidth( 1 ), imgHeight( 1 ),
-		top( 0 ), left( 0 ), reload( true )
+	MyTextEffect() : iwidth(1), iheight(1), imgWidth(1), imgHeight(1),
+		top(0), left(0), otop(0), oleft(0), reload(true)
 	{
 		register_float( "top", &top );
 		register_float( "left", &left );
@@ -65,10 +65,9 @@ public:
 			delete currentImage;
 		}
 		
-		left *= iwidth;
-		top *= iheight;
-		left -= (imgWidth - iwidth) / 2.0f;
-		top -= (imgHeight - iheight) / 2.0f;
+		left = oleft + left * iwidth;
+		top = otop + top * iheight;
+
 		float offset[2] = { left / iwidth, ( iheight - imgHeight - top ) / iheight };
 		set_uniform_vec2( glsl_program_num, prefix, "offset", offset );
 
@@ -93,7 +92,7 @@ public:
 private:
 	float iwidth, iheight;
 	float imgWidth, imgHeight;
-	float top, left;
+	float top, left, otop, oleft;
 	
 	GLuint texnum;
 	QString currentText;

@@ -167,5 +167,21 @@ QImage* MyTextEffect::drawImage()
 	}
 	painter.end();
 	
+	switch ( align ) {
+		case 2: {
+			oleft = (iwidth - w) / 2.0f;
+			otop = (iheight - h) / 2.0f;
+			break;
+		}
+		case 3: {
+			oleft = (iwidth - w);
+			otop = (iheight - h);
+			break;
+		}
+		default: {
+			oleft = otop = 0;
+		}
+	}
+	
 	return image;
 }
