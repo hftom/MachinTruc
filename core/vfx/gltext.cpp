@@ -49,6 +49,12 @@ QImage* MyTextEffect::drawImage()
 	int align = 1;
 		
 	QStringList sl = currentText.split("\n");
+	while ( !sl.isEmpty() ) {
+		if ( sl.last().trimmed().isEmpty() )
+			sl.takeLast();
+		else
+			break;
+	}
 	if ( sl.count() ) {
 		QStringList desc = sl[0].split("|");
 		if ( desc.count() == 9 ) {
