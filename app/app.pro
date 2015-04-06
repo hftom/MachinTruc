@@ -2,7 +2,6 @@ TEMPLATE = app
 
 QT += opengl
 QT += xml
-QT += svg
 
 SOURCES = \
 	main.cpp \
