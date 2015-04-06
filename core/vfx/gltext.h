@@ -17,7 +17,7 @@ static const char *MyTextEffect_shader=
 "	vec4 background = INPUT( tc );\n"
 "	tc -= PREFIX(offset);\n"
 "	tc *= PREFIX(scale);\n"
-"	vec4 text = tex2D( PREFIX(string_tex), vec2( tc.x, 1.0 - tc.y ) );\n"
+"	vec4 text = tex2D( PREFIX(string_tex), vec2( tc.x, 1.0 - tc.y ) ) * PREFIX(opacity);\n"
 "	return text + (1.0 - text.a) * background;\n"
 "}\n";
 
@@ -26,10 +26,11 @@ static const char *MyTextEffect_shader=
 class MyTextEffect : public Effect {
 public:
 	MyTextEffect() : iwidth(1), iheight(1), imgWidth(1), imgHeight(1),
-		top(0), left(0), otop(0), oleft(0), reload(true)
+		top(0), left(0), otop(0), oleft(0), opacity(1), reload(true)
 	{
 		register_float( "top", &top );
 		register_float( "left", &left );
+		register_float( "opacity", &opacity );
 		glGenTextures( 1, &texnum );
 	}
 	
@@ -93,6 +94,7 @@ private:
 	float iwidth, iheight;
 	float imgWidth, imgHeight;
 	float top, left, otop, oleft;
+	float opacity;
 	
 	GLuint texnum;
 	QString currentText;
@@ -112,6 +114,7 @@ public:
 	
 private:
 	Parameter *editor;
+	Parameter *opacity;
 	Parameter *xOffsetPercent, *yOffsetPercent;
 };
 

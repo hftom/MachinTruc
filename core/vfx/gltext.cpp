@@ -9,6 +9,7 @@
 GLText::GLText( QString id, QString name ) : GLFilter( id, name )
 {
 	editor = addParameter( "editor", tr("Editor:"), Parameter::PSTRING, "", "", "", false );
+	opacity = addParameter( "opacity", tr("Opacity:"), Parameter::PDOUBLE, 1.0, 0.0, 1.0, true );
 	xOffsetPercent = addParameter( "xOffsetPercent", tr("X:"), Parameter::PDOUBLE, 0.0, -100.0, 100.0, true, "%" );
 	yOffsetPercent = addParameter( "yOffsetPercent", tr("Y:"), Parameter::PDOUBLE, 0.0, -100.0, 100.0, true, "%" );
 }
@@ -23,7 +24,8 @@ bool GLText::process( const QList<Effect*> &el, Frame *src, Profile *p )
 	MyTextEffect *e = (MyTextEffect*)el[0];
 	e->setText( getParamValue( editor ).toString() );	
 	return e->set_float( "left", getParamValue( xOffsetPercent, pts ).toDouble() / 100.0 )
-		&& e->set_float( "top", getParamValue( yOffsetPercent, pts ).toDouble() / 100.0 );
+		&& e->set_float( "top", getParamValue( yOffsetPercent, pts ).toDouble() / 100.0 )
+		&& e->set_float( "opacity", getParamValue( opacity, pts ).toDouble() );
 }
 
 
@@ -107,24 +109,27 @@ QImage* MyTextEffect::drawImage()
 			w = r.width();
 		br.append( r );
 	}
+	QRectF minrect( 0, 0, 1, 1 );
+	int margin = qMax( painter.boundingRect( minrect, Qt::AlignHCenter | Qt::AlignVCenter, "M" ).width() / 3.0, 3.0 );
+	
 	painter.end();
 	
-	w += outline + 10;
-	h += outline + 10;
-	double x, y;
+	double x = ((double)outline + margin * 2) / 2.0;
+	double y = x;
+	w += 2 * x;
+	h += 2 * y;
 	if ( w > iwidth ) {
-		x = (iwidth - w) / 2.0;
+		if ( align == 2 )
+			x -= (w - iwidth) / 2.0;
 		w = iwidth;
 	}
-	else
-		x = ((double)outline + 10) / 2.0;
-		
 	if ( h > iheight ) {
-		y = (iheight - h) / 2.0;
+		if ( align != 1 )
+			y -= (align - 1) * (h - iheight) / 2.0;
 		h = iheight;
-	}
-	else
-		y = ((double)outline + 10) / 2.0;
+	}		
+	
+	qDebug() << x << y << w << h;
 		
 	delete image;
 	image = new QImage( w, h, QImage::Format_ARGB32_Premultiplied );
