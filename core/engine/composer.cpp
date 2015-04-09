@@ -225,7 +225,7 @@ void Composer::updateFrame( Frame *dst )
 	
 	skipFrame = 0;
 	hiddenContext->makeCurrent();
-	
+
 	movitRender( dst, true );
 	
 	hiddenContext->doneCurrent();

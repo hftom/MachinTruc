@@ -253,14 +253,11 @@ void Sampler::updateFrame()
 	if ( !last )
 		return;
 	
-	if ( updateVideoFrame( last ) ) {
-		metronom->flush();
+	metronom->flush();
+	if ( updateVideoFrame( last ) )
 		composer->updateFrame( last );
-	}
-	else {
-		metronom->flush();
-		seekTo( last->pts() );
-	}		
+	else
+		seekTo( last->pts() );	
 }
 
 
