@@ -8,11 +8,13 @@
 #define TYPECLIP 3
 #define TYPETRANSITION 4
 #define TYPEFILTER 5
+#define TYPERULER 6
 
 #define ZCLIP 1
 #define ZCLIPSELECTED 2
 #define ZTRANSITION 3
 #define ZFILTER 4
+#define ZRULER 9
 #define ZCURSOR 10
 
 #define TRACKVIEWITEMHEIGHT 42

@@ -28,7 +28,13 @@ Timeline::Timeline( TopWindow *parent ) : QGraphicsScene(),
 	cursor = new CursorViewItem();
 	addItem( cursor );
 	cursor->setZValue( ZCURSOR );
-	cursor->setPos( 0, 0 );	
+	cursor->setPos( 0, 0 );
+	
+	ruler = new RulerViewItem();
+	addItem( ruler );
+	ruler->setZValue( ZRULER );
+	ruler->setPos( 0, 0 );
+	ruler->setTimeScale( MICROSECOND / zoom );
 }
 
 
@@ -39,9 +45,47 @@ Timeline::~Timeline()
 
 
 
-void Timeline::mouseMoveTracking( QPointF pos )
+void Timeline::viewMouseMove( QPointF pos )
 {
-	qDebug() << "mouseMoveTracking" << pos;
+	int t = qMax( 0, getTrack( pos ) );
+	int tc = tracks.count();
+	double y;
+
+	if ( pos.y() < 0 )
+		t = tc -1;
+
+	if ( tc < 2 )
+		y = 0;
+	else if ( t < tc - 1 ) {
+		if ( ruler->isDocked() )
+			y = 0;
+		else
+			y = (double)(tc - 2 - t) * (TRACKVIEWITEMHEIGHT + 1) + TRACKVIEWITEMHEIGHT + 1 - RULERHEIGHT;
+	}
+	else
+		y = (double)(tc - t) * (TRACKVIEWITEMHEIGHT + 1);
+
+	ruler->setPosition( qMax( 0.0, pos.x() - RULERWIDTH / 2 ), y );
+}
+
+
+
+void Timeline::undockRuler()
+{
+	ruler->undock();
+}
+
+
+
+void Timeline::dockRuler()
+{
+	ruler->dock();
+}
+
+
+
+void Timeline::viewMouseLeave() {
+	ruler->setPosition( ruler->pos().x(), 0 );
 }
 
 
@@ -78,6 +122,7 @@ void Timeline::wheelEvent( QGraphicsSceneWheelEvent *e )
 					it->setScale( zoom );
 				}
 			}
+			ruler->setTimeScale( MICROSECOND / zoom );
 			cursor->setX( (cursor->x() * oldzoom) / zoom );
 			updateLength();
 			emit centerOn( cursor );
@@ -681,6 +726,7 @@ void Timeline::setScene( Scene *s )
 	}
 	
 	setCursorPos( 0 );
+	ruler->setFrameDuration( scene->getProfile().getVideoFrameDuration() );
 	itemSelected( NULL );
 
 	QTimer::singleShot ( 1, this, SLOT(updateLength()) );

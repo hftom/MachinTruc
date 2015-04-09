@@ -43,6 +43,7 @@ QImage* MyTextEffect::drawImage()
 {
 	QFont myFont;
 	QPen myPen;
+	myPen.setJoinStyle( Qt::RoundJoin );
 	QBrush myBrush( QColor(0,0,0,0) );
 	QColor backgroundColor(0,0,0,0);
 	int outline = 0;
@@ -134,8 +135,6 @@ QImage* MyTextEffect::drawImage()
 			y -= (align - 1) * (h - iheight) / 2.0;
 		h = iheight;
 	}		
-	
-	qDebug() << x << y << w << h;
 		
 	delete image;
 	image = new QImage( w, h, QImage::Format_ARGB32_Premultiplied );

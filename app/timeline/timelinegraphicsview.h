@@ -29,14 +29,20 @@ protected:
 		emit sizeChanged( e->size() ); 
 	}
 	
-	virtual void mouseMoveEvent( QMouseEvent * event ) {
-		emit mouseMoveTracking( mapToScene( event->pos() ) );
+	virtual void mouseMoveEvent( QMouseEvent *event ) {
+		emit viewMouseMove( mapToScene( event->pos() ) );
 		QGraphicsView::mouseMoveEvent( event );
+	}
+	
+	virtual void leaveEvent( QEvent *event ) {
+		emit viewMouseLeave();
+		QGraphicsView::leaveEvent( event );
 	}
 	
 signals:
 	void sizeChanged( const QSize& );
-	void mouseMoveTracking( QPointF pos );
+	void viewMouseMove( QPointF pos );
+	void viewMouseLeave();
 };
 
 #endif //TIMELINEGRAPHICSVIEW_H

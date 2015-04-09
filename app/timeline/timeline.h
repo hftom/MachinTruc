@@ -6,6 +6,7 @@
 #include "engine/scene.h"
 #include "clipviewitem.h"
 #include "cursorviewitem.h"
+#include "rulerviewitem.h"
 #include "trackviewitem.h"
 #include "transitionviewitem.h"
 #include "clipeffectviewitem.h"
@@ -62,6 +63,9 @@ public:
 	void clipDoubleClicked();
 	void clipRightClick( ClipViewItem *cv );
 	
+	void undockRuler();
+	void dockRuler();
+	
 	void trackPressed( QPointF p );
 	void trackPressedRightBtn( TrackViewItem *t, QPoint p );
 	void itemSelected( AbstractViewItem *it );
@@ -74,7 +78,8 @@ public:
 	void thumbResultReady( ThumbRequest result );
 	
 public slots:
-	void mouseMoveTracking( QPointF pos );
+	void viewMouseMove( QPointF pos );
+	void viewMouseLeave();
 	void viewSizeChanged( const QSize &size );
 	void setCursorPos( double pts );
 	void addTrack( int index );
@@ -112,6 +117,7 @@ private:
 	void clipThumbRequest( ClipViewItem *it, bool start );
 	
 	CursorViewItem *cursor;
+	RulerViewItem *ruler;
 	double zoom;
 	int viewWidth;
 	

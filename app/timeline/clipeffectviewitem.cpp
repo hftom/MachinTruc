@@ -96,8 +96,11 @@ void ClipEffectViewItem::mouseMoveEvent( QGraphicsSceneMouseEvent *event )
 	bool unsnap = event->modifiers() & Qt::ControlModifier;
 	if ( firstMove && !unsnap && fabs( event->scenePos().x() - moveStartMouse.x() ) < SNAPWIDTH )
 		return;
-	firstMove = false;
+	
 	Timeline* t = (Timeline*)scene();
+	if ( firstMove )
+		t->undockRuler();
+	firstMove = false;
 	if ( moveResize )
 		t->effectCanResize( moveResize, event->scenePos(), moveStartPosition, moveStartLength, moveStartMouse, unsnap );
 	else
@@ -115,6 +118,8 @@ void ClipEffectViewItem::mouseReleaseEvent( QGraphicsSceneMouseEvent *event )
 		t->effectResized( moveResize );
 	else
 		t->effectMoved( moveStartMouse );
+	
+	t->dockRuler();
 }
 
 

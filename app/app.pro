@@ -31,6 +31,7 @@ SOURCES = \
 	timeline/clipeffectviewitem.cpp \
 	timeline/cursorviewitem.cpp \
 	timeline/trackviewitem.cpp \
+	timeline/rulerviewitem.cpp \
 	\
 	animation/animeditor.cpp \
 	animation/animscene.cpp \
@@ -70,6 +71,7 @@ HEADERS = \
 	timeline/clipeffectviewitem.h \
 	timeline/cursorviewitem.h \
 	timeline/trackviewitem.h \
+	timeline/rulerviewitem.h \
 	\
 	animation/animeditor.h \
 	animation/animscene.h \
