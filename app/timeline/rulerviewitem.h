@@ -33,8 +33,7 @@ public:
 private:
 	QLinearGradient getTextGradient( double start, double textLen, bool revert );
 	
-	QPen pen;
-	QBrush brush;
+	QPixmap background;
 	QFont font;
 	double frameDuration;
 	double pixelsPerUnit; // second or frame

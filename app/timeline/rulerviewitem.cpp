@@ -13,8 +13,12 @@ RulerViewItem::RulerViewItem() : frameDuration(40000), lastY(0), docked(true)
 	setData( DATAITEMTYPE, TYPERULER );
 	setRect( 0, 0, RULERWIDTH, RULERHEIGHT );
 	
-	pen.setColor( QColor(0,0,0,0) );
-
+	background = QPixmap( RULERWIDTH, RULERHEIGHT );
+	background.fill( QColor(0,0,0,0) );
+	QPainter p;
+	p.begin( &background );
+	p.setRenderHints( QPainter::Antialiasing );
+	p.setPen( QColor(0,0,0,0) );
 	QLinearGradient grad( QPointF(0, 0), QPointF(1, 0) );
 	grad.setCoordinateMode( QGradient::ObjectBoundingMode );
 	grad.setColorAt( 0, QColor(255,255,150,10) );
@@ -22,7 +26,9 @@ RulerViewItem::RulerViewItem() : frameDuration(40000), lastY(0), docked(true)
 	grad.setColorAt( 0.5, QColor(255,255,0,180) );
 	grad.setColorAt( 0.95, QColor(255,255,150,140) );
 	grad.setColorAt( 1, QColor(255,255,150,10) );
-	brush = QBrush( grad );
+	p.setBrush( QBrush( grad ) );
+	p.drawRoundedRect( QRectF( 0, 0, RULERWIDTH, RULERHEIGHT ), RULERHEIGHT / 2, RULERHEIGHT / 2 );
+	p.end();
 	
 	anim = new QPropertyAnimation( this, "posy" );
 	anim->setDuration( 250 );
@@ -87,9 +93,7 @@ void RulerViewItem::paint( QPainter *painter, const QStyleOptionGraphicsItem *op
 
 	QRectF r = rect();
 	painter->setRenderHints( QPainter::Antialiasing | QPainter::TextAntialiasing );
-	painter->setPen( pen );
-	painter->setBrush( brush );
-	painter->drawRoundedRect( r, RULERHEIGHT / 2, RULERHEIGHT / 2 );
+	painter->drawPixmap( 0, 0, background );
 	
 	painter->setFont( font );
 	QColor col( 0, 0, 0, 0 );
@@ -154,9 +158,9 @@ void RulerViewItem::paint( QPainter *painter, const QStyleOptionGraphicsItem *op
 	
 	painter->setPen( "blue" );
 	if ( currentTextLen == textShortLen )
-		painter->drawText( 100, rh - 1, QString("%1s").arg( ticklen ) );
+		painter->drawText( 60, rh - 2, QString("%1s").arg( ticklen ) );
 	else
-		painter->drawText( 100, rh - 1, QString("%1i").arg( ticklen ) );
+		painter->drawText( 60, rh - 2, QString("%1i").arg( ticklen ) );
 }
 
 
