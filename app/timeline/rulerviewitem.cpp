@@ -96,7 +96,7 @@ void RulerViewItem::paint( QPainter *painter, const QStyleOptionGraphicsItem *op
 	painter->drawPixmap( 0, 0, background );
 	
 	painter->setFont( font );
-	QColor col( 0, 0, 0, 0 );
+	QColor tickColor( 0, 0, 0, 0 );
 	double rw = r.width(), rh = r.height();
 	unsigned n = x() / tickdistance;
 	double start = (tickdistance * n) - x() + tickdistance;
@@ -108,8 +108,8 @@ void RulerViewItem::paint( QPainter *painter, const QStyleOptionGraphicsItem *op
 	double firstText = prev;
 	double ip;
 	while ( prev < rw ) {
-		double modulo = modf( (((x() + prev) / pixelsPerUnit) / (ticklen * NTICKS) + 1e-6), &ip );
-		if (  modulo < 1e-3 ) {
+		double fract = modf( (((x() + prev) / pixelsPerUnit) / (ticklen * NTICKS) + 1e-6), &ip );
+		if (  fract < 1e-3 ) {
 			firstText = prev;
 			break;
 		}
@@ -128,15 +128,14 @@ void RulerViewItem::paint( QPainter *painter, const QStyleOptionGraphicsItem *op
 	
 	while ( start < rw ) {
 		if ( start < FADELENGTH )
-			col.setAlpha( start * 255 / FADELENGTH );
+			tickColor.setAlpha( start * 255 / FADELENGTH );
 		else if ( start > RULERWIDTH - FADELENGTH )
-			col.setAlpha( (RULERWIDTH - start) * 255 / FADELENGTH );
+			tickColor.setAlpha( (RULERWIDTH - start) * 255 / FADELENGTH );
 		else
-			col.setAlpha( 255 );
-		painter->setPen( col );
-		double ip;
-		double modulo = modf( (((x() + start) / pixelsPerUnit) / (ticklen * NTICKS) + 1e-6), &ip );
-		if (  modulo < 0.1 ) {
+			tickColor.setAlpha( 255 );
+		painter->setPen( tickColor );
+		double fract = modf( (((x() + start) / pixelsPerUnit) / (ticklen * NTICKS) + 1e-6), &ip );
+		if (  fract < 1e-3 ) {
 			painter->drawLine( start, RULERHEIGHT / 2, start, rh - 1 );
 			QTime time = QTime(0,0).addMSecs( tlen * NTICKS * ip * MILLISECOND );
 			if ( start < FADELENGTH )
