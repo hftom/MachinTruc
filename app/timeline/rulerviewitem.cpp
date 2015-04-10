@@ -167,15 +167,17 @@ void RulerViewItem::paint( QPainter *painter, const QStyleOptionGraphicsItem *op
 
 QLinearGradient RulerViewItem::getTextGradient( double start, double textLen, bool revert )
 {
-	double p1 = start < 0 ? -start : 0;
-	p1 /= textLen;
-	double p2 = (start + textLen) > FADELENGTH ? FADELENGTH - start : textLen;
-	p2 /= textLen;
+	double p1 = 0.0, p2 = 1.0, v1 = 0.0, v2 = 1.0;
 	
-	double v1 = start < 0 ? 0 : start;
-	v1 /= FADELENGTH;
-	double v2 = (start + textLen) > FADELENGTH ? FADELENGTH : start + textLen;
-	v2 /= FADELENGTH;
+	if ( start < 0 )
+		p1 = -start / textLen;
+	else
+		v1 = start / FADELENGTH;
+	
+	if ( (start + textLen) > FADELENGTH )
+		p2 = (FADELENGTH - start) / textLen;
+	else
+		v2 = (start + textLen) / FADELENGTH;
 	
 	QLinearGradient grad;
 	grad.setCoordinateMode( QGradient::ObjectBoundingMode );
