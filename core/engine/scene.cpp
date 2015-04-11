@@ -94,6 +94,21 @@ Clip* Scene::sceneSplitClip( Clip *clip, int track, double pts )
 						nf->setPosition( nc->position() );
 						nf->setLength( nc->length() );
 						nc->videoFilters.append( nf.staticCast<GLFilter>() );
+						break;
+					}
+				}
+			}
+			for ( int i = 0; i < clip->audioFilters.count(); ++i ) {
+				QSharedPointer<AudioFilter> f = clip->audioFilters.at( i );
+				for ( int j = 0; j < fc->audioFilters.count(); ++j ) {
+					if ( fc->audioFilters[ j ].identifier == f->getIdentifier() ) {
+						QSharedPointer<Filter> nf = fc->audioFilters[ j ].create();
+						AudioFilter *af = (AudioFilter*)nf.data();
+						f->splitParameters( af, newLength );
+						nf->setPosition( nc->position() );
+						nf->setLength( nc->length() );
+						nc->audioFilters.append( nf.staticCast<AudioFilter>() );
+						break;
 					}
 				}
 			}
