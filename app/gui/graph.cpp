@@ -165,17 +165,21 @@ void Graph::hiddenEffect()
 void Graph::effectRightClick( GraphEffectItem *it )
 {
 	QMenu menu;
-	menu.addAction( tr("Delete") );
+	QAction *show = menu.addAction( tr("Show in timeline") );
+	QAction *del = menu.addAction( tr("Delete") );
 	QAction *action = menu.exec( QCursor::pos() );
-	if ( !action )
-		return;
-	
-	if ( isAudio )
-		emit filterDeleted( currentClip->getClip(), currentClip->getClip()->audioFilters.at( it->index() ) );
-	else
-		emit filterDeleted( currentClip->getClip(), currentClip->getClip()->videoFilters.at( it->index() ) );
-	emit showEffect( -1 );
-	QTimer::singleShot ( 1, this, SLOT(rebuildGraph()) );
+	if ( action == show ) {
+		itemSelected( it );
+		itemDoubleClicked();
+	}
+	else if ( action == del ) {
+		if ( isAudio )
+			emit filterDeleted( currentClip->getClip(), currentClip->getClip()->audioFilters.at( it->index() ) );
+		else
+			emit filterDeleted( currentClip->getClip(), currentClip->getClip()->videoFilters.at( it->index() ) );
+		emit showEffect( -1 );
+		QTimer::singleShot ( 1, this, SLOT(rebuildGraph()) );
+	}
 }
 
 
