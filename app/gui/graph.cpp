@@ -180,6 +180,9 @@ void Graph::effectRightClick( GraphEffectItem *it )
 		emit showEffect( -1 );
 		QTimer::singleShot ( 1, this, SLOT(rebuildGraph()) );
 	}
+	
+	delete show;
+	delete del;
 }
 
 
