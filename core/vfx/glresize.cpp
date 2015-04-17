@@ -47,7 +47,13 @@ QString GLResize::getDescriptor( Frame *src, Profile *p )
 
 bool GLResize::process( const QList<Effect*> &el, Frame *src, Profile *p )
 {
+	int glw = src->glWidth;
+	int glh = src->glHeight;
+	
 	preProcess( src, p );
+
+	if ( src->glOVD )
+		src->glOVDTransformList.append( FilterTransform( FilterTransform::SCALE, (double)src->glWidth / glw, (double)src->glHeight / glh ) );
 	
 	return el[0]->set_int( "width", src->glWidth )
 		&& el[0]->set_int( "height", src->glHeight );

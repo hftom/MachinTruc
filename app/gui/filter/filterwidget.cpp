@@ -68,6 +68,15 @@ FilterWidget::FilterWidget( QWidget *parent, Clip *c, QSharedPointer<Filter> f )
 	}
 	
 	setLayout( grid );
+	
+	filter->enableOVD( true );
+}
+
+
+
+FilterWidget::~FilterWidget()
+{
+	filter->enableOVD( false );
 }
 
 

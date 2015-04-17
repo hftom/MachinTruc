@@ -10,7 +10,8 @@ Filter::Filter( QString id, QString name )
 	posInTrack( 0 ),
 	length( 0 ),
 	posOffset( 0 ),
-	snap( SNAPALL )
+	snap( SNAPALL ),
+	showOVD( false )
 {
 }
 

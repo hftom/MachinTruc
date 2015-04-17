@@ -50,7 +50,7 @@ void FxPage::clipSelected( ClipViewItem *clip )
 }
 
 
-
+// emit updateFrame() to show/hide OSD
 void FxPage::videoFilterSelected( Clip *c, int index )
 {
 	if ( currentEffectsWidget ) {
@@ -59,8 +59,10 @@ void FxPage::videoFilterSelected( Clip *c, int index )
 		effectsWidgetLayout = NULL;
 	}
 	
-	if ( !c || index < 0 || index >= c->videoFilters.count() )
+	if ( !c || index < 0 || index >= c->videoFilters.count() ) {
+		emit updateFrame();
 		return;
+	}
 	
 	currentEffectsWidget = new QWidget();
 	effectsWidgetLayout = new QGridLayout( currentEffectsWidget );
@@ -70,6 +72,8 @@ void FxPage::videoFilterSelected( Clip *c, int index )
 	effectsWidgetLayout->addWidget( fw, 0, 1 );
 	effectsWidgetLayout->setRowStretch( 1, 1 );
 	videoEffectsWidget->setWidget( currentEffectsWidget );
+	
+	emit updateFrame();
 }
 
 

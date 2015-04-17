@@ -26,12 +26,13 @@ static const char *MyTextEffect_shader=
 class MyTextEffect : public Effect {
 public:
 	MyTextEffect() : iwidth(1), iheight(1), imgWidth(1), imgHeight(1),
-		top(0), left(0), otop(0), oleft(0), opacity(1), reload(true)
+		top(0), left(0), otop(0), oleft(0), opacity(1), reload(true), currentImage( NULL )
 	{
 		register_float( "top", &top );
 		register_float( "left", &left );
 		register_float( "opacity", &opacity );
 		glGenTextures( 1, &texnum );
+		setText( ".", 1, 1 );
 	}
 	
 	~MyTextEffect() {
@@ -50,10 +51,6 @@ public:
 		Effect::set_gl_state( glsl_program_num, prefix, sampler_num );
 
 		if ( reload ) {
-			QImage *currentImage = drawImage();
-			imgWidth = currentImage->width();
-			imgHeight = currentImage->height();
-
 			glActiveTexture( GL_TEXTURE0 + *sampler_num );
 			glBindTexture( GL_TEXTURE_2D, texnum );
 			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
@@ -62,8 +59,9 @@ public:
 			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
 			glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, imgWidth, imgHeight, 0, GL_BGRA, GL_UNSIGNED_BYTE, currentImage->constBits() );
 			
-			reload = false;
 			delete currentImage;
+			currentImage = NULL;
+			reload = false;
 		}
 		
 		left = oleft + left * iwidth;
@@ -83,12 +81,24 @@ public:
 	
 	QImage* drawImage();
 
-	void setText( const QString &text ) {
+	void setText( const QString &text, int iw, int ih ) {
 		if ( text != currentText ) {
 			currentText = text;
+			iwidth = iw;
+			iheight = ih;
+			if ( currentImage )
+				delete currentImage;
+			currentImage = drawImage();
+			imgWidth = currentImage->width();
+			imgHeight = currentImage->height();
 			reload = true;
 		}
 	}
+	
+	float getImageWidth() { return imgWidth; }
+	float getImageHeight() { return imgHeight; }
+	float getLeft( float iw ) { return oleft + left * iw; }
+	float getTop( float ih ) { return otop + top * ih; }
 
 private:
 	float iwidth, iheight;
@@ -99,6 +109,7 @@ private:
 	GLuint texnum;
 	QString currentText;
 	bool reload;
+	QImage *currentImage;
 };
 
 

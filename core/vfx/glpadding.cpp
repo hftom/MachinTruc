@@ -38,7 +38,7 @@ QString GLPadding::getDescriptor( Frame *src, Profile *p )
 
 bool GLPadding::process( const QList<Effect*> &el, Frame *src, Profile *p )
 {
-	preProcess( src, p );
+	preProcess( src, p );	
 	Effect* e = el[0];
 	return e->set_int( "width", src->glWidth )
 		&& e->set_int( "height", src->glHeight )

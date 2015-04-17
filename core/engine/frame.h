@@ -10,6 +10,7 @@
 #include <QDebug>
 #include <QStringList>
 #include <QSharedPointer>
+#include <QRectF>
 
 #include "bufferpool.h"
 #include "profile.h"
@@ -107,6 +108,9 @@ public:
 	// composer helpers
 	int glWidth, glHeight;
 	double glSAR;
+	bool glOVD;
+	QRectF glOVDRect;
+	QList<FilterTransform> glOVDTransformList;
 	bool paddingAuto, resizeAuto;
 
 private:

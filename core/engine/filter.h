@@ -10,6 +10,22 @@
 
 
 
+class FilterTransform
+{
+public:
+	enum TransformType{ SCALE, TRANSLATE, ROTATE };
+	FilterTransform( int type, double val1, double val2 = 0 )
+		: transformType( type ),
+		v1( val1 ),
+		v2( val2 )
+	{}
+	
+	int transformType;
+	double v1, v2;
+};
+
+
+
 class Filter : public QObject // for easier translations
 {
 public:
@@ -32,6 +48,9 @@ public:
 	
 	QString getFilterName() { return filterName; }
 	QString getIdentifier() { return identifier; }
+	
+	void enableOVD( bool b ) { showOVD = b; }
+	bool ovdEnabled() { return showOVD; }
 
 protected:	
 	Parameter* addParameter( QString id, QString name, int type, QVariant def, QVariant min, QVariant max, bool keyframeable, const QString &suffix = QString() );
@@ -45,6 +64,7 @@ private:
 	double posInTrack, length;
 	double posOffset;
 	int snap;
+	bool showOVD;
 };
 
 #endif // FILTER_H

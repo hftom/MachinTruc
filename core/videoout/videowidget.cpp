@@ -2,10 +2,15 @@
 #include <sys/time.h>
 #include <math.h>
 
+#include <Eigen/Core>
+#include <Eigen/Geometry>
+
 #include <QThread>
 #include <QFile>
 
 #include "videoout/videowidget.h"
+
+using namespace Eigen;
 
 
 
@@ -18,6 +23,12 @@ VideoWidget::VideoWidget( QWidget *parent ) : QGLWidget( QGLFormat(QGL::SampleBu
 	
 	connect( &osdMessage, SIGNAL(update()), this, SLOT(update()) );
 	connect( &osdTimer, SIGNAL(update()), this, SLOT(update()) );
+	
+	whiteDash.setStyle( Qt::CustomDashLine );
+	QVector<qreal> dashes;
+	dashes << 5 << 5;
+	whiteDash.setDashPattern( dashes );
+	whiteDash.setColor( "white" );
 }
 
 
@@ -81,20 +92,19 @@ void VideoWidget::openglDraw()
 	glOrtho( 0.0, w, 0.0, h, -1.0, 1.0 );
 	glMatrixMode( GL_MODELVIEW );
 
-	GLfloat left, right, top, bottom;
 	GLfloat war = (GLfloat)w / (GLfloat)h;
 
 	if ( war < lastFrameRatio ) {
 		left = -1.0;
 		right = 1.0;
-		top = -war / lastFrameRatio;
 		bottom = war / lastFrameRatio;
+		top = -bottom;
 	}
 	else {
 		top = -1.0;
 		bottom = 1.0;
-		left = -lastFrameRatio / war;
 		right = lastFrameRatio / war;
+		left = -right;
 	}
 
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
@@ -125,6 +135,90 @@ void VideoWidget::openglDraw()
 
 
 
+void VideoWidget::drawOVD( QPainter *painter, bool nonSquareRatio )
+{
+	for ( int i = 0; i < lastFrame->sample->frames.count(); ++i ) {
+		Frame *f = lastFrame->sample->frames[i]->frame ;
+		if ( f && f->glOVD ) {
+			Vector2d topleft( f->glOVDRect.x(), f->glOVDRect.y() );
+			Vector2d topright( f->glOVDRect.x() + f->glOVDRect.width(), f->glOVDRect.y() );
+			Vector2d bottomleft( f->glOVDRect.x(), f->glOVDRect.y() + f->glOVDRect.height() );
+			Vector2d bottomright( f->glOVDRect.x() + f->glOVDRect.width(), f->glOVDRect.y() + f->glOVDRect.height() );
+				
+			for ( int j = 0; j < f->glOVDTransformList.count(); ++j ) {
+				FilterTransform ft = f->glOVDTransformList.at( j );
+				switch ( ft.transformType ) {
+					case FilterTransform::SCALE: {
+						topleft = Scaling( ft.v1, ft.v2 ) * topleft;
+						topright = Scaling( ft.v1, ft.v2 ) * topright;
+						bottomleft = Scaling( ft.v1, ft.v2 ) * bottomleft;
+						bottomright = Scaling( ft.v1, ft.v2 ) * bottomright;
+						break;
+					}
+					case FilterTransform::TRANSLATE: {
+						Translation<double,2> trans( Vector2d(ft.v1, ft.v2) );
+						topleft = trans * topleft;
+						topright = trans * topright;
+						bottomleft = trans * bottomleft;
+						bottomright = trans * bottomright;
+						break;
+					}
+					case FilterTransform::ROTATE: {
+						if ( nonSquareRatio ) {
+							topleft = Scaling( lastFrame->glSAR, 1.0 ) * topleft;
+							topright = Scaling( lastFrame->glSAR, 1.0 ) * topright;
+							bottomleft = Scaling( lastFrame->glSAR, 1.0 ) * bottomleft;
+							bottomright = Scaling( lastFrame->glSAR, 1.0 ) * bottomright;
+						}
+				
+						Rotation2D<double> rot( -ft.v1 );
+						topleft = rot * topleft;
+						topright = rot * topright;
+						bottomleft = rot * bottomleft;
+						bottomright = rot * bottomright;
+						
+						if ( nonSquareRatio ) {
+							topleft = Scaling( 1.0 / lastFrame->glSAR, 1.0 ) * topleft;
+							topright = Scaling( 1.0 / lastFrame->glSAR, 1.0 ) * topright;
+							bottomleft = Scaling( 1.0 / lastFrame->glSAR, 1.0 ) * bottomleft;
+							bottomright = Scaling( 1.0 / lastFrame->glSAR, 1.0 ) * bottomright;
+						}
+						break;
+					}
+				}
+			}
+
+			if ( nonSquareRatio ) {
+				topleft = Scaling( lastFrame->glSAR, 1.0 ) * topleft;
+				topright = Scaling( lastFrame->glSAR, 1.0 ) * topright;
+				bottomleft = Scaling( lastFrame->glSAR, 1.0 ) * bottomleft;
+				bottomright = Scaling( lastFrame->glSAR, 1.0 ) * bottomright;
+			}
+				
+			QPointF points[ 5 ] = {
+				QPointF( topleft.x(), topleft.y() ),
+				QPointF( topright.x(), topright.y() ),
+				QPointF( bottomright.x(), bottomright.y() ),
+				QPointF( bottomleft.x(), bottomleft.y() ),
+				QPointF( topleft.x(), topleft.y() )
+			};
+			
+			painter->save();
+			painter->translate( (double)width() / 2.0, (double)height() / 2.0 );
+			double sc = (double)width() / (lastFrame->glSAR * lastFrame->glWidth) * right;
+			painter->scale( sc, sc );
+			painter->setPen( "black" );
+			painter->drawPolyline( points, 5 );
+			painter->setPen( whiteDash );
+			painter->drawPolyline( points, 5 );
+			painter->restore();
+			break;
+		}
+	}
+}
+
+
+
 void VideoWidget::paintEvent( QPaintEvent *event )
 {
 	makeCurrent();
@@ -133,6 +227,11 @@ void VideoWidget::paintEvent( QPaintEvent *event )
 	
 	QPainter painter( this );
 	painter.setRenderHint( QPainter::Antialiasing );
+	
+	if ( lastFrame && lastFrame->sample ) {
+		drawOVD( &painter, qAbs( lastFrame->glSAR - 1.0 ) > 1e-3 );
+	}
+	
 	osdMessage.draw( &painter, width(), height() );
 	osdTimer.draw( &painter, width(), height() );
 }

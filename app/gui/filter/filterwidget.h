@@ -14,6 +14,7 @@ class FilterWidget : public QWidget
 	Q_OBJECT
 public:
 	FilterWidget( QWidget *parent, Clip *c, QSharedPointer<Filter> f );
+	~FilterWidget();
 	QSharedPointer<Filter> getFilter() { return filter; }
 	void setAnimActive( Parameter *p );
 	

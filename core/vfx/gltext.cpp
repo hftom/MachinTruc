@@ -22,10 +22,21 @@ bool GLText::process( const QList<Effect*> &el, Frame *src, Profile *p )
 	double pts = src->pts();
 	
 	MyTextEffect *e = (MyTextEffect*)el[0];
-	e->setText( getParamValue( editor ).toString() );	
-	return e->set_float( "left", getParamValue( xOffsetPercent, pts ).toDouble() / 100.0 )
+	bool ok = e->set_float( "left", getParamValue( xOffsetPercent, pts ).toDouble() / 100.0 )
 		&& e->set_float( "top", getParamValue( yOffsetPercent, pts ).toDouble() / 100.0 )
 		&& e->set_float( "opacity", getParamValue( opacity, pts ).toDouble() );
+	e->setText( getParamValue( editor ).toString(), src->glWidth, src->glHeight );
+		
+	if ( ovdEnabled() ) {
+		src->glOVD = true;
+		double w = e->getImageWidth(), h = e->getImageHeight();
+		src->glOVDRect = QRectF( -w / 2.0, -h / 2.0, w, h );
+		src->glOVDTransformList.append( FilterTransform( FilterTransform::TRANSLATE,
+														 e->getLeft( src->glWidth ) - ((double)src->glWidth - w) / 2.0,
+														 e->getTop( src->glHeight ) - ((double)src->glHeight - h) / 2.0 ) );
+	}
+	
+	return ok;
 }
 
 
@@ -94,9 +105,8 @@ QImage* MyTextEffect::drawImage()
 					myPen.setColor( col );
 				}
 			}
-
-			sl.takeFirst();
 		}
+		sl.takeFirst();
 	}	
 	
 	QImage *image = new QImage( 10, 10, QImage::Format_ARGB32_Premultiplied );
@@ -106,7 +116,7 @@ QImage* MyTextEffect::drawImage()
 	painter.setBrush( myBrush );
 	painter.setFont( myFont );
 	QList<QRectF> br;
-	QFontMetrics metrics = QFontMetrics( myFont );
+	QFontMetrics metrics( myFont );
 	int h = sl.count() * metrics.lineSpacing();
 	int w = 0;
 	for ( int i = 0; i < sl.count(); ++i ) {

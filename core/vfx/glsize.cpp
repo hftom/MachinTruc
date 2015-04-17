@@ -91,6 +91,16 @@ bool GLSize::process( const QList<Effect*> &el, Frame *src, Profile *p )
 	double imageWidth = resizeOutputWidth = src->glWidth;
 	double imageHeight = resizeOutputHeight = src->glHeight;
 	
+	if ( ovdEnabled() ) {
+		src->glOVD = true;
+		src->glOVDRect = QRectF( -imageWidth / 2.0, -imageHeight / 2.0, imageWidth, imageHeight );
+	}
+	if ( src->glOVD ) {
+		src->glOVDTransformList.append( FilterTransform( FilterTransform::SCALE, sw / src->glWidth, sh / src->glHeight ) );
+		src->glOVDTransformList.append( FilterTransform( FilterTransform::ROTATE, rad ) );
+		src->glOVDTransformList.append( FilterTransform( FilterTransform::TRANSLATE, left, top ) );
+	}
+	
 	if ( resizeActive ) {
 		// We translate and rotate the screen using Eigen3
 		// since it's already a Movit requirement.
