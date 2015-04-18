@@ -187,7 +187,7 @@ private:
 	double lastFrameRatio;
 	Frame *lastFrame;
 	QPen whiteDash;
-	QPointF ovdPoints[5];
+	QPolygonF ovdPoints;
 	
 	GLfloat left, right, top, bottom;
 	

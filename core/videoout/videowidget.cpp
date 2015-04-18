@@ -2,15 +2,11 @@
 #include <sys/time.h>
 #include <math.h>
 
-#include <Eigen/Core>
-#include <Eigen/Geometry>
-
+#include <QTransform>
 #include <QThread>
 #include <QFile>
 
 #include "videoout/videowidget.h"
-
-using namespace Eigen;
 
 
 
@@ -142,87 +138,40 @@ void VideoWidget::drawOVD( QPainter *painter, bool nonSquare )
 	for ( int i = 0; i < lastFrame->sample->frames.count(); ++i ) {
 		Frame *f = lastFrame->sample->frames[i]->frame ;
 		if ( f && f->glOVD ) {
-			Vector2d topleft( f->glOVDRect.x(), f->glOVDRect.y() );
-			Vector2d topright( f->glOVDRect.x() + f->glOVDRect.width(), f->glOVDRect.y() );
-			Vector2d bottomleft( f->glOVDRect.x(), f->glOVDRect.y() + f->glOVDRect.height() );
-			Vector2d bottomright( f->glOVDRect.x() + f->glOVDRect.width(), f->glOVDRect.y() + f->glOVDRect.height() );
+			ovdPoints = QPolygonF( f->glOVDRect );
 				
 			for ( int j = 0; j < f->glOVDTransformList.count(); ++j ) {
 				FilterTransform ft = f->glOVDTransformList.at( j );
 				switch ( ft.transformType ) {
 					case FilterTransform::SCALE: {
-						topleft = Scaling( ft.v1, ft.v2 ) * topleft;
-						topright = Scaling( ft.v1, ft.v2 ) * topright;
-						bottomleft = Scaling( ft.v1, ft.v2 ) * bottomleft;
-						bottomright = Scaling( ft.v1, ft.v2 ) * bottomright;
+						ovdPoints = QTransform::fromScale( ft.v1, ft.v2 ).map( ovdPoints );
 						break;
 					}
 					case FilterTransform::TRANSLATE: {
-						Translation<double,2> trans( Vector2d(ft.v1, ft.v2) );
-						topleft = trans * topleft;
-						topright = trans * topright;
-						bottomleft = trans * bottomleft;
-						bottomright = trans * bottomright;
+						ovdPoints = QTransform::fromTranslate( ft.v1, ft.v2 ).map( ovdPoints );
 						break;
 					}
 					case FilterTransform::ROTATE: {
-						if ( nonSquare ) {
-							topleft = Scaling( lastFrame->glSAR, 1.0 ) * topleft;
-							topright = Scaling( lastFrame->glSAR, 1.0 ) * topright;
-							bottomleft = Scaling( lastFrame->glSAR, 1.0 ) * bottomleft;
-							bottomright = Scaling( lastFrame->glSAR, 1.0 ) * bottomright;
-						}
-				
-						Rotation2D<double> rot( -ft.v1 );
-						topleft = rot * topleft;
-						topright = rot * topright;
-						bottomleft = rot * bottomleft;
-						bottomright = rot * bottomright;
-						
-						if ( nonSquare ) {
-							topleft = Scaling( 1.0 / lastFrame->glSAR, 1.0 ) * topleft;
-							topright = Scaling( 1.0 / lastFrame->glSAR, 1.0 ) * topright;
-							bottomleft = Scaling( 1.0 / lastFrame->glSAR, 1.0 ) * bottomleft;
-							bottomright = Scaling( 1.0 / lastFrame->glSAR, 1.0 ) * bottomright;
-						}
+						if ( nonSquare )
+							ovdPoints = QTransform::fromScale( lastFrame->glSAR, 1.0 ).map( ovdPoints );
+						ovdPoints = QTransform().rotateRadians( -ft.v1 ).map( ovdPoints );
+						if ( nonSquare )
+							ovdPoints = QTransform::fromScale( 1.0 / lastFrame->glSAR, 1.0 ).map( ovdPoints );
 						break;
 					}
 				}
 			}
 
-			if ( nonSquare ) {
-				topleft = Scaling( lastFrame->glSAR, 1.0 ) * topleft;
-				topright = Scaling( lastFrame->glSAR, 1.0 ) * topright;
-				bottomleft = Scaling( lastFrame->glSAR, 1.0 ) * bottomleft;
-				bottomright = Scaling( lastFrame->glSAR, 1.0 ) * bottomright;
-			}
-			
+			if ( nonSquare )
+				ovdPoints = QTransform::fromScale( lastFrame->glSAR, 1.0 ).map( ovdPoints );
 			double sc = (double)width() / (lastFrame->glSAR * lastFrame->glWidth) * right;
-			topleft = Scaling( sc, sc ) * topleft;
-			topright = Scaling( sc, sc ) * topright;
-			bottomleft = Scaling( sc, sc ) * bottomleft;
-			bottomright = Scaling( sc, sc ) * bottomright;
-			
-			Translation<double,2> trans( Vector2d( (double)width() / 2.0, (double)height() / 2.0 ) );
-			topleft = trans * topleft;
-			topright = trans * topright;
-			bottomleft = trans * bottomleft;
-			bottomright = trans * bottomright;
-			
-			ovdPoints[0] = ovdPoints[4] = QPointF( topleft.x(), topleft.y() );
-			ovdPoints[1] = QPointF( topright.x(), topright.y() );
-			ovdPoints[2] = QPointF( bottomright.x(), bottomright.y() );
-			ovdPoints[3] = QPointF( bottomleft.x(), bottomleft.y() );
-			
-			painter->save();
-			/*painter->translate( (double)width() / 2.0, (double)height() / 2.0 );
-			double sc = (double)width() / (lastFrame->glSAR * lastFrame->glWidth) * right;
-			painter->scale( sc, sc );*/
+			ovdPoints = QTransform::fromScale( sc, sc ).map( ovdPoints );
+			ovdPoints = QTransform::fromTranslate( (double)width() / 2.0, (double)height() / 2.0 ).map( ovdPoints );
+
 			painter->setPen( "black" );
-			painter->drawPolyline( ovdPoints, 5 );
+			painter->drawPolygon( ovdPoints );
 			painter->setPen( whiteDash );
-			painter->drawPolyline( ovdPoints, 5 );
-			painter->restore();
+			painter->drawPolygon( ovdPoints );
 			break;
 		}
 	}
@@ -342,7 +291,7 @@ void VideoWidget::wheelEvent( QWheelEvent * event )
 #define CURSORDISTANCE 6
 void VideoWidget::mouseMoveEvent( QMouseEvent * event )
 {
-	if ( lastFrame && lastFrame->sample ) {
+	/*if ( lastFrame && lastFrame->sample ) {
 		for ( int i = 0; i < lastFrame->sample->frames.count(); ++i ) {
 			Frame *f = lastFrame->sample->frames[i]->frame ;
 			if ( f && f->glOVD ) {
@@ -359,7 +308,7 @@ void VideoWidget::mouseMoveEvent( QMouseEvent * event )
 				break;
 			}
 		}
-	}
+	}*/
 }
 
 
