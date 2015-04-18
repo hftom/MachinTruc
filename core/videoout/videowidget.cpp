@@ -29,6 +29,8 @@ VideoWidget::VideoWidget( QWidget *parent ) : QGLWidget( QGLFormat(QGL::SampleBu
 	dashes << 5 << 5;
 	whiteDash.setDashPattern( dashes );
 	whiteDash.setColor( "white" );
+	
+	setMouseTracking( true );
 }
 
 
@@ -135,7 +137,7 @@ void VideoWidget::openglDraw()
 
 
 
-void VideoWidget::drawOVD( QPainter *painter, bool nonSquareRatio )
+void VideoWidget::drawOVD( QPainter *painter, bool nonSquare )
 {
 	for ( int i = 0; i < lastFrame->sample->frames.count(); ++i ) {
 		Frame *f = lastFrame->sample->frames[i]->frame ;
@@ -164,7 +166,7 @@ void VideoWidget::drawOVD( QPainter *painter, bool nonSquareRatio )
 						break;
 					}
 					case FilterTransform::ROTATE: {
-						if ( nonSquareRatio ) {
+						if ( nonSquare ) {
 							topleft = Scaling( lastFrame->glSAR, 1.0 ) * topleft;
 							topright = Scaling( lastFrame->glSAR, 1.0 ) * topright;
 							bottomleft = Scaling( lastFrame->glSAR, 1.0 ) * bottomleft;
@@ -177,7 +179,7 @@ void VideoWidget::drawOVD( QPainter *painter, bool nonSquareRatio )
 						bottomleft = rot * bottomleft;
 						bottomright = rot * bottomright;
 						
-						if ( nonSquareRatio ) {
+						if ( nonSquare ) {
 							topleft = Scaling( 1.0 / lastFrame->glSAR, 1.0 ) * topleft;
 							topright = Scaling( 1.0 / lastFrame->glSAR, 1.0 ) * topright;
 							bottomleft = Scaling( 1.0 / lastFrame->glSAR, 1.0 ) * bottomleft;
@@ -188,29 +190,38 @@ void VideoWidget::drawOVD( QPainter *painter, bool nonSquareRatio )
 				}
 			}
 
-			if ( nonSquareRatio ) {
+			if ( nonSquare ) {
 				topleft = Scaling( lastFrame->glSAR, 1.0 ) * topleft;
 				topright = Scaling( lastFrame->glSAR, 1.0 ) * topright;
 				bottomleft = Scaling( lastFrame->glSAR, 1.0 ) * bottomleft;
 				bottomright = Scaling( lastFrame->glSAR, 1.0 ) * bottomright;
 			}
-				
-			QPointF points[ 5 ] = {
-				QPointF( topleft.x(), topleft.y() ),
-				QPointF( topright.x(), topright.y() ),
-				QPointF( bottomright.x(), bottomright.y() ),
-				QPointF( bottomleft.x(), bottomleft.y() ),
-				QPointF( topleft.x(), topleft.y() )
-			};
+			
+			double sc = (double)width() / (lastFrame->glSAR * lastFrame->glWidth) * right;
+			topleft = Scaling( sc, sc ) * topleft;
+			topright = Scaling( sc, sc ) * topright;
+			bottomleft = Scaling( sc, sc ) * bottomleft;
+			bottomright = Scaling( sc, sc ) * bottomright;
+			
+			Translation<double,2> trans( Vector2d( (double)width() / 2.0, (double)height() / 2.0 ) );
+			topleft = trans * topleft;
+			topright = trans * topright;
+			bottomleft = trans * bottomleft;
+			bottomright = trans * bottomright;
+			
+			ovdPoints[0] = ovdPoints[4] = QPointF( topleft.x(), topleft.y() );
+			ovdPoints[1] = QPointF( topright.x(), topright.y() );
+			ovdPoints[2] = QPointF( bottomright.x(), bottomright.y() );
+			ovdPoints[3] = QPointF( bottomleft.x(), bottomleft.y() );
 			
 			painter->save();
-			painter->translate( (double)width() / 2.0, (double)height() / 2.0 );
+			/*painter->translate( (double)width() / 2.0, (double)height() / 2.0 );
 			double sc = (double)width() / (lastFrame->glSAR * lastFrame->glWidth) * right;
-			painter->scale( sc, sc );
+			painter->scale( sc, sc );*/
 			painter->setPen( "black" );
-			painter->drawPolyline( points, 5 );
+			painter->drawPolyline( ovdPoints, 5 );
 			painter->setPen( whiteDash );
-			painter->drawPolyline( points, 5 );
+			painter->drawPolyline( ovdPoints, 5 );
 			painter->restore();
 			break;
 		}
@@ -328,12 +339,27 @@ void VideoWidget::wheelEvent( QWheelEvent * event )
 }
 
 
-
+#define CURSORDISTANCE 6
 void VideoWidget::mouseMoveEvent( QMouseEvent * event )
 {
-	Q_UNUSED( event );
-	//if ( event->button() == Qt::LeftButton )
-		//emit move( event->x(), event->y() );
+	if ( lastFrame && lastFrame->sample ) {
+		for ( int i = 0; i < lastFrame->sample->frames.count(); ++i ) {
+			Frame *f = lastFrame->sample->frames[i]->frame ;
+			if ( f && f->glOVD ) {
+				if ( (ovdPoints[0] - event->pos()).manhattanLength() < CURSORDISTANCE )
+					setCursor( QCursor(Qt::SizeFDiagCursor) );
+				else if ( (ovdPoints[2] - event->pos()).manhattanLength() < CURSORDISTANCE )
+					setCursor( QCursor(Qt::SizeFDiagCursor) );
+				else if ( (ovdPoints[1] - event->pos()).manhattanLength() < CURSORDISTANCE )
+					setCursor( QCursor(Qt::SizeBDiagCursor) );
+				else if ( (ovdPoints[3] - event->pos()).manhattanLength() < CURSORDISTANCE )
+					setCursor( QCursor(Qt::SizeBDiagCursor) );
+				else
+					setCursor( QCursor(Qt::ArrowCursor) );
+				break;
+			}
+		}
+	}
 }
 
 

@@ -181,12 +181,13 @@ protected :
 
 private:
 	void openglDraw();
-	void drawOVD( QPainter *painter, bool nonSquareRatio );
+	void drawOVD( QPainter *painter, bool nonSquare );
 	QImage lastImage();
 
 	double lastFrameRatio;
 	Frame *lastFrame;
 	QPen whiteDash;
+	QPointF ovdPoints[5];
 	
 	GLfloat left, right, top, bottom;
 	
