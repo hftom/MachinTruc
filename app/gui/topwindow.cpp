@@ -135,6 +135,7 @@ TopWindow::TopWindow()
 	connect( actionRenderToFile, SIGNAL(triggered()), this, SLOT(renderDialog()) );
 	
 	new QShortcut( QKeySequence( "Ctrl+M" ), this, SLOT(showMemoryInfo()) );
+	new QShortcut( QKeySequence( "Space" ), this, SLOT(videoPlayPause()) );
 	
 	timeline->setScene( sampler->getCurrentScene() );
 }
