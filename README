@@ -1,13 +1,13 @@
 MachinTruc is licensed under the GNU GPL v2.
 Author : Christophe Thommeret <hftom@free.fr>
 
-MachinTruc aims to be a non linear video editor.
+MachinTruc is a non linear video editor.
 
 Deps:
 - ffmpeg (libavformat, libavcodec, libavutil, libswresample, libswscale)
 - SDL (sound output)
 - Movit (http://git.sesse.net/?p=movit)
-- Qt 4 or 5.
+- Qt 4(recommended) or 5.
 - X11
 
 Compilation:
