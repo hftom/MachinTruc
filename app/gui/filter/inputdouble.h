@@ -1,5 +1,5 @@
-#ifndef SLIDERDOUBLE_H
-#define SLIDERDOUBLE_H
+#ifndef IMPUTDOUBLE_H
+#define IMPUTDOUBLE_H
 
 #include <QDoubleSpinBox>
 #include <QBoxLayout>
@@ -9,11 +9,11 @@
 
 
 
-class SliderDouble : public ParameterWidget
+class InputDouble : public ParameterWidget
 {
 	Q_OBJECT
 public:
-	SliderDouble( QWidget *parent, Parameter *p, bool keyframeable );
+	InputDouble( QWidget *parent, Parameter *p, bool keyframeable );
 	QLayout *getLayout() { return box; }
 	
 	virtual void animValueChanged( double val );
@@ -21,13 +21,11 @@ public:
 	
 private slots:
 	void spinChanged( double val );
-	void sliderChanged( int val );
 	
 private:
-	FSlider *fs;
 	QDoubleSpinBox *spin;
 	QLabel *label;
 	QBoxLayout *box;
 };
 
-#endif // SLIDERDOUBLE_H
+#endif // IMPUTDOUBLE_H

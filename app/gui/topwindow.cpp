@@ -85,6 +85,7 @@ TopWindow::TopWindow()
 	layout->addWidget( vw );
 	glWidget->setLayout( layout );
 
+	connect( vw, SIGNAL(ovdValueChanged()), fxPage, SIGNAL(ovdValueChanged()) );
 	connect( vw, SIGNAL(playPause()), this, SLOT(videoPlayPause()) );
 	connect( vw, SIGNAL(wheelSeek(int)), sampler, SLOT(wheelSeek(int)) );
 	connect( vw, SIGNAL(newSharedContext(QGLWidget*)), sampler, SLOT(setSharedContext(QGLWidget*)) );

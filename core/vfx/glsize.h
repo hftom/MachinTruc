@@ -93,8 +93,9 @@ public:
 	GLSize( QString id, QString name );
 	~GLSize();
  
-	QString getDescriptor( Frame *src, Profile *p );
-	bool process( const QList<Effect*> &el, Frame *src, Profile *p );
+	virtual QString getDescriptor( Frame *src, Profile *p );
+	virtual bool process( const QList<Effect*> &el, Frame *src, Profile *p );
+	virtual void ovdUpdate( QString type, QVariant val );
 
 	QList<Effect*> getMovitEffects();
 
@@ -113,8 +114,7 @@ private:
 	bool rotateActive;
 	double centerOffsetX, centerOffsetY;
 	
-	Parameter *xOffsetPercent, *yOffsetPercent;
-	double left, top;
+	Parameter *xOffset, *yOffset;
 };
 
 #endif //GLSIZE_H

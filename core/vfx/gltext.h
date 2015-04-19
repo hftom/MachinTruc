@@ -26,7 +26,7 @@ static const char *MyTextEffect_shader=
 class MyTextEffect : public Effect {
 public:
 	MyTextEffect() : iwidth(1), iheight(1), imgWidth(1), imgHeight(1),
-		top(0), left(0), otop(0), oleft(0), opacity(1), reload(true), currentImage( NULL )
+		top(0), left(0), opacity(1), reload(true), currentImage( NULL )
 	{
 		register_float( "top", &top );
 		register_float( "left", &left );
@@ -64,10 +64,10 @@ public:
 			reload = false;
 		}
 		
-		left = oleft + left * iwidth;
-		top = otop + top * iheight;
+		float oleft = ((iwidth - imgWidth) / 2.0f) + left;
+		float otop = ((iheight - imgHeight) / 2.0f) + top;
 
-		float offset[2] = { left / iwidth, ( iheight - imgHeight - top ) / iheight };
+		float offset[2] = { oleft / iwidth, ( iheight - imgHeight - otop ) / iheight };
 		set_uniform_vec2( glsl_program_num, prefix, "offset", offset );
 
 		float scale[2] = { iwidth / imgWidth, iheight / imgHeight };
@@ -97,13 +97,11 @@ public:
 	
 	float getImageWidth() { return imgWidth; }
 	float getImageHeight() { return imgHeight; }
-	float getLeft( float iw ) { return oleft + left * iw; }
-	float getTop( float ih ) { return otop + top * ih; }
 
 private:
 	float iwidth, iheight;
 	float imgWidth, imgHeight;
-	float top, left, otop, oleft;
+	float top, left;
 	float opacity;
 	
 	GLuint texnum;
@@ -119,14 +117,15 @@ class GLText : public GLFilter
 public:
 	GLText( QString id, QString name );
 	
-	bool process( const QList<Effect*> &el, Frame *src, Profile *p );
+	virtual bool process( const QList<Effect*> &el, Frame *src, Profile *p );
+	virtual void ovdUpdate( QString type, QVariant val );
 
 	QList<Effect*> getMovitEffects();
 	
 private:
 	Parameter *editor;
 	Parameter *opacity;
-	Parameter *xOffsetPercent, *yOffsetPercent;
+	Parameter *xOffset, *yOffset;
 };
 
 #endif // GLTEXT_H

@@ -456,6 +456,11 @@ void ProjectFile::readParameter( QDomElement &element, QSharedPointer<Filter> f 
 			return;
 		p->value = value.toDouble();
 	}
+	else if ( type == "inputdouble" ) {
+		if ( p->type != Parameter::PINPUTDOUBLE )
+			return;
+		p->value = value.toDouble();
+	}
 	else if ( type == "int" ) {
 		if ( p->type != Parameter::PINT )
 			return;
@@ -665,6 +670,11 @@ void ProjectFile::writeFilter( QDomNode &parent, bool audio, QSharedPointer<Filt
 		switch ( p->type ) {
 			case Parameter::PDOUBLE: {
 				pel.setAttribute( "type", "double" );
+				pel.setAttribute( "value", QString::number( p->value.toDouble(), 'e', 17 ) );
+				break;
+			}
+			case Parameter::PINPUTDOUBLE: {
+				pel.setAttribute( "type", "inputdouble" );
 				pel.setAttribute( "value", QString::number( p->value.toDouble(), 'e', 17 ) );
 				break;
 			}

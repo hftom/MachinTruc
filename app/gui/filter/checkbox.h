@@ -15,7 +15,7 @@ public:
 	CheckBox( QWidget *parent, Parameter *p );
 	QLayout *getLayout() { return box; }
 	
-	virtual void animValueChanged( double val ) {};
+	virtual void animValueChanged( double /*val*/ ) {};
 	
 private slots:
 	void stateChanged( int val );

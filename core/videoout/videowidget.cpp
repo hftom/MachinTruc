@@ -8,11 +8,19 @@
 
 #include "videoout/videowidget.h"
 
+#define OVDTOPLEFT 1
+#define OVDTOPRIGHT 2
+#define OVDBOTTOMRIGHT 3
+#define OVDBOTTOMLEFT 4
+#define OVDINSIDE 5
+
 
 
 VideoWidget::VideoWidget( QWidget *parent ) : QGLWidget( QGLFormat(QGL::SampleBuffers), parent ),
 	lastFrameRatio( 16./9. ),
-	lastFrame( NULL )
+	lastFrame( NULL ),
+	leftButtonPressed( false ),
+	ovdTarget( 0 )
 {
 	setAttribute( Qt::WA_OpaquePaintEvent );
 	setAutoFillBackground( false );
@@ -139,6 +147,7 @@ void VideoWidget::drawOVD( QPainter *painter, bool nonSquare )
 		Frame *f = lastFrame->sample->frames[i]->frame ;
 		if ( f && f->glOVD ) {
 			ovdPoints = QPolygonF( f->glOVDRect );
+			ovdTransformList = f->glOVDTransformList;
 				
 			for ( int j = 0; j < f->glOVDTransformList.count(); ++j ) {
 				FilterTransform ft = f->glOVDTransformList.at( j );
@@ -288,36 +297,65 @@ void VideoWidget::wheelEvent( QWheelEvent * event )
 }
 
 
-#define CURSORDISTANCE 6
+#define CURSORDISTANCE 8
 void VideoWidget::mouseMoveEvent( QMouseEvent * event )
 {
-	/*if ( lastFrame && lastFrame->sample ) {
+	int target = 0;
+	if ( lastFrame && lastFrame->sample ) {
 		for ( int i = 0; i < lastFrame->sample->frames.count(); ++i ) {
 			Frame *f = lastFrame->sample->frames[i]->frame ;
 			if ( f && f->glOVD ) {
-				if ( (ovdPoints[0] - event->pos()).manhattanLength() < CURSORDISTANCE )
+				if ( leftButtonPressed ) {
+					if ( ovdTarget > 0 )
+						ovdUpdate( lastFrame->sample->frames[i], QPointF( event->pos() ) );
+					return;
+				}
+				if ( cursorInside( event->pos() ) ) {
+					setCursor( QCursor(Qt::SizeAllCursor) );
+					target = OVDINSIDE;
+				}
+				else if ( (ovdPoints[0] - event->pos()).manhattanLength() < CURSORDISTANCE ) {
 					setCursor( QCursor(Qt::SizeFDiagCursor) );
-				else if ( (ovdPoints[2] - event->pos()).manhattanLength() < CURSORDISTANCE )
+					target = OVDTOPLEFT;
+				}
+				else if ( (ovdPoints[2] - event->pos()).manhattanLength() < CURSORDISTANCE ) {
 					setCursor( QCursor(Qt::SizeFDiagCursor) );
-				else if ( (ovdPoints[1] - event->pos()).manhattanLength() < CURSORDISTANCE )
+					target = OVDBOTTOMRIGHT;
+				}
+				else if ( (ovdPoints[1] - event->pos()).manhattanLength() < CURSORDISTANCE ) {
 					setCursor( QCursor(Qt::SizeBDiagCursor) );
-				else if ( (ovdPoints[3] - event->pos()).manhattanLength() < CURSORDISTANCE )
+					target = OVDTOPRIGHT;
+				}
+				else if ( (ovdPoints[3] - event->pos()).manhattanLength() < CURSORDISTANCE ) {
 					setCursor( QCursor(Qt::SizeBDiagCursor) );
-				else
-					setCursor( QCursor(Qt::ArrowCursor) );
-				break;
+					target = OVDBOTTOMLEFT;
+				}
 			}
 		}
-	}*/
+	}
+	
+	ovdTarget = target;
+	if ( ovdTarget == 0 && cursor().shape() != Qt::ArrowCursor )
+		setCursor( QCursor(Qt::ArrowCursor) );
 }
 
 
 
 void VideoWidget::mousePressEvent( QMouseEvent * event )
 {
-	if ( event->button() == Qt::LeftButton ) {
-		emit playPause();
+	if ( event->button() & Qt::LeftButton ) {
+		leftButtonPressed = true;
+		mousePressedPoint = QPointF( event->pos() );
+		ovdPointsMousePressed = ovdPoints;
+		ovdTransformListMousePressed = ovdTransformList;
 	}
+}
+
+
+
+void VideoWidget::mouseReleaseEvent( QMouseEvent * event )
+{
+	leftButtonPressed = false;
 }
 
 
@@ -337,3 +375,88 @@ void VideoWidget::showOSDTimer( bool b )
 		osdTimer.stop();
 }
 
+
+
+void VideoWidget::ovdUpdate( FrameSample *frameSample, QPointF cursorPos )
+{	
+	bool nonSquare = qAbs( lastFrame->glSAR - 1.0 ) > 1e-3;
+	QPolygonF polygon = ovdPointsMousePressed;
+	polygon.append( mousePressedPoint );
+	polygon.append( cursorPos );
+
+	polygon = QTransform::fromTranslate( -(double)width() / 2.0, -(double)height() / 2.0 ).map( polygon );
+	double sc = (double)width() / (lastFrame->glSAR * lastFrame->glWidth) * right;
+	polygon = QTransform::fromScale( 1.0 / sc, 1.0 / sc ).map( polygon );
+	if ( nonSquare )
+		polygon = QTransform::fromScale( 1.0 / lastFrame->glSAR, 1.0 ).map( polygon );	
+	
+	double v1 = 0.0, v2 = 0.0;
+	QPointF start = polygon[5], current = polygon[6];
+	
+	for ( int j = ovdTransformListMousePressed.count() - 1; j >= 0; --j ) {
+		FilterTransform ft = ovdTransformListMousePressed.at( j );
+		switch ( ft.transformType ) {
+			case FilterTransform::SCALE: {
+				polygon = QTransform::fromScale( 1.0 / ft.v1, 1.0 / ft.v2 ).map( polygon );
+				break;
+			}
+			case FilterTransform::TRANSLATE: {
+				polygon = QTransform::fromTranslate( -ft.v1, -ft.v2 ).map( polygon );
+				if ( ovdTarget == OVDINSIDE ) {
+					v1 = ft.v1;
+					v2 = ft.v2;
+					start = polygon[5];
+					current = polygon[6];
+				}
+				break;
+			}
+			case FilterTransform::ROTATE: {
+				if ( nonSquare )
+					polygon = QTransform::fromScale( 1.0 / lastFrame->glSAR, 1.0 ).map( polygon );
+				polygon = QTransform().rotateRadians( ft.v1 ).map( polygon );
+				if ( nonSquare )
+					polygon = QTransform::fromScale( lastFrame->glSAR, 1.0 ).map( polygon );
+				break;
+			}
+		}
+	}
+
+	QSharedPointer<GLFilter> filter;
+	for ( int i = 0; i < frameSample->videoFilters.count(); ++i ) {
+		if ( frameSample->videoFilters.at( i )->ovdEnabled() ) {
+			filter = frameSample->videoFilters.at( i );
+			break;
+		}
+	}
+	
+	if ( !filter.isNull() ) {
+		if ( ovdTarget == OVDINSIDE ) {
+			current -= start;
+			filter->ovdUpdate( "position", QPointF( v1, v2 ) + current );
+			emit ovdValueChanged();
+		}
+	}
+}
+	
+
+
+bool VideoWidget::cursorInside( QPointF cursorPos )
+{
+	if ( ovdPoints.count() < 4 )
+		return false;
+
+	double bax = ovdPoints[1].x() - ovdPoints[0].x();
+	double bay = ovdPoints[1].y() - ovdPoints[0].y();
+	double dax = ovdPoints[3].x() - ovdPoints[0].x();
+	double day = ovdPoints[3].y() - ovdPoints[0].y();
+	if ( (cursorPos.x() - ovdPoints[0].x() ) * bax + ( cursorPos.y() - ovdPoints[0].y() ) * bay < 0.0 )
+		return false;
+	if ( (cursorPos.x() - ovdPoints[1].x() ) * bax + ( cursorPos.y() - ovdPoints[1].y() ) * bay > 0.0 )
+		return false;
+	if ( (cursorPos.x() - ovdPoints[0].x() ) * dax + ( cursorPos.y() - ovdPoints[0].y() ) * day < 0.0 )
+		return false;
+	if ( (cursorPos.x() - ovdPoints[3].x() ) * dax + ( cursorPos.y() - ovdPoints[3].y() ) * day > 0.0 )
+		return false;
+	
+	return true;
+}

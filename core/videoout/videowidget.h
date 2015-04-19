@@ -176,18 +176,25 @@ protected :
 	void paintEvent( QPaintEvent *event );
 
 	void wheelEvent( QWheelEvent * event );
-	void mouseMoveEvent( QMouseEvent * event );
 	void mousePressEvent( QMouseEvent * event );
+	void mouseMoveEvent( QMouseEvent * event );
+	void mouseReleaseEvent( QMouseEvent * event );
 
 private:
 	void openglDraw();
 	void drawOVD( QPainter *painter, bool nonSquare );
+	bool cursorInside( QPointF cursorPos );
+	void ovdUpdate( FrameSample *frameSample, QPointF cursorPos );
 	QImage lastImage();
 
 	double lastFrameRatio;
 	Frame *lastFrame;
 	QPen whiteDash;
-	QPolygonF ovdPoints;
+	QPolygonF ovdPoints, ovdPointsMousePressed;
+	QList<FilterTransform> ovdTransformList, ovdTransformListMousePressed;
+	bool leftButtonPressed;
+	QPointF mousePressedPoint;
+	int ovdTarget;
 	
 	GLfloat left, right, top, bottom;
 	
@@ -206,5 +213,7 @@ signals:
 	void toggleFullscreen();
 
 	void valueChanged( int );
+	
+	void ovdValueChanged();
 };
 #endif // VIDEOWIDGET_H

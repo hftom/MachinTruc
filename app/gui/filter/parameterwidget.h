@@ -42,7 +42,8 @@ public:
 	
 	virtual QLayout *getLayout() = 0;
 	virtual void animValueChanged( double val ) = 0;
-	
+	virtual void ovdValueChanged() {}
+
 	void setAnimActive( bool b ) {
 		int i;
 		

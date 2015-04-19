@@ -49,6 +49,7 @@ public:
 	QString getFilterName() { return filterName; }
 	QString getIdentifier() { return identifier; }
 	
+	virtual void ovdUpdate( QString /*type*/, QVariant /*val*/ ) {}
 	void enableOVD( bool b ) { showOVD = b; }
 	bool ovdEnabled() { return showOVD; }
 

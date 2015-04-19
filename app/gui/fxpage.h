@@ -42,6 +42,8 @@ signals:
 	void editAnimation( FilterWidget*, ParameterWidget*, Parameter* );
 	void updateFrame();
 	void showEffect( bool isVideo, int index );
+	
+	void ovdValueChanged();
 };
 
 #endif // FXPAGE_H

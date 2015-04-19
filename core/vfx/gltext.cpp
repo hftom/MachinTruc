@@ -10,8 +10,19 @@ GLText::GLText( QString id, QString name ) : GLFilter( id, name )
 {
 	editor = addParameter( "editor", tr("Editor:"), Parameter::PSTRING, "", "", "", false );
 	opacity = addParameter( "opacity", tr("Opacity:"), Parameter::PDOUBLE, 1.0, 0.0, 1.0, true );
-	xOffsetPercent = addParameter( "xOffsetPercent", tr("X:"), Parameter::PDOUBLE, 0.0, -100.0, 100.0, true, "%" );
-	yOffsetPercent = addParameter( "yOffsetPercent", tr("Y:"), Parameter::PDOUBLE, 0.0, -100.0, 100.0, true, "%" );
+	xOffset = addParameter( "xOffset", tr("X:"), Parameter::PINPUTDOUBLE, 0.0, -10000.0, 10000.0, true );
+	yOffset = addParameter( "yOffset", tr("Y:"), Parameter::PINPUTDOUBLE, 0.0, -10000.0, 10000.0, true );
+}
+
+
+
+void GLText::ovdUpdate( QString type, QVariant val )
+{
+	if ( type == "position" ) {
+		QPointF pos = val.toPointF();
+		xOffset->value = pos.x();
+		yOffset->value = pos.y();
+	}
 }
 
 
@@ -22,8 +33,8 @@ bool GLText::process( const QList<Effect*> &el, Frame *src, Profile *p )
 	double pts = src->pts();
 	
 	MyTextEffect *e = (MyTextEffect*)el[0];
-	bool ok = e->set_float( "left", getParamValue( xOffsetPercent, pts ).toDouble() / 100.0 )
-		&& e->set_float( "top", getParamValue( yOffsetPercent, pts ).toDouble() / 100.0 )
+	bool ok = e->set_float( "left", getParamValue( xOffset, pts ).toDouble() )
+		&& e->set_float( "top", getParamValue( yOffset, pts ).toDouble() )
 		&& e->set_float( "opacity", getParamValue( opacity, pts ).toDouble() );
 	e->setText( getParamValue( editor ).toString(), src->glWidth, src->glHeight );
 		
@@ -31,9 +42,7 @@ bool GLText::process( const QList<Effect*> &el, Frame *src, Profile *p )
 		src->glOVD = true;
 		double w = e->getImageWidth(), h = e->getImageHeight();
 		src->glOVDRect = QRectF( -w / 2.0, -h / 2.0, w, h );
-		src->glOVDTransformList.append( FilterTransform( FilterTransform::TRANSLATE,
-														 e->getLeft( src->glWidth ) - ((double)src->glWidth - w) / 2.0,
-														 e->getTop( src->glHeight ) - ((double)src->glHeight - h) / 2.0 ) );
+		src->glOVDTransformList.append( FilterTransform( FilterTransform::TRANSLATE, getParamValue( xOffset, pts ).toDouble(), getParamValue( yOffset, pts ).toDouble() ) );
 	}
 	
 	return ok;
@@ -186,22 +195,6 @@ QImage* MyTextEffect::drawImage()
 		y += metrics.lineSpacing();
 	}
 	painter.end();
-	
-	switch ( align ) {
-		case 2: {
-			oleft = (iwidth - w) / 2.0f;
-			otop = (iheight - h) / 2.0f;
-			break;
-		}
-		case 3: {
-			oleft = (iwidth - w);
-			otop = (iheight - h);
-			break;
-		}
-		default: {
-			oleft = otop = 0;
-		}
-	}
 	
 	return image;
 }

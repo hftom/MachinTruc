@@ -1,5 +1,6 @@
 #include "filterwidget.h"
 
+#include "inputdouble.h"
 #include "sliderdouble.h"
 #include "sliderint.h"
 #include "colorchooser.h"
@@ -54,6 +55,10 @@ FilterWidget::FilterWidget( QWidget *parent, Clip *c, QSharedPointer<Filter> f )
 				pw = new TextEdit( this, p );
 				break;
 			}
+			case Parameter::PINPUTDOUBLE: {
+				pw = new InputDouble( this, p, clip != 0 );
+				break;
+			}
 		}
 		if ( pw ) {
 			paramWidgets.append( pw );
@@ -70,6 +75,14 @@ FilterWidget::FilterWidget( QWidget *parent, Clip *c, QSharedPointer<Filter> f )
 	setLayout( grid );
 	
 	filter->enableOVD( true );
+}
+
+
+
+void FilterWidget::ovdValueChanged()
+{
+	for ( int i = 0; i < paramWidgets.count(); ++i )
+		paramWidgets[i]->ovdValueChanged();
 }
 
 
@@ -127,6 +140,7 @@ void FilterWidget::valueChanged( Parameter *p, QVariant val )
 {
 	switch ( p->type ) {
 		case Parameter::PDOUBLE:
+		case Parameter::PINPUTDOUBLE:
 			p->value = val.toInt() / 100.0;
 			break;
 		default:

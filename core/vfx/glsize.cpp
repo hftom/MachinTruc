@@ -19,13 +19,11 @@ GLSize::GLSize( QString id, QString name ) : GLFilter( id, name ),
 	resizeLeft( 0 ),
 	resizeTop( 0 ),
 	centerOffsetX(0),
-	centerOffsetY(0),
-	left( 0 ),
-	top( 0 )
+	centerOffsetY(0)
 {
 	sizePercent = addParameter( "sizePercent", tr("Size:"), Parameter::PDOUBLE, 100.0, 0.0, 500.0, true, "%" );
-	xOffsetPercent = addParameter( "xOffsetPercent", tr("X:"), Parameter::PDOUBLE, 0.0, -100.0, 100.0, true, "%" );
-	yOffsetPercent = addParameter( "yOffsetPercent", tr("Y:"), Parameter::PDOUBLE, 0.0, -100.0, 100.0, true, "%" );
+	xOffset = addParameter( "xOffset", tr("X:"), Parameter::PINPUTDOUBLE, 0.0, -10000.0, 10000.0, true );
+	yOffset = addParameter( "yOffset", tr("Y:"), Parameter::PINPUTDOUBLE, 0.0, -10000.0, 10000.0, true );
 	rotateAngle = addParameter( "rotateAngle", tr("Rotation angle:"), Parameter::PDOUBLE, 0.0, -360.0, 360.0, true );
 	softBorder = addParameter( "softBorder", tr("Soft border:"), Parameter::PINT, 2, 1, 10, false );
 }
@@ -68,6 +66,17 @@ QString GLSize::getDescriptor( Frame *src, Profile *p )
 
 
 
+void GLSize::ovdUpdate( QString type, QVariant val )
+{
+	if ( type == "position" ) {
+		QPointF pos = val.toPointF();
+		xOffset->value = pos.x();
+		yOffset->value = pos.y();
+	}
+}
+
+
+
 bool GLSize::process( const QList<Effect*> &el, Frame *src, Profile *p )
 {
 	bool ok = true;
@@ -76,8 +85,8 @@ bool GLSize::process( const QList<Effect*> &el, Frame *src, Profile *p )
 	double pts = src->pts();
 	double rad = getParamValue( rotateAngle, pts ).toDouble() * M_PI / 180.0;
 	double zoom = getParamValue( sizePercent, pts ).toDouble() / 100.0;
-	double xoff = getParamValue( xOffsetPercent, pts ).toDouble() / 100.0;
-	double yoff = getParamValue( yOffsetPercent, pts ).toDouble() / 100.0;
+	double left = getParamValue( xOffset, pts ).toDouble();
+	double top = getParamValue( yOffset, pts ).toDouble();
 	// screen size (project)
 	double pw = p->getVideoWidth();
 	double ph = p->getVideoHeight();
@@ -85,8 +94,6 @@ bool GLSize::process( const QList<Effect*> &el, Frame *src, Profile *p )
 	// scaled centered image
 	double sw = qMax( (double)src->glWidth * src->glSAR  / psar * zoom, 1.0 );
 	double sh = qMax( (double)src->glHeight * zoom, 1.0 );
-	left = xoff * pw;
-	top = yoff * ph;
 	
 	double imageWidth = resizeOutputWidth = src->glWidth;
 	double imageHeight = resizeOutputHeight = src->glHeight;

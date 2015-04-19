@@ -16,6 +16,7 @@ SOURCES = \
 	gui/graph.cpp \
 	gui/grapheffectitem.cpp \
 	\
+	gui/filter/inputdouble.cpp \
 	gui/filter/sliderdouble.cpp \
 	gui/filter/sliderint.cpp \
 	gui/filter/checkbox.cpp \
@@ -54,6 +55,7 @@ HEADERS = \
 	gui/grapheffectitem.h \
 	\
 	gui/filter/parameterwidget.h \
+	gui/filter/inputdouble.h \
 	gui/filter/sliderdouble.h \
 	gui/filter/sliderint.h \
 	gui/filter/checkbox.h \
