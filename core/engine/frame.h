@@ -108,7 +108,7 @@ public:
 	// composer helpers
 	int glWidth, glHeight;
 	double glSAR;
-	bool glOVD;
+	int glOVD;
 	QRectF glOVDRect;
 	QList<FilterTransform> glOVDTransformList;
 	bool paddingAuto, resizeAuto;

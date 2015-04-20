@@ -68,7 +68,7 @@ QString GLSize::getDescriptor( Frame *src, Profile *p )
 
 void GLSize::ovdUpdate( QString type, QVariant val )
 {
-	if ( type == "position" ) {
+	if ( type == "position" || type == "scaleOffset" ) {
 		QPointF pos = val.toPointF();
 		xOffset->value = pos.x();
 		yOffset->value = pos.y();
@@ -103,7 +103,7 @@ bool GLSize::process( const QList<Effect*> &el, Frame *src, Profile *p )
 	double imageHeight = resizeOutputHeight = src->glHeight;
 	
 	if ( ovdEnabled() ) {
-		src->glOVD = true;
+		src->glOVD = FilterTransform::SCALE | FilterTransform::TRANSLATE;
 		src->glOVDRect = QRectF( -imageWidth / 2.0, -imageHeight / 2.0, imageWidth, imageHeight );
 	}
 	if ( src->glOVD ) {

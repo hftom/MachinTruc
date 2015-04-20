@@ -676,7 +676,7 @@ void Composer::movitRender( Frame *dst, bool update )
 		f->glWidth = f->profile.getVideoWidth();
 		f->glHeight = f->profile.getVideoHeight();
 		f->glSAR = f->profile.getVideoSAR();
-		f->glOVD = false;
+		f->glOVD = 0;
 		f->glOVDTransformList.clear();
 		
 		// input and filters

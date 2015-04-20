@@ -39,7 +39,7 @@ bool GLText::process( const QList<Effect*> &el, Frame *src, Profile *p )
 	e->setText( getParamValue( editor ).toString(), src->glWidth, src->glHeight );
 		
 	if ( ovdEnabled() ) {
-		src->glOVD = true;
+		src->glOVD = FilterTransform::TRANSLATE;
 		double w = e->getImageWidth(), h = e->getImageHeight();
 		src->glOVDRect = QRectF( -w / 2.0, -h / 2.0, w, h );
 		src->glOVDTransformList.append( FilterTransform( FilterTransform::TRANSLATE, getParamValue( xOffset, pts ).toDouble(), getParamValue( yOffset, pts ).toDouble() ) );

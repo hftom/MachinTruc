@@ -13,7 +13,7 @@
 class FilterTransform
 {
 public:
-	enum TransformType{ SCALE, TRANSLATE, ROTATE };
+	enum TransformType{ SCALE = 1, TRANSLATE = 2, ROTATE = 4 };
 	FilterTransform( int type, double val1, double val2 = 0 )
 		: transformType( type ),
 		v1( val1 ),

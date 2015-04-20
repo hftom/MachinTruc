@@ -145,7 +145,7 @@ void VideoWidget::drawOVD( QPainter *painter, bool nonSquare )
 {
 	for ( int i = 0; i < lastFrame->sample->frames.count(); ++i ) {
 		Frame *f = lastFrame->sample->frames[i]->frame ;
-		if ( f && f->glOVD ) {
+		if ( f && f->glOVD > 0 ) {
 			ovdPoints = QPolygonF( f->glOVDRect );
 			ovdTransformList = f->glOVDTransformList;
 				
@@ -310,24 +310,26 @@ void VideoWidget::mouseMoveEvent( QMouseEvent * event )
 						ovdUpdate( lastFrame->sample->frames[i], QPointF( event->pos() ) );
 					return;
 				}
-				else if ( qAbs((ovdPoints[0] - event->pos()).manhattanLength()) < CURSORDISTANCE ) {
-					setCursor( QCursor(Qt::PointingHandCursor) );
-					target = OVDTOPLEFT;
+				if ( f->glOVD & FilterTransform::SCALE ) {
+					if ( qAbs((ovdPoints[0] - event->pos()).manhattanLength()) < CURSORDISTANCE ) {
+						setCursor( QCursor(Qt::SizeAllCursor) );
+						target = OVDTOPLEFT;
+					}
+					else if ( qAbs((ovdPoints[2] - event->pos()).manhattanLength()) < CURSORDISTANCE ) {
+						setCursor( QCursor(Qt::SizeAllCursor) );
+						target = OVDBOTTOMRIGHT;
+					}
+					else if ( qAbs((ovdPoints[1] - event->pos()).manhattanLength()) < CURSORDISTANCE ) {
+						setCursor( QCursor(Qt::SizeAllCursor) );
+						target = OVDTOPRIGHT;
+					}
+					else if ( qAbs((ovdPoints[3] - event->pos()).manhattanLength()) < CURSORDISTANCE ) {
+						setCursor( QCursor(Qt::SizeAllCursor) );
+						target = OVDBOTTOMLEFT;
+					}
 				}
-				else if ( qAbs((ovdPoints[2] - event->pos()).manhattanLength()) < CURSORDISTANCE ) {
+				if ( !target && cursorInside( event->pos() ) ) {
 					setCursor( QCursor(Qt::PointingHandCursor) );
-					target = OVDBOTTOMRIGHT;
-				}
-				else if ( qAbs((ovdPoints[1] - event->pos()).manhattanLength()) < CURSORDISTANCE ) {
-					setCursor( QCursor(Qt::PointingHandCursor) );
-					target = OVDTOPRIGHT;
-				}
-				else if ( qAbs((ovdPoints[3] - event->pos()).manhattanLength()) < CURSORDISTANCE ) {
-					setCursor( QCursor(Qt::PointingHandCursor) );
-					target = OVDBOTTOMLEFT;
-				}
-				else if ( cursorInside( event->pos() ) ) {
-					setCursor( QCursor(Qt::SizeAllCursor) );
 					target = OVDINSIDE;
 				}
 			}
@@ -449,28 +451,28 @@ void VideoWidget::ovdUpdate( FrameSample *frameSample, QPointF cursorPos )
 					w = current[6].x() - current[0].x();
 					h = w * oh / ow;
 					filter->ovdUpdate( "scale", QPointF( w * 100.0 / ow, 1.0 ) );
-					filter->ovdUpdate( "position", QPointF( t1, t2 ) + QPointF( (w - (ow * s1)) / 2.0, (h - (oh * s2)) / 2.0 ) );
+					filter->ovdUpdate( "scaleOffset", QPointF( t1, t2 ) + QPointF( (w - (ow * s1)) / 2.0, (h - (oh * s2)) / 2.0 ) );
 					break;
 				}
 				case OVDBOTTOMLEFT: {
 					w = current[2].x() - current[6].x();
 					h = w * oh / ow;
 					filter->ovdUpdate( "scale", QPointF( w * 100.0 / ow, 1.0 ) );
-					filter->ovdUpdate( "position", QPointF( t1, t2 ) - QPointF( (w - (ow * s1)) / 2.0, ((oh * s2) - h) / 2.0 ) );
+					filter->ovdUpdate( "scaleOffset", QPointF( t1, t2 ) - QPointF( (w - (ow * s1)) / 2.0, ((oh * s2) - h) / 2.0 ) );
 					break;
 				}
 				case OVDTOPRIGHT: {
 					w = current[6].x() - current[0].x();
 					h = w * oh / ow;
 					filter->ovdUpdate( "scale", QPointF( w * 100.0 / ow, 1.0 ) );
-					filter->ovdUpdate( "position", QPointF( t1, t2 ) + QPointF( (w - (ow * s1)) / 2.0, ((oh * s2) - h) / 2.0 ) );
+					filter->ovdUpdate( "scaleOffset", QPointF( t1, t2 ) + QPointF( (w - (ow * s1)) / 2.0, ((oh * s2) - h) / 2.0 ) );
 					break;
 				}
 				case OVDTOPLEFT: {
 					w = current[2].x() - current[6].x();
 					h = w * oh / ow;
 					filter->ovdUpdate( "scale", QPointF( w * 100.0 / ow, 1.0 ) );
-					filter->ovdUpdate( "position", QPointF( t1, t2 ) - QPointF( (w - (ow * s1)) / 2.0, (h - (oh * s2)) / 2.0 ) );
+					filter->ovdUpdate( "scaleOffset", QPointF( t1, t2 ) - QPointF( (w - (ow * s1)) / 2.0, (h - (oh * s2)) / 2.0 ) );
 					break;
 				}
 			}
