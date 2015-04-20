@@ -73,6 +73,10 @@ void GLSize::ovdUpdate( QString type, QVariant val )
 		xOffset->value = pos.x();
 		yOffset->value = pos.y();
 	}
+	else if ( type == "scale" ) {
+		QPointF pos = val.toPointF();
+		sizePercent->value = pos.x();
+	}
 }
 
 
