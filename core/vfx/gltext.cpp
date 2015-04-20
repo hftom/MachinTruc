@@ -18,7 +18,7 @@ GLText::GLText( QString id, QString name ) : GLFilter( id, name )
 
 void GLText::ovdUpdate( QString type, QVariant val )
 {
-	if ( type == "position" ) {
+	if ( type == "translate" ) {
 		QPointF pos = val.toPointF();
 		xOffset->value = pos.x();
 		yOffset->value = pos.y();

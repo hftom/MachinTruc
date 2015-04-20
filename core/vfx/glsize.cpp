@@ -68,7 +68,7 @@ QString GLSize::getDescriptor( Frame *src, Profile *p )
 
 void GLSize::ovdUpdate( QString type, QVariant val )
 {
-	if ( type == "position" || type == "scaleOffset" ) {
+	if ( type == "translate" ) {
 		QPointF pos = val.toPointF();
 		xOffset->value = pos.x();
 		yOffset->value = pos.y();
