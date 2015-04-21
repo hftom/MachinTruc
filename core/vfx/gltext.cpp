@@ -145,13 +145,11 @@ QImage* MyTextEffect::drawImage()
 	w += 2 * x;
 	h += 2 * y;
 	if ( w > iwidth ) {
-		if ( align == 2 )
-			x -= (w - iwidth) / 2.0;
+		x -= (w - iwidth) / 2.0;
 		w = iwidth;
 	}
 	if ( h > iheight ) {
-		if ( align != 1 )
-			y -= (align - 1) * (h - iheight) / 2.0;
+		y -= (h - iheight) / 2.0;
 		h = iheight;
 	}		
 		
