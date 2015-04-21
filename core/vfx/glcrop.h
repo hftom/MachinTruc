@@ -20,7 +20,7 @@ private:
 	void preProcess( Frame *src, Profile *p );
 
 	Parameter *left, *right, *top, *bottom;
-	double ptop, pleft;
+	double ptop, pleft, pright, pbottom;
 };
 
 #endif //GLCROP_H

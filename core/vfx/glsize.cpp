@@ -21,7 +21,7 @@ GLSize::GLSize( QString id, QString name ) : GLFilter( id, name ),
 	centerOffsetX(0),
 	centerOffsetY(0)
 {
-	sizePercent = addParameter( "sizePercent", tr("Size:"), Parameter::PDOUBLE, 100.0, 0.0, 500.0, true, "%" );
+	sizePercent = addParameter( "sizePercent", tr("Size:"), Parameter::PINPUTDOUBLE, 100.0, 0.0, 10000.0, true, "%" );
 	xOffset = addParameter( "xOffset", tr("X:"), Parameter::PINPUTDOUBLE, 0.0, -10000.0, 10000.0, true );
 	yOffset = addParameter( "yOffset", tr("Y:"), Parameter::PINPUTDOUBLE, 0.0, -10000.0, 10000.0, true );
 	rotateAngle = addParameter( "rotateAngle", tr("Rotation angle:"), Parameter::PDOUBLE, 0.0, -360.0, 360.0, true );

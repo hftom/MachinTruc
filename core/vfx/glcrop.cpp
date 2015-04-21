@@ -27,11 +27,11 @@ void GLCrop::preProcess( Frame *src, Profile *p )
 	
 	double pts = src->pts();
 	pleft = getParamValue( left, pts ).toDouble() * src->glWidth / 100.0;
-	double r = getParamValue( right, pts ).toDouble() * src->glWidth / 100.0;
+	pright = getParamValue( right, pts ).toDouble() * src->glWidth / 100.0;
 	ptop = getParamValue( top, pts ).toDouble() * src->glHeight / 100.0;
-	double b = getParamValue( bottom, pts ).toDouble() * src->glHeight / 100.0;
-	src->glWidth = qMax( src->glWidth - pleft - r, 1.0 );
-	src->glHeight = qMax( src->glHeight - ptop - b, 1.0 );
+	pbottom = getParamValue( bottom, pts ).toDouble() * src->glHeight / 100.0;
+	src->glWidth = qMax( src->glWidth - pleft - pright, 1.0 );
+	src->glHeight = qMax( src->glHeight - ptop - pbottom, 1.0 );
 }
 
 
@@ -46,8 +46,16 @@ QString GLCrop::getDescriptor( Frame *src, Profile *p )
 
 bool GLCrop::process( const QList<Effect*> &el, Frame *src, Profile *p )
 {
+	double glw = src->glWidth;
+	double glh = src->glHeight;
+
 	preProcess( src, p );
 	Effect *e = el[0];
+	
+	if ( src->glOVD ) {
+		src->glOVDTransformList.append( FilterTransform( FilterTransform::TRANSLATE, (glw - src->glWidth) / 2.0 - pleft, (glh - src->glHeight) / 2.0 - ptop ) );
+	}
+
 	return e->set_int( "width", src->glWidth )
 		&& e->set_int( "height", src->glHeight )
 		&& e->set_float( "top", -ptop )
