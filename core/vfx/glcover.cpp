@@ -37,6 +37,21 @@ bool GLCover::process( const QList<Effect*> &el, Frame *src, Frame *dst, Profile
 	float blur = getParamValue( motionBlur ).toFloat();
 	Effect *e = el[0];
 	
+	if ( src->glOVD && getParamValue( uncover ).toInt() ) {
+		if ( getParamValue( vertical ).toInt() ) {
+			if ( getParamValue( direction ).toInt() )
+				src->glOVDTransformList.append( FilterTransform( FilterTransform::TRANSLATE, 0, pos * src->glHeight ) );
+			else
+				src->glOVDTransformList.append( FilterTransform( FilterTransform::TRANSLATE, 0, -pos * src->glHeight ) );
+		}
+		else {
+			if ( getParamValue( direction ).toInt() )
+				src->glOVDTransformList.append( FilterTransform( FilterTransform::TRANSLATE, pos * src->glWidth, 0 ) );
+			else
+				src->glOVDTransformList.append( FilterTransform( FilterTransform::TRANSLATE, -pos * src->glWidth, 0 ) );
+		}
+	}
+	
 	if ( blur > 0.0f ) {
 		float ppos = getParamValue( position, qMax(0.0, src->pts() - p->getVideoFrameDuration()) ).toFloat();
 		float texSize[2] = { 1.0f / src->glWidth, 1.0f / src->glHeight };
