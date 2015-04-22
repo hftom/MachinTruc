@@ -48,8 +48,8 @@ bool InputBlank::open( QString fn )
 	if ( sl.count() != 3 || sl.first() != "Blank" )
 		return false;
 
-	width = qMin( 1920, qMax( 1, sl[1].toInt() ) );
-	height = qMin( 1080, qMax( 1, sl[2].toInt() ) );
+	width = qMax( 1, sl[1].toInt() );
+	height = qMax( 1, sl[2].toInt() );
 	return true;
 }
 
