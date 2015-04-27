@@ -19,4 +19,4 @@ Compilation:
 - make
 
 Run:
-./machintruc
+- ./machintruc
