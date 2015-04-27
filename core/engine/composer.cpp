@@ -171,14 +171,6 @@ void Composer::setSharedContext( QGLWidget *shared )
 	movitPool = new ResourcePool( 100, 300 << 20, 100 );
 #endif
 
-	/*mask_texture = hiddenContext->bindTexture( QImage("/home/cris/mask.png") );
-	glBindTexture( GL_TEXTURE_2D, mask_texture );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-	printf("mask_texture = %u\n", mask_texture);*/
-
 	hiddenContext->doneCurrent();
 }
 
