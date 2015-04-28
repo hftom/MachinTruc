@@ -42,6 +42,7 @@ signals:
 	void editAnimation( FilterWidget*, ParameterWidget*, Parameter* );
 	void updateFrame();
 	void showEffect( bool isVideo, int index );
+	void currentFilterChanged( int );
 	
 	void ovdValueChanged();
 };

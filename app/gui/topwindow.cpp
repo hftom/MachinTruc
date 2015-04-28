@@ -69,6 +69,7 @@ TopWindow::TopWindow()
 	connect( fxPage, SIGNAL(updateFrame()), sampler, SLOT(updateFrame()) );
 	connect( fxPage, SIGNAL(editAnimation(FilterWidget*,ParameterWidget*,Parameter*)), this, SLOT(editAnimation(FilterWidget*,ParameterWidget*,Parameter*)) );
 	connect( fxPage, SIGNAL(showEffect(bool,int)), timeline, SLOT(showEffect(bool,int)) );
+	connect( fxPage, SIGNAL(currentFilterChanged(int)), this, SLOT(hideAnimEditor(int)) );
 	
 	fxSettingsPage = new FxSettingsPage();
 	connect( timeline, SIGNAL(clipSelected(ClipViewItem*)), fxSettingsPage, SLOT(clipSelected(ClipViewItem*)) );
@@ -78,6 +79,7 @@ TopWindow::TopWindow()
 	stackedWidget->addWidget( sourcePage );
 	stackedWidget->addWidget( fxPage );
 	stackedWidget->addWidget( fxSettingsPage );
+	connect( stackedWidget, SIGNAL(currentChanged(int)), this, SLOT(hideAnimEditor(int)) );
 
 	QHBoxLayout *layout = new QHBoxLayout;
 	layout->setContentsMargins( 0, 0, 0, 0 );
@@ -288,6 +290,16 @@ void TopWindow::editAnimation( FilterWidget* f, ParameterWidget *pw, Parameter *
 void TopWindow::quitEditor()
 {
 	timelineStackedWidget->setCurrentIndex( 0 );
+}
+
+
+
+void TopWindow::hideAnimEditor( int )
+{
+	if ( timelineStackedWidget->currentIndex() != 0 ) {
+		animEditor->setCurrentParam( NULL, NULL, NULL );
+		timelineStackedWidget->setCurrentIndex( 0 );
+	}
 }
 
 

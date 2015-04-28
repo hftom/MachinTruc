@@ -195,6 +195,7 @@ private slots:
 	
 	void editAnimation( FilterWidget *f, ParameterWidget *pw, Parameter *p );
 	void quitEditor();
+	void hideAnimEditor(int);
 	
 private:
 	void unsupportedDuplicateMessage();

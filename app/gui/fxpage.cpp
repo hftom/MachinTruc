@@ -50,9 +50,11 @@ void FxPage::clipSelected( ClipViewItem *clip )
 }
 
 
-// emit updateFrame() to show/hide OSD
+// emit updateFrame() to show/hide OVD
 void FxPage::videoFilterSelected( Clip *c, int index )
 {
+	emit currentFilterChanged( 0 );
+
 	if ( currentEffectsWidget ) {
 		delete currentEffectsWidget;
 		currentEffectsWidget = NULL;
@@ -81,6 +83,8 @@ void FxPage::videoFilterSelected( Clip *c, int index )
 
 void FxPage::audioFilterSelected( Clip *c, int index )
 {
+	emit currentFilterChanged( 0 );
+
 	if ( currentEffectsWidgetAudio ) {
 		delete currentEffectsWidgetAudio;
 		currentEffectsWidgetAudio = NULL;
@@ -108,6 +112,7 @@ void FxPage::tabChanged( int index )
 	audioGraph->hiddenEffect();
 	videoGraph->hiddenEffect();
 	emit showEffect( true, -1 );
+	emit currentFilterChanged( 0 );
 }
 
 

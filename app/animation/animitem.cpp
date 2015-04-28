@@ -71,6 +71,7 @@ void AnimItem::keyValueChanged( Parameter *p, QVariant val )
 	
 	switch ( p->type ) {
 		case Parameter::PDOUBLE: 
+		case Parameter::PINPUTDOUBLE: 
 			value = val.toInt() / 100.0;
 			break;
 		case Parameter::PINT:
