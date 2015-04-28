@@ -197,6 +197,8 @@ private slots:
 	void quitEditor();
 	void hideAnimEditor(int);
 	
+	void deleteKeyPressed();
+	
 private:
 	void unsupportedDuplicateMessage();
 	

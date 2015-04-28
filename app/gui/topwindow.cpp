@@ -132,7 +132,7 @@ TopWindow::TopWindow()
 	connect( actionFrameByFrameBackward, SIGNAL(triggered()), this, SLOT(seekPrevious()) );
 	connect( actionSlower, SIGNAL(triggered()), this, SLOT(playSlower()) );
 	connect( actionProjectSettings, SIGNAL(triggered()), this, SLOT(menuProjectSettings()) );
-	connect( actionDeleteClip, SIGNAL(triggered()), timeline, SLOT(deleteClip()) );
+	connect( actionDeleteClip, SIGNAL(triggered()), this, SLOT(deleteKeyPressed()) );
 	connect( actionSplitCurrentClip, SIGNAL(triggered()), timeline, SLOT(splitCurrentClip()) );
 	connect( actionSaveImage, SIGNAL(triggered()), vw, SLOT(shot()) );
 	connect( actionRenderToFile, SIGNAL(triggered()), this, SLOT(renderDialog()) );
@@ -141,6 +141,14 @@ TopWindow::TopWindow()
 	new QShortcut( QKeySequence( "Space" ), this, SLOT(videoPlayPause()) );
 	
 	timeline->setScene( sampler->getCurrentScene() );
+}
+
+
+
+void TopWindow::deleteKeyPressed()
+{
+	if ( timelineStackedWidget->currentIndex() == 0 )
+		timeline->deleteClip();
 }
 
 
