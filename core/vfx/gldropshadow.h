@@ -75,12 +75,13 @@ public:
 	GLDropShadow( QString id, QString name );
 	~GLDropShadow();
 	
-	bool process( const QList<Effect*> &el, Frame *src, Profile *p );
+	virtual bool process( const QList<Effect*> &el, Frame *src, Profile *p );
+	virtual void ovdUpdate( QString type, QVariant val );
 
-	QList<Effect*> getMovitEffects();
+	virtual QList<Effect*> getMovitEffects();
 	
 private:
-	Parameter *radius, *opacity, *xoffset, *yoffset;
+	Parameter *radius, *opacity, *xOffset, *yOffset;
 	Parameter *color;
 };
 

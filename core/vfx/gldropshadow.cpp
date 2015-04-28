@@ -8,8 +8,8 @@
 GLDropShadow::GLDropShadow( QString id, QString name ) : GLFilter( id, name )
 {
 	color = addParameter( "color", tr("Shadow color:"), Parameter::PRGBCOLOR, QColor::fromRgbF( 0, 0, 0 ), QColor::fromRgbF( 0, 0, 0 ), QColor::fromRgbF( 1, 1, 1 ), false );
-	xoffset = addParameter( "xoffset", tr("X offset:"), Parameter::PDOUBLE, 10.0, -100.0, 100.0, true );
-	yoffset = addParameter( "yoffset", tr("Y offset:"), Parameter::PDOUBLE, 10.0, -100.0, 100.0, true );
+	xOffset = addParameter( "xOffset", tr("X offset:"), Parameter::PINPUTDOUBLE, 10.0, -10000.0, 10000.0, true );
+	yOffset = addParameter( "yOffset", tr("Y offset:"), Parameter::PINPUTDOUBLE, 10.0, -10000.0, 10000.0, true );
 	opacity = addParameter( "opacity", tr("Opacity:"), Parameter::PDOUBLE, 0.8, 0.0, 1.0, true );
 	radius = addParameter( "radius", tr("Blur radius:"), Parameter::PDOUBLE, 4.0, 0.0, 50.0, true );
 }
@@ -22,6 +22,17 @@ GLDropShadow::~GLDropShadow()
 
 
 
+void GLDropShadow::ovdUpdate( QString type, QVariant val )
+{
+	if ( type == "translate" ) {
+		QPointF pos = val.toPointF();
+		xOffset->value = pos.x();
+		yOffset->value = pos.y();
+	}
+}
+
+
+
 bool GLDropShadow::process( const QList<Effect*> &el, Frame *src, Profile *p )
 {
 	Q_UNUSED( p );
@@ -30,9 +41,16 @@ bool GLDropShadow::process( const QList<Effect*> &el, Frame *src, Profile *p )
 	// convert gamma and premultiply
 	sRgbColorToLinear( c );
 	RGBTriplet col = RGBTriplet( c.redF(), c.greenF(), c.blueF() );
+	
+	if ( ovdEnabled() ) {
+		src->glOVD = FilterTransform::TRANSLATE;
+		src->glOVDRect = QRectF( -(double)src->glWidth / 2.0, -(double)src->glHeight / 2.0, src->glWidth, src->glHeight );
+		src->glOVDTransformList.append( FilterTransform( FilterTransform::TRANSLATE, getParamValue( xOffset, pts ).toDouble(), getParamValue( yOffset, pts ).toDouble() ) );
+	}
+	
 	Effect *e = el[0];
-	return e->set_float( "xoffset", getParamValue( xoffset, pts ).toFloat() )
-		&& e->set_float( "yoffset", getParamValue( yoffset, pts ).toFloat() )
+	return e->set_float( "xoffset", getParamValue( xOffset, pts ).toFloat() )
+		&& e->set_float( "yoffset", getParamValue( yOffset, pts ).toFloat() )
 		&& e->set_float( "opacity", getParamValue( opacity, pts ).toFloat() )
 		&& e->set_float( "radius", getParamValue( radius, pts ).toFloat() )
 		&& e->set_vec3( "color", (float*)&col );
