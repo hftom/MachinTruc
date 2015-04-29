@@ -11,13 +11,14 @@ public:
 	GLVignette( QString id, QString name );
 	~GLVignette();
 
-	bool process( const QList<Effect*> &el, Frame *src, Profile *p );
+	virtual bool process( const QList<Effect*> &el, Frame *src, Profile *p );
+	virtual void ovdUpdate( QString type, QVariant val );
 
-	QList<Effect*> getMovitEffects();
+	virtual QList<Effect*> getMovitEffects();
 
 private:
 	Parameter *softness, *radius;
-	Parameter *centerX, *centerY;
+	Parameter *xOffset, *yOffset;
 };
 
 #endif //GLVIGNETTE_H
