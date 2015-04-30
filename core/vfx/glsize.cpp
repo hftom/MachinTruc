@@ -107,7 +107,9 @@ bool GLSize::process( const QList<Effect*> &el, Frame *src, Profile *p )
 		src->glOVDRect = QRectF( -imageWidth / 2.0, -imageHeight / 2.0, imageWidth, imageHeight );
 	}
 	if ( src->glOVD ) {
-		src->glOVDTransformList.append( FilterTransform( FilterTransform::SCALE, sw / src->glWidth, sh / src->glHeight ) );
+		if ( qAbs( src->glSAR - psar ) > 1e-3 )
+			src->glOVDTransformList.append( FilterTransform( FilterTransform::NERATIO, src->glSAR / psar, 1.0 ) );
+		src->glOVDTransformList.append( FilterTransform( FilterTransform::SCALE, zoom, zoom ) );
 		src->glOVDTransformList.append( FilterTransform( FilterTransform::ROTATE, rad ) );
 		src->glOVDTransformList.append( FilterTransform( FilterTransform::TRANSLATE, left, top ) );
 	}

@@ -152,7 +152,8 @@ void VideoWidget::drawOVD( QPainter *painter, bool nonSquare )
 			for ( int j = 0; j < f->glOVDTransformList.count(); ++j ) {
 				FilterTransform ft = f->glOVDTransformList.at( j );
 				switch ( ft.transformType ) {
-					case FilterTransform::SCALE: {
+					case FilterTransform::SCALE:
+					case FilterTransform::NERATIO: {
 						ovdPoints = QTransform::fromScale( ft.v1, ft.v2 ).map( ovdPoints );
 						break;
 					}
@@ -399,13 +400,17 @@ void VideoWidget::ovdUpdate( FrameSample *frameSample, QPointF cursorPos )
 	for ( int j = ovdTransformListMousePressed.count() - 1; j >= 0; --j ) {
 		FilterTransform ft = ovdTransformListMousePressed.at( j );
 		switch ( ft.transformType ) {
+			case FilterTransform::NERATIO: {
+				polygon = QTransform::fromScale( 1.0 / ft.v1, 1.0 / ft.v2 ).map( polygon );
+				break;
+			}
 			case FilterTransform::SCALE: {
+				polygon = QTransform::fromScale( 1.0 / ft.v1, 1.0 / ft.v2 ).map( polygon );
 				if ( ovdTarget >= OVDTOPLEFT && ovdTarget <= OVDBOTTOMLEFT ) {
 					current = polygon;
 				}
 				s1 = ft.v1;
 				s2 = ft.v2;
-				polygon = QTransform::fromScale( 1.0 / ft.v1, 1.0 / ft.v2 ).map( polygon );
 				break;
 			}
 			case FilterTransform::TRANSLATE: {
@@ -443,36 +448,36 @@ void VideoWidget::ovdUpdate( FrameSample *frameSample, QPointF cursorPos )
 			emit ovdValueChanged();
 		}
 		else if ( ovdTarget >= OVDTOPLEFT && ovdTarget <= OVDBOTTOMLEFT ) {
-			double ow = (current[1].x() - current[0].x()) / s1;
-			double oh = (current[2].y() - current[1].y()) / s2;
+			double ow = current[1].x() - current[0].x();
+			double oh = current[2].y() - current[1].y();
 			double w, h;
 			switch ( ovdTarget ) {
 				case OVDBOTTOMRIGHT: {
 					w = current[6].x() - current[0].x();
 					h = w * oh / ow;
-					filter->ovdUpdate( "scale", QPointF( w * 100.0 / ow, 1.0 ) );
-					filter->ovdUpdate( "translate", QPointF( t1, t2 ) + QPointF( (w - (ow * s1)) / 2.0, (h - (oh * s2)) / 2.0 ) );
+					filter->ovdUpdate( "scale", QPointF( s1 * w * 100.0 / ow, 1.0 ) );
+					filter->ovdUpdate( "translate", QPointF( t1, t2 ) + QPointF( (s1 * (w - ow)) / 2.0, (s2 * (h - oh)) / 2.0 ) );
 					break;
 				}
 				case OVDBOTTOMLEFT: {
 					w = current[2].x() - current[6].x();
 					h = w * oh / ow;
-					filter->ovdUpdate( "scale", QPointF( w * 100.0 / ow, 1.0 ) );
-					filter->ovdUpdate( "translate", QPointF( t1, t2 ) - QPointF( (w - (ow * s1)) / 2.0, ((oh * s2) - h) / 2.0 ) );
+					filter->ovdUpdate( "scale", QPointF( s1 * w * 100.0 / ow, 1.0 ) );
+					filter->ovdUpdate( "translate", QPointF( t1, t2 ) - QPointF( (s1 * (w - ow)) / 2.0, (s2 * (oh - h)) / 2.0 ) );
 					break;
 				}
 				case OVDTOPRIGHT: {
 					w = current[6].x() - current[0].x();
 					h = w * oh / ow;
-					filter->ovdUpdate( "scale", QPointF( w * 100.0 / ow, 1.0 ) );
-					filter->ovdUpdate( "translate", QPointF( t1, t2 ) + QPointF( (w - (ow * s1)) / 2.0, ((oh * s2) - h) / 2.0 ) );
+					filter->ovdUpdate( "scale", QPointF( s1 * w * 100.0 / ow, 1.0 ) );
+					filter->ovdUpdate( "translate", QPointF( t1, t2 ) + QPointF( (s1 * (w - ow)) / 2.0, (s2 * (oh - h)) / 2.0 ) );
 					break;
 				}
 				case OVDTOPLEFT: {
 					w = current[2].x() - current[6].x();
 					h = w * oh / ow;
-					filter->ovdUpdate( "scale", QPointF( w * 100.0 / ow, 1.0 ) );
-					filter->ovdUpdate( "translate", QPointF( t1, t2 ) - QPointF( (w - (ow * s1)) / 2.0, (h - (oh * s2)) / 2.0 ) );
+					filter->ovdUpdate( "scale", QPointF( s1 * w * 100.0 / ow, 1.0 ) );
+					filter->ovdUpdate( "translate", QPointF( t1, t2 ) - QPointF( (s1 * (w - ow)) / 2.0, (s2 * (h - oh)) / 2.0 ) );
 					break;
 				}
 			}
