@@ -26,8 +26,10 @@ void GLDropShadow::ovdUpdate( QString type, QVariant val )
 {
 	if ( type == "translate" ) {
 		QPointF pos = val.toPointF();
-		xOffset->value = pos.x();
-		yOffset->value = pos.y();
+		if ( !xOffset->graph.keys.count() )
+			xOffset->value = pos.x();
+		if ( !yOffset->graph.keys.count() )
+			yOffset->value = pos.y();
 	}
 }
 

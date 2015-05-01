@@ -70,12 +70,15 @@ void GLSize::ovdUpdate( QString type, QVariant val )
 {
 	if ( type == "translate" ) {
 		QPointF pos = val.toPointF();
-		xOffset->value = pos.x();
-		yOffset->value = pos.y();
+		if ( !xOffset->graph.keys.count() )
+			xOffset->value = pos.x();
+		if ( !yOffset->graph.keys.count() )
+			yOffset->value = pos.y();
 	}
 	else if ( type == "scale" ) {
 		QPointF pos = val.toPointF();
-		sizePercent->value = pos.x();
+		if ( !sizePercent->graph.keys.count() )
+			sizePercent->value = pos.x();
 	}
 }
 
