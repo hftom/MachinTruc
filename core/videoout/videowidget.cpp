@@ -444,44 +444,46 @@ void VideoWidget::ovdUpdate( FrameSample *frameSample, QPointF cursorPos )
 	if ( !filter.isNull() ) {
 		if ( ovdTarget == OVDINSIDE ) {
 			current[6] -= current[5];
-			filter->ovdUpdate( "translate", QPointF( t1, t2 ) + current[6] );
-			emit ovdValueChanged();
+			QList<OVDUpdateMessage> msg;
+			msg.append( OVDUpdateMessage( filter, "translate", QPointF( t1, t2 ) + current[6] ) );
+			emit ovdUpdateSignal( msg );
 		}
 		else if ( ovdTarget >= OVDTOPLEFT && ovdTarget <= OVDBOTTOMLEFT ) {
 			double ow = current[1].x() - current[0].x();
 			double oh = current[2].y() - current[1].y();
 			double w, h;
+			QList<OVDUpdateMessage> msg;
 			switch ( ovdTarget ) {
 				case OVDBOTTOMRIGHT: {
 					w = current[6].x() - current[0].x();
 					h = w * oh / ow;
-					filter->ovdUpdate( "scale", QPointF( s1 * w * 100.0 / ow, 1.0 ) );
-					filter->ovdUpdate( "translate", QPointF( t1, t2 ) + QPointF( (s1 * (w - ow)) / 2.0, (s2 * (h - oh)) / 2.0 ) );
+					msg.append( OVDUpdateMessage( filter, "scale", QPointF( s1 * w * 100.0 / ow, 1.0 ) ) );
+					msg.append( OVDUpdateMessage( filter, "translate", QPointF( t1, t2 ) + QPointF( (s1 * (w - ow)) / 2.0, (s2 * (h - oh)) / 2.0 ) ) );
 					break;
 				}
 				case OVDBOTTOMLEFT: {
 					w = current[2].x() - current[6].x();
 					h = w * oh / ow;
-					filter->ovdUpdate( "scale", QPointF( s1 * w * 100.0 / ow, 1.0 ) );
-					filter->ovdUpdate( "translate", QPointF( t1, t2 ) - QPointF( (s1 * (w - ow)) / 2.0, (s2 * (oh - h)) / 2.0 ) );
+					msg.append( OVDUpdateMessage( filter, "scale", QPointF( s1 * w * 100.0 / ow, 1.0 ) ) );
+					msg.append( OVDUpdateMessage( filter, "translate", QPointF( t1, t2 ) - QPointF( (s1 * (w - ow)) / 2.0, (s2 * (oh - h)) / 2.0 ) ) );
 					break;
 				}
 				case OVDTOPRIGHT: {
 					w = current[6].x() - current[0].x();
 					h = w * oh / ow;
-					filter->ovdUpdate( "scale", QPointF( s1 * w * 100.0 / ow, 1.0 ) );
-					filter->ovdUpdate( "translate", QPointF( t1, t2 ) + QPointF( (s1 * (w - ow)) / 2.0, (s2 * (oh - h)) / 2.0 ) );
+					msg.append( OVDUpdateMessage( filter, "scale", QPointF( s1 * w * 100.0 / ow, 1.0 ) ) );
+					msg.append( OVDUpdateMessage( filter, "translate", QPointF( t1, t2 ) + QPointF( (s1 * (w - ow)) / 2.0, (s2 * (oh - h)) / 2.0 ) ) );
 					break;
 				}
 				case OVDTOPLEFT: {
 					w = current[2].x() - current[6].x();
 					h = w * oh / ow;
-					filter->ovdUpdate( "scale", QPointF( s1 * w * 100.0 / ow, 1.0 ) );
-					filter->ovdUpdate( "translate", QPointF( t1, t2 ) - QPointF( (s1 * (w - ow)) / 2.0, (s2 * (h - oh)) / 2.0 ) );
+					msg.append( OVDUpdateMessage( filter, "scale", QPointF( s1 * w * 100.0 / ow, 1.0 ) ) );
+					msg.append( OVDUpdateMessage( filter, "translate", QPointF( t1, t2 ) - QPointF( (s1 * (w - ow)) / 2.0, (s2 * (h - oh)) / 2.0 ) ) );
 					break;
 				}
 			}
-			emit ovdValueChanged();
+			emit ovdUpdateSignal( msg );
 		}
 	}
 }

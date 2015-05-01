@@ -17,7 +17,6 @@ public:
 	QLayout *getLayout() { return box; }
 	
 	virtual void animValueChanged( double val );
-	virtual void ovdValueChanged();
 	
 private slots:
 	void spinChanged( double val );

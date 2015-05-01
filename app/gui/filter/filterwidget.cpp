@@ -79,10 +79,12 @@ FilterWidget::FilterWidget( QWidget *parent, Clip *c, QSharedPointer<Filter> f )
 
 
 
-void FilterWidget::ovdValueChanged()
+void FilterWidget::ovdValueChanged( ParameterWidget *exclude )
 {
-	for ( int i = 0; i < paramWidgets.count(); ++i )
-		paramWidgets[i]->ovdValueChanged();
+	for ( int i = 0; i < paramWidgets.count(); ++i ) {
+		if ( paramWidgets[i] != exclude )
+			paramWidgets[i]->ovdValueChanged();
+	}
 }
 
 

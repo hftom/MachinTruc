@@ -18,6 +18,7 @@ public:
 	
 public slots:
 	void filterDeleted( Clip *c, QSharedPointer<Filter> f );
+	void ovdUpdate( QList<OVDUpdateMessage> msg );
 
 private slots:
 	void removeGraph();
@@ -28,6 +29,7 @@ private:
 	AnimItem *animItem;
 	
 signals:
+	void ovdValueChanged(ParameterWidget*);
 	void quitEditor();	
 	void updateFrame();
 };

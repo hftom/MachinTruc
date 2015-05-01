@@ -65,6 +65,52 @@ void AnimItem::sendValue( double val )
 
 
 
+void AnimItem::ovdUpdate( QList<OVDUpdateMessage> msg )
+{	
+	if ( !msg.count() )
+		return;
+
+	int i;	
+	for ( i = 0; i < msg.count(); ++i ) {
+		OVDUpdateMessage m = msg[i];
+		m.filter->ovdUpdate( m.messageType, m.values );
+	}
+	
+	bool updated = false;
+	double updatedValue;
+	if ( currentParam && currentParamWidget && currentFilterWidget && currentFilterWidget->getFilter() == msg[0].filter ) {
+		for ( i = 0; i < msg.count(); ++i ) {
+			OVDUpdateMessage m = msg[i];
+			if ( m.messageType == "translate" ) {
+				if ( currentParam->id == "xOffset" ) {
+					currentParamWidget->animValueChanged( updatedValue = m.values.x() );
+					updated = true;
+					break;
+				}
+				else if ( currentParam->id == "yOffset" ) {
+					currentParamWidget->animValueChanged( updatedValue = m.values.y() );
+					updated = true;
+					break;
+				}
+			}
+			else if ( m.messageType == "scale" && currentParam->id == "sizePercent" ) {
+				currentParamWidget->animValueChanged( updatedValue = m.values.x() );
+				updated = true;
+				break;
+			}
+		}
+	}
+	
+	emit ovdValueChanged( currentParamWidget );
+	if ( updated ) {
+		keyValueChanged( currentParam, updatedValue * 100.0 );
+	}
+	else
+		emit updateFrame();
+}
+
+
+
 void AnimItem::keyValueChanged( Parameter *p, QVariant val )
 {
 	double value;

@@ -26,7 +26,7 @@ private slots:
 	void showAnimation( ParameterWidget *pw, Parameter *p ) {
 		emit editAnimation( this, pw, p );
 	}
-	void ovdValueChanged();
+	void ovdValueChanged( ParameterWidget *exclude );
 	
 private:
 	Clip *clip;

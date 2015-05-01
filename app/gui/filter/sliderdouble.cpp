@@ -75,10 +75,3 @@ void SliderDouble::animValueChanged( double val )
 	fs->blockSignals( false );
 	spin->blockSignals( false );
 }
-
-
-
-void SliderDouble::ovdValueChanged()
-{
-	fs->setValue( param->value.toDouble() * 100.0 );
-}

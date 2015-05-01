@@ -5,6 +5,7 @@
 #include <QString>
 #include <QList>
 #include <QSharedPointer>
+#include <QPointF>
 
 #include "parameter.h"
 
@@ -67,5 +68,29 @@ private:
 	int snap;
 	bool showOVD;
 };
+
+
+
+class OVDUpdateMessage
+{
+public:
+	OVDUpdateMessage() {};
+	OVDUpdateMessage( QSharedPointer<Filter> f, QString type, QPointF val )
+		: filter( f ),
+		messageType( type ),
+		values( val )
+	{}
+	OVDUpdateMessage( const OVDUpdateMessage &other ) {
+		filter = other.filter;
+		messageType = other.messageType;
+		values = other.values;
+	}
+	~OVDUpdateMessage() {}
+	
+	QSharedPointer<Filter> filter;
+	QString messageType;
+	QPointF values;	
+};
+Q_DECLARE_METATYPE( OVDUpdateMessage );
 
 #endif // FILTER_H

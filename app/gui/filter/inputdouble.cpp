@@ -49,5 +49,9 @@ void InputDouble::animValueChanged( double val )
 
 void InputDouble::ovdValueChanged()
 {
-	spin->setValue( param->value.toDouble() );
+	if ( !param->graph.keys.count() ) {
+		spin->blockSignals( true );
+		spin->setValue( param->value.toDouble() );
+		spin->blockSignals( false );
+	}
 }

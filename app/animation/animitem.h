@@ -24,6 +24,7 @@ public:
 	void setCurrentParam( FilterWidget *f, ParameterWidget *pw, Parameter *p );
 	void removeGraph();
 	bool filterDeleted( Clip *c, QSharedPointer<Filter> f );
+	void ovdUpdate( QList<OVDUpdateMessage> msg );
 	void quitEditor();
 	
 protected:
@@ -44,6 +45,7 @@ private slots:
 	void keyValueChanged( Parameter *p, QVariant val );
 	
 signals:
+	void ovdValueChanged(ParameterWidget *exclude);
 	void updateFrame();
 };
 

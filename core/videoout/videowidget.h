@@ -214,6 +214,6 @@ signals:
 
 	void valueChanged( int );
 	
-	void ovdValueChanged();
+	void ovdUpdateSignal( QList<OVDUpdateMessage> );
 };
 #endif // VIDEOWIDGET_H

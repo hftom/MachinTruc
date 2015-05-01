@@ -10,6 +10,7 @@ AnimEditor::AnimEditor( QWidget *parent ) : QWidget( parent )
 	
 	animItem = new AnimItem();
 	connect( animItem, SIGNAL(updateFrame()), this, SIGNAL(updateFrame()) );
+	connect( animItem, SIGNAL(ovdValueChanged(ParameterWidget*)), this, SIGNAL(ovdValueChanged(ParameterWidget*)) );
 	animScene = new AnimScene( animItem );
 	
 	graphicsView->setVerticalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
@@ -50,6 +51,12 @@ void AnimEditor::setCurrentParam( FilterWidget *f, ParameterWidget *pw, Paramete
 	animItem->setCurrentParam( f, pw, p );
 }
 
+
+
+void AnimEditor::ovdUpdate( QList<OVDUpdateMessage> msg )
+{
+	animItem->ovdUpdate( msg );
+}
 
 
 void AnimEditor::filterDeleted( Clip *c, QSharedPointer<Filter> f )

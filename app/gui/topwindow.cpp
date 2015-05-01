@@ -16,6 +16,8 @@ TopWindow::TopWindow()
 	thumbnailer( new Thumbnailer() )
 {
 	setupUi( this );
+	
+	qRegisterMetaType<OVDUpdateMessage>();
 
 	seekSlider = new SeekSlider( baseVideoWidget );
 	seekSlider->setObjectName(QString::fromUtf8("seekSlider"));
@@ -61,6 +63,7 @@ TopWindow::TopWindow()
 	connect( sourcePage, SIGNAL(openBlankBtnClicked()), this, SLOT(openBlank()) );
 	
 	fxPage = new FxPage();
+	connect( animEditor, SIGNAL(ovdValueChanged(ParameterWidget*)), fxPage, SIGNAL(ovdValueChanged(ParameterWidget*)) );
 	connect( timeline, SIGNAL(clipSelected(ClipViewItem*)), fxPage, SLOT(clipSelected(ClipViewItem*)) );
 	connect( timeline, SIGNAL(showEffects()), fxToolButton, SLOT(click()) );
 	connect( fxPage, SIGNAL(filterDeleted(Clip*,QSharedPointer<Filter>)), timeline, SLOT(filterDeleted(Clip*,QSharedPointer<Filter>)) );
@@ -87,7 +90,7 @@ TopWindow::TopWindow()
 	layout->addWidget( vw );
 	glWidget->setLayout( layout );
 
-	connect( vw, SIGNAL(ovdValueChanged()), fxPage, SIGNAL(ovdValueChanged()) );
+	connect( vw, SIGNAL(ovdUpdateSignal(QList<OVDUpdateMessage>)), animEditor, SLOT(ovdUpdate(QList<OVDUpdateMessage>)) );
 	connect( vw, SIGNAL(playPause()), this, SLOT(videoPlayPause()) );
 	connect( vw, SIGNAL(wheelSeek(int)), sampler, SLOT(wheelSeek(int)) );
 	connect( vw, SIGNAL(newSharedContext(QGLWidget*)), sampler, SLOT(setSharedContext(QGLWidget*)) );

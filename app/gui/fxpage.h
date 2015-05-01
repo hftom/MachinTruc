@@ -44,7 +44,7 @@ signals:
 	void showEffect( bool isVideo, int index );
 	void currentFilterChanged( int );
 	
-	void ovdValueChanged();
+	void ovdValueChanged(ParameterWidget*);
 };
 
 #endif // FXPAGE_H
