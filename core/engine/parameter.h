@@ -63,7 +63,9 @@ public:
 		return (val - min.toDouble()) / (max.toDouble() - min.toDouble());
 	}
 
-	QString id; // unique per filter
+	// unique per filter
+	// the following ids are reserved for OVD: xOffset, yOffset, sizePercent
+	QString id;
 	QString name; // UI name
 	int type;
 	QVariant min;
