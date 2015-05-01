@@ -200,6 +200,7 @@ private:
 	
 	OSDMessage osdMessage;
 	OSDTimer osdTimer;
+	bool playing;
 
 signals:
 	void playPause();

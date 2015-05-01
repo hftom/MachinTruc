@@ -20,7 +20,8 @@ VideoWidget::VideoWidget( QWidget *parent ) : QGLWidget( QGLFormat(QGL::SampleBu
 	lastFrameRatio( 16./9. ),
 	lastFrame( NULL ),
 	leftButtonPressed( false ),
-	ovdTarget( 0 )
+	ovdTarget( 0 ),
+	playing( false )
 {
 	setAttribute( Qt::WA_OpaquePaintEvent );
 	setAutoFillBackground( false );
@@ -141,54 +142,6 @@ void VideoWidget::openglDraw()
 
 
 
-void VideoWidget::drawOVD( QPainter *painter, bool nonSquare )
-{
-	for ( int i = 0; i < lastFrame->sample->frames.count(); ++i ) {
-		Frame *f = lastFrame->sample->frames[i]->frame ;
-		if ( f && f->glOVD > 0 ) {
-			ovdPoints = QPolygonF( f->glOVDRect );
-			ovdTransformList = f->glOVDTransformList;
-				
-			for ( int j = 0; j < f->glOVDTransformList.count(); ++j ) {
-				FilterTransform ft = f->glOVDTransformList.at( j );
-				switch ( ft.transformType ) {
-					case FilterTransform::SCALE:
-					case FilterTransform::NERATIO: {
-						ovdPoints = QTransform::fromScale( ft.v1, ft.v2 ).map( ovdPoints );
-						break;
-					}
-					case FilterTransform::TRANSLATE: {
-						ovdPoints = QTransform::fromTranslate( ft.v1, ft.v2 ).map( ovdPoints );
-						break;
-					}
-					case FilterTransform::ROTATE: {
-						if ( nonSquare )
-							ovdPoints = QTransform::fromScale( lastFrame->glSAR, 1.0 ).map( ovdPoints );
-						ovdPoints = QTransform().rotateRadians( -ft.v1 ).map( ovdPoints );
-						if ( nonSquare )
-							ovdPoints = QTransform::fromScale( 1.0 / lastFrame->glSAR, 1.0 ).map( ovdPoints );
-						break;
-					}
-				}
-			}
-
-			if ( nonSquare )
-				ovdPoints = QTransform::fromScale( lastFrame->glSAR, 1.0 ).map( ovdPoints );
-			double sc = (double)width() / (lastFrame->glSAR * lastFrame->glWidth) * right;
-			ovdPoints = QTransform::fromScale( sc, sc ).map( ovdPoints );
-			ovdPoints = QTransform::fromTranslate( (double)width() / 2.0, (double)height() / 2.0 ).map( ovdPoints );
-
-			painter->setPen( "black" );
-			painter->drawPolygon( ovdPoints );
-			painter->setPen( whiteDash );
-			painter->drawPolygon( ovdPoints );
-			break;
-		}
-	}
-}
-
-
-
 void VideoWidget::paintEvent( QPaintEvent *event )
 {
 	makeCurrent();
@@ -198,7 +151,7 @@ void VideoWidget::paintEvent( QPaintEvent *event )
 	QPainter painter( this );
 	painter.setRenderHint( QPainter::Antialiasing );
 	
-	if ( lastFrame && lastFrame->sample ) {
+	if ( !playing && lastFrame && lastFrame->sample ) {
 		drawOVD( &painter, qAbs( lastFrame->glSAR - 1.0 ) > 1e-3 );
 	}
 	
@@ -223,6 +176,25 @@ void VideoWidget::clear()
 {
 	lastFrame = NULL;
 	lastFrameRatio = 16. / 9.;
+	update();
+}
+
+
+
+void VideoWidget::showOSDMessage( const QString &text, int duration )
+{
+	osdMessage.setMessage( text, duration );
+}
+
+
+
+void VideoWidget::showOSDTimer( bool b )
+{
+	if ( b )
+		osdTimer.start();
+	else
+		osdTimer.stop();
+	playing = b;
 	update();
 }
 
@@ -302,7 +274,7 @@ void VideoWidget::wheelEvent( QWheelEvent * event )
 void VideoWidget::mouseMoveEvent( QMouseEvent * event )
 {
 	int target = 0;
-	if ( lastFrame && lastFrame->sample ) {
+	if ( !playing && lastFrame && lastFrame->sample ) {
 		for ( int i = 0; i < lastFrame->sample->frames.count(); ++i ) {
 			Frame *f = lastFrame->sample->frames[i]->frame ;
 			if ( f && f->glOVD ) {
@@ -363,19 +335,50 @@ void VideoWidget::mouseReleaseEvent( QMouseEvent * event )
 
 
 
-void VideoWidget::showOSDMessage( const QString &text, int duration )
+void VideoWidget::drawOVD( QPainter *painter, bool nonSquare )
 {
-	osdMessage.setMessage( text, duration );
-}
+	for ( int i = 0; i < lastFrame->sample->frames.count(); ++i ) {
+		Frame *f = lastFrame->sample->frames[i]->frame ;
+		if ( f && f->glOVD > 0 ) {
+			ovdPoints = QPolygonF( f->glOVDRect );
+			ovdTransformList = f->glOVDTransformList;
+				
+			for ( int j = 0; j < f->glOVDTransformList.count(); ++j ) {
+				FilterTransform ft = f->glOVDTransformList.at( j );
+				switch ( ft.transformType ) {
+					case FilterTransform::SCALE:
+					case FilterTransform::NERATIO: {
+						ovdPoints = QTransform::fromScale( ft.v1, ft.v2 ).map( ovdPoints );
+						break;
+					}
+					case FilterTransform::TRANSLATE: {
+						ovdPoints = QTransform::fromTranslate( ft.v1, ft.v2 ).map( ovdPoints );
+						break;
+					}
+					case FilterTransform::ROTATE: {
+						if ( nonSquare )
+							ovdPoints = QTransform::fromScale( lastFrame->glSAR, 1.0 ).map( ovdPoints );
+						ovdPoints = QTransform().rotateRadians( -ft.v1 ).map( ovdPoints );
+						if ( nonSquare )
+							ovdPoints = QTransform::fromScale( 1.0 / lastFrame->glSAR, 1.0 ).map( ovdPoints );
+						break;
+					}
+				}
+			}
 
+			if ( nonSquare )
+				ovdPoints = QTransform::fromScale( lastFrame->glSAR, 1.0 ).map( ovdPoints );
+			double sc = (double)width() / (lastFrame->glSAR * lastFrame->glWidth) * right;
+			ovdPoints = QTransform::fromScale( sc, sc ).map( ovdPoints );
+			ovdPoints = QTransform::fromTranslate( (double)width() / 2.0, (double)height() / 2.0 ).map( ovdPoints );
 
-
-void VideoWidget::showOSDTimer( bool b )
-{
-	if ( b )
-		osdTimer.start();
-	else
-		osdTimer.stop();
+			painter->setPen( "black" );
+			painter->drawPolygon( ovdPoints );
+			painter->setPen( whiteDash );
+			painter->drawPolygon( ovdPoints );
+			break;
+		}
+	}
 }
 
 
