@@ -17,6 +17,7 @@
 
 Timeline::Timeline( TopWindow *parent ) : QGraphicsScene(),
 	zoom( DEFAULTZOOM ),
+	currentZoom( DEFAULTZOOM ),
 	viewWidth( 0 ),
 	selectedItem( NULL ),
 	effectItem( NULL ),
@@ -35,6 +36,10 @@ Timeline::Timeline( TopWindow *parent ) : QGraphicsScene(),
 	ruler->setZValue( ZRULER );
 	ruler->setPos( 0, 0 );
 	ruler->setTimeScale( MICROSECOND / zoom );
+	
+	zoomAnim = new QPropertyAnimation( this, "animZoom" );
+	zoomAnim->setDuration( 250 );
+	zoomAnim->setEasingCurve( QEasingCurve::InOutSine );
 }
 
 
@@ -113,24 +118,42 @@ void Timeline::wheelEvent( QGraphicsSceneWheelEvent *e )
 		}
 
 		if ( oldzoom != zoom ) {
-			int i, j;
-			for ( i = 0; i < tracks.count(); ++i ) {
-				TrackViewItem *tv = tracks.at( i );
-				QList<QGraphicsItem*> list = tv->childItems();
-				for ( j = 0; j < list.count(); ++j ) {
-					AbstractViewItem *it = (AbstractViewItem*)list.at( j );
-					it->setScale( zoom );
-				}
-			}
-			ruler->setTimeScale( MICROSECOND / zoom );
-			cursor->setX( (cursor->x() * oldzoom) / zoom );
-			updateLength();
-			emit centerOn( cursor );
-			update();
+			zoomAnim->stop();
+			zoomAnim->setKeyValueAt( 0, getCurrentZoom() );
+			zoomAnim->setKeyValueAt( 1, zoom );
+			zoomAnim->start();
 		}
 		
 		e->accept();
 	}
+}
+
+
+
+void Timeline::setCurrentZoom( qreal z )
+{
+	int i, j;
+	for ( i = 0; i < tracks.count(); ++i ) {
+		TrackViewItem *tv = tracks.at( i );
+		QList<QGraphicsItem*> list = tv->childItems();
+		for ( j = 0; j < list.count(); ++j ) {
+			AbstractViewItem *it = (AbstractViewItem*)list.at( j );
+			it->setScale( z );
+		}
+	}
+	ruler->setTimeScale( MICROSECOND / z );
+	cursor->setX( (cursor->x() * currentZoom) / z );
+	updateLength();
+	emit centerOn( cursor );
+	currentZoom = z;
+	update();
+}
+
+
+
+qreal Timeline::getCurrentZoom()
+{
+	return currentZoom;
 }
 
 

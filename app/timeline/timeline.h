@@ -2,6 +2,7 @@
 #define TIMELINE_H
 
 #include <QGraphicsScene>
+#include <QPropertyAnimation>
 
 #include "engine/scene.h"
 #include "clipviewitem.h"
@@ -45,6 +46,7 @@ public:
 class Timeline : public QGraphicsScene
 {
 	Q_OBJECT
+	Q_PROPERTY( qreal animZoom READ getCurrentZoom WRITE setCurrentZoom )
 public:
 	Timeline( TopWindow *parent );
 	~Timeline();
@@ -116,9 +118,12 @@ private:
 	
 	void clipThumbRequest( ClipViewItem *it, bool start );
 	
+	qreal getCurrentZoom();
+	void setCurrentZoom( qreal z );
+	
 	CursorViewItem *cursor;
 	RulerViewItem *ruler;
-	double zoom;
+	double zoom, currentZoom;
 	int viewWidth;
 	
 	QList<TrackViewItem*> tracks;
@@ -130,6 +135,8 @@ private:
 	TopWindow *topParent;
 	
 	DroppedCut droppedCut;
+	
+	QPropertyAnimation *zoomAnim;
 	
 signals:
 	void ensureVisible( const QGraphicsItem* );
