@@ -9,6 +9,7 @@
 
 GraphEffectItem::GraphEffectItem( QString name, QString icon, int id ) : GraphItem( true )
 {
+	lastTime = QDateTime::currentDateTime();
 	image = QImage( QString(":/images/icons/%1.png").arg( icon ) );
 	text = name;
 	filterIndex = id;

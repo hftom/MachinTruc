@@ -14,7 +14,9 @@
 class GraphItem : public QGraphicsRectItem
 {
 public:
-	GraphItem( bool fx ) : QGraphicsRectItem(), isEffect( fx ), selected( false ) {}
+	GraphItem( bool fx ) : QGraphicsRectItem(), isEffect( fx ), selected( false ) {
+		lastTime = QDateTime::currentDateTime();
+	}
 	bool isSelected() { return selected; }
 	
 	bool isEffect;
