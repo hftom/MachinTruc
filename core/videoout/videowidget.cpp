@@ -165,9 +165,9 @@ void VideoWidget::showFrame( Frame *frame )
 {
 	lastFrameRatio = frame->glSAR * (double)frame->glWidth / (double)frame->glHeight;
 	lastFrame = frame;
-	emit frameShown( frame );
 	osdTimer.disable();
 	update();
+	emit frameShown( frame );
 }
 
 

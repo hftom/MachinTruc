@@ -23,6 +23,7 @@ public:
 	void seeking();
 	void runOneShot();
 	void updateFrame( Frame *dst );
+	bool isPlaying();
 
 public slots:
 	void setSharedContext( QGLWidget *shared );
@@ -43,7 +44,8 @@ private:
 	bool renderAudioFrame( Frame *dst, int nSamples );
 
 	bool playBackward;
-	bool running;
+	bool running, playing;
+	int renderMode;
 	bool oneShot;
 	int skipFrame;
 

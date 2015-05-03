@@ -48,7 +48,7 @@ bool Sampler::isProjectEmpty()
 
 bool Sampler::trackRequest( bool rm, int index )
 {
-	if ( composer->isRunning() ) {
+	if ( composer->isPlaying() ) {
 		composer->play( false );
 		emit paused( true );
 	}
@@ -83,7 +83,7 @@ void Sampler::newProject( Profile p )
 
 void Sampler::drainScenes()
 {
-	if ( composer->isRunning() ) {
+	if ( composer->isPlaying() ) {
 		composer->play( false );
 		emit paused( true );
 	}
@@ -122,7 +122,7 @@ bool Sampler::setProfile( Profile p )
 			ok = false;
 	}
 
-	if ( composer->isRunning() ) {
+	if ( composer->isPlaying() ) {
 		composer->play( false );
 		emit paused( true );
 	}
@@ -138,7 +138,7 @@ void Sampler::switchMode( bool down )
 	if ( (down ? timelineScene : preview) == currentScene )
 		return;
 
-	if ( composer->isRunning() ) {
+	if ( composer->isPlaying() ) {
 		composer->play( false );
 		emit paused( true );
 	}
@@ -158,7 +158,7 @@ void Sampler::switchMode( bool down )
 
 void Sampler::setSource( Source *source, double pts )
 {
-	if ( composer->isRunning() ) {
+	if ( composer->isPlaying() ) {
 		composer->play( false );
 		emit paused( true );
 	}
@@ -230,11 +230,11 @@ bool Sampler::play( bool b, bool backward )
 {
 	if ( b ) {	
 		if ( playBackward != backward ) {
-			if ( composer->isRunning() )
+			if ( composer->isPlaying() )
 				composer->play( false );
 			setPlaybackBuffer( backward );
 		}
-		else if ( composer->isRunning() )
+		else if ( composer->isPlaying() )
 			return false;
 	}
 
@@ -246,25 +246,25 @@ bool Sampler::play( bool b, bool backward )
 
 void Sampler::updateFrame()
 {
-	if ( composer->isRunning() )
+	if ( composer->isPlaying() )
 		return;
-
+	
 	Frame *last = metronom->getLastFrame();
 	if ( !last )
 		return;
-	
+
 	metronom->flush();
 	if ( updateVideoFrame( last ) )
 		composer->updateFrame( last );
 	else
-		seekTo( last->pts() );	
+		seekTo( last->pts() );
 }
 
 
 
 void Sampler::wheelSeek( int a )
 {
-	if ( composer->isRunning() )
+	if ( composer->isPlaying() )
 		return;
 
 	if ( a == 1 || a == -1 ) {
@@ -306,7 +306,7 @@ void Sampler::wheelSeek( int a )
 
 void Sampler::slideSeek( double p )
 {
-	if ( composer->isRunning() ) {
+	if ( composer->isPlaying() ) {
 		composer->play( false );
 		emit paused( true );
 	}

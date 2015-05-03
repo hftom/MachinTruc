@@ -127,10 +127,14 @@ Yuv420pToRgba yuvshader;
 #endif
 
 
-
+#define RENDERPLAY 1
+#define RENDERONESHOT 2
+#define RENDERUPDATE 3
 Composer::Composer( Sampler *samp, PlaybackBuffer *pb )
 	: playBackward( false ),
 	running( false ),
+	playing( false ),
+	renderMode( 0 ),
 	oneShot( false ),
 	skipFrame( 0 ),
 	hiddenContext( NULL ),
@@ -146,6 +150,8 @@ Composer::Composer( Sampler *samp, PlaybackBuffer *pb )
 
 Composer::~Composer()
 {
+	running = false;
+	wait();
 }
 
 
@@ -172,6 +178,12 @@ void Composer::setSharedContext( QGLWidget *shared )
 #endif
 
 	hiddenContext->doneCurrent();
+
+#if QT_VERSION >= 0x050000	
+	hiddenContext->context()->moveToThread( this );
+#endif
+	running = true;
+	start();
 }
 
 
@@ -191,20 +203,27 @@ void Composer::seeking()
 
 
 
+bool Composer::isPlaying()
+{
+	return renderMode == RENDERPLAY;
+}
+
+
+
 void Composer::play( bool b, bool backward )
 {
 	if ( b ) {
 		sampler->getMetronom()->play( b, backward );
-#if QT_VERSION >= 0x050000
-		hiddenContext->context()->moveToThread( this );
-#endif
-		running = true;
-		start();
+		skipFrame = 0;
+		renderMode = RENDERPLAY;
+		while ( !playing )
+			usleep( 1000 );
 	}
 	else {
 		sampler->getMetronom()->play( b, backward );
-		running = false;
-		wait();
+		renderMode = 0;
+		while ( playing )
+			usleep( 1000 );
 	}
 }
 
@@ -212,16 +231,11 @@ void Composer::play( bool b, bool backward )
 
 void Composer::updateFrame( Frame *dst )
 {
-	if ( isRunning() )
+	if ( renderMode == RENDERPLAY )
 		return;
-	
-	skipFrame = 0;
-	hiddenContext->makeCurrent();
 
-	movitRender( dst, true );
-	
-	hiddenContext->doneCurrent();
-	emit newFrame( dst );
+	skipFrame = 0;
+	renderMode = RENDERUPDATE;
 }
 
 
@@ -232,23 +246,8 @@ void Composer::updateFrame( Frame *dst )
 
 void Composer::runOneShot()
 {
-	int ret;
-	Frame *f = NULL;
-	
-	if ( isRunning() )
-		return;
-	
 	skipFrame = 0;
-	hiddenContext->makeCurrent();
-	oneShot = true;
-
-	ret = process( &f );
-
-	oneShot = false;
-	hiddenContext->doneCurrent();
-
-	if ( (ret == PROCESSONESHOTVIDEO) && f )
-		emit newFrame( f );
+	renderMode = RENDERONESHOT;
 }
 
 
@@ -258,22 +257,49 @@ void Composer::run()
 	int ret;
 	Frame *f = NULL;
 
-	skipFrame = 0;
 	hiddenContext->makeCurrent();
 
 	while ( running ) {
-		ret = process( &f );
-
-		if ( ret == PROCESSEND ) {
-			while ( running && !sampler->getMetronom()->videoFrames.queueEmpty() )
-				usleep( 5000 );
-			sampler->getMetronom()->play( false );
-			emit paused( true );
-			break;
+		switch ( renderMode ) {
+			case RENDERPLAY: {
+				playing = true;
+				ret = process( &f );
+				if ( ret == PROCESSEND ) {
+					while ( renderMode > 0 && !sampler->getMetronom()->videoFrames.queueEmpty() )
+						usleep( 5000 );
+					sampler->getMetronom()->play( false );
+					emit paused( true );
+					break;
+				}
+				if ( ret == PROCESSWAITINPUT )
+					usleep( 1000 );
+				break;
+			}
+			case RENDERONESHOT: {
+				playing = true;
+				oneShot = true;
+				ret = process( &f );
+				oneShot = false;
+				if ( (ret == PROCESSONESHOTVIDEO) && f )
+					emit newFrame( f );
+				renderMode = 0;
+				break;
+			}
+			case RENDERUPDATE: {
+				playing = true;
+				f = sampler->getMetronom()->getLastFrame();
+				if ( f ) {
+					movitRender( f, true );
+					emit newFrame( f );
+				}
+				renderMode = 0;
+				break;
+			}
+			default: {
+				playing = false;
+				usleep( 1000 );
+			}
 		}
-		
-		if ( ret == PROCESSWAITINPUT )
-			usleep( 1000 );
 	}
 
 	hiddenContext->doneCurrent();
