@@ -62,6 +62,8 @@ ClipViewItem::ClipViewItem( Clip *c, double scale ) : AbstractViewItem(),
 	
 	setPen( normalPen );
 	setBrush( normalBrush );
+	
+	lastTime = QDateTime::currentDateTime();
 }
 
 
