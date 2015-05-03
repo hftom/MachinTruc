@@ -142,6 +142,8 @@ TopWindow::TopWindow()
 	
 	new QShortcut( QKeySequence( "Ctrl+M" ), this, SLOT(showMemoryInfo()) );
 	new QShortcut( QKeySequence( "Space" ), this, SLOT(videoPlayPause()) );
+	new QShortcut( QKeySequence::ZoomIn, this, SLOT(zoomIn()) );
+	new QShortcut( QKeySequence::ZoomOut, this, SLOT(zoomOut()) );
 	
 	timeline->setScene( sampler->getCurrentScene() );
 }
@@ -152,6 +154,22 @@ void TopWindow::deleteKeyPressed()
 {
 	if ( timelineStackedWidget->currentIndex() == 0 )
 		timeline->deleteClip();
+}
+
+
+
+void TopWindow::zoomIn()
+{
+	if ( timelineStackedWidget->currentIndex() == 0 )
+		timeline->zoomInOut( true );
+}
+
+
+
+void TopWindow::zoomOut()
+{
+	if ( timelineStackedWidget->currentIndex() == 0 )
+		timeline->zoomInOut( false );
 }
 
 

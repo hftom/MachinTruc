@@ -198,6 +198,8 @@ private slots:
 	void hideAnimEditor(int);
 	
 	void deleteKeyPressed();
+	void zoomIn();
+	void zoomOut();
 	
 private:
 	void unsupportedDuplicateMessage();

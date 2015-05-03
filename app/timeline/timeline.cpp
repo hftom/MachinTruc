@@ -106,25 +106,31 @@ void Timeline::viewSizeChanged( const QSize &size )
 void Timeline::wheelEvent( QGraphicsSceneWheelEvent *e )
 {
 	if ( e->modifiers() & Qt::ControlModifier ) {
-		double oldzoom = zoom;
-		
-		if ( e->delta() > 0 ) {
-			if ( zoom > ZOOMMIN )
-				zoom /= 2.0;
-		}
-		else {
-			if ( zoom < ZOOMMAX )
-				zoom *= 2;
-		}
-
-		if ( oldzoom != zoom ) {
-			zoomAnim->stop();
-			zoomAnim->setKeyValueAt( 0, getCurrentZoom() );
-			zoomAnim->setKeyValueAt( 1, zoom );
-			zoomAnim->start();
-		}
-		
+		zoomInOut( e->delta() > 0 );
 		e->accept();
+	}
+}
+
+
+
+void Timeline::zoomInOut( bool in )
+{
+	double oldzoom = zoom;
+
+	if ( in ) {
+		if ( zoom > ZOOMMIN )
+			zoom /= 2.0;
+	}
+	else {
+		if ( zoom < ZOOMMAX )
+			zoom *= 2;
+	}
+
+	if ( oldzoom != zoom ) {
+		zoomAnim->stop();
+		zoomAnim->setKeyValueAt( 0, getCurrentZoom() );
+		zoomAnim->setKeyValueAt( 1, zoom );
+		zoomAnim->start();
 	}
 }
 

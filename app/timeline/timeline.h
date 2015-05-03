@@ -79,6 +79,9 @@ public:
 	
 	void thumbResultReady( ThumbRequest result );
 	
+	void zoomInOut( bool in );
+	void deleteClip();
+	
 public slots:
 	void viewMouseMove( QPointF pos );
 	void viewMouseLeave();
@@ -88,7 +91,6 @@ public slots:
 	
 	void setScene( Scene *s );
 	void addFilter( ClipViewItem *clip, QString fx, int index = -1 );
-	void deleteClip();
 	void splitCurrentClip();
 	
 	void filterDeleted( Clip *c, QSharedPointer<Filter> f );
