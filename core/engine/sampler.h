@@ -32,7 +32,6 @@ public:
 	void shiftCurrentPTS();
 	void shiftCurrentPTSAudio();
 	void rewardPTS();
-	void seekTo( double p, bool backward = false, bool seek = true );
 	
 	void newProject( Profile p );
 	bool setProfile( Profile p );
@@ -58,6 +57,7 @@ public slots:
 	void updateFrame();
 
 private:
+	void seekTo( double p, bool backward = false, bool seek = true );
 	void setPlaybackBuffer( bool backward );
 	Clip* searchCurrentClip( int &i, Track *t, int clipIndex, double pts, double margin );
 	void prepareInputsBackward();
