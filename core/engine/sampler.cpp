@@ -14,7 +14,6 @@ Sampler::Sampler()
 	connect( composer, SIGNAL(newFrame(Frame*)), this, SIGNAL(newFrame(Frame*)) );
 	connect( composer, SIGNAL(paused(bool)), this, SIGNAL(paused(bool)) );
 	connect( metronom, SIGNAL(discardFrame(int)), composer, SLOT(discardFrame(int)) );
-	connect( composer, SIGNAL(flushMetronom()), metronom, SLOT(flush()), Qt::BlockingQueuedConnection );
 
 	Profile prof;
 
@@ -49,8 +48,7 @@ bool Sampler::isProjectEmpty()
 
 bool Sampler::trackRequest( bool rm, int index )
 {
-	if ( composerPlaying() )
-		return false;
+	stopComposer();
 		
 	bool ok;
 	if ( rm )
@@ -90,7 +88,7 @@ void Sampler::clearAll()
 
 void Sampler::drainScenes()
 {
-	composerPlaying();
+	stopComposer();
 
 	for ( int i = 0; i < sceneList.count(); ++i ) {
 		sceneList[i]->drain();
@@ -119,15 +117,14 @@ void Sampler::setSceneList( QList<Scene*> list )
 bool Sampler::setProfile( Profile p )
 {
 	bool ok = true;
+	
+	stopComposer();
 
 	for ( int i = 0; i < sceneList.count(); ++i ) {
 		bool b = sceneList[i]->setProfile( p );
 		if ( !b )
 			ok = false;
 	}
-
-	if ( composerPlaying() )
-		return false;
 
 	composer->seekTo( currentPTS() );
 	return ok;
@@ -140,7 +137,7 @@ void Sampler::switchMode( bool down )
 	if ( (down ? timelineScene : preview) == currentScene )
 		return;
 
-	composerPlaying();
+	stopComposer();
 
 	if ( down ) {
 		currentScene = timelineScene;
@@ -157,7 +154,7 @@ void Sampler::switchMode( bool down )
 
 void Sampler::setSource( Source *source, double pts )
 {
-	composerPlaying();
+	stopComposer();
 
 	preview->drain();
 	Profile p = source->getProfile();
@@ -173,14 +170,12 @@ void Sampler::setSource( Source *source, double pts )
 
 
 
-bool Sampler::composerPlaying()
+void Sampler::stopComposer()
 {
 	if ( composer->isPlaying() ) {
 		composer->play( false );
-		usleep( 150000 );
-		return composer->isPlaying();
+		emit paused( true );
 	}
-	return false;	
 }
 
 
@@ -210,6 +205,8 @@ bool Sampler::play( bool b, bool backward )
 {
 	if ( b ) {	
 		if ( playBackward != backward ) {
+			stopComposer();
+			metronom->flush();
 			composer->setPlaybackBuffer( backward );
 			return b;
 		}
@@ -225,6 +222,8 @@ bool Sampler::play( bool b, bool backward )
 
 void Sampler::slideSeek( double p )
 {
+	stopComposer();
+	metronom->flush();
 	composer->seekTo( p );
 }
 
@@ -232,6 +231,9 @@ void Sampler::slideSeek( double p )
 
 void Sampler::wheelSeek( int a )
 {
+	stopComposer();
+	metronom->flush();
+	
 	if ( a == 1 || a == -1 ) {
 		bool backward = a < 0;
 		if ( playBackward != backward ) {
@@ -250,6 +252,10 @@ void Sampler::wheelSeek( int a )
 
 void Sampler::updateFrame()
 {
+	if ( composer->isPlaying() )
+		return;
+
+	metronom->flush();
 	composer->updateFrame();
 }
 
@@ -267,9 +273,7 @@ bool Sampler::fromComposerUpdateFrame( Frame *f )
 	if ( updateVideoFrame( f ) ) {
 		return true;
 	}
-	else {
-		return false;
-	}
+	return false;
 }
 
 

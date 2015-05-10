@@ -64,7 +64,7 @@ public slots:
 
 private:
 	void drainScenes();
-	bool composerPlaying();
+	void stopComposer();
 	Clip* searchCurrentClip( int &i, Track *t, int clipIndex, double pts, double margin );
 	void prepareInputsBackward();
 	double sceneDuration( Scene *s );

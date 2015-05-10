@@ -194,7 +194,7 @@ void Composer::discardFrame( int n )
 
 bool Composer::isPlaying()
 {
-	return playing;
+	return playing || lastMsg.msgType != ItcMsg::RENDERSTOP;
 }
 
 
@@ -212,6 +212,8 @@ void Composer::play( bool b, bool backward )
 		itcMutex.lock();
 		itcMsgList.append( ItcMsg( ItcMsg::RENDERSTOP ) );
 		itcMutex.unlock();
+		while ( playing || lastMsg.msgType != ItcMsg::RENDERSTOP )
+			usleep( 1000 );
 	}
 }
 
@@ -324,11 +326,6 @@ void Composer::run()
 				break;
 			}
 			case ItcMsg::RENDERSETPLAYBACKBUFFER: {
-				if ( playing ) {
-					sampler->getMetronom()->play( false );
-					playing = false;
-				}
-				emit flushMetronom();
 				double pts = sampler->fromComposerSetPlaybackBuffer( lastMsg.backward );
 				sampler->fromComposerSeekTo( pts, lastMsg.backward, false );
 				sampler->getMetronom()->play( true, lastMsg.backward );
@@ -339,8 +336,6 @@ void Composer::run()
 				break;
 			}
 			case ItcMsg::RENDERFRAMEBYFRAMESETPLAYBACKBUFFER: {
-				stopPlayer();
-				emit flushMetronom();
 				double pts = sampler->fromComposerSetPlaybackBuffer( lastMsg.backward );
 				sampler->fromComposerSeekTo( pts, lastMsg.backward, false );
 				runOneShot( f );
@@ -348,8 +343,6 @@ void Composer::run()
 				break;
 			}
 			case ItcMsg::RENDERFRAMEBYFRAME: {
-				stopPlayer();
-				emit flushMetronom();
 				bool shown = false;
 				Metronom *m = sampler->getMetronom();
 				if ( !m->videoFrames.isEmpty() ) {
@@ -370,8 +363,6 @@ void Composer::run()
 				break;
 			}
 			case ItcMsg::RENDERSKIPBY: {
-				stopPlayer();
-				emit flushMetronom();
 				f = sampler->getMetronom()->getLastFrame();
 				if ( f ) {
 					sampler->fromComposerSeekTo( f->pts() + (f->profile.getVideoFrameDuration() * lastMsg.step) );
@@ -381,16 +372,12 @@ void Composer::run()
 				break;
 			}
 			case ItcMsg::RENDERSEEK: {
-				stopPlayer();
-				emit flushMetronom();
 				sampler->fromComposerSeekTo( lastMsg.pts, lastMsg.backward, lastMsg.seek );
 				runOneShot( f );
 				lastMsg.msgType = ItcMsg::RENDERSTOP;
 				break;
 			}
 			case ItcMsg::RENDERUPDATE: {
-				stopPlayer();
-				emit flushMetronom();
 				f = sampler->getMetronom()->getLastFrame();
 				if ( f ) {
 					Frame *dst = sampler->getMetronom()->freeVideoFrames.dequeue();
@@ -404,7 +391,7 @@ void Composer::run()
 						emit newFrame( dst );
 					}
 					else {
-						delete dst;
+						dst->release();
 						sampler->fromComposerSeekTo( f->pts() );
 						f = NULL;
 						runOneShot( f );
@@ -432,8 +419,8 @@ void Composer::stopPlayer()
 {
 	if ( playing ) {
 		sampler->getMetronom()->play( false );
-		emit paused( true );
 		playing = false;
+		emit paused( true );
 		skipFrame = 0;
 		audioSampleDelta = 0;
 	}

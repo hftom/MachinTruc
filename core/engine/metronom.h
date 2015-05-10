@@ -22,6 +22,7 @@ public:
 	void setRenderMode( bool b );
 	void play( bool b, bool backward = false );
 	void changeSpeed( int s );
+	void flush();
 	Frame* getLastFrame();
 
 	static void readData( Frame **data, double time, void *userdata );
@@ -35,7 +36,6 @@ public:
 	MQueue<Frame*> freeAudioFrames;
 
 public slots:
-	void flush();
 	void setLastFrame( Frame *f );
 
 private:
