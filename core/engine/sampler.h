@@ -40,12 +40,18 @@ public:
 	bool play( bool b, bool backward = false );
 	
 	bool trackRequest( bool rm, int index );
-	void drainScenes();
+	void clearAll();
 	bool isProjectEmpty();
 	QList<Scene*> getSceneList() { return sceneList; }
 	Scene* getCurrentScene() { return timelineScene; }
 	void setSceneList( QList<Scene*> list );
 	bool previewMode() { return currentScene == preview; }
+	
+	// called from composer thread
+	void fromComposerSeekTo( double p, bool backward = false, bool seek = true );
+	double fromComposerSetPlaybackBuffer( bool backward );
+	bool fromComposerUpdateFrame( Frame *f );
+	void fromComposerReleaseVideoFrame( Frame *f );
 
 public slots:
 	void setSharedContext( QGLWidget *shared );
@@ -57,8 +63,8 @@ public slots:
 	void updateFrame();
 
 private:
-	void seekTo( double p, bool backward = false, bool seek = true );
-	void setPlaybackBuffer( bool backward );
+	void drainScenes();
+	bool composerPlaying();
 	Clip* searchCurrentClip( int &i, Track *t, int clipIndex, double pts, double margin );
 	void prepareInputsBackward();
 	double sceneDuration( Scene *s );

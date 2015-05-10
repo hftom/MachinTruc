@@ -743,7 +743,7 @@ void TopWindow::loadProject()
 		return;
 	
 	showProjectClipsPage();
-	sampler->drainScenes();
+	sampler->clearAll();
 	timeline->setScene( sampler->getCurrentScene() );
 	sourcePage->clearAllSources();
 	QTimer::singleShot( VIDEOCLEARDELAY, vw, SLOT(clear()) );

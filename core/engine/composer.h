@@ -12,6 +12,31 @@
 
 
 
+class ItcMsg
+{
+public:
+	enum MsgType{ RENDERSTOP, RENDERPLAY, RENDERSETPLAYBACKBUFFER, RENDERFRAMEBYFRAME, RENDERFRAMEBYFRAMESETPLAYBACKBUFFER, RENDERSKIPBY, RENDERSEEK, RENDERUPDATE };
+	ItcMsg()
+		: msgType( RENDERSTOP ) {}
+	ItcMsg( int type )
+		: msgType( type ) {}
+	ItcMsg( double p, bool b, bool s )
+		: msgType( RENDERSEEK ), pts( p ), backward( b ), seek( s ) {}
+	ItcMsg( bool bw )
+		: msgType( RENDERSETPLAYBACKBUFFER ), backward( bw ) {}
+	ItcMsg( int type, int s )
+		: msgType( type ), step( s ) {}
+	ItcMsg( int type, bool bw )
+		: msgType( type ), backward( bw ) {}
+		
+	int msgType;
+	double pts;
+	bool backward, seek;
+	int step;
+};
+
+
+
 class Composer : public QThread
 {
 	Q_OBJECT
@@ -20,9 +45,12 @@ public:
 	~Composer();
 
 	void play( bool b, bool backward = false );
-	void seeking();
-	void runOneShot();
-	void updateFrame( Frame *dst );
+	void setPlaybackBuffer( bool backward );
+	void seekTo( double p, bool backward = false, bool seek = true );
+	void frameByFrame();
+	void frameByFrameSetPlaybackBuffer( bool backward );
+	void skipBy( int step );
+	void updateFrame();
 	bool isPlaying();
 
 public slots:
@@ -31,6 +59,8 @@ public slots:
 
 private:
 	void run();
+	void runOneShot( Frame *f );
+	void stopPlayer();
 	
 	int process( Frame **frame );
 	Frame* getNextFrame( Frame *dst, int &track );
@@ -45,9 +75,11 @@ private:
 
 	bool playBackward;
 	bool running, playing;
-	int renderMode;
 	bool oneShot;
 	int skipFrame;
+	ItcMsg lastMsg;
+	QList<ItcMsg> itcMsgList;
+	QMutex itcMutex;
 
 	GLuint mask_texture;
 	
@@ -66,6 +98,7 @@ private:
 signals:
 	void newFrame( Frame* );
 	void paused( bool );
+	void flushMetronom();
 
 };
 

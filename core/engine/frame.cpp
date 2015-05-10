@@ -10,6 +10,7 @@ Frame::Frame( MQueue<Frame*> *origin )
 	: audioReversed( false ),
 	mmi( 0 ),
 	sample( NULL ),
+	isDuplicate( false ),
 	pType( Frame::NONE ),
 	fb( NULL ),
 	pb( NULL ),
@@ -69,6 +70,7 @@ void Frame::release()
 
 	mmi = 0;
 	audioReversed = false;
+	isDuplicate = false;
 
 	if ( originQueue )
 		originQueue->enqueue( this );

@@ -14,6 +14,7 @@ Sampler::Sampler()
 	connect( composer, SIGNAL(newFrame(Frame*)), this, SIGNAL(newFrame(Frame*)) );
 	connect( composer, SIGNAL(paused(bool)), this, SIGNAL(paused(bool)) );
 	connect( metronom, SIGNAL(discardFrame(int)), composer, SLOT(discardFrame(int)) );
+	connect( composer, SIGNAL(flushMetronom()), metronom, SLOT(flush()), Qt::BlockingQueuedConnection );
 
 	Profile prof;
 
@@ -48,10 +49,8 @@ bool Sampler::isProjectEmpty()
 
 bool Sampler::trackRequest( bool rm, int index )
 {
-	if ( composer->isPlaying() ) {
-		composer->play( false );
-		emit paused( true );
-	}
+	if ( composerPlaying() )
+		return false;
 		
 	bool ok;
 	if ( rm )
@@ -81,12 +80,17 @@ void Sampler::newProject( Profile p )
 
 
 
+void Sampler::clearAll()
+{
+	drainScenes();
+	preview->drain();
+}
+
+
+
 void Sampler::drainScenes()
 {
-	if ( composer->isPlaying() ) {
-		composer->play( false );
-		emit paused( true );
-	}
+	composerPlaying();
 
 	for ( int i = 0; i < sceneList.count(); ++i ) {
 		sceneList[i]->drain();
@@ -122,12 +126,10 @@ bool Sampler::setProfile( Profile p )
 			ok = false;
 	}
 
-	if ( composer->isPlaying() ) {
-		composer->play( false );
-		emit paused( true );
-	}
-	seekTo( currentPTS() );
-	
+	if ( composerPlaying() )
+		return false;
+
+	composer->seekTo( currentPTS() );
 	return ok;
 }
 
@@ -138,15 +140,12 @@ void Sampler::switchMode( bool down )
 	if ( (down ? timelineScene : preview) == currentScene )
 		return;
 
-	if ( composer->isPlaying() ) {
-		composer->play( false );
-		emit paused( true );
-	}
+	composerPlaying();
 
 	if ( down ) {
 		currentScene = timelineScene;
 		rewardPTS();
-		seekTo( currentPTS() );
+		composer->seekTo( currentPTS() );
 	}
 	else {
 		currentScene = preview;
@@ -158,12 +157,7 @@ void Sampler::switchMode( bool down )
 
 void Sampler::setSource( Source *source, double pts )
 {
-	if ( composer->isPlaying() ) {
-		composer->play( false );
-		emit paused( true );
-	}
-
-	metronom->flush();
+	composerPlaying();
 
 	preview->drain();
 	Profile p = source->getProfile();
@@ -173,8 +167,20 @@ void Sampler::setSource( Source *source, double pts )
 	p.setAudioFormat( Profile::SAMPLE_FMT_S16 );
 	preview->setProfile( p );
 	preview->addClip( preview->createClip( source, 0, p.getStreamStartTime(), p.getStreamDuration() ), 0 );
-	qDebug() << "setSource" << p.getStreamStartTime() << pts;
-	seekTo( pts );
+
+	composer->seekTo( pts );
+}
+
+
+
+bool Sampler::composerPlaying()
+{
+	if ( composer->isPlaying() ) {
+		composer->play( false );
+		usleep( 150000 );
+		return composer->isPlaying();
+	}
+	return false;	
 }
 
 
@@ -200,9 +206,76 @@ void Sampler::setFencesContext( QGLWidget *shared )
 
 
 
-void Sampler::setPlaybackBuffer( bool backward )
+bool Sampler::play( bool b, bool backward )
 {
-	metronom->flush();
+	if ( b ) {	
+		if ( playBackward != backward ) {
+			composer->setPlaybackBuffer( backward );
+			return b;
+		}
+		else if ( composer->isPlaying() )
+			return false;
+	}
+
+	composer->play( b, backward );
+	return b;
+}
+
+
+
+void Sampler::slideSeek( double p )
+{
+	composer->seekTo( p );
+}
+
+
+
+void Sampler::wheelSeek( int a )
+{
+	if ( a == 1 || a == -1 ) {
+		bool backward = a < 0;
+		if ( playBackward != backward ) {
+			composer->frameByFrameSetPlaybackBuffer( backward );
+		}
+		else {
+			composer->frameByFrame();
+		}
+	}
+	else {
+		composer->skipBy( a );
+	}
+}
+
+
+
+void Sampler::updateFrame()
+{
+	composer->updateFrame();
+}
+
+
+
+void Sampler::fromComposerReleaseVideoFrame( Frame *f )
+{
+	playbackBuffer.releasedVideoFrame( f );
+}
+
+
+
+bool Sampler::fromComposerUpdateFrame( Frame *f )
+{
+	if ( updateVideoFrame( f ) ) {
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
+
+
+double Sampler::fromComposerSetPlaybackBuffer( bool backward )
+{
 	Frame *last = metronom->getLastFrame();
 	double pts = currentPTS();
 	if ( last ) {
@@ -220,106 +293,15 @@ void Sampler::setPlaybackBuffer( bool backward )
 	}
 	else
 		bufferedPlaybackPts = -1;
-	qDebug() << "bufferedPlaybackPts" << bufferedPlaybackPts;
-	seekTo( pts, backward, false );
+
+	return pts;
 }
 
 
 
-bool Sampler::play( bool b, bool backward )
-{
-	if ( b ) {	
-		if ( playBackward != backward ) {
-			if ( composer->isPlaying() )
-				composer->play( false );
-			setPlaybackBuffer( backward );
-		}
-		else if ( composer->isPlaying() )
-			return false;
-	}
-
-	composer->play( b, backward );
-	return b;
-}
-
-
-
-void Sampler::updateFrame()
-{
-	if ( composer->isPlaying() )
-		return;
-	
-	Frame *last = metronom->getLastFrame();
-	if ( !last )
-		return;
-
-	metronom->flush();
-	if ( updateVideoFrame( last ) )
-		composer->updateFrame( last );
-	else
-		seekTo( last->pts() );
-}
-
-
-
-void Sampler::wheelSeek( int a )
-{
-	if ( composer->isPlaying() )
-		return;
-
-	if ( a == 1 || a == -1 ) {
-		bool backward = a < 0;
-		if ( playBackward != backward ) {
-			setPlaybackBuffer( backward );
-			composer->seeking();
-		}
-		else {
-			bool shown = false;
-			if ( !metronom->videoFrames.isEmpty() ) {
-				do {
-					Frame *f = metronom->videoFrames.dequeue();
-					if ( f->type() == Frame::GLTEXTURE ) {
-						emit newFrame( f );
-						shown = true;
-					}
-					else
-						playbackBuffer.releasedVideoFrame( f );
-				} while ( !metronom->videoFrames.isEmpty() && !shown );
-			}
-			if ( !shown ) {
-				metronom->flush();
-				composer->runOneShot();
-			}
-		}
-	}
-	else {
-		Frame *last = metronom->getLastFrame();
-		if ( !last )
-			return;
-		metronom->flush();
-		printf("wheelSeek PTS=%f\n", last->pts() + (last->profile.getVideoFrameDuration() * a) );
-		seekTo( last->pts() + (last->profile.getVideoFrameDuration() * a) );
-	}
-}
-
-
-
-void Sampler::slideSeek( double p )
-{
-	if ( composer->isPlaying() ) {
-		composer->play( false );
-		emit paused( true );
-	}
-	seekTo( p );
-}
-
-
-
-void Sampler::seekTo( double p, bool backward, bool seek )
+void Sampler::fromComposerSeekTo( double p, bool backward, bool seek )
 {
 	int i, j;
-
-	metronom->flush();
 
 	if ( p < 0 ) {
 		if ( currentScene->currentPTS == 0 )
@@ -342,9 +324,6 @@ void Sampler::seekTo( double p, bool backward, bool seek )
 			skipPts = metronom->getLastFrame()->pts();
 		playbackBuffer.reset( currentScene->getProfile().getVideoFrameRate() + 1, skipPts );
 	}
-
-	if ( !playBackward && seek )
-		composer->seeking();
 }
 
 

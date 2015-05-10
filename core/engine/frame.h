@@ -101,6 +101,8 @@ public:
 
 	// The list of input Frame used to compose this output one.
 	ProjectSample *sample;
+	// indicate that this frame should not be pushed in playbackBuffer
+	bool isDuplicate;
 
 	// frame profile
 	Profile profile;
@@ -180,6 +182,31 @@ class ProjectSample
 {
 public:
 	ProjectSample() {}
+	// copy constructor for video only
+	ProjectSample( ProjectSample *src ) {
+		for ( int i = 0; i < src->frames.count(); ++i ) {
+			FrameSample *sfs = src->frames.at(i);
+			FrameSample *fs = new FrameSample();
+			frames.append( fs );
+			if ( sfs->frame ) {
+				fs->frame = new Frame();
+				fs->frame->setVideoFrame( sfs->frame );
+				fs->frame->setType( sfs->frame->type() );
+				if ( sfs->frame->getBuffer() )
+					fs->frame->setSharedBuffer( sfs->frame->getBuffer() );
+				fs->videoFilters = sfs->videoFilters;
+				if ( sfs->transitionFrame.frame ) {
+					fs->transitionFrame.frame = new Frame();
+					fs->transitionFrame.frame->setVideoFrame( sfs->transitionFrame.frame );
+					fs->transitionFrame.frame->setType( sfs->transitionFrame.frame->type() );
+					if ( sfs->transitionFrame.frame->getBuffer() )
+						fs->transitionFrame.frame->setSharedBuffer( sfs->transitionFrame.frame->getBuffer() );
+					fs->transitionFrame.videoFilters = sfs->transitionFrame.videoFilters;
+					fs->transitionFrame.videoTransitionFilter = sfs->transitionFrame.videoTransitionFilter;
+				}
+			}
+		}
+	}
 	~ProjectSample() {
 		clear();
 	}

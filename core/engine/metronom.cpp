@@ -83,8 +83,12 @@ void Metronom::setSharedContext( QGLWidget *shared )
 void Metronom::setLastFrame( Frame *f )
 {
 	QMutexLocker ml( &lastFrameMutex );
-	if ( lastFrame && lastFrame != f )
-		playbackBuffer->releasedVideoFrame( lastFrame );
+	if ( lastFrame && lastFrame != f ) {
+		if ( lastFrame->isDuplicate )
+			lastFrame->release();
+		else
+			playbackBuffer->releasedVideoFrame( lastFrame );
+	}
 	lastFrame = f;
 	emit currentFramePts( f->pts() );
 }

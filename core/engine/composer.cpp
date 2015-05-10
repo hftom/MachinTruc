@@ -127,14 +127,11 @@ Yuv420pToRgba yuvshader;
 #endif
 
 
-#define RENDERPLAY 1
-#define RENDERONESHOT 2
-#define RENDERUPDATE 3
+
 Composer::Composer( Sampler *samp, PlaybackBuffer *pb )
 	: playBackward( false ),
 	running( false ),
 	playing( false ),
-	renderMode( 0 ),
 	oneShot( false ),
 	skipFrame( 0 ),
 	hiddenContext( NULL ),
@@ -195,17 +192,9 @@ void Composer::discardFrame( int n )
 
 
 
-void Composer::seeking()
-{
-	audioSampleDelta = 0;
-	runOneShot();
-}
-
-
-
 bool Composer::isPlaying()
 {
-	return renderMode == RENDERPLAY;
+	return playing;
 }
 
 
@@ -214,28 +203,90 @@ void Composer::play( bool b, bool backward )
 {
 	if ( b ) {
 		sampler->getMetronom()->play( b, backward );
-		skipFrame = 0;
-		renderMode = RENDERPLAY;
-		while ( !playing )
-			usleep( 1000 );
+		itcMutex.lock();
+		itcMsgList.append( ItcMsg( ItcMsg::RENDERPLAY ) );
+		itcMutex.unlock();
+		playing = true;
 	}
 	else {
-		sampler->getMetronom()->play( b, backward );
-		renderMode = 0;
-		while ( playing )
-			usleep( 1000 );
+		itcMutex.lock();
+		itcMsgList.append( ItcMsg( ItcMsg::RENDERSTOP ) );
+		itcMutex.unlock();
 	}
 }
 
 
 
-void Composer::updateFrame( Frame *dst )
+void Composer::setPlaybackBuffer( bool backward )
 {
-	if ( renderMode == RENDERPLAY )
-		return;
+	itcMutex.lock();
+	itcMsgList.append( ItcMsg( backward ) );
+	itcMutex.unlock();
+}
 
-	skipFrame = 0;
-	renderMode = RENDERUPDATE;
+
+
+void Composer::seekTo( double p, bool backward, bool seek )
+{
+	itcMutex.lock();
+	while ( !itcMsgList.isEmpty() ) {
+		if ( itcMsgList.last().msgType != ItcMsg::RENDERSEEK )
+			break;
+		itcMsgList.takeLast();
+	}
+	itcMsgList.append( ItcMsg( p, backward, seek ) );
+	itcMutex.unlock();
+}
+
+
+
+void Composer::frameByFrame()
+{
+	itcMutex.lock();
+	while ( !itcMsgList.isEmpty() ) {
+		if ( itcMsgList.last().msgType != ItcMsg::RENDERFRAMEBYFRAME )
+			break;
+		itcMsgList.takeLast();
+	}
+	itcMsgList.append( ItcMsg( ItcMsg::RENDERFRAMEBYFRAME ) );
+	itcMutex.unlock();
+}
+
+
+
+void Composer::frameByFrameSetPlaybackBuffer( bool backward )
+{
+	itcMutex.lock();
+	itcMsgList.append( ItcMsg( ItcMsg::RENDERFRAMEBYFRAMESETPLAYBACKBUFFER, backward ) );
+	itcMutex.unlock();
+}
+
+
+
+void Composer::skipBy( int step )
+{
+	itcMutex.lock();
+	while ( !itcMsgList.isEmpty() ) {
+		if ( itcMsgList.last().msgType != ItcMsg::RENDERSKIPBY )
+			break;
+		itcMsgList.takeLast();
+	}
+	itcMsgList.append( ItcMsg( ItcMsg::RENDERSKIPBY, step ) );
+	itcMutex.unlock();
+}
+
+
+
+void Composer::updateFrame()
+{
+	itcMutex.lock();
+	while ( !itcMsgList.isEmpty() ) {
+		if ( itcMsgList.last().msgType != ItcMsg::RENDERUPDATE )
+			break;
+		itcMsgList.takeLast();
+	}
+	itcMsgList.append( ItcMsg( ItcMsg::RENDERUPDATE ) );
+	itcMutex.unlock();
 }
 
 
@@ -244,59 +295,126 @@ void Composer::updateFrame( Frame *dst )
 #define PROCESSEND 2
 #define PROCESSONESHOTVIDEO 3
 
-void Composer::runOneShot()
-{
-	skipFrame = 0;
-	renderMode = RENDERONESHOT;
-}
-
-
-
 void Composer::run()
 {
 	int ret;
 	Frame *f = NULL;
+	ItcMsg lastMsg( ItcMsg::RENDERSTOP );
 
 	hiddenContext->makeCurrent();
 
 	while ( running ) {
-		switch ( renderMode ) {
-			case RENDERPLAY: {
-				playing = true;
+		itcMutex.lock();
+		if ( !itcMsgList.isEmpty() )
+			lastMsg = itcMsgList.takeFirst();
+		itcMutex.unlock();
+		
+		switch ( lastMsg.msgType ) {
+			case ItcMsg::RENDERPLAY: {
 				ret = process( &f );
 				if ( ret == PROCESSEND ) {
-					while ( renderMode > 0 && !sampler->getMetronom()->videoFrames.queueEmpty() )
+					while ( !sampler->getMetronom()->videoFrames.queueEmpty() )
 						usleep( 5000 );
 					sampler->getMetronom()->play( false );
 					emit paused( true );
 					break;
 				}
-				if ( ret == PROCESSWAITINPUT )
+				else if ( ret == PROCESSWAITINPUT )
 					usleep( 1000 );
 				break;
 			}
-			case RENDERONESHOT: {
+			case ItcMsg::RENDERSETPLAYBACKBUFFER: {
+				if ( playing ) {
+					sampler->getMetronom()->play( false );
+					playing = false;
+				}
+				emit flushMetronom();
+				double pts = sampler->fromComposerSetPlaybackBuffer( lastMsg.backward );
+				sampler->fromComposerSeekTo( pts, lastMsg.backward, false );
+				sampler->getMetronom()->play( true, lastMsg.backward );
 				playing = true;
-				oneShot = true;
-				ret = process( &f );
-				oneShot = false;
-				if ( (ret == PROCESSONESHOTVIDEO) && f )
-					emit newFrame( f );
-				renderMode = 0;
+				skipFrame = 0;
+				audioSampleDelta = 0;
+				lastMsg.msgType = ItcMsg::RENDERPLAY;
 				break;
 			}
-			case RENDERUPDATE: {
-				playing = true;
+			case ItcMsg::RENDERFRAMEBYFRAMESETPLAYBACKBUFFER: {
+				stopPlayer();
+				emit flushMetronom();
+				double pts = sampler->fromComposerSetPlaybackBuffer( lastMsg.backward );
+				sampler->fromComposerSeekTo( pts, lastMsg.backward, false );
+				runOneShot( f );
+				lastMsg.msgType = ItcMsg::RENDERSTOP;
+				break;
+			}
+			case ItcMsg::RENDERFRAMEBYFRAME: {
+				stopPlayer();
+				emit flushMetronom();
+				bool shown = false;
+				Metronom *m = sampler->getMetronom();
+				if ( !m->videoFrames.isEmpty() ) {
+					do {
+						f = m->videoFrames.dequeue();
+						if ( f->type() == Frame::GLTEXTURE ) {
+							emit newFrame( f );
+							shown = true;
+						}
+						else
+							sampler->fromComposerReleaseVideoFrame( f );
+					} while ( !m->videoFrames.isEmpty() && !shown );
+				}
+				if ( !shown ) {
+					runOneShot( f );
+				}
+				lastMsg.msgType = ItcMsg::RENDERSTOP;
+				break;
+			}
+			case ItcMsg::RENDERSKIPBY: {
+				stopPlayer();
+				emit flushMetronom();
 				f = sampler->getMetronom()->getLastFrame();
 				if ( f ) {
-					movitRender( f, true );
-					emit newFrame( f );
+					sampler->fromComposerSeekTo( f->pts() + (f->profile.getVideoFrameDuration() * lastMsg.step) );
+					runOneShot( f );
 				}
-				renderMode = 0;
+				lastMsg.msgType = ItcMsg::RENDERSTOP;
+				break;
+			}
+			case ItcMsg::RENDERSEEK: {
+				stopPlayer();
+				emit flushMetronom();
+				sampler->fromComposerSeekTo( lastMsg.pts, lastMsg.backward, lastMsg.seek );
+				runOneShot( f );
+				lastMsg.msgType = ItcMsg::RENDERSTOP;
+				break;
+			}
+			case ItcMsg::RENDERUPDATE: {
+				stopPlayer();
+				emit flushMetronom();
+				f = sampler->getMetronom()->getLastFrame();
+				if ( f ) {
+					Frame *dst = sampler->getMetronom()->freeVideoFrames.dequeue();
+					dst->sample = new ProjectSample( f->sample );
+					dst->setPts( f->pts() );
+					if ( sampler->fromComposerUpdateFrame( dst ) ) {
+						movitRender( dst, true );
+						if ( dst->fence() )
+							glClientWaitSync( dst->fence()->fence(), 0, GL_TIMEOUT_IGNORED );
+						dst->isDuplicate = true;
+						emit newFrame( dst );
+					}
+					else {
+						delete dst;
+						sampler->fromComposerSeekTo( f->pts() );
+						f = NULL;
+						runOneShot( f );
+					}
+				}
+				lastMsg.msgType = ItcMsg::RENDERSTOP;
 				break;
 			}
 			default: {
-				playing = false;
+				stopPlayer();
 				usleep( 1000 );
 			}
 		}
@@ -306,6 +424,33 @@ void Composer::run()
 #if QT_VERSION >= 0x050000
 	hiddenContext->context()->moveToThread( qApp->thread() );
 #endif	
+}
+
+
+
+void Composer::stopPlayer()
+{
+	if ( playing ) {
+		sampler->getMetronom()->play( false );
+		emit paused( true );
+		playing = false;
+		skipFrame = 0;
+		audioSampleDelta = 0;
+	}
+}
+
+
+
+void Composer::runOneShot( Frame *f )
+{
+	oneShot = true;
+	int ret = process( &f );
+	oneShot = false;
+	if ( (ret == PROCESSONESHOTVIDEO) && f ) {
+		if ( f->fence() )
+			glClientWaitSync( f->fence()->fence(), 0, GL_TIMEOUT_IGNORED );
+		emit newFrame( f );
+	}
 }
 
 
@@ -374,10 +519,7 @@ int Composer::process( Frame **frame )
 			*frame = dst;
 		}
 		else {
-			//if ( dst->type() == Frame::NONE )
-				//dst->release();
-			//else
-				sampler->getMetronom()->videoFrames.enqueue( dst );
+			sampler->getMetronom()->videoFrames.enqueue( dst );
 		}
 	}
 
