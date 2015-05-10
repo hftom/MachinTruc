@@ -115,17 +115,26 @@ class SeekSlider : public QSlider
 {
 	Q_OBJECT
 public:
-	explicit SeekSlider(QWidget *parent) : QSlider(parent) { }
+	explicit SeekSlider(QWidget *parent) : QSlider(parent), buttonDown( false ) { }
 	~SeekSlider() { }
+	bool isButtonDown() { return buttonDown; }
 
 private:
 	void mousePressEvent(QMouseEvent *event) {
+		buttonDown = true;
 		int buttons = style()->styleHint(QStyle::SH_Slider_AbsoluteSetButtons);
 		Qt::MouseButton button = static_cast<Qt::MouseButton>(buttons & (~(buttons - 1)));
 		QMouseEvent modifiedEvent(event->type(), event->pos(), event->globalPos(), button,
 			event->buttons() ^ event->button() ^ button, event->modifiers());
 		QSlider::mousePressEvent(&modifiedEvent);
 	}
+	
+	void mouseReleaseEvent(QMouseEvent *event) {
+		buttonDown = false;
+		QSlider::mouseReleaseEvent( event );
+	}
+	
+	bool buttonDown;
 };
 
 

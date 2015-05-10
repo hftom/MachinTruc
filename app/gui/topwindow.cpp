@@ -446,10 +446,12 @@ void TopWindow::currentFramePts( double d )
 		emit setCursorPos( d ); 
 	}
 	
-	d *= seekSlider->maximum() / sampler->currentSceneDuration();
-	seekSlider->blockSignals( true );
-	seekSlider->setValue( d );
-	seekSlider->blockSignals( false );
+	if ( !seekSlider->isButtonDown() ) {
+		d *= seekSlider->maximum() / sampler->currentSceneDuration();
+		seekSlider->blockSignals( true );
+		seekSlider->setValue( d );
+		seekSlider->blockSignals( false );
+	}
 }
 
 
