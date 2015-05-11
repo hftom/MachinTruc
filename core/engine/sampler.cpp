@@ -155,6 +155,7 @@ void Sampler::switchMode( bool down )
 void Sampler::setSource( Source *source, double pts )
 {
 	stopComposer();
+	metronom->flush();
 
 	preview->drain();
 	Profile p = source->getProfile();

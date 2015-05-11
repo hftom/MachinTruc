@@ -317,8 +317,7 @@ void Composer::run()
 				if ( ret == PROCESSEND ) {
 					while ( !sampler->getMetronom()->videoFrames.queueEmpty() )
 						usleep( 5000 );
-					sampler->getMetronom()->play( false );
-					emit paused( true );
+					lastMsg.msgType = ItcMsg::RENDERSTOP;
 					break;
 				}
 				else if ( ret == PROCESSWAITINPUT )
@@ -406,7 +405,13 @@ void Composer::run()
 				break;
 			}
 			default: {
-				stopPlayer();
+				if ( playing ) {
+					sampler->getMetronom()->play( false );
+					playing = false;
+					emit paused( true );
+					skipFrame = 0;
+					audioSampleDelta = 0;
+				}
 				usleep( 1000 );
 			}
 		}
@@ -416,19 +421,6 @@ void Composer::run()
 #if QT_VERSION >= 0x050000
 	hiddenContext->context()->moveToThread( qApp->thread() );
 #endif	
-}
-
-
-
-void Composer::stopPlayer()
-{
-	if ( playing ) {
-		sampler->getMetronom()->play( false );
-		playing = false;
-		emit paused( true );
-		skipFrame = 0;
-		audioSampleDelta = 0;
-	}
 }
 
 

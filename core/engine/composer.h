@@ -60,7 +60,6 @@ public slots:
 private:
 	void run();
 	void runOneShot( Frame *f );
-	void stopPlayer();
 	
 	int process( Frame **frame );
 	Frame* getNextFrame( Frame *dst, int &track );
