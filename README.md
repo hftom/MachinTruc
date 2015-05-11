@@ -9,7 +9,7 @@ Deps:
 - ffmpeg (libavformat, libavcodec, libavutil, libswresample, libswscale)
 - SDL (sound output)
 - Movit (http://git.sesse.net/?p=movit)
-- Qt 4(recommended) or 5.
+- Qt 5
 - X11
 
 Compilation:
