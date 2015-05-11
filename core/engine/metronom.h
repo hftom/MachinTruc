@@ -24,6 +24,8 @@ public:
 	void changeSpeed( int s );
 	void flush();
 	Frame* getLastFrame();
+	Frame* getAndLockLastFrame();
+	void unlockLastFrame();
 
 	static void readData( Frame **data, double time, void *userdata );
 

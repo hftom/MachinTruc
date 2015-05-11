@@ -182,8 +182,9 @@ class ProjectSample
 {
 public:
 	ProjectSample() {}
-	// copy constructor for video only
-	ProjectSample( ProjectSample *src ) {
+	// for video only
+	void copyVideoSample( ProjectSample *src ) {
+		clear();
 		for ( int i = 0; i < src->frames.count(); ++i ) {
 			FrameSample *sfs = src->frames.at(i);
 			FrameSample *fs = new FrameSample();

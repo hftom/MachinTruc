@@ -378,12 +378,14 @@ void Composer::run()
 				break;
 			}
 			case ItcMsg::RENDERUPDATE: {
-				f = sampler->getMetronom()->getLastFrame();
+				f = sampler->getMetronom()->getAndLockLastFrame();
 				if ( f ) {
 					Frame *dst = sampler->getMetronom()->freeVideoFrames.dequeue();
-					dst->sample = new ProjectSample( f->sample );
+					dst->sample = new ProjectSample();
+					dst->sample->copyVideoSample( f->sample );
 					dst->setPts( f->pts() );
 					if ( sampler->fromComposerUpdateFrame( dst ) ) {
+						sampler->getMetronom()->unlockLastFrame();
 						movitRender( dst, true );
 						if ( dst->fence() )
 							glClientWaitSync( dst->fence()->fence(), 0, GL_TIMEOUT_IGNORED );
@@ -391,12 +393,15 @@ void Composer::run()
 						emit newFrame( dst );
 					}
 					else {
+						sampler->getMetronom()->unlockLastFrame();
 						dst->release();
 						sampler->fromComposerSeekTo( f->pts() );
 						f = NULL;
 						runOneShot( f );
 					}
 				}
+				else
+					sampler->getMetronom()->unlockLastFrame();
 				lastMsg.msgType = ItcMsg::RENDERSTOP;
 				break;
 			}

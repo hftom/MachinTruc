@@ -103,6 +103,21 @@ Frame* Metronom::getLastFrame()
 
 
 
+Frame* Metronom::getAndLockLastFrame()
+{
+	lastFrameMutex.lock();
+	return lastFrame;
+}
+
+
+
+void Metronom::unlockLastFrame()
+{
+	lastFrameMutex.unlock();
+}
+
+
+
 void Metronom::flush()
 {
 	Frame *f;
