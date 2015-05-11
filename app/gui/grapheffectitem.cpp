@@ -3,6 +3,7 @@
 
 #define NORMALZ 1
 #define SELECTEDZ 2
+#define MINMOVE 20
 
 
 
@@ -82,7 +83,7 @@ void GraphEffectItem::mousePressEvent( QGraphicsSceneMouseEvent *event )
 
 void GraphEffectItem::mouseMoveEvent( QGraphicsSceneMouseEvent *event )
 {
-	if ( firstMove && qAbs(event->scenePos().y() - moveStart) < 8 )
+	if ( firstMove && qAbs(event->scenePos().y() - moveStart) < MINMOVE )
 		return;
 	
 	firstMove = false;
