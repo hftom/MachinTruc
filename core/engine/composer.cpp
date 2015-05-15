@@ -378,8 +378,8 @@ void Composer::run()
 			}
 			case ItcMsg::RENDERUPDATE: {
 				f = sampler->getMetronom()->getAndLockLastFrame();
-				if ( f ) {
-					Frame *dst = sampler->getMetronom()->freeVideoFrames.dequeue();
+				Frame *dst = sampler->getMetronom()->freeVideoFrames.dequeue();
+				if ( f && dst ) {
 					dst->sample = new ProjectSample();
 					dst->sample->copyVideoSample( f->sample );
 					dst->setPts( f->pts() );
@@ -399,8 +399,11 @@ void Composer::run()
 						runOneShot( f );
 					}
 				}
-				else
+				else {
 					sampler->getMetronom()->unlockLastFrame();
+					if ( dst )
+						dst->release();
+				}
 				lastMsg.msgType = ItcMsg::RENDERSTOP;
 				break;
 			}

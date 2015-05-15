@@ -15,7 +15,16 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
-    <property name="margin">
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
      <number>0</number>
     </property>
     <property name="spacing">
@@ -41,7 +50,16 @@
          </size>
         </property>
         <layout class="QGridLayout" name="gridLayout_2">
-         <property name="margin">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
           <number>0</number>
          </property>
          <property name="spacing">
@@ -318,7 +336,16 @@
            </size>
           </property>
           <layout class="QGridLayout" name="gridLayout_3">
-           <property name="margin">
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
             <number>0</number>
            </property>
            <property name="spacing">
@@ -583,7 +610,7 @@
      <x>0</x>
      <y>0</y>
      <width>1051</width>
-     <height>22</height>
+     <height>28</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -596,14 +623,14 @@
    </widget>
    <widget class="QMenu" name="menuTimeline">
     <property name="title">
-     <string>Timeline</string>
+     <string>&amp;Timeline</string>
     </property>
     <addaction name="actionDeleteClip"/>
     <addaction name="actionSplitCurrentClip"/>
    </widget>
    <widget class="QMenu" name="menuSettings">
     <property name="title">
-     <string>Settings</string>
+     <string>&amp;Settings</string>
     </property>
     <addaction name="actionProjectSettings"/>
    </widget>
@@ -616,7 +643,7 @@
    </widget>
    <widget class="QMenu" name="menuPlayer">
     <property name="title">
-     <string>Player</string>
+     <string>P&amp;layer</string>
     </property>
     <addaction name="actionPlayPause"/>
     <addaction name="actionForward"/>
@@ -651,7 +678,7 @@
   </action>
   <action name="actionDeleteClip">
    <property name="text">
-    <string>Delete selected clip</string>
+    <string>&amp;Delete selected clip</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+X</string>
@@ -659,7 +686,7 @@
   </action>
   <action name="actionSplitCurrentClip">
    <property name="text">
-    <string>Split current clip</string>
+    <string>&amp;Split current clip</string>
    </property>
    <property name="shortcut">
     <string>Shift+R</string>
@@ -667,7 +694,7 @@
   </action>
   <action name="actionSave">
    <property name="text">
-    <string>Save</string>
+    <string>&amp;Save</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+S</string>
@@ -675,7 +702,7 @@
   </action>
   <action name="actionOpen">
    <property name="text">
-    <string>Open</string>
+    <string>&amp;Open</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+O</string>
@@ -683,7 +710,7 @@
   </action>
   <action name="actionProjectSettings">
    <property name="text">
-    <string>Project settings</string>
+    <string>&amp;Project settings</string>
    </property>
   </action>
   <action name="actionNot_yet">
@@ -693,12 +720,12 @@
   </action>
   <action name="actionSaveImage">
    <property name="text">
-    <string>Save image</string>
+    <string>&amp;Save image</string>
    </property>
   </action>
   <action name="actionNewProject">
    <property name="text">
-    <string>New project</string>
+    <string>&amp;New project</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+N</string>
@@ -706,12 +733,12 @@
   </action>
   <action name="actionRenderToFile">
    <property name="text">
-    <string>Render to file</string>
+    <string>&amp;Render to file</string>
    </property>
   </action>
   <action name="actionPlayPause">
    <property name="text">
-    <string>Play / Pause</string>
+    <string>&amp;Play / Pause</string>
    </property>
    <property name="shortcut">
     <string>K</string>
@@ -719,7 +746,7 @@
   </action>
   <action name="actionForward">
    <property name="text">
-    <string>Forward</string>
+    <string>&amp;Forward</string>
    </property>
    <property name="shortcut">
     <string>L</string>
@@ -727,7 +754,7 @@
   </action>
   <action name="actionBackward">
    <property name="text">
-    <string>Backward</string>
+    <string>&amp;Backward</string>
    </property>
    <property name="shortcut">
     <string>J</string>
@@ -743,7 +770,7 @@
   </action>
   <action name="actionSlower">
    <property name="text">
-    <string>Slower</string>
+    <string>&amp;Slower</string>
    </property>
    <property name="shortcut">
     <string>M</string>
@@ -751,7 +778,7 @@
   </action>
   <action name="actionFrameByFrame">
    <property name="text">
-    <string>Frame by frame</string>
+    <string>F&amp;rame by frame</string>
    </property>
    <property name="shortcut">
     <string>Right</string>
@@ -759,7 +786,7 @@
   </action>
   <action name="actionFrameByFrameBackward">
    <property name="text">
-    <string>Frame by frame backward</string>
+    <string>Fra&amp;me by frame backward</string>
    </property>
    <property name="shortcut">
     <string>Left</string>
