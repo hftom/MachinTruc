@@ -153,6 +153,10 @@ public:
 	Sampler* getSampler() { return sampler; };
 	
 	void clipThumbRequest( ThumbRequest request );
+	
+protected:
+	void keyPressEvent( QKeyEvent *event );
+	void keyReleaseEvent( QKeyEvent *event );
 
 private slots:
 	void showMemoryInfo();

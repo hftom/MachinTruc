@@ -150,6 +150,24 @@ TopWindow::TopWindow()
 
 
 
+void TopWindow::keyPressEvent( QKeyEvent *event )
+{
+	if ( event->key() == Qt::Key_Control )
+		vw->controlKeyPressed( true );
+	QMainWindow::keyPressEvent( event );
+}
+
+
+
+void TopWindow::keyReleaseEvent( QKeyEvent *event )
+{
+	if ( event->key() == Qt::Key_Control )
+		vw->controlKeyPressed( false );
+	QMainWindow::keyPressEvent( event );
+}
+
+
+
 void TopWindow::deleteKeyPressed()
 {
 	if ( timelineStackedWidget->currentIndex() == 0 )

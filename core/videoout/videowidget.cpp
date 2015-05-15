@@ -12,7 +12,9 @@
 #define OVDTOPRIGHT 2
 #define OVDBOTTOMRIGHT 3
 #define OVDBOTTOMLEFT 4
-#define OVDINSIDE 5
+#define OVDZOOMCENTER 5
+#define OVDINSIDE 6
+#define OVDOUTSIDE 7
 
 
 
@@ -283,27 +285,42 @@ void VideoWidget::mouseMoveEvent( QMouseEvent * event )
 						ovdUpdate( lastFrame->sample->frames[i], QPointF( event->pos() ) );
 					return;
 				}
-				if ( f->glOVD & FilterTransform::SCALE ) {
-					if ( qAbs((ovdPoints[0] - event->pos()).manhattanLength()) < CURSORDISTANCE ) {
-						setCursor( QCursor(Qt::SizeAllCursor) );
-						target = OVDTOPLEFT;
+				if ( event->modifiers() & Qt::ControlModifier ) {
+					bool inside = cursorInside( event->pos() );
+					if ( inside ) {
+						if ( f->glOVD & FilterTransform::SCALE ) {
+							setCursor( QCursor(Qt::SizeAllCursor) );
+							target = OVDZOOMCENTER;
+						}
 					}
-					else if ( qAbs((ovdPoints[2] - event->pos()).manhattanLength()) < CURSORDISTANCE ) {
-						setCursor( QCursor(Qt::SizeAllCursor) );
-						target = OVDBOTTOMRIGHT;
-					}
-					else if ( qAbs((ovdPoints[1] - event->pos()).manhattanLength()) < CURSORDISTANCE ) {
-						setCursor( QCursor(Qt::SizeAllCursor) );
-						target = OVDTOPRIGHT;
-					}
-					else if ( qAbs((ovdPoints[3] - event->pos()).manhattanLength()) < CURSORDISTANCE ) {
-						setCursor( QCursor(Qt::SizeAllCursor) );
-						target = OVDBOTTOMLEFT;
-					}
+					else {
+						setCursor( QCursor(Qt::PointingHandCursor) );
+						target = OVDOUTSIDE;
+					}					
 				}
-				if ( !target && cursorInside( event->pos() ) ) {
-					setCursor( QCursor(Qt::PointingHandCursor) );
-					target = OVDINSIDE;
+				else {
+					if ( f->glOVD & FilterTransform::SCALE ) {
+						if ( qAbs((ovdPoints[0] - event->pos()).manhattanLength()) < CURSORDISTANCE ) {
+							setCursor( QCursor(Qt::SizeAllCursor) );
+							target = OVDTOPLEFT;
+						}
+						else if ( qAbs((ovdPoints[2] - event->pos()).manhattanLength()) < CURSORDISTANCE ) {
+							setCursor( QCursor(Qt::SizeAllCursor) );
+							target = OVDBOTTOMRIGHT;
+						}
+						else if ( qAbs((ovdPoints[1] - event->pos()).manhattanLength()) < CURSORDISTANCE ) {
+							setCursor( QCursor(Qt::SizeAllCursor) );
+							target = OVDTOPRIGHT;
+						}
+						else if ( qAbs((ovdPoints[3] - event->pos()).manhattanLength()) < CURSORDISTANCE ) {
+							setCursor( QCursor(Qt::SizeAllCursor) );
+							target = OVDBOTTOMLEFT;
+						}
+					}
+					if ( !target && cursorInside( event->pos() ) ) {
+						setCursor( QCursor(Qt::PointingHandCursor) );
+						target = OVDINSIDE;
+					}
 				}
 			}
 		}
@@ -312,6 +329,14 @@ void VideoWidget::mouseMoveEvent( QMouseEvent * event )
 	ovdTarget = target;
 	if ( ovdTarget == 0 && cursor().shape() != Qt::ArrowCursor )
 		setCursor( QCursor(Qt::ArrowCursor) );
+}
+
+
+
+void VideoWidget::controlKeyPressed( bool down )
+{
+	QMouseEvent event( QEvent::MouseMove, mapFromGlobal( QCursor::pos() ), Qt::NoButton, Qt::NoButton, down ? Qt::ControlModifier : Qt::NoModifier );
+	mouseMoveEvent( &event );
 }
 
 
@@ -409,7 +434,7 @@ void VideoWidget::ovdUpdate( FrameSample *frameSample, QPointF cursorPos )
 			}
 			case FilterTransform::SCALE: {
 				polygon = QTransform::fromScale( 1.0 / ft.v1, 1.0 / ft.v2 ).map( polygon );
-				if ( ovdTarget >= OVDTOPLEFT && ovdTarget <= OVDBOTTOMLEFT ) {
+				if ( ovdTarget >= OVDTOPLEFT && ovdTarget <= OVDZOOMCENTER ) {
 					current = polygon;
 				}
 				s1 = ft.v1;
@@ -418,7 +443,7 @@ void VideoWidget::ovdUpdate( FrameSample *frameSample, QPointF cursorPos )
 			}
 			case FilterTransform::TRANSLATE: {
 				polygon = QTransform::fromTranslate( -ft.v1, -ft.v2 ).map( polygon );
-				if ( ovdTarget == OVDINSIDE ) {
+				if ( ovdTarget == OVDINSIDE || ovdTarget == OVDOUTSIDE ) {
 					current = polygon;
 				}
 				t1 = ft.v1;
@@ -445,18 +470,23 @@ void VideoWidget::ovdUpdate( FrameSample *frameSample, QPointF cursorPos )
 	}
 	
 	if ( !filter.isNull() ) {
-		if ( ovdTarget == OVDINSIDE ) {
+		if ( ovdTarget == OVDINSIDE || ovdTarget == OVDOUTSIDE ) {
 			current[6] -= current[5];
 			QList<OVDUpdateMessage> msg;
 			msg.append( OVDUpdateMessage( filter, "translate", QPointF( t1, t2 ) + current[6] ) );
 			emit ovdUpdateSignal( msg );
 		}
-		else if ( ovdTarget >= OVDTOPLEFT && ovdTarget <= OVDBOTTOMLEFT ) {
+		else if ( ovdTarget >= OVDTOPLEFT && ovdTarget <= OVDZOOMCENTER ) {
 			double ow = current[1].x() - current[0].x();
 			double oh = current[2].y() - current[1].y();
 			double w, h;
 			QList<OVDUpdateMessage> msg;
 			switch ( ovdTarget ) {
+				case OVDZOOMCENTER: {
+					w = ow + 2 * (current[6].x() - current[5].x());
+					msg.append( OVDUpdateMessage( filter, "scale", QPointF( s1 * w * 100.0 / ow, 1.0 ) ) );
+					break;
+				}
 				case OVDBOTTOMRIGHT: {
 					w = current[6].x() - current[0].x();
 					h = w * oh / ow;

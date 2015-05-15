@@ -161,6 +161,8 @@ class VideoWidget : public QGLWidget
 public:
 	VideoWidget( QWidget *parent=0 );
 	~VideoWidget();
+	
+	void controlKeyPressed( bool down );
 
 public slots:
 	void showFrame( Frame *frame );
