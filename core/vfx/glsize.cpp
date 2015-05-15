@@ -112,7 +112,7 @@ bool GLSize::process( const QList<Effect*> &el, Frame *src, Profile *p )
 	if ( src->glOVD ) {
 		if ( qAbs( src->glSAR - psar ) > 1e-3 )
 			src->glOVDTransformList.append( FilterTransform( FilterTransform::NERATIO, src->glSAR / psar, 1.0 ) );
-		src->glOVDTransformList.append( FilterTransform( FilterTransform::SCALE, zoom, zoom ) );
+		src->glOVDTransformList.append( FilterTransform( FilterTransform::SCALE, qMax(1e-6, zoom), qMax(1e-6, zoom) ) );
 		src->glOVDTransformList.append( FilterTransform( FilterTransform::ROTATE, rad ) );
 		src->glOVDTransformList.append( FilterTransform( FilterTransform::TRANSLATE, left, top ) );
 	}

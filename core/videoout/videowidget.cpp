@@ -483,33 +483,33 @@ void VideoWidget::ovdUpdate( FrameSample *frameSample, QPointF cursorPos )
 			QList<OVDUpdateMessage> msg;
 			switch ( ovdTarget ) {
 				case OVDZOOMCENTER: {
-					w = ow + 2 * (current[6].x() - current[5].x());
+					w = qMax( 0.0, ow + 2 * (current[6].x() - current[5].x()) );
 					msg.append( OVDUpdateMessage( filter, "scale", QPointF( s1 * w * 100.0 / ow, 1.0 ) ) );
 					break;
 				}
 				case OVDBOTTOMRIGHT: {
-					w = current[6].x() - current[0].x();
+					w = qMax( 0.0, current[6].x() - current[0].x() );
 					h = w * oh / ow;
 					msg.append( OVDUpdateMessage( filter, "scale", QPointF( s1 * w * 100.0 / ow, 1.0 ) ) );
 					msg.append( OVDUpdateMessage( filter, "translate", QPointF( t1, t2 ) + QPointF( (s1 * (w - ow)) / 2.0, (s2 * (h - oh)) / 2.0 ) ) );
 					break;
 				}
 				case OVDBOTTOMLEFT: {
-					w = current[2].x() - current[6].x();
+					w = qMax( 0.0, current[2].x() - current[6].x() );
 					h = w * oh / ow;
 					msg.append( OVDUpdateMessage( filter, "scale", QPointF( s1 * w * 100.0 / ow, 1.0 ) ) );
 					msg.append( OVDUpdateMessage( filter, "translate", QPointF( t1, t2 ) - QPointF( (s1 * (w - ow)) / 2.0, (s2 * (oh - h)) / 2.0 ) ) );
 					break;
 				}
 				case OVDTOPRIGHT: {
-					w = current[6].x() - current[0].x();
+					w = qMax( 0.0, current[6].x() - current[0].x() );
 					h = w * oh / ow;
 					msg.append( OVDUpdateMessage( filter, "scale", QPointF( s1 * w * 100.0 / ow, 1.0 ) ) );
 					msg.append( OVDUpdateMessage( filter, "translate", QPointF( t1, t2 ) + QPointF( (s1 * (w - ow)) / 2.0, (s2 * (oh - h)) / 2.0 ) ) );
 					break;
 				}
 				case OVDTOPLEFT: {
-					w = current[2].x() - current[6].x();
+					w = qMax( 0.0, current[2].x() - current[6].x() );
 					h = w * oh / ow;
 					msg.append( OVDUpdateMessage( filter, "scale", QPointF( s1 * w * 100.0 / ow, 1.0 ) ) );
 					msg.append( OVDUpdateMessage( filter, "translate", QPointF( t1, t2 ) - QPointF( (s1 * (w - ow)) / 2.0, (s2 * (h - oh)) / 2.0 ) ) );
