@@ -86,8 +86,8 @@ private:
 	QPen textPen, backPen;
 	QBrush backBrush, selectedBrush;
 	
-	bool firstMove;
-	qreal mouseOffset, moveStart;
+	double mouseOffset, moveStart;
+	bool mouseFirstMove;
 };
 
 #endif // GRAPHEFFECTITEM_H

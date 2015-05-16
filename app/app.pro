@@ -45,6 +45,7 @@ HEADERS = \
 	gui/projectfile.h \
 	gui/topwindow.h \
 	gui/projectclipspage.h \
+	gui/fxgraphicsview.h \
 	gui/fxpage.h \
 	gui/fxsettingspage.h \
 	gui/profiledialog.h \

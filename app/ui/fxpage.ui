@@ -14,7 +14,16 @@
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_3">
-   <property name="margin">
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
     <number>0</number>
    </property>
    <item row="0" column="0">
@@ -31,7 +40,16 @@
        <string>Video effects</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_2">
-       <property name="margin">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
         <number>0</number>
        </property>
        <item row="0" column="0">
@@ -72,7 +90,7 @@
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
-          <widget class="TimelineGraphicsView" name="videoGraphView">
+          <widget class="FxGraphicsView" name="videoGraphView">
            <property name="minimumSize">
             <size>
              <width>120</width>
@@ -117,7 +135,16 @@
        <string>Audio effects</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout">
-       <property name="margin">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
         <number>0</number>
        </property>
        <item row="0" column="0">
@@ -158,7 +185,7 @@
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
-          <widget class="TimelineGraphicsView" name="audioGraphView">
+          <widget class="FxGraphicsView" name="audioGraphView">
            <property name="minimumSize">
             <size>
              <width>120</width>
@@ -205,9 +232,9 @@
    <header>gui/effectlistview.h</header>
   </customwidget>
   <customwidget>
-   <class>TimelineGraphicsView</class>
+   <class>FxGraphicsView</class>
    <extends>QGraphicsView</extends>
-   <header>timeline/timelinegraphicsview.h</header>
+   <header>gui/fxgraphicsview.h</header>
   </customwidget>
  </customwidgets>
  <resources>

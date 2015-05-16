@@ -8,9 +8,11 @@
 
 
 
-GraphEffectItem::GraphEffectItem( QString name, QString icon, int id ) : GraphItem( true )
+GraphEffectItem::GraphEffectItem( QString name, QString icon, int id )
+	: GraphItem( true ),
+	mouseOffset( 0 ),
+	moveStart( 0 )
 {
-	lastTime = QDateTime::currentDateTime();
 	image = QImage( QString(":/images/icons/%1.png").arg( icon ) );
 	text = name;
 	filterIndex = id;
@@ -74,7 +76,7 @@ void GraphEffectItem::mousePressEvent( QGraphicsSceneMouseEvent *event )
 
 	g->itemSelected( this );
 	
-	firstMove = true;
+	mouseFirstMove = true;
 	moveStart = event->scenePos().y();
 	mouseOffset = moveStart - y();
 }
@@ -83,10 +85,11 @@ void GraphEffectItem::mousePressEvent( QGraphicsSceneMouseEvent *event )
 
 void GraphEffectItem::mouseMoveEvent( QGraphicsSceneMouseEvent *event )
 {
-	if ( firstMove && qAbs(event->scenePos().y() - moveStart) < MINMOVE )
+
+	if ( mouseFirstMove && qAbs(event->scenePos().y() - moveStart) < MINMOVE )
 		return;
 	
-	firstMove = false;
+	mouseFirstMove = false;
 	Graph* g = (Graph*)scene();
 	g->effectMoved( this, event->scenePos().y() - mouseOffset );
 }
@@ -95,8 +98,9 @@ void GraphEffectItem::mouseMoveEvent( QGraphicsSceneMouseEvent *event )
 
 void GraphEffectItem::mouseReleaseEvent( QGraphicsSceneMouseEvent * )
 {
-	if ( firstMove )
+	if ( mouseFirstMove )
 		return;
+
 	Graph* g = (Graph*)scene();
 	g->effectReleased( this );
 }

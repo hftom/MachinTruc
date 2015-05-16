@@ -14,14 +14,6 @@ public:
 	TimelineGraphicsView( QWidget *parent ) : QGraphicsView( parent ) {
 		setMouseTracking( true );
 	}
-	
-public slots:
-	void showVerticalScrollBar( bool b ) {
-		if ( b )
-			setVerticalScrollBarPolicy( Qt::ScrollBarAlwaysOn );
-		else
-			setVerticalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
-	}
 
 protected:
 	void resizeEvent( QResizeEvent *e ) {
