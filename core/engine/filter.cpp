@@ -64,6 +64,29 @@ Parameter* Filter::addBooleanParameter( QString id, QString name, QVariant def )
 
 
 
+void Filter::prependLastParameter()
+{
+	Parameter *p = parameters.takeLast();
+	parameters.prepend( p );
+}
+
+
+
+void Filter::removeParameters( QList<Parameter*> *params )
+{
+	for ( int i = 0; i < params->count(); ++i ) {
+		Parameter *p = params->at( i );
+		for ( int j = 0; j < parameters.count(); ++j ) {
+			if ( parameters.at( j ) == p ) {
+				delete parameters.takeAt( j );
+				break;
+			}
+		}
+	}
+}
+
+
+
 double Filter::getNormalizedTime( double pts )
 {
 	return (pts - (posInTrack + posOffset) ) / length;

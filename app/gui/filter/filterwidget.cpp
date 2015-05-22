@@ -1,3 +1,5 @@
+#include "vfx/glcustom.h"
+
 #include "filterwidget.h"
 
 #include "inputdouble.h"
@@ -57,6 +59,11 @@ FilterWidget::FilterWidget( QWidget *parent, Clip *c, QSharedPointer<Filter> f )
 			}
 			case Parameter::PINPUTDOUBLE: {
 				pw = new InputDouble( this, p, clip != 0 );
+				break;
+			}
+			case Parameter::PSHADEREDIT: {
+				pw = new ShaderEdit( this, p );
+				connect( pw, SIGNAL(compileShaderRequest(ThumbRequest)), this, SIGNAL(compileShaderRequest(ThumbRequest)) );
 				break;
 			}
 		}
@@ -142,12 +149,22 @@ void FilterWidget::valueChanged( Parameter *p, QVariant val )
 {
 	switch ( p->type ) {
 		case Parameter::PDOUBLE:
-		case Parameter::PINPUTDOUBLE:
+		case Parameter::PINPUTDOUBLE: {
 			p->value = val.toInt() / 100.0;
 			break;
-		default:
+		}
+		default: {
 			p->value = val;
 			break;
+		}
 	}
-	emit updateFrame();
+	
+	if ( p->type == Parameter::PSHADEREDIT ) {
+		GLCustom *f = (GLCustom*) filter.data();
+		f->setCustomParams( val.toString() );
+		emit reloadCurrentFilter();
+	}
+	else {
+		emit updateFrame();
+	}
 }

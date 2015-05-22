@@ -73,6 +73,7 @@ TopWindow::TopWindow()
 	connect( fxPage, SIGNAL(editAnimation(FilterWidget*,ParameterWidget*,Parameter*)), this, SLOT(editAnimation(FilterWidget*,ParameterWidget*,Parameter*)) );
 	connect( fxPage, SIGNAL(showEffect(bool,int)), timeline, SLOT(showEffect(bool,int)) );
 	connect( fxPage, SIGNAL(currentFilterChanged(int)), this, SLOT(hideAnimEditor(int)) );
+	connect( fxPage, SIGNAL(compileShaderRequest(ThumbRequest)), this, SLOT(clipThumbRequest(ThumbRequest)) );
 	
 	fxSettingsPage = new FxSettingsPage();
 	connect( timeline, SIGNAL(clipSelected(ClipViewItem*)), fxSettingsPage, SLOT(clipSelected(ClipViewItem*)) );
@@ -657,6 +658,13 @@ void TopWindow::thumbResultReady( ThumbRequest result )
 {
 	if ( result.typeOfRequest == ThumbRequest::THUMB ) {
 		timeline->thumbResultReady( result );
+		return;
+	}
+	
+	if ( result.typeOfRequest == ThumbRequest::SHADER ) {
+		ShaderEdit *edit = (ShaderEdit*)result.caller;
+		if ( edit )
+			edit->setCompileResult( result.filePath );
 		return;
 	}
 

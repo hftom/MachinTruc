@@ -8,6 +8,7 @@
 #include "ui_mainwindow.h"
 #include "ui_blankdialog.h"
 
+#include "gui/filter/shaderedit.h"
 #include "gui/projectclipspage.h"
 #include "gui/fxpage.h"
 #include "gui/fxsettingspage.h"
@@ -151,7 +152,8 @@ public:
 	
 	Source* getDroppedCut( int index, QString mime, QString filename, double &start, double &len );
 	Sampler* getSampler() { return sampler; };
-	
+
+public slots:
 	void clipThumbRequest( ThumbRequest request );
 	
 protected:

@@ -47,16 +47,19 @@ public:
 	int getSnap() { return snap; }
 	void setSnap( int s ) { snap = s; }
 	
-	QString getFilterName() { return filterName; }
+	virtual QString getFilterName() { return filterName; }
 	QString getIdentifier() { return identifier; }
 	
 	virtual void ovdUpdate( QString /*type*/, QVariant /*val*/ ) {}
 	void enableOVD( bool b ) { showOVD = b; }
 	bool ovdEnabled() { return showOVD; }
 
-protected:	
+protected:
 	Parameter* addParameter( QString id, QString name, int type, QVariant def, QVariant min, QVariant max, bool keyframeable, const QString &suffix = QString() );
 	Parameter* addBooleanParameter( QString id, QString name, QVariant def );
+	void prependLastParameter();
+	void removeParameters( QList<Parameter*> *params );
+
 	QVariant getParamValue( Parameter *param, double pts = 0 );
 	double getNormalizedTime( double pts );
 	

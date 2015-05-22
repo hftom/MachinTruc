@@ -65,12 +65,11 @@ void Graph::setCurrentClip( ClipViewItem *c )
 		int index = currentClip->getClip()->audioFilters.currentIndex();
 		for ( int i = 0; i < currentClip->getClip()->audioFilters.count(); ++i ) {
 			QString icon = "sound";
-			QString name = "";
+			QString name = currentClip->getClip()->audioFilters.at( i )->getFilterName();
 			QString id = currentClip->getClip()->audioFilters.at( i )->getIdentifier();
 			for ( int j = 0; j < fc->audioFilters.count(); ++j ) {
 				if ( fc->audioFilters[ j ].identifier == id ) {
 					icon = fc->audioFilters[ j ].icon;
-					name = fc->audioFilters[ j ].name;
 					break;
 				}
 			}
@@ -86,12 +85,11 @@ void Graph::setCurrentClip( ClipViewItem *c )
 		int index = currentClip->getClip()->videoFilters.currentIndex();
 		for ( int i = 0; i < currentClip->getClip()->videoFilters.count(); ++i ) {
 			QString icon = "lens";
-			QString name = "";
+			QString name = currentClip->getClip()->videoFilters.at( i )->getFilterName();
 			QString id = currentClip->getClip()->videoFilters.at( i )->getIdentifier();
 			for ( int j = 0; j < fc->videoFilters.count(); ++j ) {
 				if ( fc->videoFilters[ j ].identifier == id ) {
 					icon = fc->videoFilters[ j ].icon;
-					name = fc->videoFilters[ j ].name;
 					break;
 				}
 			}
@@ -106,6 +104,14 @@ void Graph::setCurrentClip( ClipViewItem *c )
 	
 	itemSelected( it );
 	QTimer::singleShot ( 1, this, SLOT(updateLength()) );
+}
+
+
+
+void Graph::reloadCurrentFilter()
+{
+	if ( selectedItem )
+		setCurrentClip( currentClip );
 }
 
 

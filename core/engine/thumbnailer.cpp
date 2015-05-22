@@ -1,11 +1,13 @@
 #include <QApplication>
 
+#include <movit/init.h>
 #include <movit/resample_effect.h>
 #include "engine/movitchain.h"
 #include "engine/filtercollection.h"
 #include "vfx/movitflip.h"
 #include "vfx/movitbackground.h"
 
+#include <QGLShaderProgram>
 #include <QGLFramebufferObject>
 
 #include "input/input_ff.h"
@@ -46,7 +48,10 @@ bool Thumbnailer::pushRequest( ThumbRequest req )
 		return false;
 
 	requestMutex.lock();
-	requestList.append( req );
+	if ( req.typeOfRequest == ThumbRequest::SHADER )
+		requestList.prepend( req );
+	else
+		requestList.append( req );
 	requestMutex.unlock();
 	
 	if ( !isRunning() ) {
@@ -85,7 +90,7 @@ void Thumbnailer::run()
 		requestMutex.lock();
 		if ( !requestList.count() ) {
 			requestMutex.unlock();
-			usleep( 50000 );
+			usleep( 100000 );
 		}
 		else {
 			ThumbRequest request = requestList.takeFirst();
@@ -93,6 +98,9 @@ void Thumbnailer::run()
 		
 			if ( request.typeOfRequest == ThumbRequest::PROBE ) {
 				probe( request );
+			}
+			else if ( request.typeOfRequest == ThumbRequest::SHADER ) {
+				compileShader( request );
 			}
 			else {
 				makeThumb( request );
@@ -181,6 +189,75 @@ void Thumbnailer::makeThumb( ThumbRequest &request )
 	}			
 	
 	delete input;
+}
+
+
+
+void Thumbnailer::compileShader( ThumbRequest &request )
+{
+	int faulty;
+	QList<Parameter> list = Parameter::parseShaderParams( request.filePath, faulty );
+	if ( faulty != -1 ) {
+		request.filePath = QString( "nok Error at line %1" ).arg( faulty );
+		return;
+	}
+	for ( int i = 0; i < list.count(); ++i ) {
+		Parameter p = list.at(i);
+		if ( p.type == Parameter::PDOUBLE )
+			request.filePath.prepend( QString( "uniform float PREFIX(%1);\n" ).arg( p.id ) );
+		else if ( p.type == Parameter::PRGBCOLOR )
+			request.filePath.prepend( QString( "uniform vec3 PREFIX(%1);\n" ).arg( p.id ) );
+		else if ( p.type == Parameter::PRGBACOLOR )
+			request.filePath.prepend( QString( "uniform vec4 PREFIX(%1);\n" ).arg( p.id ) );
+	}
+	
+	QString shader;
+	if ( movit_shader_model == MOVIT_GLSL_130 )
+		shader += "#version 130\n";
+	else if ( movit_shader_model == MOVIT_ESSL_300 )
+		shader += "#version 300 es\n";
+	shader += "uniform sampler2D tex;\n";
+	shader += "vec4 tex2D( vec2 tc ) {\n";
+	shader += "  return texture2D( tex, tc );\n";
+	shader += "}\n";
+	shader += "\n";
+	shader += "#define INPUT tex2D\n";
+	shader += "#define FUNCNAME eff1\n";
+	shader += "\n";
+	// declare time and texelSize uniforms
+	shader += "uniform float eff1_time;\n";
+	shader += "uniform vec2 eff1_texelSize;\n";
+	QString s = request.filePath;
+	shader += s.replace( QRegExp("PREFIX\\(([^\\)]*)\\)"), "eff1_\\1" );
+	shader += "\n";
+	shader += "#undef INPUT\n";
+	shader += "#undef FUNCNAME\n";
+	shader += "#define INPUT eff1\n";
+	shader += "#define FUNCNAME eff2\n";
+	shader += "\n";
+	shader += "uniform float eff2_time;\n";
+	shader += "uniform vec2 eff2_texelSize;\n";
+	s = request.filePath;
+	shader += s.replace( QRegExp("PREFIX\\(([^\\)]*)\\)"), "eff2_\\1" );
+	shader += "\n";
+	shader += "void main() {\n";
+	shader += "  gl_FragColor = FUNCNAME( gl_TexCoord[0].st );\n";
+	shader += "}\n";
+	
+	QGLShaderProgram prog;
+	bool ok = prog.addShaderFromSourceCode( QGLShader::Fragment, shader );
+	if ( ok )
+		ok = prog.link();
+	if ( ok ) {
+		// be strict, treat warning as error
+		/*if ( prog.log().contains( "Warning" ) || prog.log().contains( "warning" ) )
+			request.filePath = "nok" + prog.log();
+		else*/
+			request.filePath = "ok";
+	}
+	else {
+		request.filePath = "nok" + prog.log();
+	}
 }
 
 

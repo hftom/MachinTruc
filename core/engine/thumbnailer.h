@@ -21,12 +21,19 @@ class QGLWidget;
 class ThumbRequest
 {
 public:
-	enum RequestType{ PROBE, THUMB };
+	enum RequestType{ PROBE, THUMB, SHADER };
 
 	ThumbRequest( QString path )
 		: typeOfRequest( PROBE ),
 		caller( NULL ),
 		filePath( path ),
+		thumbPTS( 0 ) {}
+	
+	ThumbRequest( void *from, QString shader, int inputNumber )
+		: typeOfRequest( SHADER ),
+		caller( from ),
+		inputType( inputNumber ),
+		filePath( shader ),
 		thumbPTS( 0 ) {}
 		
 	ThumbRequest( void *from, int inType, QString path, Profile prof, double pts )
@@ -68,6 +75,7 @@ private slots:
 private:	
 	void probe( ThumbRequest &request );
 	void makeThumb( ThumbRequest &request );
+	void compileShader( ThumbRequest &request );
 	
 	QImage getSourceThumb( Frame *f, bool border );
 	

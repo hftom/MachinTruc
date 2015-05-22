@@ -31,6 +31,7 @@ public slots:
 	void viewSizeChanged( const QSize &size );
 	void itemSelected( GraphEffectItem *it );
 	void effectRightClick( GraphEffectItem *it );
+	void reloadCurrentFilter();
 	
 protected:
 	void dragEnterEvent( QGraphicsSceneDragDropEvent *event );

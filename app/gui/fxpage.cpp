@@ -71,6 +71,8 @@ void FxPage::videoFilterSelected( Clip *c, int index )
 	FilterWidget *fw = new FilterWidget( currentEffectsWidget, c, c->videoFilters.at( index ) );
 	connect( fw, SIGNAL(updateFrame()), this, SIGNAL(updateFrame()) );
 	connect( fw, SIGNAL(editAnimation(FilterWidget*,ParameterWidget*,Parameter*)), this, SIGNAL(editAnimation(FilterWidget*,ParameterWidget*,Parameter*)) );
+	connect( fw, SIGNAL(compileShaderRequest(ThumbRequest)), this, SIGNAL(compileShaderRequest(ThumbRequest)) );
+	connect( fw, SIGNAL(reloadCurrentFilter()), videoGraph, SLOT(reloadCurrentFilter()) );
 	connect( this, SIGNAL(ovdValueChanged(ParameterWidget*)), fw, SLOT(ovdValueChanged(ParameterWidget*)) );
 	effectsWidgetLayout->addWidget( fw, 0, 1 );
 	effectsWidgetLayout->setRowStretch( 1, 1 );

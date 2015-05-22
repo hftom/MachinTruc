@@ -52,16 +52,12 @@ public:
 class Parameter
 {
 public:
-	enum ParameterType{ PDOUBLE, PINT, PBOOL, PRGBCOLOR, PRGBACOLOR, PCOLORWHEEL, PSTRING, PINPUTDOUBLE };
+	enum ParameterType{ PDOUBLE, PINT, PBOOL, PRGBCOLOR, PRGBACOLOR, PCOLORWHEEL, PSTRING, PINPUTDOUBLE, PSHADEREDIT };
 	
-	double getUnnormalizedKeyValue( int keyIndex ) {
-		double range = qAbs( -min.toDouble() + max.toDouble() );
-		return (range * graph.keys[keyIndex].y) + min.toDouble();
-	}
+	double getUnnormalizedKeyValue( int keyIndex );	
+	double getNormalizedKeyValue( double val );
 	
-	double getNormalizedKeyValue( double val ) {
-		return (val - min.toDouble()) / (max.toDouble() - min.toDouble());
-	}
+	static QList<Parameter> parseShaderParams( QString shader, int &faultyLine );
 
 	// unique per filter
 	// the following ids are reserved for OVD: xOffset, yOffset, sizePercent

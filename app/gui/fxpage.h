@@ -43,6 +43,7 @@ signals:
 	void updateFrame();
 	void showEffect( bool isVideo, int index );
 	void currentFilterChanged( int );
+	void compileShaderRequest( ThumbRequest );
 	
 	void ovdValueChanged(ParameterWidget*);
 };

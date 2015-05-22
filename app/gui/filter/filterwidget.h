@@ -6,6 +6,7 @@
 #include "engine/clip.h"
 #include "engine/filter.h"
 #include "parameterwidget.h"
+#include "shaderedit.h"
 
 
 
@@ -39,6 +40,8 @@ signals:
 	void filterMoveUp( Clip*, QSharedPointer<Filter>);
 	void filterMoveDown( Clip*, QSharedPointer<Filter> );
 	void editAnimation( FilterWidget*, ParameterWidget*, Parameter* );
+	void compileShaderRequest( ThumbRequest );
+	void reloadCurrentFilter();
 	void updateFrame();
 };
 

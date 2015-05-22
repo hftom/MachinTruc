@@ -12,6 +12,7 @@
 #include "vfx/glblur.h"
 #include "vfx/glborder.h"
 #include "vfx/glcrop.h"
+#include "vfx/glcustom.h"
 #include "vfx/glcut.h"
 #include "vfx/gldeconvolutionsharpen.h"
 #include "vfx/gldiffusion.h"
