@@ -10,16 +10,21 @@ ShaderEdit::ShaderEdit( QWidget *parent, Parameter *p ) : ParameterWidget( paren
 	box = new QBoxLayout( QBoxLayout::TopToBottom );
 	box->setContentsMargins( 0, 0, 0, 0 );
 	
+	editCheckBox = new QCheckBox( tr("Edit...") );
+	widgets.append( editCheckBox );
+	box->addWidget( editCheckBox );
+	
 	editor = new QPlainTextEdit();
 	//QFont font = QFontDatabase::systemFont( QFontDatabase::FixedFont );
 	QFont font( "Sans" );
-	font.setPointSize( 12 );
+	//font.setPointSize( 12 );
 	editor->setFont( font );
 	editor->setStyleSheet( "QPlainTextEdit{ background-color:#FFFEC7; color:black; }" );
 	editor->setTabStopWidth( QFontMetrics( font ).averageCharWidth() * 2 );
 	highlighter = new Highlighter( editor->document() );
 	widgets.append( editor );
 	box->addWidget( editor );
+	editor->hide();
 	
 	QBoxLayout *applyLayout = new QBoxLayout( QBoxLayout::LeftToRight );
 	applyBtn = new QPushButton( tr("Apply") );
@@ -27,12 +32,28 @@ ShaderEdit::ShaderEdit( QWidget *parent, Parameter *p ) : ParameterWidget( paren
 	applyLayout->addWidget( applyBtn );
 	applyLayout->insertStretch( -1, 1 );
 	box->addLayout( applyLayout );
+	applyBtn->hide();
 	
 	editor->setPlainText( p->value.toString() );
 	applyBtn->setEnabled( false );
 	
 	connect( editor, SIGNAL(textChanged()), this, SLOT(textChanged()) );
 	connect( applyBtn, SIGNAL(clicked()), this, SLOT(applyClicked()) );
+	connect( editCheckBox, SIGNAL(stateChanged(int)), this, SLOT(showEditor(int)) );
+}
+
+
+
+void ShaderEdit::showEditor( int b )
+{
+	if ( b == Qt::Checked ) {
+		editor->show();
+		applyBtn->show();
+	}
+	else {
+		editor->hide();
+		applyBtn->hide();
+	}
 }
 
 

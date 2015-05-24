@@ -5,6 +5,7 @@
 #include <QProgressDialog>
 #include <QPlainTextEdit>
 #include <QPushButton>
+#include <QCheckBox>
 #include <QBoxLayout>
 
 #include "engine/thumbnailer.h"
@@ -55,11 +56,13 @@ public:
 private slots:
 	void textChanged();
 	void applyClicked();
+	void showEditor( int b );
 	
 private:
 	Highlighter *highlighter;
 	QPlainTextEdit *editor;
 	QPushButton *applyBtn;
+	QCheckBox *editCheckBox;
 	QBoxLayout *box;
 	QProgressDialog *progress;
 	
