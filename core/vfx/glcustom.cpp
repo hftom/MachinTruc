@@ -86,22 +86,22 @@ bool GLCustom::process( const QList<Effect*> &el, Frame *src, Profile *p )
 	double pts = src->pts();
 	Effect *e = el.at(0);
 	for ( int i = 0; i < shaderParams.count(); ++i ) {
-		Parameter *p = shaderParams.at( i );
-		if ( p->type == Parameter::PDOUBLE )
-			ok |= e->set_float( p->id.toLatin1().data(), getParamValue( p, pts ).toFloat() );
-		else if ( p->type == Parameter::PRGBCOLOR ) {
-			QColor c = getParamValue( p ).value<QColor>();
+		Parameter *param = shaderParams.at( i );
+		if ( param->type == Parameter::PDOUBLE )
+			ok |= e->set_float( param->id.toLatin1().data(), getParamValue( param, pts ).toFloat() );
+		else if ( param->type == Parameter::PRGBCOLOR ) {
+			QColor c = getParamValue( param ).value<QColor>();
 			// convert gamma and premultiply
 			sRgbColorToLinear( c );
 			RGBTriplet col = RGBTriplet( c.redF(), c.greenF(), c.blueF() );
-			ok |= e->set_vec3( p->id.toLatin1().data(), (float*)&col );
+			ok |= e->set_vec3( param->id.toLatin1().data(), (float*)&col );
 		}
-		else if ( p->type == Parameter::PRGBACOLOR ) {
-			QColor c = getParamValue( p ).value<QColor>();
+		else if ( param->type == Parameter::PRGBACOLOR ) {
+			QColor c = getParamValue( param ).value<QColor>();
 			// convert gamma and premultiply
 			sRgbColorToPremultipliedLinear( c );
 			RGBATuple col = RGBATuple( c.redF(), c.greenF(), c.blueF(), c.alphaF() );
-			ok |= e->set_vec4( p->id.toLatin1().data(), (float*)&col );
+			ok |= e->set_vec4( param->id.toLatin1().data(), (float*)&col );
 		}
 	}
 		
