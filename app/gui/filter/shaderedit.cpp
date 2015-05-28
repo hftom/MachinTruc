@@ -28,17 +28,22 @@ ShaderEdit::ShaderEdit( QWidget *parent, Parameter *p ) : ParameterWidget( paren
 	
 	QBoxLayout *applyLayout = new QBoxLayout( QBoxLayout::LeftToRight );
 	applyBtn = new QPushButton( tr("Apply") );
-	widgets.append( applyBtn );
-	applyLayout->addWidget( applyBtn );
-	applyLayout->insertStretch( -1, 1 );
-	box->addLayout( applyLayout );
 	applyBtn->hide();
-	
+	widgets.append( applyBtn );
+	helpBtn = new QPushButton( tr("Help") );
+	helpBtn->hide();
+	widgets.append( helpBtn );
+	applyLayout->addWidget( applyBtn );
+	applyLayout->insertStretch( 1, 1 );
+	applyLayout->addWidget( helpBtn );
+	box->addLayout( applyLayout );
+
 	editor->setPlainText( p->value.toString() );
 	applyBtn->setEnabled( false );
 	
 	connect( editor, SIGNAL(textChanged()), this, SLOT(textChanged()) );
 	connect( applyBtn, SIGNAL(clicked()), this, SLOT(applyClicked()) );
+	connect( helpBtn, SIGNAL(clicked()), this, SLOT(helpClicked()) );
 	connect( editCheckBox, SIGNAL(stateChanged(int)), this, SLOT(showEditor(int)) );
 }
 
@@ -49,11 +54,60 @@ void ShaderEdit::showEditor( int b )
 	if ( b == Qt::Checked ) {
 		editor->show();
 		applyBtn->show();
+		helpBtn->show();
 	}
 	else {
 		editor->hide();
 		applyBtn->hide();
+		helpBtn->hide();
 	}
+}
+
+
+
+void ShaderEdit::helpClicked()
+{
+	QString help = "The shader entry point is FUNCNAME.\n"
+					"Instead of texture2D( sampler, coord ), you sample with INPUT( tc )\n"
+					"FUNCNAME returns a vec4 (rgba).\n"
+					"ATTENTION: input is and output must be alpha premultiplied.\n"
+					"The shader name is set in a comment that starts with //NAME:\n"
+					"You can declare user settable parameters in comments:\n"
+					"//PARAM : id : ui name : type : default value : min : max : keyframeable\n"
+					"where:\n"
+					"type = float, rgb or rgba\n"
+					"default value = a decimal for float, a hex string for rgb (e.g. ffcc00) and rgba (e.g. ffcc0080)\n"
+					"min and max = float only\n"
+					"keyframeable = (float only) false or true if this parameter can be animated\n"
+					"\n"
+					"You then get a uniform that you can access with PREFIX(id)\n"
+					"In addition, there are 2 uniforms that are always available:\n"
+					"PREFIX(time) = float, time in seconds\n"
+					"PREFIX(texelSize) = vec2( 1.0 / imageWidth, 1.0 / imageHeight)\n"
+					"\n"
+					"Each global name (const or function) must be PREFIXed.\n"
+					"\n"
+					"Example:\n"
+					"\n"
+					"//NAME:Example\n"
+					"//PARAM:amount:Amount:float: 0.5 : 0 : 1 : false\n"
+					"//PARAM:col:Color:rgba:ff0000ff\n"
+					"\n"
+					"const float PREFIX(pi) = 3.14159265359;\n"
+					"\n"
+					"float PREFIX(foo)( float f ) {\n"
+					"  return f / PREFIX(pi);\n"
+					"}\n"
+					"\n"
+					"vec4 FUNCNAME( vec2 tc ) {\n"
+					"  float a = PREFIX(foo)( PREFIX(amount) );\n"
+					"  a *= sin( PREFIX(time) );\n"
+					"  return mix( INPUT( tc ), PREFIX(col), a );\n"
+					"}\n"
+					"\n"
+					"Note also that any #define must be #undef.\n;
+
+	QMessageBox::information( this, tr("Help"), help );
 }
 
 

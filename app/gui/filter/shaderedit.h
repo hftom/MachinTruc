@@ -56,12 +56,13 @@ public:
 private slots:
 	void textChanged();
 	void applyClicked();
+	void helpClicked();
 	void showEditor( int b );
 	
 private:
 	Highlighter *highlighter;
 	QPlainTextEdit *editor;
-	QPushButton *applyBtn;
+	QPushButton *applyBtn, *helpBtn;
 	QCheckBox *editCheckBox;
 	QBoxLayout *box;
 	QProgressDialog *progress;

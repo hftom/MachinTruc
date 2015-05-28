@@ -10,6 +10,10 @@
 class DynamicParam
 {
 public:
+	DynamicParam() {
+		f[0] = f[1] = f[2] = f[3] = 0.0f;
+	}
+
 	float f[4];
 };
 	
