@@ -17,6 +17,7 @@ FilterCollection::FilterCollection()
 	videoFilters.append( FilterEntry( "lens", "GLBlur", QObject::tr("Blur"), &Maker<GLBlur>::make ) );
 	videoFilters.append( FilterEntry( "lens", "GLDeconvolutionSharpen", QObject::tr("Sharpen"), &Maker<GLDeconvolutionSharpen>::make ) );
 	videoFilters.append( FilterEntry( "lens", "GLSharpen", QObject::tr("Sharpen (fast)"), &Maker<GLSharpen>::make ) );
+	videoFilters.append( FilterEntry( "lens", "GLDenoise", QObject::tr("Denoise"), &Maker<GLDenoise>::make ) );
 	videoFilters.append( FilterEntry( "lens", "GLDiffusion", QObject::tr("Diffusion"), &Maker<GLDiffusion>::make ) );
 	videoFilters.append( FilterEntry( "lens", "GLGlow", QObject::tr("Glow"), &Maker<GLGlow>::make ) );
 	videoFilters.append( FilterEntry( "size", "GLSize", QObject::tr("Size and position"), &Maker<GLSize>::make ) );

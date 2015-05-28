@@ -1,13 +1,15 @@
-#ifndef GLEDGE_H
-#define GLEDGE_H
+#ifndef GLDENOISE_H
+#define GLDENOISE_H
 
+#include <movit/blur_effect.h>
 #include <movit/effect_util.h>
+#include <movit/util.h>
 
 #include "vfx/glfilter.h"
 
 
 
-static const char *EdgeEffect_frag=
+static const char *DenoiseEdgeEffect_frag=
 "uniform vec2 PREFIX(one_div_size);\n"
 "vec4 FUNCNAME( vec2 tc ) {\n"
 "	float xof = PREFIX(one_div_size).x;\n"
@@ -22,25 +24,21 @@ static const char *EdgeEffect_frag=
 "	c2 = INPUT( vec2( tc.x, tc.y - yof ) );\n"
 "	diff += abs(c2.r - c1.r) + abs(c2.g - c1.g) + abs(c2.b - c1.b);\n"
 "	diff *= PREFIX(amp);\n"
-"	if ( diff < PREFIX(depth) )\n"
-"		diff = 0.0;\n"
 "	diff = clamp( diff, 0.0, 1.0 );\n"
 "	vec4 top = vec4( vec3( 0.0 ), diff ) * c1.a;\n"
-"	vec4 bottom = mix( c1, vec4(1.0, 1.0, 1.0, c1.a), PREFIX(opacity));\n"
+"	vec4 bottom = vec4(1.0, 1.0, 1.0, c1.a);\n"
 "	return (top + (1.0 - top.a) * bottom) * c1.a;\n"
 "}\n";
 
 
 
-class EdgeEffect : public Effect {
+class DenoiseEdgeEffect : public Effect {
 public:
-	EdgeEffect() : amp(3.0), depth(1.0), opacity(1.0), iwidth(1), iheight(1) {
+	DenoiseEdgeEffect() : amp(3.0), iwidth(1), iheight(1) {
 		register_float("amp", &amp);
-		register_float("depth", &depth);
-		register_float("opacity", &opacity);
 	}
-	std::string effect_type_id() const { return "EdgeEffect"; }
-	std::string output_fragment_shader() { return EdgeEffect_frag; }
+	std::string effect_type_id() const { return "DenoiseEdgeEffect"; }
+	std::string output_fragment_shader() { return DenoiseEdgeEffect_frag; }
 	bool needs_texture_bounce() const { return true; }
 	
 	virtual void inform_input_size(unsigned, unsigned width, unsigned height) {
@@ -56,25 +54,57 @@ public:
 	
 private:
 	float amp;
-	float depth;
-	float opacity;
 	float iwidth, iheight;
 };
 
 
 
-class GLEdge : public GLFilter
-{
+static const char *MyDenoiseMask_shader=
+"vec4 FUNCNAME( vec2 tc ) {\n"
+"	float edge = INPUT1(tc).r;\n"
+"	vec4 blur = INPUT2(tc);\n"
+"	vec4 org = INPUT3(tc);\n"
+"	return mix( org, blur, edge );\n"
+"}\n";
+
+
+
+class MyDenoiseMask : public Effect {
 public:
-	GLEdge( QString id, QString name );
-	~GLEdge();
-
-	bool process( const QList<Effect*> &el, Frame *src, Profile *p );
-
-	QList<Effect*> getMovitEffects();
-	
-private:
-	Parameter *amp, *depth, *opacity, *blur;
+	MyDenoiseMask() {}
+	virtual std::string effect_type_id() const { return "MyDenoiseMask"; }
+	virtual unsigned num_inputs() const { return 3; }
+	virtual std::string output_fragment_shader() { return MyDenoiseMask_shader; }
 };
 
-#endif // GLEDGE_H
+
+
+class MyDenoiseEffect : public Effect {
+public:
+	MyDenoiseEffect();
+	std::string effect_type_id() const { return "MyDenoiseEffect"; }
+	void rewrite_graph(EffectChain *graph, Node *self);
+	bool set_float(const std::string &key, float value);
+	std::string output_fragment_shader() { assert(false); }
+
+private:
+	BlurEffect *blur, *eblur;
+	DenoiseEdgeEffect *edge;
+	MyDenoiseMask *mask;
+};
+
+
+
+class GLDenoise : public GLFilter
+{
+public:
+	GLDenoise( QString id, QString name );
+
+	bool process( const QList<Effect*>&, Frame *src, Profile *p );
+	QList<Effect*> getMovitEffects();
+
+private:
+	Parameter *amp, *eblur, *blur;
+};
+
+#endif //GLDENOISE_H

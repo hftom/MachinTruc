@@ -68,6 +68,7 @@ SOURCES = \
 	vfx/glnoise.cpp \
 	vfx/gltext.cpp \
 	vfx/glcustom.cpp \
+	vfx/gldenoise.cpp \
 	\
 	videoout/videowidget.cpp
 
@@ -147,6 +148,7 @@ HEADERS = \
 	vfx/glnoise.h \
 	vfx/gltext.h \
 	vfx/glcustom.h \
+	vfx/gldenoise.h \
 	\
 	videoout/videowidget.h
 
