@@ -105,7 +105,7 @@ void ShaderEdit::helpClicked()
 					"  return mix( INPUT( tc ), PREFIX(col), a );\n"
 					"}\n"
 					"\n"
-					"Note also that any #define must be #undef.\n;
+					"Note also that any #define must be #undef.\n";
 
 	QMessageBox::information( this, tr("Help"), help );
 }
