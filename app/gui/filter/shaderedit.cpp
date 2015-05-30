@@ -1,5 +1,6 @@
 #include <QDebug>
 #include <QMessageBox>
+#include <QRegularExpressionMatchIterator>
 
 #include "shaderedit.h"
 
@@ -42,9 +43,123 @@ ShaderEdit::ShaderEdit( QWidget *parent, Parameter *p ) : ParameterWidget( paren
 	applyBtn->setEnabled( false );
 	
 	connect( editor, SIGNAL(textChanged()), this, SLOT(textChanged()) );
+	connect( editor, SIGNAL(cursorPositionChanged()), this, SLOT(cursorPositionChanged()) );
 	connect( applyBtn, SIGNAL(clicked()), this, SLOT(applyClicked()) );
 	connect( helpBtn, SIGNAL(clicked()), this, SLOT(helpClicked()) );
 	connect( editCheckBox, SIGNAL(stateChanged(int)), this, SLOT(showEditor(int)) );
+}
+
+
+
+void ShaderEdit::cursorPositionChanged()
+{
+	QList<QTextEdit::ExtraSelection> selections;
+
+	int curPos = editor->textCursor().positionInBlock();
+	QTextBlock currentBlock = editor->textCursor().block();
+	TextBlockData *data = (TextBlockData*)currentBlock.userData();
+	if ( !data ) {
+		editor->setExtraSelections( selections );
+		return;
+	}
+
+	int searchPos = curPos;
+	int matchPos = -1;
+	for ( int i = 0; i < data->parenthesis.count(); ++i ) {
+		if ( data->parenthesis[i].position == curPos || data->parenthesis[i].position == curPos - 1 ) {
+			searchPos = currentBlock.position() + data->parenthesis[i].position;
+			QString s = data->parenthesis[i].character;
+			if ( s == "(" )
+				matchPos = searchNextMatch( currentBlock, i, s, ")" );
+			else if ( s == "{" )
+				matchPos = searchNextMatch( currentBlock, i, s, "}" );
+			else if ( s == "[" )
+				matchPos = searchNextMatch( currentBlock, i, s, "]" );
+			else if ( s == ")" )
+				matchPos = searchPreviousMatch( currentBlock, i, s, "(" );
+			else if ( s == "}" )
+				matchPos = searchPreviousMatch( currentBlock, i, s, "{" );
+			else if ( s == "]" )
+				matchPos = searchPreviousMatch( currentBlock, i, s, "[" );
+			break;
+		}
+	}
+
+	if ( matchPos > -1 ) {
+		QTextEdit::ExtraSelection selection;
+		selection.format.setBackground( Qt::yellow );
+		QTextCursor cursor = editor->textCursor();
+		cursor.setPosition( searchPos );
+		cursor.movePosition( QTextCursor::NextCharacter, QTextCursor::KeepAnchor );
+		selection.cursor = cursor;
+		selections.append( selection );
+		
+		cursor.setPosition( matchPos );
+		cursor.movePosition( QTextCursor::NextCharacter, QTextCursor::KeepAnchor );
+		selection.cursor = cursor;
+		selections.append( selection );
+	}
+	
+	editor->setExtraSelections( selections );
+}
+
+
+
+int ShaderEdit::searchNextMatch( QTextBlock block, int start, QString open, QString close )
+{
+	int skipNext = 0;
+	int i = start + 1;
+	
+	do {
+		TextBlockData *data = (TextBlockData*)block.userData();
+		if ( data ) {
+			for ( ; i < data->parenthesis.count(); ++i ) {
+				QString s = data->parenthesis[i].character;
+				if ( s == close ) {
+					if ( skipNext > 0 )
+						--skipNext;
+					else
+						return block.position() + data->parenthesis[i].position;
+				}
+				else if ( s == open )
+					++skipNext;
+			}
+		}
+		block = block.next();
+		i = 0;
+	} while ( block.isValid() );
+	
+	return -1;
+}
+
+
+
+int ShaderEdit::searchPreviousMatch( QTextBlock block, int start, QString close, QString open )
+{
+	int skipNext = 0;
+	--start;
+	TextBlockData *data = (TextBlockData*)block.userData();
+	
+	do {
+		if ( data ) {
+			for ( int i = start; i >= 0; --i ) {
+				QString s = data->parenthesis[i].character;
+				if ( s == open ) {
+					if ( skipNext > 0 )
+						--skipNext;
+					else
+						return block.position() + data->parenthesis[i].position;
+				}
+				else if ( s == close )
+					++skipNext;
+			}
+		}
+		block = block.previous();
+		data = (TextBlockData*)block.userData();
+		start = data->parenthesis.count() - 1;
+	} while ( block.isValid() );
+	
+	return -1;
 }
 
 
@@ -250,23 +365,6 @@ Highlighter::Highlighter( QTextDocument *parent )
 
 	multiLineCommentFormat.setForeground( Qt::darkGray );
 
-	/*classFormat.setFontWeight( QFont::Bold );
-	classFormat.setForeground( Qt::darkMagenta );
-	rule.pattern = QRegExp( "\\bQ[A-Za-z]+\\b" );
-	rule.format = classFormat;
-	highlightingRules.append( rule );	
-	
-	quotationFormat.setForeground( Qt::red );
-	rule.pattern = QRegExp( "\".*\"" );
-	rule.format = quotationFormat;
-	highlightingRules.append( rule );
-
-	functionFormat.setFontItalic( true );
-	functionFormat.setForeground( Qt::blue );
-	rule.pattern = QRegExp( "\\b[A-Za-z0-9_]+(?=\\()" );
-	rule.format = functionFormat;
-	highlightingRules.append( rule );*/
-
 	commentStartExpression = QRegExp( "/\\*" );
 	commentEndExpression = QRegExp( "\\*/" );
 }
@@ -275,6 +373,16 @@ Highlighter::Highlighter( QTextDocument *parent )
 
 void Highlighter::highlightBlock(const QString &text)
 {
+	//store parenthesis infos
+	TextBlockData *data = new TextBlockData();
+	setCurrentBlockUserData( data );
+	QRegularExpression re( "\\{|\\}|\\(|\\)|\\[|\\]" );
+	QRegularExpressionMatchIterator mi = re.globalMatch( text );
+	while ( mi.hasNext() ) {
+		QRegularExpressionMatch match = mi.next();
+		data->add( match.captured( 0 ), match.capturedStart( 0 ) );
+	}
+
 	foreach( const HighlightingRule &rule, highlightingRules ) {
 		QRegExp expression( rule.pattern );
 		int index = expression.indexIn( text );
@@ -284,6 +392,7 @@ void Highlighter::highlightBlock(const QString &text)
 			index = expression.indexIn( text, index + length );
 		}
 	}
+	
 	setCurrentBlockState( 0 );
 
 	int startIndex = 0;

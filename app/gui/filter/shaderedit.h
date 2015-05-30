@@ -13,6 +13,26 @@
 
 
 
+class ParenthesisInfo
+{
+public:
+	ParenthesisInfo() {}
+	ParenthesisInfo( QString c, int pos ) : character( c ),  position( pos ) {}
+	QString character;
+	int position;
+};
+
+class TextBlockData : public QTextBlockUserData
+{
+public:
+	void add( QString c, int pos ) {
+		parenthesis.append( ParenthesisInfo( c, pos ) );
+	}
+	QVector<ParenthesisInfo> parenthesis;
+};
+
+
+
 class Highlighter : public QSyntaxHighlighter
 {
 	Q_OBJECT
@@ -34,11 +54,8 @@ private:
 	QRegExp commentEndExpression;
 
 	QTextCharFormat keywordFormat;
-	QTextCharFormat classFormat;
 	QTextCharFormat singleLineCommentFormat;
 	QTextCharFormat multiLineCommentFormat;
-	QTextCharFormat quotationFormat;
-	QTextCharFormat functionFormat;
 };
 
 
@@ -55,11 +72,15 @@ public:
 	
 private slots:
 	void textChanged();
+	void cursorPositionChanged();
 	void applyClicked();
 	void helpClicked();
 	void showEditor( int b );
 	
 private:
+	int searchNextMatch( QTextBlock block, int start, QString open, QString close );
+	int searchPreviousMatch( QTextBlock block, int start, QString close, QString open );
+
 	Highlighter *highlighter;
 	QPlainTextEdit *editor;
 	QPushButton *applyBtn, *helpBtn;
