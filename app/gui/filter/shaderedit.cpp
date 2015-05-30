@@ -156,7 +156,8 @@ int ShaderEdit::searchPreviousMatch( QTextBlock block, int start, QString close,
 		}
 		block = block.previous();
 		data = (TextBlockData*)block.userData();
-		start = data->parenthesis.count() - 1;
+		if ( data )
+			start = data->parenthesis.count() - 1;
 	} while ( block.isValid() );
 	
 	return -1;
