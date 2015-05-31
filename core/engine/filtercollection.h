@@ -87,7 +87,6 @@ private:
 class FilterCollection
 {
 public:
-	FilterCollection();
 	static FilterCollection* getGlobalInstance();
 	
 	QList<FilterEntry> videoFilters;
@@ -96,6 +95,12 @@ public:
 	QList<FilterEntry> audioFilters;
 	QList<FilterEntry> sourceAudioFilters;
 	QList<FilterEntry> audioTransitions;
+	
+private:
+	FilterCollection();
+	~FilterCollection() {}
+	
+	static FilterCollection globalInstance;
 };
 
 #endif // FILTERCOLLECTION_H

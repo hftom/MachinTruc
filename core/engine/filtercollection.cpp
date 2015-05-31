@@ -3,7 +3,7 @@
 
 
 
-static FilterCollection globalFilterCollection;
+FilterCollection FilterCollection::globalInstance = FilterCollection();
 
 
 
@@ -71,5 +71,5 @@ FilterCollection::FilterCollection()
 
 FilterCollection* FilterCollection::getGlobalInstance()
 {
-	return &globalFilterCollection;
+	return &globalInstance;
 }
