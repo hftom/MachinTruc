@@ -91,7 +91,7 @@ bool GLCustom::process( const QList<Effect*> &el, Frame *src, Profile *p )
 			ok |= e->set_float( param->id.toLatin1().data(), getParamValue( param, pts ).toFloat() );
 		else if ( param->type == Parameter::PRGBCOLOR ) {
 			QColor c = getParamValue( param ).value<QColor>();
-			// convert gamma and premultiply
+			// convert gamma
 			sRgbColorToLinear( c );
 			RGBTriplet col = RGBTriplet( c.redF(), c.greenF(), c.blueF() );
 			ok |= e->set_vec3( param->id.toLatin1().data(), (float*)&col );
