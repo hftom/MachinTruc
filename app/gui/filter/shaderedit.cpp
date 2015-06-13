@@ -66,9 +66,10 @@ void ShaderEdit::cursorPositionChanged()
 	int searchPos = curPos;
 	int matchPos = -1;
 	for ( int i = 0; i < data->parenthesis.count(); ++i ) {
-		if ( data->parenthesis[i].position == curPos || data->parenthesis[i].position == curPos - 1 ) {
-			searchPos = currentBlock.position() + data->parenthesis[i].position;
-			QString s = data->parenthesis[i].character;
+		ParenthesisInfo pi = data->parenthesis[i];
+		if ( pi.position == curPos || pi.position == curPos - 1 ) {
+			searchPos = currentBlock.position() + pi.position;
+			QString s = pi.character;
 			if ( s == "(" )
 				matchPos = searchNextMatch( currentBlock, i, s, ")" );
 			else if ( s == "{" )
@@ -114,12 +115,13 @@ int ShaderEdit::searchNextMatch( QTextBlock block, int start, QString open, QStr
 		TextBlockData *data = (TextBlockData*)block.userData();
 		if ( data ) {
 			for ( ; i < data->parenthesis.count(); ++i ) {
-				QString s = data->parenthesis[i].character;
+				ParenthesisInfo pi = data->parenthesis[i];
+				QString s = pi.character;
 				if ( s == close ) {
 					if ( skipNext > 0 )
 						--skipNext;
 					else
-						return block.position() + data->parenthesis[i].position;
+						return block.position() + pi.position;
 				}
 				else if ( s == open )
 					++skipNext;
@@ -143,12 +145,13 @@ int ShaderEdit::searchPreviousMatch( QTextBlock block, int start, QString close,
 	do {
 		if ( data ) {
 			for ( int i = start; i >= 0; --i ) {
-				QString s = data->parenthesis[i].character;
+				ParenthesisInfo pi = data->parenthesis[i];
+				QString s = pi.character;
 				if ( s == open ) {
 					if ( skipNext > 0 )
 						--skipNext;
 					else
-						return block.position() + data->parenthesis[i].position;
+						return block.position() + pi.position;
 				}
 				else if ( s == close )
 					++skipNext;
@@ -230,7 +233,8 @@ void ShaderEdit::helpClicked()
 
 void ShaderEdit::textChanged()
 {
-	applyBtn->setEnabled( true );
+	if ( !applyBtn->isEnabled() )
+		applyBtn->setEnabled( true );
 }
 
 
