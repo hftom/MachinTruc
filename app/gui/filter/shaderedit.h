@@ -6,6 +6,7 @@
 #include <QPlainTextEdit>
 #include <QPushButton>
 #include <QCheckBox>
+#include <QComboBox>
 #include <QBoxLayout>
 
 #include "engine/thumbnailer.h"
@@ -71,6 +72,7 @@ public:
 	virtual void animValueChanged( double /*val*/ ) {};
 	
 private slots:
+	void localShaderChanged( const QString & text );
 	void textChanged();
 	void cursorPositionChanged();
 	void applyClicked();
@@ -82,6 +84,7 @@ private:
 	int searchPreviousMatch( QTextBlock block, int start, QString close, QString open );
 
 	Highlighter *highlighter;
+	QComboBox *localShadersCombo;
 	QPlainTextEdit *editor;
 	QPushButton *applyBtn, *helpBtn;
 	QCheckBox *editCheckBox;

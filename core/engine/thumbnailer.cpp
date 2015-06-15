@@ -216,14 +216,6 @@ void Thumbnailer::compileShader( ThumbRequest &request )
 	shader += "vec4 in0( vec2 tc ) {\n";
 	shader += "	return tex2D( tex, tc );\n";
 	shader += "}\n";
-	/*if ( movit_shader_model == MOVIT_GLSL_130 )
-		shader += "#version 130\n";
-	else if ( movit_shader_model == MOVIT_ESSL_300 )
-		shader += "#version 300 es\n";
-	shader += "uniform sampler2D tex;\n";
-	shader += "vec4 tex2D( vec2 tc ) {\n";
-	shader += "  return texture2D( tex, tc );\n";
-	shader += "}\n";*/
 	shader += "\n";
 	shader += "#define INPUT in0\n";
 	shader += "#define FUNCNAME eff1\n";
@@ -244,9 +236,6 @@ void Thumbnailer::compileShader( ThumbRequest &request )
 	s = request.filePath;
 	shader += s.replace( QRegExp("PREFIX\\(([^\\)]*)\\)"), "eff2_\\1" );
 	shader += "\n";
-	/*shader += "void main() {\n";
-	shader += "  gl_FragColor = FUNCNAME( gl_TexCoord[0].st );\n";
-	shader += "}\n";*/
 	shader += read_version_dependent_file( "footer", "frag" ).c_str();
 	
 	QGLShaderProgram prog;

@@ -117,6 +117,21 @@ QList<Parameter> Parameter::parseShaderParams( QString shader, int &faultyLine )
 
 
 
+QString Parameter::getShaderName( QString shader )
+{
+	QString s = "";
+	QStringList sl = shader.split( "\n" );
+	for ( int i = 0; i < sl.count(); ++i ) {
+		if ( sl[i].trimmed().startsWith( "//NAME:" ) ) {
+			s = sl[i].trimmed().replace( 0, 7, "" ).trimmed();
+			break;
+		}
+	}
+	return s;
+}
+
+
+
 AnimationKey::AnimationKey( int typeKey, double position, double value )
 {
 	keyType = typeKey;

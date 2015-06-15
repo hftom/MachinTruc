@@ -71,13 +71,14 @@ public:
 	virtual QList<Effect*> getMovitEffects();
 	
 	void setCustomParams( QString shader );
+	static QString getDefaultShader();
 	
 private:
 	Parameter *editor;
 	QList<Parameter*> shaderParams;
 	QString currentShader;
 	unsigned char version;
-	QString filterName;
+	QString shaderName;
 	
 	QMutex mutex;
 };

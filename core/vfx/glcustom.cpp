@@ -5,14 +5,9 @@
 
 GLCustom::GLCustom( QString id, QString name ) : GLFilter( id, name ), version( 0 )
 {
-	QString shader = "//NAME:Horizontal symmetry\n";
-	shader += "vec4 FUNCNAME( vec2 tc ) {\n";
-	shader += "	if ( tc.x > 0.5 )\n";
-	shader += "		tc.x = 1.0 - tc.x;\n";
-	shader += "	return INPUT( tc );\n";
-	shader += "}\n";
-	editor = addParameter( "editor", tr("Editor:"), Parameter::PSHADEREDIT, shader, "", "", false );
-	setCustomParams( shader );
+	// ATTENTION: the name _MUST_ be "editor"
+	editor = addParameter( "editor", tr("Editor:"), Parameter::PSHADEREDIT, getDefaultShader(), "", "", false );
+	setCustomParams( getDefaultShader() );
 }
 
 
@@ -23,10 +18,22 @@ GLCustom::~GLCustom()
 
 
 
+QString GLCustom::getDefaultShader()
+{
+	QString shader = "vec4 FUNCNAME( vec2 tc ) {\n";
+	shader += "	if ( tc.x > 0.5 )\n";
+	shader += "		tc.x = 1.0 - tc.x;\n";
+	shader += "	return INPUT( tc );\n";
+	shader += "}\n";
+	return shader;
+}
+
+
+
 QString GLCustom::getFilterName()
 {
-	if ( !filterName.isEmpty() )
-		return filterName;
+	if ( !shaderName.isEmpty() )
+		return shaderName;
 	return Filter::getFilterName();
 }
 
@@ -52,20 +59,15 @@ void GLCustom::setCustomParams( QString shader )
 			shaderParams.prepend( sp );
 		}
 	}
-	filterName = "";
-	QStringList sl = shader.split( "\n" );
-	for ( int i = 0; i < sl.count(); ++i ) {
-		if ( sl[i].trimmed().startsWith( "//NAME:" ) ) {
-			filterName = sl[i].trimmed().replace( 0, 7, "" );
-			break;
-		}
-	}
+	shaderName = Parameter::getShaderName( shader );
 }
 
 
 
 QString GLCustom::getDescriptor( Frame *src, Profile *p )
 {
+	Q_UNUSED( src );
+	Q_UNUSED( p );
 	QMutexLocker ml( &mutex );
 	QString shader = getParamValue( editor ).toString();
 	if ( shader != currentShader ) {

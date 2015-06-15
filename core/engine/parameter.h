@@ -58,6 +58,7 @@ public:
 	double getNormalizedKeyValue( double val );
 	
 	static QList<Parameter> parseShaderParams( QString shader, int &faultyLine );
+	static QString getShaderName( QString shader );
 
 	// unique per filter
 	// the following ids are reserved for OVD: xOffset, yOffset, sizePercent

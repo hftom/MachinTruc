@@ -2,6 +2,7 @@
 #include <QMessageBox>
 #include <QRegularExpressionMatchIterator>
 
+#include "gui/shadercollection.h"
 #include "shaderedit.h"
 
 
@@ -10,6 +11,10 @@ ShaderEdit::ShaderEdit( QWidget *parent, Parameter *p ) : ParameterWidget( paren
 {
 	box = new QBoxLayout( QBoxLayout::TopToBottom );
 	box->setContentsMargins( 0, 0, 0, 0 );
+	
+	localShadersCombo = new QComboBox();
+	widgets.append( localShadersCombo );
+	box->addWidget( localShadersCombo );
 	
 	editCheckBox = new QCheckBox( tr("Edit...") );
 	widgets.append( editCheckBox );
@@ -42,11 +47,16 @@ ShaderEdit::ShaderEdit( QWidget *parent, Parameter *p ) : ParameterWidget( paren
 	editor->setPlainText( p->value.toString() );
 	applyBtn->setEnabled( false );
 	
+	QStringList list = ShaderCollection::getGlobalInstance()->localShadersNames();
+	foreach( const QString & s, list )
+		localShadersCombo->addItem( s );
+	
 	connect( editor, SIGNAL(textChanged()), this, SLOT(textChanged()) );
 	connect( editor, SIGNAL(cursorPositionChanged()), this, SLOT(cursorPositionChanged()) );
 	connect( applyBtn, SIGNAL(clicked()), this, SLOT(applyClicked()) );
 	connect( helpBtn, SIGNAL(clicked()), this, SLOT(helpClicked()) );
 	connect( editCheckBox, SIGNAL(stateChanged(int)), this, SLOT(showEditor(int)) );
+	connect( localShadersCombo, SIGNAL(activated(const QString&)), this, SLOT(localShaderChanged(const QString&)) );
 }
 
 
@@ -239,17 +249,48 @@ void ShaderEdit::textChanged()
 
 
 
+void ShaderEdit::localShaderChanged( const QString & text )
+{
+	QString shader = ShaderCollection::getGlobalInstance()->getLocalShader( text );
+	if ( !shader.isEmpty() ) {
+		if ( !shader.endsWith("\n") )
+			shader += "\n";
+		emit valueChanged( param, QVariant( shader ) );
+	}
+}
+
+
+
 void ShaderEdit::applyClicked()
 {
+	QString shader = editor->toPlainText();
 	int faultyLine;
-	QList<Parameter> params = Parameter::parseShaderParams( editor->toPlainText(), faultyLine );
+	QList<Parameter> params = Parameter::parseShaderParams( shader, faultyLine );
 	if ( faultyLine != -1 ) {
-		QMessageBox::warning( this, "Param syntax error", QString( "Syntax error in param declaration at line %1." ).arg( faultyLine ) );
+		QMessageBox::warning( this, tr("Param syntax error"), QString( tr("Syntax error in param declaration at line %1.") ).arg( faultyLine ) );
 		applyBtn->setEnabled( false );
 		return;
 	}
 	
-	emit compileShaderRequest( ThumbRequest( this, editor->toPlainText() + "\n", 1 ) );
+	QString name = Parameter::getShaderName( shader );
+	if ( name.isEmpty() || name.length() < 3 ) {
+		QMessageBox::warning( this, tr("Invalid name"), tr( "The effect name length must be at least 3 chars." ) );
+		applyBtn->setEnabled( false );
+		return;
+	}
+	
+	if ( ShaderCollection::getGlobalInstance()->localShaderExists( name ) ) {
+		QMessageBox::StandardButton ret = QMessageBox::warning( this, tr("Shader exists"),
+													QString( tr("%1 already exists\nDo you want to overwrite?") ).arg( name ),
+													QMessageBox::Yes | QMessageBox::No,
+													QMessageBox::No );
+		if ( ret == QMessageBox::No ) {
+			applyBtn->setEnabled( false );
+			return;
+		}
+	}
+	
+	emit compileShaderRequest( ThumbRequest( this, shader + "\n", 1 ) );
 	progress = new QProgressDialog( this );
 	progress->setMinimum( 0 );
 	progress->setMaximum( 0 );
@@ -275,6 +316,11 @@ void ShaderEdit::setCompileResult( QString result )
 		QString shader = editor->toPlainText();
 		if ( !shader.endsWith("\n") )
 			shader += "\n";
+		QString name = Parameter::getShaderName( shader );
+		if ( !ShaderCollection::getGlobalInstance()->saveLocalShader( name, shader ) ) {
+			QMessageBox::warning( this, tr("Error"), tr( "Not able to save the shader." ) );
+			return;
+		}
 		emit valueChanged( param, QVariant( shader ) );
 	}
 	else {

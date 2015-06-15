@@ -1,5 +1,6 @@
 #include "engine/filtercollection.h"
 
+#include "shadercollection.h"
 #include "projectfile.h"
 
 
@@ -393,6 +394,39 @@ QSharedPointer<Filter> ProjectFile::readFilter( QDomElement &element, bool audio
 		readError = true;
 		return filter;
 	}
+
+	QString shader = "";
+	if ( filter->getIdentifier() == "GLCustom" ) {
+		for ( int i = 0; i < nodes.count(); ++i ) {
+			QDomElement e = nodes.at( i ).toElement();
+			if ( e.isNull() )
+				continue;
+			if ( e.tagName() == "Parameter" ) {
+				readParameter( e, filter );
+			}
+		}
+		
+		QString shaderName = "";
+		QList<Parameter*> params = filter->getParameters();
+		Parameter *editor = NULL;
+		for ( int i = 0; i < params.count(); ++i ) {
+			if ( params[ i ]->id == "editor" ) {
+				editor = params[ i ];
+				// retrieve the shader name
+				shaderName = editor->value.toString();
+				break;
+			}
+		}
+		
+		// get the shader
+		shader = ShaderCollection::getGlobalInstance()->getLocalShader( shaderName );
+		if ( editor && !shader.isEmpty() ) {
+			GLCustom *f = (GLCustom*)filter.data();
+			// set the shader so that parameters are constructed
+			// and will be reparsed in the following loop
+			f->setCustomParams( shader );
+		}	
+	}
 	
 	for ( int i = 0; i < nodes.count(); ++i ) {
 		QDomElement e = nodes.at( i ).toElement();
@@ -416,6 +450,22 @@ QSharedPointer<Filter> ProjectFile::readFilter( QDomElement &element, bool audio
 		}
 	}
 	
+	if ( filter->getIdentifier() == "GLCustom" ) {
+		// restore the shader that has been overwritten
+		// by the preceding loop
+		QList<Parameter*> params = filter->getParameters();
+		for ( int i = 0; i < params.count(); ++i ) {
+			if ( params[ i ]->id == "editor" ) {
+				if ( !shader.isEmpty() )
+					params[ i ]->value = shader;
+				else {
+					params[ i ]->value = GLCustom::getDefaultShader();
+				}
+				break;
+			}
+		}
+	}
+
 	return filter;
 }
 
@@ -500,6 +550,11 @@ void ProjectFile::readParameter( QDomElement &element, QSharedPointer<Filter> f 
 		if ( p->type != Parameter::PSTRING )
 			return;
 		p->value = value.replace( QString::fromUtf8("¶"), "\n" );
+	}
+	else if ( type == "shader" ) {
+		if ( p->type != Parameter::PSHADEREDIT )
+			return;
+		p->value = value;
 	}
 	
 	p->graph.keys.clear();
@@ -710,6 +765,11 @@ void ProjectFile::writeFilter( QDomNode &parent, bool audio, QSharedPointer<Filt
 			case Parameter::PSTRING: {
 				pel.setAttribute( "type", "string" );
 				pel.setAttribute( "value", p->value.toString().replace( "\n", QString::fromUtf8("¶") ) );
+				break;
+			}
+			case Parameter::PSHADEREDIT: {
+				pel.setAttribute( "type", "shader" );
+				pel.setAttribute( "value", Parameter::getShaderName( p->value.toString() ) );
 				break;
 			}
 		}
