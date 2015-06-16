@@ -8,6 +8,8 @@
 #include <QCheckBox>
 #include <QComboBox>
 #include <QBoxLayout>
+#include <QLabel>
+#include <QGroupBox>
 
 #include "engine/thumbnailer.h"
 #include "parameterwidget.h"
@@ -84,7 +86,10 @@ private:
 	int searchPreviousMatch( QTextBlock block, int start, QString close, QString open );
 
 	Highlighter *highlighter;
+	QGroupBox *localShadersGroup;
 	QComboBox *localShadersCombo;
+	QLabel *localComboLabel;
+	QGroupBox *editGroup;
 	QPlainTextEdit *editor;
 	QPushButton *applyBtn, *helpBtn;
 	QCheckBox *editCheckBox;

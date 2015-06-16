@@ -12,13 +12,21 @@ ShaderEdit::ShaderEdit( QWidget *parent, Parameter *p ) : ParameterWidget( paren
 	box = new QBoxLayout( QBoxLayout::TopToBottom );
 	box->setContentsMargins( 0, 0, 0, 0 );
 	
+	QBoxLayout *allLayout = new QBoxLayout( QBoxLayout::TopToBottom );
+	
+	QBoxLayout *localLayout = new QBoxLayout( QBoxLayout::LeftToRight );
+	localComboLabel = new QLabel( tr("Available effects:") );
+	widgets.append( localComboLabel );
+	localLayout->addWidget( localComboLabel );
 	localShadersCombo = new QComboBox();
 	widgets.append( localShadersCombo );
-	box->addWidget( localShadersCombo );
-	
+	localLayout->addWidget( localShadersCombo );
 	editCheckBox = new QCheckBox( tr("Edit...") );
 	widgets.append( editCheckBox );
-	box->addWidget( editCheckBox );
+	localLayout->addWidget( editCheckBox );
+	localLayout->setStretch( 0, 1 );
+	localLayout->setStretch( 1, 1 );
+	allLayout->addLayout( localLayout );
 	
 	editor = new QPlainTextEdit();
 	//QFont font = QFontDatabase::systemFont( QFontDatabase::FixedFont );
@@ -29,7 +37,7 @@ ShaderEdit::ShaderEdit( QWidget *parent, Parameter *p ) : ParameterWidget( paren
 	editor->setTabStopWidth( QFontMetrics( font ).averageCharWidth() * 2 );
 	highlighter = new Highlighter( editor->document() );
 	widgets.append( editor );
-	box->addWidget( editor );
+	allLayout->addWidget( editor );
 	editor->hide();
 	
 	QBoxLayout *applyLayout = new QBoxLayout( QBoxLayout::LeftToRight );
@@ -42,14 +50,27 @@ ShaderEdit::ShaderEdit( QWidget *parent, Parameter *p ) : ParameterWidget( paren
 	applyLayout->addWidget( applyBtn );
 	applyLayout->insertStretch( 1, 1 );
 	applyLayout->addWidget( helpBtn );
-	box->addLayout( applyLayout );
+	allLayout->addLayout( applyLayout );
+	
+	localShadersGroup = new QGroupBox();
+	localShadersGroup->setLayout( allLayout );
+	
+	box->addWidget( localShadersGroup );
 
 	editor->setPlainText( p->value.toString() );
 	applyBtn->setEnabled( false );
-	
+
 	QStringList list = ShaderCollection::getGlobalInstance()->localShadersNames();
 	foreach( const QString & s, list )
 		localShadersCombo->addItem( s );
+
+	QString shaderName = Parameter::getShaderName( p->value.toString() );
+	for ( int i = 0; i < localShadersCombo->count(); ++i ) {
+		if ( localShadersCombo->itemText( i ) == shaderName ) {
+			localShadersCombo->setCurrentIndex( i );
+			break;
+		}
+	}	
 	
 	connect( editor, SIGNAL(textChanged()), this, SLOT(textChanged()) );
 	connect( editor, SIGNAL(cursorPositionChanged()), this, SLOT(cursorPositionChanged()) );
@@ -254,7 +275,7 @@ void ShaderEdit::localShaderChanged( const QString & text )
 	QString shader = ShaderCollection::getGlobalInstance()->getLocalShader( text );
 	if ( !shader.isEmpty() ) {
 		if ( !shader.endsWith("\n") )
-			shader += "\n";
+			shader += "\n";			
 		emit valueChanged( param, QVariant( shader ) );
 	}
 }

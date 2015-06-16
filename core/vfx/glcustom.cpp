@@ -46,17 +46,20 @@ void GLCustom::setCustomParams( QString shader )
 	shaderParams.clear();
 	int faulty;
 	QList<Parameter> list = Parameter::parseShaderParams( shader, faulty );
-	for ( int i = list.count() - 1; i >= 0; --i ) {
+	//for ( int i = list.count() - 1; i >= 0; --i ) {
+	for ( int i = 0; i < list.count(); ++i ) {
 		Parameter p = list.at(i);
 		if ( p.type == Parameter::PDOUBLE ) {
 			Parameter *sp = addParameter( p.id, p.name, p.type, p.defValue, p.min, p.max, p.keyframeable );
-			prependLastParameter();
-			shaderParams.prepend( sp );
+			//prependLastParameter();
+			//shaderParams.prepend( sp );
+			shaderParams.append( sp );
 		}
 		else if ( p.type == Parameter::PRGBCOLOR || p.type == Parameter::PRGBACOLOR ) {
 			Parameter *sp = addParameter( p.id, p.name, p.type, p.defValue, p.defValue, p.defValue, false );
-			prependLastParameter();
-			shaderParams.prepend( sp );
+			//prependLastParameter();
+			//shaderParams.prepend( sp );
+			shaderParams.append( sp );
 		}
 	}
 	shaderName = Parameter::getShaderName( shader );
