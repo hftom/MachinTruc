@@ -21,11 +21,13 @@ ShaderEdit::ShaderEdit( QWidget *parent, Parameter *p ) : ParameterWidget( paren
 	localShadersCombo = new QComboBox();
 	widgets.append( localShadersCombo );
 	localLayout->addWidget( localShadersCombo );
+	localLayout->addSpacerItem( new QSpacerItem( 10, 1 ) );
 	editCheckBox = new QCheckBox( tr("Edit...") );
 	widgets.append( editCheckBox );
 	localLayout->addWidget( editCheckBox );
 	localLayout->setStretch( 0, 1 );
 	localLayout->setStretch( 1, 1 );
+	localLayout->setStretch( 2, 2 );
 	allLayout->addLayout( localLayout );
 	
 	editor = new QPlainTextEdit();
