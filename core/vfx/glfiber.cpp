@@ -9,13 +9,13 @@ GLFiber::GLFiber( QString id, QString name ) : GLFilter( id, name )
 
 
 
-bool GLFiber::process( const QList<Effect*> &el, Frame *src, Profile *p )
+bool GLFiber::process( const QList<Effect*> &el, double pts, Frame *src, Profile *p )
 {
 	Q_UNUSED( p );
 	Q_UNUSED( src );
 	Effect *e = el.first();
-	return e->set_float( "time", src->pts() / MICROSECOND )
-			&& e->set_float( "iterations", getParamValue( iterations, src->pts() ).toFloat() );
+	return e->set_float( "time", pts / MICROSECOND )
+			&& e->set_float( "iterations", getParamValue( iterations, pts ).toFloat() );
 }
 
 

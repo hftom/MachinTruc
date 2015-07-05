@@ -11,8 +11,8 @@ public:
 	GLPadding( QString id = "PaddingAuto", QString name = "PaddingAuto" );
 	~GLPadding();
 
-	QString getDescriptor( Frame *src, Profile *p );
-	bool process( const QList<Effect*> &el, Frame *src, Profile *p );
+	QString getDescriptor( double pts, Frame *src, Profile *p );
+	bool process( const QList<Effect*> &el, double pts, Frame *src, Profile *p );
 
 	QList<Effect*> getMovitEffects();
 	

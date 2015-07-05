@@ -17,11 +17,12 @@ GLSharpen::~GLSharpen()
 
 
 
-bool GLSharpen::process( const QList<Effect*> &el, Frame *src, Profile *p )
+bool GLSharpen::process( const QList<Effect*> &el, double pts, Frame *src, Profile *p )
 {
+	Q_UNLIKELY( src );
 	Q_UNUSED( p );
-	return el.at(0)->set_float( "amount", getParamValue( amount, src->pts() ).toFloat() )
-		&& el.at(0)->set_float( "radius", getParamValue( radius, src->pts() ).toFloat() );
+	return el.at(0)->set_float( "amount", getParamValue( amount, pts ).toFloat() )
+		&& el.at(0)->set_float( "radius", getParamValue( radius, pts ).toFloat() );
 }
 
 

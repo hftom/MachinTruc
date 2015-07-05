@@ -15,8 +15,9 @@ GLPush::GLPush( QString id, QString name ) : GLFilter( id, name )
 
 
 
-QString GLPush::getDescriptor( Frame *src, Profile *p )
+QString GLPush::getDescriptor( double pts, Frame *src, Profile *p )
 {
+	Q_UNUSED( pts );
 	Q_UNUSED( src );
 	Q_UNUSED( p );
 	return QString("%1 %2 %3 %4").arg( getIdentifier() )

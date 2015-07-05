@@ -11,7 +11,7 @@ public:
 	GLWhiteBalance( QString id, QString name );
 	~GLWhiteBalance();
 
-	bool process( const QList<Effect*> &el, Frame *src, Profile *p );
+	bool process( const QList<Effect*> &el, double pts, Frame *src, Profile *p );
 
 	QList<Effect*> getMovitEffects();
 

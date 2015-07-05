@@ -594,7 +594,6 @@ void Sampler::getVideoTracks( Frame *dst )
 				in = getClipInput( c, currentScene->currentPTS );
 			f = in->getVideoFrame();
 			if ( f ) {
-				f->setPts( currentScene->currentPTS );
 				fs->frame = f;
 				fs->videoFilters = c->getSource()->videoFilters.copy();
 				fs->videoFilters.append( c->videoFilters.getCurrentFilters( currentScene->currentPTS, margin * 4 ) );

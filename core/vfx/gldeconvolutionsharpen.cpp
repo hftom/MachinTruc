@@ -20,10 +20,10 @@ GLDeconvolutionSharpen::~GLDeconvolutionSharpen()
 
 
 
-bool GLDeconvolutionSharpen::process( const QList<Effect*> &el, Frame *src, Profile *p )
+bool GLDeconvolutionSharpen::process( const QList<Effect*> &el, double pts, Frame *src, Profile *p )
 {
+	Q_UNUSED( src );
 	Q_UNUSED( p );
-	double pts = src->pts();
 	Effect *e = el[0];
 	return e->set_float( "circle_radius", getParamValue( circleRadius, pts ).toFloat() )
 		&& e->set_float( "gaussian_radius", getParamValue( gaussianRadius, pts ).toFloat() )
@@ -45,8 +45,9 @@ QList<Effect*> GLDeconvolutionSharpen::getMovitEffects()
 
 
 
-QString GLDeconvolutionSharpen::getDescriptor(  Frame *src, Profile *p  )
+QString GLDeconvolutionSharpen::getDescriptor( double pts, Frame *src, Profile *p  )
 {
+	Q_UNUSED( pts );
 	Q_UNUSED( src );
 	Q_UNUSED( p );
 	return QString("%1 %2").arg( getIdentifier() ).arg( getParamValue( R ).toInt() );

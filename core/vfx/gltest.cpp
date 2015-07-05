@@ -15,8 +15,9 @@ GLTest::~GLTest()
 
 
 
-bool GLTest::process( const QList<Effect*> &el, Frame *src, Profile *p )
+bool GLTest::process( const QList<Effect*> &el, double pts, Frame *src, Profile *p )
 {
+	Q_UNUSED( pts );
 	Q_UNUSED( p );
 	Q_UNUSED( src );
 	int lp = getParamValue( loop ).toInt();

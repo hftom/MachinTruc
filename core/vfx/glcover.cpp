@@ -16,8 +16,9 @@ GLCover::GLCover( QString id, QString name ) : GLFilter( id, name )
 
 
 
-QString GLCover::getDescriptor( Frame *src, Profile *p )
+QString GLCover::getDescriptor( double pts, Frame *src, Profile *p )
 {
+	Q_UNUSED( pts );
 	Q_UNUSED( src );
 	Q_UNUSED( p );
 	return QString("%1 %2 %3 %4 %5").arg( getIdentifier() )

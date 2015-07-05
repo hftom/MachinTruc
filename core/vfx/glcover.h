@@ -90,7 +90,7 @@ class GLCover : public GLFilter
 public:
 	GLCover( QString id, QString name );
 
-	QString getDescriptor( Frame *src, Profile *p );
+	QString getDescriptor( double pts, Frame *src, Profile *p );
 	bool process( const QList<Effect*>&, Frame *src, Frame *dst, Profile *p );
 	QList<Effect*> getMovitEffects();
 

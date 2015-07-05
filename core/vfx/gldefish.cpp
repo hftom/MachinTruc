@@ -11,11 +11,12 @@ GLDefish::GLDefish( QString id, QString name ) : GLFilter( id, name )
 
 
 
-bool GLDefish::process( const QList<Effect*> &el, Frame *src, Profile *p )
+bool GLDefish::process( const QList<Effect*> &el, double pts, Frame *src, Profile *p )
 {
+	Q_UNUSED( src );
 	Q_UNUSED( p );
-	return el[1]->set_float( "amount", getParamValue( amount, src->pts() ).toDouble() )
-		&& el[1]->set_float( "scale", getParamValue( scale, src->pts() ).toDouble() );
+	return el[1]->set_float( "amount", getParamValue( amount, pts ).toDouble() )
+		&& el[1]->set_float( "scale", getParamValue( scale, pts ).toDouble() );
 }
 
 

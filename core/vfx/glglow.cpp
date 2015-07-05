@@ -18,10 +18,10 @@ GLGlow::~GLGlow()
 
 
 
-bool GLGlow::process( const QList<Effect*> &el, Frame *src, Profile *p )
+bool GLGlow::process( const QList<Effect*> &el, double pts, Frame *src, Profile *p )
 {
 	Q_UNUSED( p );
-	double pts = src->pts();
+	Q_UNUSED( src );
 	Effect *e = el[0];
 	return e->set_float( "radius", getParamValue( radius, pts ).toFloat() )
 		&& e->set_float( "blurred_mix_amount", getParamValue( glow, pts ).toFloat() )

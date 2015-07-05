@@ -32,10 +32,9 @@ void GLVignette::ovdUpdate( QString type, QVariant val )
 
 
 
-bool GLVignette::process( const QList<Effect*> &el, Frame *src, Profile *p )
+bool GLVignette::process( const QList<Effect*> &el, double pts, Frame *src, Profile *p )
 {
 	Q_UNUSED( p );
-	double pts = src->pts();
 	float center[2] = { (getParamValue( xOffset, pts ).toFloat() / src->glWidth) + 0.5f, (getParamValue( yOffset, pts ).toFloat() / src->glHeight) + 0.5f };
 	
 	if ( ovdEnabled() ) {

@@ -15,10 +15,11 @@ GLCut::~GLCut()
 
 
 
-bool GLCut::process( const QList<Effect*> &el, Frame *src, Profile *p )
+bool GLCut::process( const QList<Effect*> &el, double pts, Frame *src, Profile *p )
 {
+	Q_UNUSED( src );
 	Q_UNUSED( p );
-	return el[0]->set_float( "opacity", getParamValue( opacity, src->pts() ).toFloat() );
+	return el[0]->set_float( "opacity", getParamValue( opacity, pts ).toFloat() );
 }
 
 

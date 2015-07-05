@@ -586,6 +586,7 @@ bool Composer::renderVideoFrame( Frame *dst )
 
 void Composer::movitFrameDescriptor( QString prefix, Frame *f, QList< QSharedPointer<GLFilter> > *filters, QStringList &desc, Profile *projectProfile )
 {
+	double pts = sampler->currentPTS();
 	f->paddingAuto = f->resizeAuto = false;
 	f->glWidth = f->profile.getVideoWidth();
 	f->glHeight = f->profile.getVideoHeight();
@@ -595,16 +596,16 @@ void Composer::movitFrameDescriptor( QString prefix, Frame *f, QList< QSharedPoi
 	
 	// deinterlace
 	if ( f->profile.getVideoInterlaced() ) {
-		desc.append( prefix + GLDeinterlace().getDescriptor( f, projectProfile ) );
+		desc.append( prefix + GLDeinterlace().getDescriptor( pts, f, projectProfile ) );
 	}
 	
 	// correct orientation
 	if ( f->orientation() ) {
-		desc.append( prefix + GLOrientation().getDescriptor( f, projectProfile ) );
+		desc.append( prefix + GLOrientation().getDescriptor( pts, f, projectProfile ) );
 	}
 		
 	for ( int k = 0; k < filters->count(); ++k ) {
-		desc.append( prefix + filters->at(k)->getDescriptor( f, projectProfile ) );
+		desc.append( prefix + filters->at(k)->getDescriptor( pts, f, projectProfile ) );
 	}
 
 	// resize to match destination aspect ratio and/or output size
@@ -616,7 +617,7 @@ void Composer::movitFrameDescriptor( QString prefix, Frame *f, QList< QSharedPoi
 			f->glHeight != projectProfile->getVideoHeight() ) )
 		{		
 			GLResize resize;
-			desc.append( prefix + resize.getDescriptor( f, projectProfile ) );
+			desc.append( prefix + resize.getDescriptor( pts, f, projectProfile ) );
 			f->resizeAuto = true;
 		}
 	}
@@ -625,7 +626,7 @@ void Composer::movitFrameDescriptor( QString prefix, Frame *f, QList< QSharedPoi
 	if ( !sampler->previewMode() ) {
 		if ( f->glWidth != projectProfile->getVideoWidth() || f->glHeight != projectProfile->getVideoHeight() ) {
 			GLPadding padding;
-			desc.append( prefix + padding.getDescriptor( f, projectProfile ) );
+			desc.append( prefix + padding.getDescriptor( pts, f, projectProfile ) );
 			f->paddingAuto = true;
 		}
 	}
@@ -745,6 +746,7 @@ void Composer::movitRender( Frame *dst, bool update )
 	// build a "description" of the required chain
 	// processing frames from bottom to top
 	i = start;
+	double pts = sampler->currentPTS();
 	QStringList currentDescriptor;
 	int ow = projectProfile.getVideoWidth();
 	int oh = projectProfile.getVideoHeight();
@@ -755,16 +757,16 @@ void Composer::movitRender( Frame *dst, bool update )
 		// transition
 		if ( sample->transitionFrame.frame && !sample->transitionFrame.videoTransitionFilter.isNull() ) {
 			movitFrameDescriptor( "->", sample->transitionFrame.frame, &sample->transitionFrame.videoFilters, currentDescriptor, &projectProfile );
-			currentDescriptor.append( "-<" + sample->transitionFrame.videoTransitionFilter->getDescriptor( sample->transitionFrame.frame, &projectProfile ) );
+			currentDescriptor.append( "-<" + sample->transitionFrame.videoTransitionFilter->getDescriptor( pts, sample->transitionFrame.frame, &projectProfile ) );
 		}
 		// overlay
 		if ( (i - 1) > start )
-			currentDescriptor.append( GLOverlay().getDescriptor( f, &projectProfile ) );
+			currentDescriptor.append( GLOverlay().getDescriptor( pts, f, &projectProfile ) );
 		ow = f->glWidth;
 		oh = f->glHeight;
 	}
 	// background
-	currentDescriptor.append( movitBackground.getDescriptor( NULL, &projectProfile ) );
+	currentDescriptor.append( movitBackground.getDescriptor( pts, NULL, &projectProfile ) );
 	// output
 	currentDescriptor.append( QString("OUTPUT %1 %2").arg( ow ).arg( oh ) );
 
@@ -833,9 +835,9 @@ void Composer::movitRender( Frame *dst, bool update )
 		FrameSample *sample = dst->sample->frames[i - 1];
 		for ( int k = 0; k < branch->filters.count(); ++k ) { 
 			if ( !branch->filters[k]->filter )
-				sample->videoFilters[vf++]->process( branch->filters[k]->effects, f, &projectProfile );
+				sample->videoFilters[vf++]->process( branch->filters[k]->effects, pts, f, &projectProfile );
 			else
-				branch->filters[k]->filter->process( branch->filters[k]->effects, f, &projectProfile );
+				branch->filters[k]->filter->process( branch->filters[k]->effects, pts, f, &projectProfile );
 		}
 		// transition
 		if ( sample->transitionFrame.frame && !sample->transitionFrame.videoTransitionFilter.isNull() ) {
@@ -848,9 +850,9 @@ void Composer::movitRender( Frame *dst, bool update )
 			int k;
 			for ( k = 0; k < branchTrans->filters.count() - 1; ++k ) { 
 				if ( !branchTrans->filters[k]->filter )
-					sample->transitionFrame.videoFilters[tvf++]->process( branchTrans->filters[k]->effects, sample->transitionFrame.frame, &projectProfile );
+					sample->transitionFrame.videoFilters[tvf++]->process( branchTrans->filters[k]->effects, pts, sample->transitionFrame.frame, &projectProfile );
 				else
-					branchTrans->filters[k]->filter->process( branchTrans->filters[k]->effects, sample->transitionFrame.frame, &projectProfile );
+					branchTrans->filters[k]->filter->process( branchTrans->filters[k]->effects, pts, sample->transitionFrame.frame, &projectProfile );
 			}
 			sample->transitionFrame.videoTransitionFilter->process( branchTrans->filters[k]->effects, f, sample->transitionFrame.frame, &projectProfile );
 		}
@@ -873,7 +875,7 @@ void Composer::movitRender( Frame *dst, bool update )
 	if ( !update ) {
 		dst->setVideoFrame( Frame::GLTEXTURE, w, h, dst->glSAR,
 						projectProfile.getVideoInterlaced(), projectProfile.getVideoTopFieldFirst(),
-						sampler->currentPTS(), projectProfile.getVideoFrameDuration() );
+						pts, projectProfile.getVideoFrameDuration() );
 	}
 	dst->setFBO( fbo );
 	dst->setFence( gl.getFence() );

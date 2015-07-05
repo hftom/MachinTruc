@@ -56,7 +56,7 @@ class GLSoftBorder : public GLFilter
 public:
 	GLSoftBorder( QString id, QString name );
 	
-	bool process( const QList<Effect*> &el, Frame *src, Profile *p );
+	bool process( const QList<Effect*> &el, double pts, Frame *src, Profile *p );
 
 	QList<Effect*> getMovitEffects();
 	

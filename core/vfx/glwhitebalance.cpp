@@ -19,8 +19,9 @@ GLWhiteBalance::~GLWhiteBalance()
 
 
 
-bool GLWhiteBalance::process( const QList<Effect*> &el, Frame *src, Profile *p )
+bool GLWhiteBalance::process( const QList<Effect*> &el, double pts, Frame *src, Profile *p )
 {
+	Q_UNUSED( pts );
 	Q_UNUSED( p );
 	Q_UNUSED( src );
 	Effect *e = el[0];

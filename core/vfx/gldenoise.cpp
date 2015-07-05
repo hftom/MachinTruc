@@ -11,7 +11,7 @@ GLDenoise::GLDenoise( QString id, QString name ) : GLFilter( id, name )
 
 
 
-bool GLDenoise::process( const QList<Effect*> &el, Frame *src, Profile *p )
+bool GLDenoise::process( const QList<Effect*> &el, double pts, Frame *src, Profile *p )
 {
 	Q_UNUSED( p );
 	Effect *e = el[0];

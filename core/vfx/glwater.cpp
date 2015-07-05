@@ -20,11 +20,11 @@ GLWater::~GLWater()
 
 
 
-bool GLWater::process( const QList<Effect*> &el, Frame *src, Profile *p )
+bool GLWater::process( const QList<Effect*> &el, double pts, Frame *src, Profile *p )
 {
+	Q_UNUSED( src );
 	Q_UNUSED( p )
 	Effect *e = el[0];
-	double pts = src->pts();
 	return e->set_float( "time", pts / MICROSECOND )
 		&& e->set_float( "speed", getParamValue( speed ).toFloat() )
 		&& e->set_float( "emboss", getParamValue( emboss, pts ).toFloat() )

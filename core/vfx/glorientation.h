@@ -76,8 +76,8 @@ public:
 	GLOrientation( QString id = "AutoRotate", QString name = "AutoRotate" );
 	~GLOrientation();
  
-	QString getDescriptor( Frame *src, Profile *p );
-	bool process( const QList<Effect*> &el, Frame *src, Profile *p );
+	QString getDescriptor( double pts, Frame *src, Profile *p );
+	bool process( const QList<Effect*> &el, double pts, Frame *src, Profile *p );
 
 	void setOrientation( int a );
 	QList<Effect*> getMovitEffects();

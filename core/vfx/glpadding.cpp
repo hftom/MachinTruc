@@ -27,8 +27,9 @@ void GLPadding::preProcess( Frame *src, Profile *p )
 
 
 
-QString GLPadding::getDescriptor( Frame *src, Profile *p )
+QString GLPadding::getDescriptor( double pts, Frame *src, Profile *p )
 {
+	Q_UNUSED( pts );
 	preProcess( src, p );
 	return getIdentifier();
 }
@@ -36,8 +37,9 @@ QString GLPadding::getDescriptor( Frame *src, Profile *p )
 
 
 
-bool GLPadding::process( const QList<Effect*> &el, Frame *src, Profile *p )
+bool GLPadding::process( const QList<Effect*> &el, double pts, Frame *src, Profile *p )
 {
+	Q_UNUSED( pts );
 	preProcess( src, p );	
 	Effect* e = el[0];
 	return e->set_int( "width", src->glWidth )

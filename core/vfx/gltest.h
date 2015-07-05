@@ -53,7 +53,7 @@ public:
 	GLTest( QString id, QString name );
 	~GLTest();
 
-	bool process( const QList<Effect*> &el, Frame *src, Profile *p );
+	bool process( const QList<Effect*> &el, double pts, Frame *src, Profile *p );
 
 	QList<Effect*> getMovitEffects();
 	

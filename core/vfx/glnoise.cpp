@@ -8,11 +8,11 @@ GLNoise::GLNoise( QString id, QString name ) : GLFilter( id, name )
 
 
 
-bool GLNoise::process( const QList<Effect*> &el, Frame *src, Profile *p )
+bool GLNoise::process( const QList<Effect*> &el, double pts, Frame *src, Profile *p )
 {
 	Q_UNUSED( p );
 	Q_UNUSED( src );
-	return el.first()->set_float( "time", src->pts() / MICROSECOND );
+	return el.first()->set_float( "time", pts / MICROSECOND );
 }
 
 

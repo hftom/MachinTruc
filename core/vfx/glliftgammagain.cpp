@@ -23,8 +23,10 @@ GLLiftGammaGain::~GLLiftGammaGain()
 
 
 
-bool GLLiftGammaGain::process( const QList<Effect*> &el, Frame *src, Profile *p )
+bool GLLiftGammaGain::process( const QList<Effect*> &el, double pts, Frame *src, Profile *p )
 {
+	Q_UNUSED( pts );
+	Q_UNUSED( src );
 	Q_UNUSED( p );
 	QColor clift = getParamValue( lift ).value<QColor>();
 	RGBTriplet liftRgb(0.0f, 0.0f, 0.0f);

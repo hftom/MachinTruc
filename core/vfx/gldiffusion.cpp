@@ -17,11 +17,12 @@ GLDiffusion::~GLDiffusion()
 
 
 
-bool GLDiffusion::process( const QList<Effect*> &el, Frame *src, Profile *p )
+bool GLDiffusion::process( const QList<Effect*> &el, double pts, Frame *src, Profile *p )
 {
+	Q_UNUSED( src );
 	Q_UNUSED( p );
-	return el.at(0)->set_float( "blurred_mix_amount", getParamValue( mixAmount, src->pts() ).toFloat() )
-		&& el.at(0)->set_float( "radius", getParamValue( blurRadius, src->pts() ).toFloat() );
+	return el.at(0)->set_float( "blurred_mix_amount", getParamValue( mixAmount, pts ).toFloat() )
+		&& el.at(0)->set_float( "radius", getParamValue( blurRadius, pts ).toFloat() );
 }
 
 

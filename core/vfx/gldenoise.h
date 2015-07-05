@@ -100,7 +100,7 @@ class GLDenoise : public GLFilter
 public:
 	GLDenoise( QString id, QString name );
 
-	bool process( const QList<Effect*>&, Frame *src, Profile *p );
+	bool process( const QList<Effect*>&, double pts, Frame *src, Profile *p );
 	QList<Effect*> getMovitEffects();
 
 private:

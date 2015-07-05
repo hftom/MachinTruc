@@ -11,10 +11,10 @@ public:
 	GLDeconvolutionSharpen( QString id, QString name );
 	~GLDeconvolutionSharpen();
 
-	bool process( const QList<Effect*> &el, Frame *src, Profile *p );
+	bool process( const QList<Effect*> &el, double pts, Frame *src, Profile *p );
 
 	QList<Effect*> getMovitEffects();
-	QString getDescriptor(  Frame *src, Profile *p  );
+	QString getDescriptor( double pts, Frame *src, Profile *p  );
 	
 private:
 	Parameter *R;

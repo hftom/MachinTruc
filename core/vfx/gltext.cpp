@@ -29,10 +29,9 @@ void GLText::ovdUpdate( QString type, QVariant val )
 
 
 
-bool GLText::process( const QList<Effect*> &el, Frame *src, Profile *p )
+bool GLText::process( const QList<Effect*> &el, double pts, Frame *src, Profile *p )
 {
 	Q_UNUSED( p );
-	double pts = src->pts();
 	
 	MyTextEffect *e = (MyTextEffect*)el[0];
 	bool ok = e->set_float( "left", getParamValue( xOffset, pts ).toDouble() )

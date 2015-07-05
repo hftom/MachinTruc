@@ -20,10 +20,11 @@ GLSaturation::~GLSaturation()
 
 
 
-bool GLSaturation::process( const QList<Effect*> &el, Frame *src, Profile *p )
+bool GLSaturation::process( const QList<Effect*> &el, double pts, Frame *src, Profile *p )
 {
+	Q_UNUSED( src );
 	Q_UNUSED( p );
-	return el.at(0)->set_float( "saturation", getParamValue( saturation, src->pts() ).toFloat() );
+	return el.at(0)->set_float( "saturation", getParamValue( saturation, pts ).toFloat() );
 }
 
 

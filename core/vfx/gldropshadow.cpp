@@ -35,10 +35,9 @@ void GLDropShadow::ovdUpdate( QString type, QVariant val )
 
 
 
-bool GLDropShadow::process( const QList<Effect*> &el, Frame *src, Profile *p )
+bool GLDropShadow::process( const QList<Effect*> &el, double pts, Frame *src, Profile *p )
 {
 	Q_UNUSED( p );
-	double pts = src->pts();
 	QColor c = getParamValue( color ).value<QColor>();
 	// convert gamma and premultiply
 	sRgbColorToLinear( c );

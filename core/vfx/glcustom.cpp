@@ -67,8 +67,9 @@ void GLCustom::setCustomParams( QString shader )
 
 
 
-QString GLCustom::getDescriptor( Frame *src, Profile *p )
+QString GLCustom::getDescriptor( double pts, Frame *src, Profile *p )
 {
+	Q_UNUSED( pts );
 	Q_UNUSED( src );
 	Q_UNUSED( p );
 	QMutexLocker ml( &mutex );
@@ -82,13 +83,12 @@ QString GLCustom::getDescriptor( Frame *src, Profile *p )
 
 
 
-bool GLCustom::process( const QList<Effect*> &el, Frame *src, Profile *p )
+bool GLCustom::process( const QList<Effect*> &el, double pts, Frame *src, Profile *p )
 {
 	QMutexLocker ml( &mutex );
 	Q_UNUSED( p );
 
 	bool ok = true;
-	double pts = src->pts();
 	Effect *e = el.at(0);
 	for ( int i = 0; i < shaderParams.count(); ++i ) {
 		Parameter *param = shaderParams.at( i );

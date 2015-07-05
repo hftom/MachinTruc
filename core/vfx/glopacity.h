@@ -11,7 +11,7 @@ public:
 	GLOpacity( QString id, QString name );
 	~GLOpacity();
 
-	bool process( const QList<Effect*> &el, Frame *src, Profile *p );
+	bool process( const QList<Effect*> &el, double pts, Frame *src, Profile *p );
 
 	QList<Effect*> getMovitEffects();
 	

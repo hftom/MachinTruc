@@ -11,7 +11,7 @@ public:
 	GLVignette( QString id, QString name );
 	~GLVignette();
 
-	virtual bool process( const QList<Effect*> &el, Frame *src, Profile *p );
+	virtual bool process( const QList<Effect*> &el, double pts, Frame *src, Profile *p );
 	virtual void ovdUpdate( QString type, QVariant val );
 
 	virtual QList<Effect*> getMovitEffects();

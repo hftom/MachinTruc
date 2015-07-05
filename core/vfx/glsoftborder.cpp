@@ -9,7 +9,7 @@ GLSoftBorder::GLSoftBorder( QString id, QString name ) : GLFilter( id, name )
 
 
 
-bool GLSoftBorder::process( const QList<Effect*> &el, Frame *src, Profile *p )
+bool GLSoftBorder::process( const QList<Effect*> &el, double pts, Frame *src, Profile *p )
 {
 	Q_UNUSED( p );
 	Q_UNUSED( src );

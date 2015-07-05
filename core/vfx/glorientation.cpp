@@ -15,8 +15,9 @@ GLOrientation::~GLOrientation()
 
 
 
-QString GLOrientation::getDescriptor( Frame *src, Profile *p )
+QString GLOrientation::getDescriptor( double pts, Frame *src, Profile *p )
 {
+	Q_UNUSED( pts );
 	Q_UNUSED( p );
 	angle = src->orientation();
 	if ( angle != 180 ) {
@@ -30,8 +31,9 @@ QString GLOrientation::getDescriptor( Frame *src, Profile *p )
 
 
 
-bool GLOrientation::process( const QList<Effect*> &el, Frame *src, Profile *p )
+bool GLOrientation::process( const QList<Effect*> &el, double pts, Frame *src, Profile *p )
 {
+	Q_UNUSED( pts );
 	Q_UNUSED( el );
 	Q_UNUSED( p );
 	if ( angle != 180 ) {

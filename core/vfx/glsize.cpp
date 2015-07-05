@@ -36,8 +36,9 @@ GLSize::~GLSize()
 
 
 
-QString GLSize::getDescriptor( Frame *src, Profile *p )
+QString GLSize::getDescriptor( double pts, Frame *src, Profile *p )
 {
+	Q_UNUSED( pts );
 	QString s;
 	bool samesar = qAbs( p->getVideoSAR() - src->glSAR ) < 1e-3;
 
@@ -84,12 +85,11 @@ void GLSize::ovdUpdate( QString type, QVariant val )
 
 
 
-bool GLSize::process( const QList<Effect*> &el, Frame *src, Profile *p )
+bool GLSize::process( const QList<Effect*> &el, double pts, Frame *src, Profile *p )
 {
 	bool ok = true;
 	int index = 0;
-	
-	double pts = src->pts();
+
 	double rad = getParamValue( rotateAngle, pts ).toDouble() * M_PI / 180.0;
 	double zoom = getParamValue( sizePercent, pts ).toDouble() / 100.0;
 	double left = getParamValue( xOffset, pts ).toDouble();

@@ -21,11 +21,10 @@ GLCrop::~GLCrop()
 
 
 
-void GLCrop::preProcess( Frame *src, Profile *p )
+void GLCrop::preProcess( double pts, Frame *src, Profile *p )
 {
 	Q_UNUSED( p );
-	
-	double pts = src->pts();
+
 	pleft = getParamValue( left, pts ).toDouble() * src->glWidth / 100.0;
 	pright = getParamValue( right, pts ).toDouble() * src->glWidth / 100.0;
 	ptop = getParamValue( top, pts ).toDouble() * src->glHeight / 100.0;
@@ -36,20 +35,20 @@ void GLCrop::preProcess( Frame *src, Profile *p )
 
 
 
-QString GLCrop::getDescriptor( Frame *src, Profile *p )
+QString GLCrop::getDescriptor( double pts, Frame *src, Profile *p )
 {
-	preProcess( src, p );
+	preProcess( pts, src, p );
 	return getIdentifier();
 }
 
 
 
-bool GLCrop::process( const QList<Effect*> &el, Frame *src, Profile *p )
+bool GLCrop::process( const QList<Effect*> &el, double pts, Frame *src, Profile *p )
 {
 	double glw = src->glWidth;
 	double glh = src->glHeight;
 
-	preProcess( src, p );
+	preProcess( pts, src, p );
 	Effect *e = el[0];
 	
 	if ( src->glOVD ) {
