@@ -111,6 +111,7 @@ unix {
 	CONFIG += link_pkgconfig
 	PKGCONFIG += movit
 	PKGCONFIG += libavformat libavcodec libavutil libswresample libswscale
+	PKGCONFIG += vidstab
 	PKGCONFIG += sdl
 	PKGCONFIG += x11
 }
