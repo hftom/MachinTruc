@@ -257,8 +257,13 @@ void ProjectFile::readClip( QDomElement &element, Scene *scene, int trackIndex )
 		
 		if ( e.tagName() == "VideoFilter" ) {
 			QSharedPointer<Filter> f = readFilter( e, false );
-			if ( !f.isNull() )
+			if ( !f.isNull() ) {
 				clip->videoFilters.append( f.staticCast<GLFilter>() );
+				if ( f->getIdentifier() == "GLStabilize" ) {
+					GLStabilize *stab = (GLStabilize*)f.data();
+					stab->setSource( clip->getSource() );
+				}
+			}
 		}
 		else if ( e.tagName() == "AudioFilter" ) {
 			QSharedPointer<Filter> f = readFilter( e, true );
@@ -770,6 +775,11 @@ void ProjectFile::writeFilter( QDomNode &parent, bool audio, QSharedPointer<Filt
 			case Parameter::PSHADEREDIT: {
 				pel.setAttribute( "type", "shader" );
 				pel.setAttribute( "value", Parameter::getShaderName( p->value.toString() ) );
+				break;
+			}
+			case Parameter::PSTATUS: {
+				pel.setAttribute( "type", "status" );
+				pel.setAttribute( "value", "" );
 				break;
 			}
 		}
