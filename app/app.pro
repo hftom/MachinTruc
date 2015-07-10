@@ -26,6 +26,7 @@ SOURCES = \
 	gui/filter/colorwheel.cpp \
 	gui/filter/textedit.cpp \
 	gui/filter/shaderedit.cpp \
+	gui/filter/statustext.cpp \
 	\
 	timeline/timeline.cpp \
 	timeline/abstractviewitem.cpp \
@@ -68,6 +69,7 @@ HEADERS = \
 	gui/filter/colorwheel.h \
 	gui/filter/textedit.h \
 	gui/filter/shaderedit.h \
+	gui/filter/statustext.h \
 	\
 	timeline/timelinegraphicsview.h \
 	timeline/timeline.h \

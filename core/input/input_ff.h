@@ -142,12 +142,13 @@ public:
 		}
 	}
 	void get( Frame *f, bool backward = false ) {
+		Q_UNUSED( backward );
 		if ( buffer )
 			f->setSharedBuffer( buffer );
-		if ( backward )
+		/*if ( backward )
 			pts -= profile.getVideoFrameDuration();
 		else
-			pts += profile.getVideoFrameDuration();
+			pts += profile.getVideoFrameDuration();*/
 		f->setVideoFrame( (Frame::DataType)type, profile.getVideoWidth(), profile.getVideoHeight(), profile.getVideoSAR(),
 						  profile.getVideoInterlaced(), profile.getVideoTopFieldFirst(), pts, profile.getVideoFrameDuration(), orientation );
 		f->profile = profile;
@@ -182,12 +183,14 @@ public:
 		repeatPTS = pts;
 	}
 	void duplicate( Frame *f, bool backward = false ) {
+		Q_UNUSED( f );
+		double pts;
 		if ( backward )
-			f->setPts( repeatPTS - outputDuration );
+			pts = repeatPTS - outputDuration;
 		else
-			f->setPts( repeatPTS + outputDuration );
+			pts = repeatPTS + outputDuration;
 		if ( (repeat - 1) > 0 )
-			setRepeat( f->pts(), repeat - 1 );
+			setRepeat( pts, repeat - 1 );
 		else
 			setRepeat( 0, 0 );
 		if ( backward )

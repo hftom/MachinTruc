@@ -12,8 +12,7 @@ public:
 	{}
 	
 	QString getName() const { return name; }
-	QString getShader() const { return shader; }
-	
+	QString getShader() const { return shader; }	
 	
 private:
 	QString name;
@@ -30,6 +29,8 @@ public:
 	QString getLocalShader( QString aName );
 	bool localShaderExists( QString aName );
 	bool saveLocalShader( QString aName, QString aShader );
+	void removeShader( QString aName );
+	void addShader( QString aName, QString aShader );
 	
 private:
 	ShaderCollection();	

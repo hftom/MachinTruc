@@ -32,7 +32,7 @@ ShaderCollection::ShaderCollection()
 			QFile f( fi.filePath() );
 			if ( f.open( QIODevice::ReadOnly ) ) {
 				QString shader = f.readAll();
-				localShaders.append( ShaderEntry( Parameter::getShaderName( shader ), shader ) );
+				addShader( Parameter::getShaderName( shader ), shader );
 			}
 		}
 	}
@@ -105,6 +105,32 @@ bool ShaderCollection::localShaderExists( QString aName )
 
 
 
+void ShaderCollection::removeShader( QString aName )
+{
+	for ( int i = 0; i < localShaders.count(); ++i ) {
+		if ( localShaders.at( i ).getName() == aName ) {
+			localShaders.takeAt( i );
+			break;
+		}
+	}
+}
+
+
+
+void ShaderCollection::addShader( QString aName, QString aShader )
+{
+	for ( int i = 0; i < localShaders.count(); ++i ) {
+		if ( aName < localShaders.at( i ).getName() ) {
+			localShaders.insert( i, ShaderEntry( aName, aShader ) );
+			return;
+		}
+	}
+	
+	localShaders.append( ShaderEntry( aName, aShader ) );
+}
+
+
+
 bool ShaderCollection::saveLocalShader( QString aName, QString aShader )
 {
 	QDir dir;
@@ -120,8 +146,9 @@ bool ShaderCollection::saveLocalShader( QString aName, QString aShader )
 	if ( f.open( QIODevice::WriteOnly | QIODevice::Truncate ) ) {
 		written = f.write( aShader.toUtf8() );
 		f.close();
-		if ( !localShaderExists( aName ) )
-			localShaders.append( ShaderEntry( aName, aShader ) );
+		if ( localShaderExists( aName ) )
+			removeShader( aName );
+		addShader( aName, aShader );
 	}
 	return written > 0;
 }

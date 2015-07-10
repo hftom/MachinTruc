@@ -9,6 +9,7 @@
 #include "checkbox.h"
 #include "colorwheel.h"
 #include "textedit.h"
+#include "statustext.h"
 
 
 
@@ -64,6 +65,11 @@ FilterWidget::FilterWidget( QWidget *parent, Clip *c, QSharedPointer<Filter> f )
 			case Parameter::PSHADEREDIT: {
 				pw = new ShaderEdit( this, p );
 				connect( pw, SIGNAL(compileShaderRequest(ThumbRequest)), this, SIGNAL(compileShaderRequest(ThumbRequest)) );
+				break;
+			}
+			case Parameter::PSTATUS: {
+				pw = new StatusText( this, p );
+				connect( filter.data(), SIGNAL(statusUpdate(QString)), pw, SLOT(statusUpdate(QString)) );
 				break;
 			}
 		}

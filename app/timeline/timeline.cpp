@@ -816,6 +816,9 @@ void Timeline::addFilter( ClipViewItem *clip, QString fx, int index )
 				c->videoFilters.append( f.staticCast<GLFilter>() );
 			else
 				c->videoFilters.insert( index, f.staticCast<GLFilter>() );
+			if ( f->getIdentifier() == "GLStabilize" ) {
+				f.staticCast<GLStabilize>()->setSource( c->getSource() );
+			}
 			break;
 		}
 	}

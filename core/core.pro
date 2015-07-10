@@ -4,6 +4,7 @@ SOURCES = \
 	engine/parameter.cpp \
 	engine/filter.cpp \
 	engine/filtercollection.cpp \
+	engine/stabilizecollection.cpp \
 	engine/profile.cpp \
 	engine/frame.cpp \
 	engine/source.cpp \
@@ -69,6 +70,7 @@ SOURCES = \
 	vfx/gltext.cpp \
 	vfx/glcustom.cpp \
 	vfx/gldenoise.cpp \
+	vfx/glstabilize.cpp \
 	\
 	videoout/videowidget.cpp
 
@@ -76,6 +78,7 @@ HEADERS = \
 	engine/bufferpool.h \
 	engine/filter.h \
 	engine/filtercollection.h \
+	engine/stabilizecollection.h \
 	engine/profile.h \
 	engine/frame.h \
 	engine/source.h \
@@ -149,6 +152,7 @@ HEADERS = \
 	vfx/gltext.h \
 	vfx/glcustom.h \
 	vfx/gldenoise.h \
+	vfx/glstabilize.h \
 	\
 	videoout/videowidget.h
 

@@ -29,6 +29,7 @@
 #include "vfx/glsharpen.h"
 #include "vfx/glsize.h"
 #include "vfx/glsoftborder.h"
+#include "vfx/glstabilize.h"
 #include "vfx/gltext.h"
 #include "vfx/glvignette.h"
 #include "vfx/glwater.h"

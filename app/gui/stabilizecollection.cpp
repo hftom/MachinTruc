@@ -1,0 +1,322 @@
+#include <sys/resource.h>
+extern "C" { 
+	#include <vid.stab/libvidstab.h>
+}
+
+#include <QDebug>
+
+#include "input/input_ff.h"
+#include "stabilizecollection.h"
+
+#define MACHINTRUC_DIR "machintruc"
+#define STABILIZE_DIR "stab"
+#define STABILIZE_EXTENSION ".vidstab"
+
+
+
+StabilizeCollection StabilizeCollection::globalInstance = StabilizeCollection();
+
+
+
+StabilizeCollection* StabilizeCollection::getGlobalInstance()
+{
+	return &globalInstance;
+}
+
+
+
+StabilizeCollection::StabilizeCollection() : QObject()
+{
+	QDir dir;
+	cdStabilizeDir( dir );
+	
+	connect( &checkDetectionTimer, SIGNAL(timeout()), this, SLOT(checkDetectionThreads()) );
+}
+
+
+
+bool StabilizeCollection::cdStabilizeDir( QDir &dir )
+{
+	dir = QDir::home();
+	if ( !dir.cd( MACHINTRUC_DIR ) ) {
+		if ( !dir.mkdir( MACHINTRUC_DIR ) ) {
+			qDebug() << "Can't create" << MACHINTRUC_DIR << "directory.";
+			return false;
+		}
+		if ( !dir.cd( MACHINTRUC_DIR ) )
+			return false;
+	}
+	if ( !dir.cd( STABILIZE_DIR ) ) {
+		if ( !dir.mkdir( STABILIZE_DIR ) ) {
+			qDebug() << "Can't create" << STABILIZE_DIR << "directory.";
+			return false;
+		}
+		if ( !dir.cd( STABILIZE_DIR ) )
+			return false;
+	}
+
+	return true;
+}
+
+
+
+QString StabilizeCollection::pathToFileName( QString path )
+{
+	return path.replace( "/", "_" ).replace( "\\", "-" ).replace( ":", "." );
+}
+
+
+
+void StabilizeCollection::checkDetectionThreads()
+{
+	for ( int i = 0; i < stabDetect.count(); ++i ) {
+		StabMotionDetect *stab = stabDetect.at( i );
+		if ( !stab->isRunning() ) {
+			if ( stab->getFinishedSuccess() ) {
+				QList<StabilizeTransform> *list = stab->getTransforms();
+				QDir dir;
+				// save to file
+				if ( cdStabilizeDir( dir ) ) {
+					QFile f( dir.filePath( pathToFileName( stab->getFileName() ) + STABILIZE_EXTENSION ) );
+					if ( f.exists() && f.open( QIODevice::ReadOnly ) ) {
+						QDataStream data( &f );
+						for ( int i = 0; i < list->count(); ++i ) {
+							StabilizeTransform t = list->at( i );
+							data << t.pts;
+							data << t.x;
+							data << t.y;
+							data << t.alpha;
+							data << t.zoom;
+						}
+						f.close();
+					}
+				}
+				stabItems.append( new StabilizeItem( stab->getFileName(), list ) );
+			}
+			else {
+				stabItems.append( new StabilizeItem( stab->getFileName(), NULL ) );
+			}
+			stabDetect.takeAt( i-- );
+			delete stab;
+		}
+	}
+	
+	if ( !stabDetect.count() )
+		checkDetectionTimer.stop();
+}
+
+
+
+QList<StabilizeTransform>* StabilizeCollection::getTransforms( Source *source, int &status )
+{
+	foreach( StabilizeItem *it, stabItems ) {
+		if ( it->getSourceName() == source->getFileName() ) {
+			if ( it->getTransforms() ) {
+				it->use();
+				status = StabilizeTransform::STABREADY;
+				return it->getTransforms();
+			}
+			else {
+				status = StabilizeTransform::STABERROR;
+				return NULL;
+			}
+		}
+	}
+	
+	QDir dir;
+	if ( !cdStabilizeDir( dir ) ) {
+		status = StabilizeTransform::STABERROR;
+		return NULL;
+	}
+	
+	QFile f( dir.filePath( pathToFileName( source->getFileName() ) + STABILIZE_EXTENSION ) );
+	if ( f.exists() && f.open( QIODevice::ReadOnly ) ) {
+		QList<StabilizeTransform> *list = new QList<StabilizeTransform>();
+		QDataStream data( &f );
+		while ( !data.atEnd() ) {
+			double pts;
+			data >> pts;
+			float x;
+			data >> x;
+			float y;
+			data >> y;
+			float alpha;
+			data >> alpha;
+			float zoom;
+			data >> zoom;
+			list->append( StabilizeTransform( pts, x, y, alpha, zoom ) );
+		}
+		f.close();
+		
+		StabilizeItem *stab = new StabilizeItem( source->getFileName(), list );
+		stabItems.append( stab );
+		stab->use();
+		status = StabilizeTransform::STABREADY;
+		return stab->getTransforms();
+	}
+	
+	stabDetect.append( new StabMotionDetect( source ) );
+	if ( !checkDetectionTimer.isActive() )
+		checkDetectionTimer.start( 5000 );
+	
+	status = StabilizeTransform::STABNOTYETREADY;
+	return NULL;
+}
+
+
+
+void StabilizeCollection::releaseTransforms( QList<StabilizeTransform> *list )
+{
+	for( int i = 0; i < stabItems.count(); ++i ) {
+		StabilizeItem *it = stabItems.at( i );
+		if ( it->getTransforms() == list ) {
+			if ( it->release() )
+				delete stabItems.takeAt( i );
+			break;
+		}
+	}
+}
+
+
+
+StabMotionDetect::StabMotionDetect( Source *aSource )
+	: finishedSuccess( false ),
+	source( aSource )
+{
+	transforms = new QList<StabilizeTransform>();
+	running = true;
+	start( QThread::LowestPriority );
+}
+
+
+
+StabMotionDetect::~StabMotionDetect()
+{
+	stop();
+}
+
+
+
+QList<StabilizeTransform>* StabMotionDetect::getTransforms()
+{
+	QList<StabilizeTransform>* ret = transforms;
+	transforms = NULL;
+	return ret;
+}
+
+
+
+void StabMotionDetect::stop()
+{
+	running = false;
+	wait();
+	if ( transforms ) {
+		transforms->clear();
+		delete transforms;
+	}
+}
+	
+
+	
+void StabMotionDetect::run()
+{
+	setpriority( PRIO_PROCESS, 0, 19 );
+
+	InputFF *input = new InputFF();
+	if ( !input->open( source->getFileName() ) ) {
+		delete input;
+		return;
+	}
+	input->setProfile( source->getProfile(), source->getProfile() );
+	input->openSeekPlay( source->getFileName(), source->getProfile().getStreamStartTime() );
+	Frame *f = input->getVideoFrame();
+	if ( !f ) {
+		input->play( false );
+		delete input;
+		return;
+	}
+	
+	VSMotionDetect md;
+	VSMotionDetectConfig conf = vsMotionDetectGetDefaultConfig( "detect" );
+	conf.shakiness = 10;
+	conf.accuracy = 15;
+	VSPixelFormat format = PF_YUV420P;
+	if ( f->type() == Frame::YUV422P )
+		format = PF_YUV422P;
+	VSFrameInfo fi;
+	vsFrameInfoInit( &fi, source->getProfile().getVideoWidth(), source->getProfile().getVideoHeight(), format );
+	vsMotionDetectInit( &md, &conf, &fi );
+	
+	int nSamples = source->getProfile().getAudioSampleRate() * source->getProfile().getVideoFrameDuration() / MICROSECOND;
+	double endPts = source->getProfile().getStreamStartTime() + source->getProfile().getStreamDuration();
+	
+	int index = 0;
+	VSManyLocalMotions mlms;
+	vs_vector_init( &mlms, 1024 );
+	QList<double> ptsList;
+
+	do {
+		LocalMotions localmotions;
+		VSFrame vsFrame;
+		vsFrameFillFromBuffer( &vsFrame, f->data(), &md.fi );
+		if ( vsMotionDetection( &md, &localmotions, &vsFrame ) == VS_OK ) {
+			qDebug() << "pts" << f->pts() << sizeof(LocalMotion) << sizeof(LocalMotions);
+			vs_vector_set_dup( &mlms, index++, &localmotions, sizeof(LocalMotions) );
+			if ( f->pts() >= endPts || (ptsList.count() > 0 && f->pts() < ptsList.last() ) )
+				finishedSuccess = true;
+			ptsList.append( f->pts() );
+		}
+		else
+			running = false;		
+		
+		delete f;
+		// consume audio
+		if ( (f = input->getAudioFrame( nSamples )) )
+			delete f;
+		f = NULL;
+		
+		if ( !finishedSuccess )
+			f = input->getVideoFrame();
+		
+	} while ( running && f );
+	
+	if ( f )
+		delete f;
+	input->play( false );
+	delete input;
+	
+	if ( finishedSuccess ) {
+		VSTransformData data;
+		VSTransformConfig config;
+		VSTransformations trans;
+	
+		config = vsTransformGetDefaultConfig( "stabilize" );
+		config.smoothing = source->getProfile().getVideoFrameRate() / 2;
+		config.optZoom = 2;
+		config.zoomSpeed = 6.0 / source->getProfile().getVideoFrameRate();
+	
+		VSFrameInfo fi_src, fi_dst;
+		vsFrameInfoInit( &fi_src, source->getProfile().getVideoWidth(), source->getProfile().getVideoHeight(), format );
+		vsFrameInfoInit( &fi_dst, source->getProfile().getVideoWidth(), source->getProfile().getVideoHeight(), format );
+		vsTransformDataInit( &data, &config, &fi_src, &fi_dst );
+		vsTransformationsInit( &trans );
+		
+		qDebug() << "mlms:" << vs_vector_size( &mlms );
+
+		vsLocalmotions2Transforms( &data, &mlms, &trans );
+		vsPreprocessTransforms( &data, &trans );
+		for ( int i = 0; i < vs_vector_size( &mlms ); ++i ) {
+			LocalMotions *lms = (LocalMotions*)vs_vector_get( &mlms, i );
+			if ( lms )
+				vs_vector_del( lms );
+		}
+		
+		for ( int i = 0; i < trans.len; ++i )
+			transforms->append( StabilizeTransform( ptsList[i], trans.ts[i].x, trans.ts[i].y, trans.ts[i].alpha, trans.ts[i].zoom ) );
+		
+		vsTransformDataCleanup( &data );
+		vsTransformationsCleanup( &trans );
+	}
+	
+	vs_vector_del( &mlms );
+}
