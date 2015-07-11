@@ -811,19 +811,25 @@ void Timeline::addFilter( ClipViewItem *clip, QString fx, int index )
 	QSharedPointer<Filter> f;
 	for ( i = 0; i < fc->videoFilters.count(); ++i ) {
 		if ( fc->videoFilters[ i ].identifier == fx ) {
+			if ( !c->getSource()->getProfile().hasVideo() )
+				return;
 			f = fc->videoFilters[ i ].create();
+			if ( f->getIdentifier() == "GLStabilize"  ) {
+				if ( c->getSource()->getType() != InputBase::FFMPEG )
+					return;
+				f.staticCast<GLStabilize>()->setSource( c->getSource() );
+			}
 			if ( index == -1 )
 				c->videoFilters.append( f.staticCast<GLFilter>() );
 			else
 				c->videoFilters.insert( index, f.staticCast<GLFilter>() );
-			if ( f->getIdentifier() == "GLStabilize" ) {
-				f.staticCast<GLStabilize>()->setSource( c->getSource() );
-			}
 			break;
 		}
 	}
 	if ( f.isNull() ) {
 		for ( i = 0; i < fc->audioFilters.count(); ++i ) {
+			if ( !c->getSource()->getProfile().hasAudio() )
+				return;
 			if ( fc->audioFilters[ i ].identifier == fx ) {
 				f = fc->audioFilters[ i ].create();
 				if ( index == -1 )
