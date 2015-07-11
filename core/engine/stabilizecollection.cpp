@@ -184,7 +184,7 @@ QList<StabilizeTransform>* StabilizeCollection::getTransforms( Source *source, i
 	for ( int i = 0; i < stabDetect.count(); ++i ) {
 		StabMotionDetect *detect = stabDetect.at( i );
 		if ( detect->getFileName() == source->getFileName() ) {
-			if ( detect->isRunning() ) {
+			if ( detect->getStarted() ) {
 				status = StabilizeTransform::STABINPROGRESS;
 				progress = detect->getProgress();
 			}
@@ -274,14 +274,16 @@ void StabMotionDetect::stop()
 void StabMotionDetect::run()
 {
 	setpriority( PRIO_PROCESS, 0, 10 );
+	
+	Profile sourceProfile = source->getProfile();
 
 	InputFF *input = new InputFF();
 	if ( !input->open( source->getFileName() ) ) {
 		delete input;
 		return;
 	}
-	input->setProfile( source->getProfile(), source->getProfile() );
-	input->openSeekPlay( source->getFileName(), source->getProfile().getStreamStartTime() );
+	input->setProfile( sourceProfile, sourceProfile );
+	input->openSeekPlay( source->getFileName(), sourceProfile.getStreamStartTime() );
 	Frame *f = input->getVideoFrame();
 	if ( !f ) {
 		input->play( false );
@@ -297,12 +299,12 @@ void StabMotionDetect::run()
 	if ( f->type() == Frame::YUV422P )
 		format = PF_YUV422P;
 	VSFrameInfo fi;
-	vsFrameInfoInit( &fi, source->getProfile().getVideoWidth(), source->getProfile().getVideoHeight(), format );
+	vsFrameInfoInit( &fi, sourceProfile.getVideoWidth(), sourceProfile.getVideoHeight(), format );
 	vsMotionDetectInit( &md, &conf, &fi );
 	
-	int nSamples = source->getProfile().getAudioSampleRate() * source->getProfile().getVideoFrameDuration() / MICROSECOND;
-	double startPts = source->getProfile().getStreamStartTime();
-	double endPts = source->getProfile().getStreamStartTime() + source->getProfile().getStreamDuration();
+	int nSamples = sourceProfile.getAudioSampleRate() * sourceProfile.getVideoFrameDuration() / MICROSECOND;
+	double startPts = sourceProfile.getStreamStartTime();
+	double endPts = sourceProfile.getStreamStartTime() + sourceProfile.getStreamDuration();
 	
 	int index = 0;
 	VSManyLocalMotions mlms;
@@ -311,18 +313,19 @@ void StabMotionDetect::run()
 
 	do {
 		progress = (f->pts() - startPts) * 100 / (endPts - startPts);
-		LocalMotions localmotions;
+		LocalMotions *localmotions = (LocalMotions*)malloc( sizeof(LocalMotions) );
 		VSFrame vsFrame;
 		vsFrameFillFromBuffer( &vsFrame, f->data(), &md.fi );
-		if ( vsMotionDetection( &md, &localmotions, &vsFrame ) == VS_OK ) {
-			vs_vector_set_dup( &mlms, index++, &localmotions, sizeof(LocalMotions) );
+		if ( vsMotionDetection( &md, localmotions, &vsFrame ) == VS_OK ) {
+			vs_vector_set( &mlms, index++, localmotions );
 			if ( f->pts() >= endPts || (ptsList.count() > 0 && f->pts() <= ptsList.last() ) )
 				finishedSuccess = true;
 			ptsList.append( f->pts() );
 		}
-		else
-			running = false;		
-		
+		else{
+			running = false;
+		}
+
 		delete f;
 		// consume audio
 		if ( (f = input->getAudioFrame( nSamples )) )
@@ -345,13 +348,13 @@ void StabMotionDetect::run()
 		VSTransformations trans;
 	
 		config = vsTransformGetDefaultConfig( "stabilize" );
-		config.smoothing = source->getProfile().getVideoFrameRate() / 2;
+		config.smoothing = sourceProfile.getVideoFrameRate() / 2;
 		config.optZoom = 2;
-		config.zoomSpeed = 6.0 / source->getProfile().getVideoFrameRate();
+		config.zoomSpeed = 6.0 / sourceProfile.getVideoFrameRate();
 	
 		VSFrameInfo fi_src, fi_dst;
-		vsFrameInfoInit( &fi_src, source->getProfile().getVideoWidth(), source->getProfile().getVideoHeight(), format );
-		vsFrameInfoInit( &fi_dst, source->getProfile().getVideoWidth(), source->getProfile().getVideoHeight(), format );
+		vsFrameInfoInit( &fi_src, sourceProfile.getVideoWidth(), sourceProfile.getVideoHeight(), format );
+		vsFrameInfoInit( &fi_dst, sourceProfile.getVideoWidth(), sourceProfile.getVideoHeight(), format );
 		vsTransformDataInit( &data, &config, &fi_src, &fi_dst );
 		vsTransformationsInit( &trans );
 
@@ -369,6 +372,7 @@ void StabMotionDetect::run()
 		vsTransformationsCleanup( &trans );
 	}
 	
+	vsMotionDetectionCleanup( &md );
 	for ( int i = 0; i < vs_vector_size( &mlms ); ++i ) {
 		LocalMotions *lms = (LocalMotions*)vs_vector_get( &mlms, i );
 		if ( lms )
