@@ -15,15 +15,15 @@ FilterCollection::FilterCollection()
 	videoFilters.append( FilterEntry( "colors", "GLWhiteBalance", QObject::tr("White balance"), &Maker<GLWhiteBalance>::make ) );
 	videoFilters.append( FilterEntry( "colors", "GLLiftGammaGain", QObject::tr("Color grading"), &Maker<GLLiftGammaGain>::make ) );
 	videoFilters.append( FilterEntry( "lens", "GLBlur", QObject::tr("Blur"), &Maker<GLBlur>::make ) );
-	videoFilters.append( FilterEntry( "lens", "GLDeconvolutionSharpen", QObject::tr("Sharpen"), &Maker<GLDeconvolutionSharpen>::make ) );
-	videoFilters.append( FilterEntry( "lens", "GLSharpen", QObject::tr("Sharpen (fast)"), &Maker<GLSharpen>::make ) );
+	videoFilters.append( FilterEntry( "lens", "GLDeconvolutionSharpen", QObject::tr("Sharpen (deconvlolution)"), &Maker<GLDeconvolutionSharpen>::make ) );
+	videoFilters.append( FilterEntry( "lens", "GLSharpen", QObject::tr("Sharpen (unsharp mask)"), &Maker<GLSharpen>::make ) );
 	videoFilters.append( FilterEntry( "lens", "GLDenoise", QObject::tr("Denoise"), &Maker<GLDenoise>::make ) );
 	videoFilters.append( FilterEntry( "lens", "GLDiffusion", QObject::tr("Diffusion"), &Maker<GLDiffusion>::make ) );
 	videoFilters.append( FilterEntry( "lens", "GLGlow", QObject::tr("Glow"), &Maker<GLGlow>::make ) );
 	videoFilters.append( FilterEntry( "size", "GLSize", QObject::tr("Size and position"), &Maker<GLSize>::make ) );
 	videoFilters.append( FilterEntry( "size", "GLCrop", QObject::tr("Crop"), &Maker<GLCrop>::make ) );
 	videoFilters.append( FilterEntry( "size", "GLStabilize", QObject::tr("Stabilize"), &Maker<GLStabilize>::make ) );
-	videoFilters.append( FilterEntry( "size", "GLCut", QObject::tr("Cut"), &Maker<GLCut>::make ) );
+	//videoFilters.append( FilterEntry( "size", "GLCut", QObject::tr("Cut"), &Maker<GLCut>::make ) );
 	videoFilters.append( FilterEntry( "size", "GLVignette", QObject::tr("Vignette"), &Maker<GLVignette>::make ) );
 	videoFilters.append( FilterEntry( "draw", "GLText", QObject::tr("Text"), &Maker<GLText>::make ) );
 	videoFilters.append( FilterEntry( "draw", "GLBorder", QObject::tr("Border color"), &Maker<GLBorder>::make ) );
