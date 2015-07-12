@@ -40,10 +40,10 @@ FFDecoder::~FFDecoder()
 	close();
 
 	if ( videoAvframe )
-		av_free( videoAvframe );
+		av_frame_free( &videoAvframe );
 
 	if ( audioAvframe )
-		av_free( audioAvframe );
+		av_frame_free( &audioAvframe );
 }
 
 
@@ -294,6 +294,10 @@ bool FFDecoder::ffOpen( QString fn )
 					AVDictionaryEntry *tag = NULL;
 					if ( (tag = av_dict_get( st->metadata, "rotate", tag, AV_DICT_IGNORE_SUFFIX )) )
 						orientation = QString( tag->value ).toInt();
+
+					AVDictionary *opts = NULL;
+					av_dict_set( &opts, "refcounted_frames", "1", 0 );
+					avcodec_open2( videoCodecCtx, videoCodec, &opts );
 					haveVideo = true;
 				}
 			}
@@ -568,6 +572,7 @@ bool FFDecoder::decodeVideo( Frame *f )
 			}
 
 			bool ok = makeFrame( f, ratio, vpts, dur );
+			av_frame_unref( videoAvframe );
 			
 			freePacket( packet );
 			return ok;
