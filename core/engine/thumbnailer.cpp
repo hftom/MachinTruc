@@ -272,13 +272,7 @@ QImage Thumbnailer::getSourceThumb( Frame *f, bool border )
 	movitChain->branches.append( branch );
 	movitChain->chain->add_input( in->getMovitInput( f ) );
 	branch->input->process( f );
-			
-	// deinterlace
-	if ( f->profile.getVideoInterlaced() ) {
-		Effect *e = new MyDeinterlaceEffect();
-		movitChain->chain->add_effect( e );
-	}
-			
+
 	int iw, ih;
 	if ( ar >= ICONSIZEWIDTH / ICONSIZEHEIGHT ) {
 		iw = ICONSIZEWIDTH;

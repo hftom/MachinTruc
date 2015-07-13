@@ -49,7 +49,6 @@ SOURCES = \
 	vfx/glresize.cpp \
 	vfx/glpadding.cpp \
 	vfx/glcrop.cpp \
-	vfx/gldeinterlace.cpp \
 	vfx/glblurmask.cpp \
 	vfx/glcut.cpp \
 	vfx/gledge.cpp \
@@ -131,7 +130,6 @@ HEADERS = \
 	vfx/glresize.h \
 	vfx/glpadding.h \
 	vfx/glcrop.h \
-	vfx/gldeinterlace.h \
 	vfx/glblurmask.h \
 	vfx/glcut.h \
 	vfx/gledge.h \

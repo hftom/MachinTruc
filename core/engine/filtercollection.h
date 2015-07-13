@@ -2,7 +2,6 @@
 #define FILTERCOLLECTION_H
 
 // auto filters
-#include "vfx/gldeinterlace.h"
 #include "vfx/glpadding.h"
 #include "vfx/glresize.h"
 #include "vfx/glorientation.h"
