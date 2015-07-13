@@ -276,13 +276,18 @@ void StabMotionDetect::run()
 	setpriority( PRIO_PROCESS, 0, 10 );
 	
 	Profile sourceProfile = source->getProfile();
+	Profile outProfile = sourceProfile;
+	if ( sourceProfile.getVideoInterlaced() ) {
+		outProfile.setVideoFrameRate( outProfile.getVideoFrameRate() * 2.0 );
+		outProfile.setVideoFrameDuration( outProfile.getVideoFrameDuration() / 2.0 );
+	}
 
 	InputFF *input = new InputFF();
 	if ( !input->open( source->getFileName() ) ) {
 		delete input;
 		return;
 	}
-	input->setProfile( sourceProfile, sourceProfile );
+	input->setProfile( sourceProfile, outProfile );
 	input->openSeekPlay( source->getFileName(), sourceProfile.getStreamStartTime() );
 	Frame *f = input->getVideoFrame();
 	if ( !f ) {
@@ -302,7 +307,7 @@ void StabMotionDetect::run()
 	vsFrameInfoInit( &fi, sourceProfile.getVideoWidth(), sourceProfile.getVideoHeight(), format );
 	vsMotionDetectInit( &md, &conf, &fi );
 	
-	int nSamples = sourceProfile.getAudioSampleRate() * sourceProfile.getVideoFrameDuration() / MICROSECOND;
+	int nSamples = sourceProfile.getAudioSampleRate() * outProfile.getVideoFrameDuration() / MICROSECOND;
 	double startPts = sourceProfile.getStreamStartTime();
 	double endPts = sourceProfile.getStreamStartTime() + sourceProfile.getStreamDuration();
 	
@@ -348,9 +353,9 @@ void StabMotionDetect::run()
 		VSTransformations trans;
 	
 		config = vsTransformGetDefaultConfig( "stabilize" );
-		config.smoothing = sourceProfile.getVideoFrameRate() / 2;
+		config.smoothing = outProfile.getVideoFrameRate() / 2;
 		config.optZoom = 2;
-		config.zoomSpeed = 6.0 / sourceProfile.getVideoFrameRate();
+		config.zoomSpeed = 6.0 / outProfile.getVideoFrameRate();
 	
 		VSFrameInfo fi_src, fi_dst;
 		vsFrameInfoInit( &fi_src, sourceProfile.getVideoWidth(), sourceProfile.getVideoHeight(), format );
@@ -361,7 +366,7 @@ void StabMotionDetect::run()
 		vsLocalmotions2Transforms( &data, &mlms, &trans );
 		vsPreprocessTransforms( &data, &trans );
 		
-		if ( trans.len < 1 )
+		if ( trans.len < 2 )
 			finishedSuccess = false;
 		else {
 			for ( int i = 0; i < trans.len; ++i )

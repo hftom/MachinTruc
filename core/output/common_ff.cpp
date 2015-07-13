@@ -42,6 +42,7 @@ bool FFmpegCommon::initFFmpeg()
 		av_lockmgr_register( lockManager );
 		avcodec_register_all();
 		av_register_all();
+		avfilter_register_all();
 		initDone = true;
 		
 		/*const AVCodecDescriptor *desc = NULL;

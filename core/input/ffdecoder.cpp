@@ -294,10 +294,6 @@ bool FFDecoder::ffOpen( QString fn )
 					AVDictionaryEntry *tag = NULL;
 					if ( (tag = av_dict_get( st->metadata, "rotate", tag, AV_DICT_IGNORE_SUFFIX )) )
 						orientation = QString( tag->value ).toInt();
-
-					AVDictionary *opts = NULL;
-					av_dict_set( &opts, "refcounted_frames", "1", 0 );
-					avcodec_open2( videoCodecCtx, videoCodec, &opts );
 					haveVideo = true;
 				}
 			}
@@ -316,9 +312,12 @@ bool FFDecoder::ffOpen( QString fn )
 		return false;
 
 	if ( videoCodecCtx ) {
-		if ( avcodec_open2( videoCodecCtx, videoCodec, NULL ) < 0 ) {
+		AVDictionary *opts = NULL;
+		av_dict_set( &opts, "refcounted_frames", "1", 0 );
+		if ( avcodec_open2( videoCodecCtx, videoCodec, &opts ) < 0 ) {
 			return false; // Could not open codec_id
 		}
+		yadif.reset( outProfile.getVideoFrameRate() > inProfile.getVideoFrameRate(), videoStream, formatCtx, videoCodecCtx );
 	}
 
 	if ( audioCodecCtx ) {
@@ -381,6 +380,7 @@ void FFDecoder::resetAudioResampler()
 void FFDecoder::flush()
 {
 	resetAudioResampler();
+	yadif.reset( doYadif > Yadif1X, videoStream, formatCtx, videoCodecCtx );
 }
 
 
@@ -533,6 +533,19 @@ bool FFDecoder::decodeVideo( Frame *f )
 	double vpts = 0;
 
 	while ( 1 ) {
+		if ( doYadif ) {
+			double pts, dur, ratio;
+			AVFrame *ya = yadif.pullFrame( pts, dur, ratio );
+			if ( ya ) {
+				bool ok = makeFrame( f, ya, ratio, pts, dur );
+				av_frame_unref( ya );
+				return ok;
+			}
+			else if ( yadif.eof ) {
+				endOfFile |= EofVideo;
+				return false;
+			}
+		}
 		while ( videoPackets.isEmpty() && !(endOfFile & EofVideoPacket) ) {
 			if ( !getPacket() ) {
 				endOfFile |= EofVideoPacket;
@@ -571,17 +584,29 @@ bool FFDecoder::decodeVideo( Frame *f )
 				dur += dur * videoAvframe->repeat_pict / 2.0;
 			}
 
-			bool ok = makeFrame( f, ratio, vpts, dur );
-			av_frame_unref( videoAvframe );
-			
-			freePacket( packet );
-			return ok;
+			if ( doYadif ) {
+				yadif.pushFrame( videoAvframe, vpts, dur, ratio );
+				av_frame_unref( videoAvframe );
+				freePacket( packet );
+			}
+			else {
+				bool ok = makeFrame( f, videoAvframe, ratio, vpts, dur );
+				av_frame_unref( videoAvframe );
+				freePacket( packet );
+				return ok;
+			}
 		}
-
-		freePacket( packet );
-		if ( endOfFile & EofVideoPacket ) {
-			endOfFile |= EofVideo;
-			return false;
+		else {
+			freePacket( packet );
+			if ( endOfFile & EofVideoPacket ) {
+				if ( doYadif ) {
+					yadif.pushFrame( NULL, 0, 0, 0 );
+				}
+				else {
+					endOfFile |= EofVideo;
+					return false;
+				}
+			}
 		}
 	}
 	return false;
@@ -589,7 +614,7 @@ bool FFDecoder::decodeVideo( Frame *f )
 
 
 
-bool FFDecoder::makeFrame( Frame *f, double ratio, double pts, double dur )
+bool FFDecoder::makeFrame( Frame *f, AVFrame *avFrame, double ratio, double pts, double dur )
 {
 	f->profile.setVideoColorFullRange( videoCodecCtx->color_range == AVCOL_RANGE_JPEG );
 
@@ -648,23 +673,23 @@ bool FFDecoder::makeFrame( Frame *f, double ratio, double pts, double dur )
 			f->profile.setVideoChromaLocation( Profile::LOC_LEFT );
 	}
 
-	switch ( videoAvframe->format ) {
+	switch ( avFrame->format ) {
 		case AV_PIX_FMT_YUVJ420P:
 		case AV_PIX_FMT_YUV420P: {
 			f->setVideoFrame( Frame::YUV420P, videoCodecCtx->width, height,
-				ratio, videoAvframe->interlaced_frame, videoAvframe->top_field_first, pts, dur, orientation );
+				ratio, avFrame->interlaced_frame, avFrame->top_field_first, pts, dur, orientation );
 			int i;
 			uint8_t *buf = f->data();
 			for ( i = 0; i < height; i++ ) {
-				memcpy( buf, videoAvframe->data[0] + (videoAvframe->linesize[0] * i), videoCodecCtx->width );
+				memcpy( buf, avFrame->data[0] + (avFrame->linesize[0] * i), videoCodecCtx->width );
 				buf += videoCodecCtx->width;
 			}
 			for ( i = 0; i < height / 2; i++ ) {
-				memcpy( buf, videoAvframe->data[1] + (videoAvframe->linesize[1] * i), videoCodecCtx->width / 2 );
+				memcpy( buf, avFrame->data[1] + (avFrame->linesize[1] * i), videoCodecCtx->width / 2 );
 				buf += videoCodecCtx->width / 2;
 			}
 			for ( i = 0; i < height / 2; i++ ) {
-				memcpy( buf, videoAvframe->data[2] + (videoAvframe->linesize[2] * i), videoCodecCtx->width / 2 );
+				memcpy( buf, avFrame->data[2] + (avFrame->linesize[2] * i), videoCodecCtx->width / 2 );
 				buf += videoCodecCtx->width / 2;
 			}
 			break;
@@ -672,19 +697,19 @@ bool FFDecoder::makeFrame( Frame *f, double ratio, double pts, double dur )
 		case AV_PIX_FMT_YUVJ422P:
 		case AV_PIX_FMT_YUV422P: {
 			f->setVideoFrame( Frame::YUV422P, videoCodecCtx->width, height,
-				ratio, videoAvframe->interlaced_frame, videoAvframe->top_field_first, pts, dur, orientation );
+				ratio, avFrame->interlaced_frame, avFrame->top_field_first, pts, dur, orientation );
 			int i;
 			uint8_t *buf = f->data();
 			for ( i = 0; i < height; i++ ) {
-				memcpy( buf, videoAvframe->data[0] + (videoAvframe->linesize[0] * i), videoCodecCtx->width );
+				memcpy( buf, avFrame->data[0] + (avFrame->linesize[0] * i), videoCodecCtx->width );
 				buf += videoCodecCtx->width;
 			}
 			for ( i = 0; i < height; i++ ) {
-				memcpy( buf, videoAvframe->data[1] + (videoAvframe->linesize[1] * i), videoCodecCtx->width / 2 );
+				memcpy( buf, avFrame->data[1] + (avFrame->linesize[1] * i), videoCodecCtx->width / 2 );
 				buf += videoCodecCtx->width / 2;
 			}
 			for ( i = 0; i < height; i++ ) {
-				memcpy( buf, videoAvframe->data[2] + (videoAvframe->linesize[2] * i), videoCodecCtx->width / 2 );
+				memcpy( buf, avFrame->data[2] + (avFrame->linesize[2] * i), videoCodecCtx->width / 2 );
 				buf += videoCodecCtx->width / 2;
 			}
 			break;
@@ -874,4 +899,179 @@ void FFDecoder::freePacket( AVPacket *packet )
 {
 	av_free_packet( packet );
 	free( packet );
+}
+
+
+
+// yadif filter
+Yadif::Yadif() : eof(false), twice(false), bufferSinkCtx(NULL), bufferSrcCtx(NULL), filterGraph(NULL)
+{
+	filterFrame = av_frame_alloc();
+}
+
+
+
+Yadif::~Yadif()
+{
+	if ( filterGraph ) {
+		avfilter_graph_free( &filterGraph );
+		filterGraph = NULL;
+	}
+	av_frame_free( &filterFrame );
+}
+
+
+
+bool Yadif::pushFrame( AVFrame *f, double pts, double duration, double ratio )
+{
+	if ( !f )
+		eof = true;
+	int ret = av_buffersrc_add_frame_flags( bufferSrcCtx, f, AV_BUFFERSRC_FLAG_KEEP_REF );
+	if ( ret < 0 ) {
+		char es[128];
+		av_strerror( ret, es, 128 );
+		qDebug() << "Error while feeding the filtergraph:" << es;
+		return false;
+	}
+	ar = ratio;
+	if ( twice ) {
+		ptsQueue.enqueue( pts );
+		durationQueue.enqueue( duration / 2.0 );
+		ptsQueue.enqueue( pts + duration / 2.0 );
+		durationQueue.enqueue( duration / 2.0 );
+	}
+	else {
+		ptsQueue.enqueue( pts );
+		durationQueue.enqueue( duration );
+	}
+	return true;
+}
+
+
+
+AVFrame* Yadif::pullFrame( double &pts, double &duration, double &ratio )
+{
+	int ret = av_buffersink_get_frame( bufferSinkCtx, filterFrame );
+	if ( ret < 0 ) {
+		/*char es[128];
+		av_strerror( ret, es, 128 );
+		qDebug() << "Error while pulling from filtergraph:" << es;*/
+		return NULL;
+	}
+	pts = ptsQueue.dequeue();
+	duration = durationQueue.dequeue();
+	ratio = ar;
+	return filterFrame;
+}
+
+
+
+bool Yadif::reset( bool sendFields, int videoStreamIndex, AVFormatContext *fmtCtx, AVCodecContext *codecCtx )
+{
+	if ( filterGraph ) {
+		avfilter_graph_free( &filterGraph );
+		filterGraph = NULL;
+	}
+	eof = false;
+	ptsQueue.clear();
+	durationQueue.clear();
+	twice = sendFields;
+
+	const char *filter_descr;
+	if ( twice )
+		filter_descr = "yadif=1";
+	else
+		filter_descr = "yadif=0";
+	char args[512];
+	int ret = 0;
+	AVFilter *buffersrc  = avfilter_get_by_name("buffer");
+	AVFilter *buffersink = avfilter_get_by_name("buffersink");
+	AVFilterInOut *outputs = avfilter_inout_alloc();
+	AVFilterInOut *inputs  = avfilter_inout_alloc();
+	AVRational time_base = fmtCtx->streams[videoStreamIndex]->time_base;
+	enum AVPixelFormat pixFmts[] = { AV_PIX_FMT_YUV420P, AV_PIX_FMT_YUV422P, AV_PIX_FMT_NONE };
+
+	filterGraph = avfilter_graph_alloc();
+	if (!outputs || !inputs || !filterGraph) {
+		if ( inputs )
+			avfilter_inout_free( &inputs );
+		if ( outputs )
+			avfilter_inout_free( &outputs );
+		return false;
+	}
+
+	/* buffer video source: the decoded frames from the decoder will be inserted here. */
+	snprintf( args, sizeof(args),
+			"video_size=%dx%d:pix_fmt=%d:time_base=%d/%d:pixel_aspect=%d/%d",
+			codecCtx->width, codecCtx->height, codecCtx->pix_fmt,
+			time_base.num, time_base.den,
+			codecCtx->sample_aspect_ratio.num, codecCtx->sample_aspect_ratio.den );
+
+	ret = avfilter_graph_create_filter( &bufferSrcCtx, buffersrc, "in", args, NULL, filterGraph );
+	if ( ret < 0 ) {
+		qDebug() << "Cannot create buffer source";
+		avfilter_inout_free( &inputs );
+		avfilter_inout_free( &outputs );
+		return false;
+	}
+
+	/* buffer video sink: to terminate the filter chain. */
+	ret = avfilter_graph_create_filter( &bufferSinkCtx, buffersink, "out", NULL, NULL, filterGraph );
+	if ( ret < 0 ) {
+		qDebug() << "Cannot create buffer sink";
+		avfilter_inout_free( &inputs );
+		avfilter_inout_free( &outputs );
+		return false;
+	}
+
+	ret = av_opt_set_int_list( bufferSinkCtx, "pix_fmts", pixFmts, AV_PIX_FMT_NONE, AV_OPT_SEARCH_CHILDREN );
+	if ( ret < 0 ) {
+		qDebug() << "Cannot set output pixel format";
+		avfilter_inout_free( &inputs );
+		avfilter_inout_free( &outputs );
+		return false;
+	}
+
+	/*
+	* Set the endpoints for the filter graph. The filter_graph will
+	* be linked to the graph described by filters_descr.
+	*/
+
+	/*
+	* The buffer source output must be connected to the input pad of
+	* the first filter described by filters_descr; since the first
+	* filter input label is not specified, it is set to "in" by
+	* default.
+	*/
+	outputs->name       = av_strdup( "in" );
+	outputs->filter_ctx = bufferSrcCtx;
+	outputs->pad_idx    = 0;
+	outputs->next       = NULL;
+
+	/*
+	* The buffer sink input must be connected to the output pad of
+	* the last filter described by filters_descr; since the last
+	* filter output label is not specified, it is set to "out" by
+	* default.
+	*/
+	inputs->name       = av_strdup( "out" );
+	inputs->filter_ctx = bufferSinkCtx;
+	inputs->pad_idx    = 0;
+	inputs->next       = NULL;
+
+	if ( (ret = avfilter_graph_parse_ptr( filterGraph, filter_descr, &inputs, &outputs, NULL )) < 0 ) {
+		avfilter_inout_free( &inputs );
+		avfilter_inout_free( &outputs );
+		return false;
+	}
+
+	if ( (ret = avfilter_graph_config( filterGraph, NULL )) < 0 ) {
+		avfilter_inout_free( &inputs );
+		avfilter_inout_free( &outputs );
+		return false;
+	}
+
+	avfilter_inout_free( &inputs );
+	avfilter_inout_free( &outputs );
+	return true;
 }

@@ -89,7 +89,8 @@ bool GLStabilize::process( const QList<Effect*> &el, double pts, Frame *src, Pro
 	Effect *e = el[0];
 	
 	if ( transforms ) {
-		int nframe = ((src->pts() - transforms->first().pts) / src->profile.getVideoFrameDuration()) + 0.5;
+		double dur =  transforms->at( 1 ).pts - transforms->first().pts;
+		int nframe = ((src->pts() - transforms->first().pts) / dur) + 0.5;
 		nframe = qMax( qMin( nframe, transforms->count() - 1 ), 0 );
 		StabilizeTransform ts = transforms->at( nframe );
 		double rad = ts.alpha;

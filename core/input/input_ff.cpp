@@ -351,12 +351,13 @@ void InputFF::runBackward()
 	bool endVideoSequence = !decoder->haveVideo;
 	bool endAudioSequence = !decoder->haveAudio;
 	int minSamples = (outProfile.getAudioSampleRate() / outProfile.getVideoFrameRate()) * NUMINPUTFRAMES;
+	double frameRate = inProfile.getVideoFrameRate() * (1.0 + (decoder->doYadif > FFDecoder::Yadif1X));
 
 	while ( running ) {
 		doWait = 1;
 
 		if ( !endVideoSequence ) {
-			bool yes = backwardVideoFrames.count() + reorderedVideoFrames.count() < (inProfile.getVideoFrameRate() * BACKWARDLEN / MICROSECOND) + 3;
+			bool yes = backwardVideoFrames.count() + reorderedVideoFrames.count() < (frameRate * BACKWARDLEN / MICROSECOND) + 3;
 			yes |= reorderedVideoFrames.count() < 3;
 			yes |= decoder->haveAudio && !audioFrameList.readable( minSamples );
 			if ( yes ) {
@@ -370,7 +371,7 @@ void InputFF::runBackward()
 					delete f;
 					endVideoSequence = true;
 				}
-				if ( backwardVideoFrames.count() > inProfile.getVideoFrameRate() * 2 ) // broken stream ?
+				if ( backwardVideoFrames.count() > frameRate * 2 ) // broken stream ?
 					endVideoSequence = true;
 				doWait = 0;
 			}
@@ -524,7 +525,7 @@ void InputFF::runBackward()
 
 void InputFF::resample( Frame *f )
 {
-	double delta = ( f->pts() + f->profile.getVideoFrameDuration() ) - ( videoResampler.outputPts + videoResampler.outputDuration );
+	double delta = ( f->pts() + videoResampler.outputDuration ) - ( videoResampler.outputPts + videoResampler.outputDuration );
 	/*if ( outProfile.getVideoFrameRate() == inProfile.getVideoFrameRate() ) { // no resampling
 		videoFrames.enqueue( f );
 	}
@@ -551,7 +552,7 @@ void InputFF::resample( Frame *f )
 
 void InputFF::resampleBackward( Frame *f )
 {
-	double delta = ( videoResampler.outputPts - videoResampler.outputDuration ) - ( f->pts() - f->profile.getVideoFrameDuration() );
+	double delta = ( videoResampler.outputPts - videoResampler.outputDuration ) - ( f->pts() - videoResampler.outputDuration );
 	if ( delta >= videoResampler.outputDuration ) {
 		// this frame will be duplicated (delta / videoResampler.outputDuration) times
 		printf("duplicate, delta=%f, f->pts=%f, outputPts=%f\n", delta, f->pts(), videoResampler.outputPts);

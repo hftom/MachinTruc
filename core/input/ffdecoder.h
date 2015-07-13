@@ -96,11 +96,36 @@ public:
 
 
 
+class Yadif
+{
+public:
+	Yadif();
+	~Yadif();
+	bool reset( bool sendFields, int videoStreamIndex, AVFormatContext *fmtCtx, AVCodecContext *codecCtx );
+	bool pushFrame( AVFrame *f, double pts, double duration, double ratio );
+	AVFrame* pullFrame( double &pts, double &duration, double &ratio );
+
+	bool eof;
+
+private:
+	bool twice;
+	AVFrame *filterFrame;
+	AVFilterContext *bufferSinkCtx;
+	AVFilterContext *bufferSrcCtx;
+	AVFilterGraph *filterGraph;
+	QQueue<double> ptsQueue;
+	QQueue<double> durationQueue;
+	double ar;
+};
+
+
+
 class FFDecoder
 {
 private:
 	friend class InputFF;
 
+	enum YadifMode{ NoYadif=0, Yadif1X=1, Yadif2X=2 };
 	FFDecoder();
 	~FFDecoder();
 	bool open( QString fn );
@@ -111,6 +136,14 @@ private:
 	void setProfile( const Profile &in, const Profile &out ) {
 		inProfile = in;
 		outProfile = out;
+		if ( inProfile.getVideoInterlaced() ) {
+			if ( outProfile.getVideoFrameRate() > inProfile.getVideoFrameRate() )
+				doYadif = Yadif2X;
+			else
+				doYadif = Yadif1X;
+		}
+		else
+			doYadif = NoYadif;
 	}
 
 	void close();
@@ -118,7 +151,7 @@ private:
 	bool ffOpen( QString fn );
 	bool getPacket();
 	void freePacket( AVPacket *packet );
-	bool makeFrame( Frame *f, double ratio, double pts, double dur );
+	bool makeFrame( Frame *f, AVFrame *avFrame, double ratio, double pts, double dur );
 	void freeCurrentAudioPacket();
 	void shiftCurrentAudioPacket( int len );
 	void shiftCurrentAudioPacketPts( double pts );
@@ -140,6 +173,8 @@ private:
 	int audioStream;
 	AVFrame *videoAvframe;
 	AVFrame *audioAvframe;
+	Yadif yadif;
+	int doYadif;
 
 	int orientation;
 
