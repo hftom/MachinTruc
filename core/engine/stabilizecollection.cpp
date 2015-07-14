@@ -78,23 +78,6 @@ void StabilizeCollection::checkDetectionThreads()
 			if ( !stab->isRunning() ) {
 				if ( stab->getFinishedSuccess() ) {
 					QList<StabilizeTransform> *list = stab->getTransformsOwnership();
-					QDir dir;
-					// save to file
-					if ( cdStabilizeDir( dir ) ) {
-						QFile f( dir.filePath( pathToFileName( stab->getFileName() ) + STABILIZE_EXTENSION ) );
-						if ( f.open( QIODevice::WriteOnly | QIODevice::Truncate ) ) {
-							QDataStream data( &f );
-							for ( int i = 0; i < list->count(); ++i ) {
-								StabilizeTransform t = list->at( i );
-								data << t.pts;
-								data << t.x;
-								data << t.y;
-								data << t.alpha;
-								data << t.zoom;
-							}
-							f.close();
-						}
-					}
 					stabItems.append( new StabilizeItem( stab->getFileName(), list ) );
 				}
 				else {
@@ -166,7 +149,7 @@ QList<StabilizeTransform>* StabilizeCollection::getTransforms( Source *source, i
 		}
 		f.close();
 		
-		if ( list->count() < 1 ) {
+		if ( list->count() < 2 ) {
 			list->clear();
 			delete list;
 			status = StabilizeTransform::STABERROR;
@@ -329,20 +312,19 @@ void StabMotionDetect::run()
 
 	do {
 		progress = (f->pts() - startPts) * 100 / (endPts - startPts);
-		LocalMotions *localmotions = (LocalMotions*)malloc( sizeof(LocalMotions) );
+		LocalMotions localmotions;
 		VSFrame vsFrame;
 		vsFrameFillFromBuffer( &vsFrame, f->data(), &md.fi );
-		if ( vsMotionDetection( &md, localmotions, &vsFrame ) == VS_OK ) {
-			transList.append( vsMotionsToTransform( &data, localmotions, 0 ) );
-			vs_vector_del( localmotions );
+		if ( vsMotionDetection( &md, &localmotions, &vsFrame ) == VS_OK ) {
+			transList.append( vsMotionsToTransform( &data, &localmotions, 0 ) );
 			if ( f->pts() >= endPts || (ptsList.count() > 0 && f->pts() <= ptsList.last() ) )
 				finishedSuccess = true;
 			ptsList.append( f->pts() );
 		}
 		else{
-			vs_vector_del( localmotions );
 			running = false;
 		}
+		vs_vector_del( &localmotions );
 
 		delete f;
 		// consume audio
@@ -372,6 +354,24 @@ void StabMotionDetect::run()
 		else {
 			for ( int i = 0; i < trans.len; ++i )
 				transforms->append( StabilizeTransform( ptsList[i], trans.ts[i].x, trans.ts[i].y, trans.ts[i].alpha, trans.ts[i].zoom ) );
+			
+			QDir dir;
+			// save to file
+			if ( StabilizeCollection::cdStabilizeDir( dir ) ) {
+				QFile f( dir.filePath( StabilizeCollection::pathToFileName( source->getFileName() ) + STABILIZE_EXTENSION ) );
+				if ( f.open( QIODevice::WriteOnly | QIODevice::Truncate ) ) {
+					QDataStream data( &f );
+					for ( int i = 0; i < transforms->count(); ++i ) {
+						StabilizeTransform t = transforms->at( i );
+						data << t.pts;
+						data << t.x;
+						data << t.y;
+						data << t.alpha;
+						data << t.zoom;
+					}
+					f.close();
+				}
+			}
 		}
 		
 		vsTransformDataCleanup( &data );

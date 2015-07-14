@@ -89,6 +89,8 @@ public:
 	
 	QList<StabilizeTransform>* getTransforms( Source *source, int &status, int &progress );
 	void releaseTransforms( QList<StabilizeTransform> *list );
+	static bool cdStabilizeDir( QDir &dir );
+	static QString pathToFileName( QString path );
 	
 private slots:
 	void checkDetectionThreads();
@@ -96,9 +98,6 @@ private slots:
 private:
 	StabilizeCollection();
 	StabilizeCollection( const StabilizeCollection& ) : QObject() {}
-
-	bool cdStabilizeDir( QDir &dir );
-	QString pathToFileName( QString path );
 
 	QTimer checkDetectionTimer;
 	QList<StabilizeItem*> stabItems;
