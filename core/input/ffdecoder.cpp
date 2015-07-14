@@ -380,7 +380,8 @@ void FFDecoder::resetAudioResampler()
 void FFDecoder::flush()
 {
 	resetAudioResampler();
-	yadif.reset( doYadif > Yadif1X, videoStream, formatCtx, videoCodecCtx );
+	if ( haveVideo )
+		yadif.reset( doYadif > Yadif1X, videoStream, formatCtx, videoCodecCtx );
 }
 
 
