@@ -311,7 +311,7 @@ void StabMotionDetect::run()
 	QList<VSTransform> transList;
 
 	do {
-		progress = (f->pts() - startPts) * 100 / (endPts - startPts);
+		progress = qMax( 0.0, qMin( (f->pts() - startPts) * 100 / (endPts - startPts), 99.0 ) );
 		LocalMotions localmotions;
 		VSFrame vsFrame;
 		vsFrameFillFromBuffer( &vsFrame, f->data(), &md.fi );
