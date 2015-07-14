@@ -307,14 +307,25 @@ void StabMotionDetect::run()
 	vsFrameInfoInit( &fi, sourceProfile.getVideoWidth(), sourceProfile.getVideoHeight(), format );
 	vsMotionDetectInit( &md, &conf, &fi );
 	
+	VSTransformData data;
+	VSTransformConfig config;
+	VSTransformations trans;
+	config = vsTransformGetDefaultConfig( "stabilize" );
+	config.smoothing = outProfile.getVideoFrameRate() / 2;
+	config.optZoom = 2;
+	config.zoomSpeed = 6.0 / outProfile.getVideoFrameRate();
+	VSFrameInfo fi_src, fi_dst;
+	vsFrameInfoInit( &fi_src, sourceProfile.getVideoWidth(), sourceProfile.getVideoHeight(), format );
+	vsFrameInfoInit( &fi_dst, sourceProfile.getVideoWidth(), sourceProfile.getVideoHeight(), format );
+	vsTransformDataInit( &data, &config, &fi_src, &fi_dst );
+	vsTransformationsInit( &trans );
+	
 	int nSamples = sourceProfile.getAudioSampleRate() * outProfile.getVideoFrameDuration() / MICROSECOND;
 	double startPts = sourceProfile.getStreamStartTime();
 	double endPts = sourceProfile.getStreamStartTime() + sourceProfile.getStreamDuration();
 	
-	int index = 0;
-	VSManyLocalMotions mlms;
-	vs_vector_init( &mlms, 1024 );
 	QList<double> ptsList;
+	QList<VSTransform> transList;
 
 	do {
 		progress = (f->pts() - startPts) * 100 / (endPts - startPts);
@@ -322,12 +333,14 @@ void StabMotionDetect::run()
 		VSFrame vsFrame;
 		vsFrameFillFromBuffer( &vsFrame, f->data(), &md.fi );
 		if ( vsMotionDetection( &md, localmotions, &vsFrame ) == VS_OK ) {
-			vs_vector_set( &mlms, index++, localmotions );
+			transList.append( vsMotionsToTransform( &data, localmotions, 0 ) );
+			vs_vector_del( localmotions );
 			if ( f->pts() >= endPts || (ptsList.count() > 0 && f->pts() <= ptsList.last() ) )
 				finishedSuccess = true;
 			ptsList.append( f->pts() );
 		}
 		else{
+			vs_vector_del( localmotions );
 			running = false;
 		}
 
@@ -348,22 +361,10 @@ void StabMotionDetect::run()
 	delete input;
 	
 	if ( finishedSuccess ) {
-		VSTransformData data;
-		VSTransformConfig config;
-		VSTransformations trans;
-	
-		config = vsTransformGetDefaultConfig( "stabilize" );
-		config.smoothing = outProfile.getVideoFrameRate() / 2;
-		config.optZoom = 2;
-		config.zoomSpeed = 6.0 / outProfile.getVideoFrameRate();
-	
-		VSFrameInfo fi_src, fi_dst;
-		vsFrameInfoInit( &fi_src, sourceProfile.getVideoWidth(), sourceProfile.getVideoHeight(), format );
-		vsFrameInfoInit( &fi_dst, sourceProfile.getVideoWidth(), sourceProfile.getVideoHeight(), format );
-		vsTransformDataInit( &data, &config, &fi_src, &fi_dst );
-		vsTransformationsInit( &trans );
-
-		vsLocalmotions2Transforms( &data, &mlms, &trans );
+		trans.ts = (VSTransform*)vs_malloc( sizeof(VSTransform) * transList.count() );
+		trans.len = transList.count();
+		for ( int i = 0; i < transList.count(); ++i )
+			trans.ts[i] = transList.at(i);
 		vsPreprocessTransforms( &data, &trans );
 		
 		if ( trans.len < 2 )
@@ -378,10 +379,4 @@ void StabMotionDetect::run()
 	}
 	
 	vsMotionDetectionCleanup( &md );
-	for ( int i = 0; i < vs_vector_size( &mlms ); ++i ) {
-		LocalMotions *lms = (LocalMotions*)vs_vector_get( &mlms, i );
-		if ( lms )
-			vs_vector_del( lms );
-	}
-	vs_vector_del( &mlms );
 }
