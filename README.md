@@ -6,7 +6,7 @@ MachinTruc is a non linear video editor.
 ![Screenshot](http://hftom.fr/machintruc-sshot.jpg)
 
 Deps:
-- ffmpeg (libavformat, libavcodec, libavutil, libswresample, libswscale)
+- ffmpeg (libavformat, libavcodec, libavutil, libavfilter, libswresample, libswscale)
 - vid.stab (https://github.com/georgmartius/vid.stab)
 - SDL (sound output)
 - Movit (http://git.sesse.net/?p=movit)
