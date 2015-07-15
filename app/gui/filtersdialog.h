@@ -44,7 +44,7 @@ class FiltersListDlg : public QDialog
 {
 	Q_OBJECT
 public:
-	FiltersListDlg( int m, QWidget *parent );
+	FiltersListDlg( int sourceType, int m, QWidget *parent );
 	
 private slots:
 	void filterSelected( QListWidgetItem* );

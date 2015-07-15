@@ -77,7 +77,7 @@ void FiltersDialog::videoFilterActivated( int row )
 
 void FiltersDialog::showVideoFiltersList()
 {
-	FiltersListDlg *dlg = new FiltersListDlg( MODEVIDEO, this );
+	FiltersListDlg *dlg = new FiltersListDlg( source->getType(), MODEVIDEO, this );
 	connect( dlg, SIGNAL(addVideoFilter(int)), this, SLOT(addVideoFilter(int)) );
 	dlg->exec();
 }
@@ -89,6 +89,8 @@ void FiltersDialog::addVideoFilter( int i )
 	FilterCollection *fc = FilterCollection::getGlobalInstance();
 	
 	QSharedPointer<Filter> f = fc->sourceVideoFilters[ i ].create();
+	if ( f->getIdentifier() == "GLStabilize"  )
+		f.staticCast<GLStabilize>()->setSource( source );
 	source->videoFilters.append( f.staticCast<GLFilter>() );
 	videoList->clear();
 	videoList->addItems( source->videoFilters.filtersNames() );
@@ -144,7 +146,7 @@ void FiltersDialog::audioFilterActivated( int row )
 
 void FiltersDialog::showAudioFiltersList()
 {
-	FiltersListDlg *dlg = new FiltersListDlg( MODEAUDIO, this );
+	FiltersListDlg *dlg = new FiltersListDlg( source->getType(), MODEAUDIO, this );
 	connect( dlg, SIGNAL(addAudioFilter(int)), this, SLOT(addAudioFilter(int)) );
 	dlg->exec();
 }
@@ -189,7 +191,7 @@ void FiltersDialog::removeCurrentAudioFilter()
 
 
 
-FiltersListDlg::FiltersListDlg( int m, QWidget *parent ) : QDialog( parent ),
+FiltersListDlg::FiltersListDlg( int sourceType, int m, QWidget *parent ) : QDialog( parent ),
 	mode( m )
 {
 	FilterCollection *fc = FilterCollection::getGlobalInstance();
@@ -203,8 +205,11 @@ FiltersListDlg::FiltersListDlg( int m, QWidget *parent ) : QDialog( parent ),
 	QListWidget *list = new QListWidget( this );
 	layout->addWidget( list );
 	if ( mode == MODEVIDEO ) {
-		for ( i = 0; i < fc->sourceVideoFilters.count(); ++i )
+		for ( i = 0; i < fc->sourceVideoFilters.count(); ++i ) {
+			if ( fc->sourceVideoFilters.at( i ).identifier == "GLStabilize" && sourceType != InputBase::FFMPEG )
+				continue;
 			list->addItem( new QListWidgetItem( fc->sourceVideoFilters.at( i ).name ) );
+		}
 	}
 	else {
 		for ( i = 0; i < fc->sourceAudioFilters.count(); ++i )
