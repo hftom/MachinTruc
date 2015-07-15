@@ -89,9 +89,17 @@ bool GLStabilize::process( const QList<Effect*> &el, double pts, Frame *src, Pro
 	Effect *e = el[0];
 	
 	if ( transforms ) {
-		double dur =  transforms->at( 1 ).pts - transforms->first().pts;
-		int nframe = ((src->pts() - transforms->first().pts) / dur) + 0.5;
+		double srcpts = src->pts();
+		double d =  transforms->at( 1 ).pts - transforms->first().pts;
+		int nframe = ((srcpts - transforms->first().pts) / d) + 0.5;
 		nframe = qMax( qMin( nframe, transforms->count() - 1 ), 0 );
+
+		d /= 4.0;
+		while ( (transforms->at( nframe ).pts - srcpts) > d && nframe > -1 )
+			--nframe;
+		while ( (srcpts - transforms->at( nframe ).pts) > d && nframe < transforms->count() )
+			++nframe;
+
 		StabilizeTransform ts = transforms->at( nframe );
 		double rad = ts.alpha;
 		double zoom = 1.0 - (ts.zoom / 100.0);
