@@ -373,10 +373,9 @@ void StabMotionDetect::run()
 				}
 			}
 		}
-		
-		vsTransformDataCleanup( &data );
-		vsTransformationsCleanup( &trans );
 	}
 	
+	vsTransformDataCleanup( &data );
+	vsTransformationsCleanup( &trans );
 	vsMotionDetectionCleanup( &md );
 }
