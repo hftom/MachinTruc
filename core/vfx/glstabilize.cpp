@@ -95,9 +95,9 @@ bool GLStabilize::process( const QList<Effect*> &el, double pts, Frame *src, Pro
 		nframe = qMax( qMin( nframe, transforms->count() - 1 ), 0 );
 
 		d /= 4.0;
-		while ( (transforms->at( nframe ).pts - srcpts) > d && nframe > -1 )
+		while ( (transforms->at( nframe ).pts - srcpts) > d && nframe > 0 )
 			--nframe;
-		while ( (srcpts - transforms->at( nframe ).pts) > d && nframe < transforms->count() )
+		while ( (srcpts - transforms->at( nframe ).pts) > d && nframe < transforms->count() - 1 )
 			++nframe;
 
 		StabilizeTransform ts = transforms->at( nframe );
