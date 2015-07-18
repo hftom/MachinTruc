@@ -380,7 +380,7 @@ void FFDecoder::resetAudioResampler()
 void FFDecoder::flush()
 {
 	resetAudioResampler();
-	if ( haveVideo )
+	if ( haveVideo && doYadif )
 		yadif.reset( doYadif > Yadif1X, videoStream, formatCtx, videoCodecCtx );
 }
 
@@ -927,6 +927,8 @@ bool Yadif::pushFrame( AVFrame *f, double pts, double duration, double ratio )
 {
 	if ( !f )
 		eof = true;
+	else
+		ar = ratio;
 	int ret = av_buffersrc_add_frame_flags( bufferSrcCtx, f, AV_BUFFERSRC_FLAG_KEEP_REF );
 	if ( ret < 0 ) {
 		char es[128];
@@ -934,7 +936,6 @@ bool Yadif::pushFrame( AVFrame *f, double pts, double duration, double ratio )
 		qDebug() << "Error while feeding the filtergraph:" << es;
 		return false;
 	}
-	ar = ratio;
 	if ( twice ) {
 		ptsQueue.enqueue( pts );
 		durationQueue.enqueue( duration / 2.0 );
