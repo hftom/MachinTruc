@@ -610,7 +610,6 @@ void Sampler::getVideoTracks( Frame *dst )
 						in = getClipInput( ct, currentScene->currentPTS );
 					f = in->getVideoFrame();
 					if ( f ) {
-						f->setPts( currentScene->currentPTS );
 						if ( !playBackward ) {
 							fs->transitionFrame.frame = f;
 							fs->transitionFrame.videoFilters = ct->getSource()->videoFilters.copy();
