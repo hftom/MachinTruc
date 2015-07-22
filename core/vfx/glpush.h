@@ -92,7 +92,7 @@ public:
 	GLPush( QString id, QString name );
 
 	QString getDescriptor( double pts, Frame *src, Profile *p );
-	bool process( const QList<Effect*>&, Frame *src, Frame *dst, Profile *p );
+	bool process( const QList<Effect*>&, double pts, Frame *first, Frame *second, Profile *p );
 	QList<Effect*> getMovitEffects();
 
 protected:

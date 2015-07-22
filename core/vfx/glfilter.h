@@ -19,9 +19,9 @@ public:
 	virtual ~GLFilter() {}
 
 	// single input effects
-	virtual bool process( const QList<Effect*>&, double, Frame*, Profile* ) { return true; }
+	virtual bool process( const QList<Effect*>&, double /*pts*/, Frame*, Profile* ) { return true; }
 	// 2 inputs effects (transitions)
-	virtual bool process( const QList<Effect*>&, Frame* /*first*/, Frame* /*second*/, Profile* ) { return true; }
+	virtual bool process( const QList<Effect*>&, double /*pts*/, Frame* /*first*/, Frame* /*second*/, Profile* ) { return true; }
 	
 	virtual QList<Effect*> getMovitEffects() = 0;
 

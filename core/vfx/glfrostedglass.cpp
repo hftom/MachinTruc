@@ -18,14 +18,15 @@ GLFrostedGlass::GLFrostedGlass( QString id, QString name ) : GLFilter( id, name 
 
 
 
-bool GLFrostedGlass::process( const QList<Effect*> &el, Frame *src, Frame *dst, Profile *p )
+bool GLFrostedGlass::process( const QList<Effect*> &el, double pts, Frame *first, Frame *second, Profile *p )
 {
-	Q_UNUSED( dst );
+	Q_UNUSED( first );
+	Q_UNUSED( second );
 	Q_UNUSED( p );
 	Effect *e = el[0];
-	return e->set_float( "radius", src->glWidth * 0.05 )
-		&& e->set_float( "cover_position", getParamValue( position, src->pts() ).toDouble() )
-		&& e->set_float( "mix", getParamValue( mixAmount, src->pts() ).toDouble() );
+	return e->set_float( "radius", first->glWidth * 0.05 )
+		&& e->set_float( "cover_position", getParamValue( position, pts ).toDouble() )
+		&& e->set_float( "mix", getParamValue( mixAmount, pts ).toDouble() );
 }
 
 

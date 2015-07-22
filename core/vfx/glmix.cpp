@@ -13,11 +13,12 @@ GLMix::GLMix( QString id, QString name ) : GLFilter( id, name )
 
 
 
-bool GLMix::process( const QList<Effect*> &el, Frame *src, Frame *dst, Profile *p )
+bool GLMix::process( const QList<Effect*> &el, double pts, Frame *first, Frame *second, Profile *p )
 {
-	Q_UNUSED( dst );
+	Q_UNUSED( first );
+	Q_UNUSED( second );
 	Q_UNUSED( p );
-	float m = getParamValue( mix, src->pts() ).toFloat();
+	float m = getParamValue( mix, pts ).toFloat();
 	return el[0]->set_float( "strength_first", m )
 		&& el[0]->set_float( "strength_second", 1.0f - m );
 }

@@ -9,11 +9,12 @@ GLHardCut::GLHardCut( QString id, QString name ) : GLFilter( id, name )
 
 
 
-bool GLHardCut::process( const QList<Effect*> &el, Frame *src, Frame *dst, Profile *p )
+bool GLHardCut::process( const QList<Effect*> &el, double pts, Frame *first, Frame *second, Profile *p )
 {
-	Q_UNUSED( dst );
+	Q_UNUSED( first );
+	Q_UNUSED( second );
 	Q_UNUSED( p );
-	return el[0]->set_float( "show_second", getNormalizedTime( src->pts() ) > getParamValue( position ).toDouble() ? 1 : 0 );
+	return el[0]->set_float( "show_second", getNormalizedTime( pts ) > getParamValue( position ).toDouble() ? 1 : 0 );
 }
 
 

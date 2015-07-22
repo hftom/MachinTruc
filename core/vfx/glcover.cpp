@@ -30,32 +30,33 @@ QString GLCover::getDescriptor( double pts, Frame *src, Profile *p )
 
 
 
-bool GLCover::process( const QList<Effect*> &el, Frame *src, Frame *dst, Profile *p )
+bool GLCover::process( const QList<Effect*> &el, double pts, Frame *first, Frame *second, Profile *p )
 {
-	Q_UNUSED( dst );
+	Q_UNUSED( first );
+	Q_UNUSED( second );
 	Q_UNUSED( p );
-	float pos = getParamValue( position, src->pts() ).toFloat();
+	float pos = getParamValue( position, pts ).toFloat();
 	float blur = getParamValue( motionBlur ).toFloat();
 	Effect *e = el[0];
 	
-	if ( src->glOVD && getParamValue( uncover ).toInt() ) {
+	if ( first->glOVD && getParamValue( uncover ).toInt() ) {
 		if ( getParamValue( vertical ).toInt() ) {
 			if ( getParamValue( direction ).toInt() )
-				src->glOVDTransformList.append( FilterTransform( FilterTransform::TRANSLATE, 0, pos * src->glHeight ) );
+				first->glOVDTransformList.append( FilterTransform( FilterTransform::TRANSLATE, 0, pos * first->glHeight ) );
 			else
-				src->glOVDTransformList.append( FilterTransform( FilterTransform::TRANSLATE, 0, -pos * src->glHeight ) );
+				first->glOVDTransformList.append( FilterTransform( FilterTransform::TRANSLATE, 0, -pos * first->glHeight ) );
 		}
 		else {
 			if ( getParamValue( direction ).toInt() )
-				src->glOVDTransformList.append( FilterTransform( FilterTransform::TRANSLATE, pos * src->glWidth, 0 ) );
+				first->glOVDTransformList.append( FilterTransform( FilterTransform::TRANSLATE, pos * first->glWidth, 0 ) );
 			else
-				src->glOVDTransformList.append( FilterTransform( FilterTransform::TRANSLATE, -pos * src->glWidth, 0 ) );
+				first->glOVDTransformList.append( FilterTransform( FilterTransform::TRANSLATE, -pos * first->glWidth, 0 ) );
 		}
 	}
 	
 	if ( blur > 0.0f ) {
-		float ppos = getParamValue( position, qMax(0.0, src->pts() - p->getVideoFrameDuration()) ).toFloat();
-		float texSize[2] = { 1.0f / src->glWidth, 1.0f / src->glHeight };
+		float ppos = getParamValue( position, qMax(0.0, pts - p->getVideoFrameDuration()) ).toFloat();
+		float texSize[2] = { 1.0f / first->glWidth, 1.0f / first->glHeight };
 		int loop;
 		if ( getParamValue( vertical ).toInt() ) {
 			loop = (pos - ppos) / texSize[1] * blur;

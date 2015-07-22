@@ -74,7 +74,7 @@ class GLFrostedGlass : public GLFilter
 public:
 	GLFrostedGlass( QString id, QString name );
 
-	bool process( const QList<Effect*>&, Frame *src, Frame *dst, Profile *p );
+	bool process( const QList<Effect*>&, double pts, Frame *first, Frame *second, Profile *p );
 	QList<Effect*> getMovitEffects();
 
 private:

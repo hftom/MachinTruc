@@ -840,11 +840,11 @@ void Composer::movitRender( Frame *dst, bool update )
 				else
 					branchTrans->filters[k]->filter->process( branchTrans->filters[k]->effects, pts, sample->transitionFrame.frame, &projectProfile );
 			}
-			sample->transitionFrame.videoTransitionFilter->process( branchTrans->filters[k]->effects, f, sample->transitionFrame.frame, &projectProfile );
+			sample->transitionFrame.videoTransitionFilter->process( branchTrans->filters[k]->effects, pts, f, sample->transitionFrame.frame, &projectProfile );
 		}
 		// overlay
 		if ( branch->overlay && branch->overlay->filter )
-			branch->overlay->filter->process( branch->overlay->effects, f, f, &projectProfile );
+			branch->overlay->filter->process( branch->overlay->effects, pts, f, f, &projectProfile );
 		
 		w = f->glWidth;
 		h = f->glHeight;
