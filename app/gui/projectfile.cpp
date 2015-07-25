@@ -215,7 +215,7 @@ void ProjectFile::readSource( QDomElement &element )
 	if ( arate == 0 || achannels == 0 )
 		prof.setHasAudio( false );
 	
-	if ( name.isEmpty() || duration == 0 ) {
+	if ( name.isEmpty() ) {
 		readError = true;
 		return;
 	}
@@ -229,10 +229,10 @@ void ProjectFile::readSource( QDomElement &element )
 	}
 	
 	QFileInfo info( name );
-	if ( !info.exists() )
+	if ( !info.exists() && type != InputBase::GLSL )
 		return;
 	Source *source;
-	if ( info.size() != size || type == 0 || (!prof.hasVideo() && !prof.hasAudio()) ) {
+	if ( duration == 0 || info.size() != size || type == 0 || (!prof.hasVideo() && !prof.hasAudio()) ) {
 		source = new Source( name );
 	}
 	else {
