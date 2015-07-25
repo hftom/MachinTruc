@@ -11,7 +11,7 @@ class InputBase : public QThread
 {
 	Q_OBJECT
 public:
-	enum InputType{ UNDEF, FFMPEG, GLSL, IMAGE };
+	enum InputType{ UNDEF, FFMPEG, GLSL, IMAGE, LAST };
 
 	InputBase()
 		: haveAudio( false ),

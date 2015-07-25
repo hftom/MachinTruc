@@ -62,7 +62,7 @@ private:
 class Frame
 {
 public:
-	enum DataType{ NONE, YUV420P, YUV422P, RGBA, RGB, GLSL, GLTEXTURE };
+	enum DataType{ NONE, YUV420P, YUV422P, RGBA, RGB, GLSL, GLTEXTURE, LAST };
 
 	Frame( MQueue<Frame*> *origin = NULL );
 	~Frame();

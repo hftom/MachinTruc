@@ -126,7 +126,7 @@ void ProjectFile::readSource( QDomElement &element )
 	QString layoutName;
 	
 	type = element.attribute( "type" ).toInt();
-	if ( type < 1 || type > InputBase::IMAGE )
+	if ( type < 1 || type >= InputBase::LAST )
 		type = 0;
 	duration = qMax( 1.0, element.attribute( "duration" ).toDouble() );
 	startTime = element.attribute( "startTime" ).toDouble();
@@ -145,17 +145,17 @@ void ProjectFile::readSource( QDomElement &element )
 	ilace = element.attribute( "ilace" ).toInt() > 0;
 	tff = element.attribute( "tff" ).toInt() > 0;
 	csp = element.attribute( "csp" ).toInt();
-	if ( csp < 1 || csp > Profile::SPC_SRGB )
+	if ( csp < 1 || csp >= Profile::SPC_LAST )
 		csp = 0;
 	cprim = element.attribute( "cprim" ).toInt();
-	if ( cprim < 1 || cprim > Profile::PRI_601_525 )
+	if ( cprim < 1 || cprim >= Profile::PRI_LAST )
 		cprim = 0;
 	fullRange = element.attribute( "fullRange" ).toInt() > 0;
 	chromaloc = element.attribute( "chromaloc" ).toInt();
-	if ( chromaloc < 1 || chromaloc > Profile::LOC_TOPLEFT )
+	if ( chromaloc < 1 || chromaloc >= Profile::LOC_LAST )
 		chromaloc = 0;
 	gamma = element.attribute( "gamma" ).toInt();
-	if ( gamma < 1 || gamma > Profile::GAMMA_SRGB )
+	if ( gamma < 1 || gamma >= Profile::GAMMA_LAST )
 		gamma = 0;
 	vcodec = element.attribute( "vcodec" );
 	arate = element.attribute( "arate" ).toInt();
@@ -165,10 +165,10 @@ void ProjectFile::readSource( QDomElement &element )
 	if ( achannels < 1 || achannels > 8 )
 		achannels = 0;
 	aformat = element.attribute( "aformat" ).toInt();
-	if ( aformat < 0 || aformat > Profile::SAMPLE_FMT_32F )
+	if ( aformat < 0 || aformat >= Profile::SAMPLE_LAST )
 		aformat = -1;
 	alayout = element.attribute( "alayout" ).toInt();
-	if ( alayout < 0 || alayout > Profile::LAYOUT_51 )
+	if ( alayout < 0 || alayout >= Profile::LAYOUT_LAST )
 		alayout = -1;
 	acodec = element.attribute( "acodec" );
 	layoutName = element.attribute( "layoutName" );
@@ -212,7 +212,7 @@ void ProjectFile::readSource( QDomElement &element )
 	prof.setAudioLayout( alayout );
 	prof.setAudioCodecName( acodec );
 	prof.setAudioLayoutName( layoutName );
-	if ( arate == 0 || achannels == 0 )
+	if ( arate == 0 || achannels == 0 || aformat == -1 || alayout == -1 )
 		prof.setHasAudio( false );
 	
 	if ( name.isEmpty() ) {
