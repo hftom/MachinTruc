@@ -33,6 +33,7 @@ private:
 	
 	void createText( QDomNode &parent, QString name, QString val );
 	void createInt( QDomNode &parent, QString name, int val );
+	void createInt64( QDomNode &parent, QString name, qint64 val );
 	void createDouble( QDomNode &parent, QString name, double val );
 	
 	QDomDocument document;

@@ -4,6 +4,7 @@
 #include <QThread>
 #include <QImage>
 #include <QMutex>
+#include <QDir>
 
 #include "profile.h"
 
@@ -23,9 +24,10 @@ class ThumbRequest
 public:
 	enum RequestType{ PROBE, THUMB, SHADER };
 
-	ThumbRequest( QString path )
+	ThumbRequest( QString path, int inType = 0 )
 		: typeOfRequest( PROBE ),
 		caller( NULL ),
+		inputType( inType ),
 		filePath( path ),
 		thumbPTS( 0 ) {}
 	
@@ -73,6 +75,7 @@ private slots:
 	void gotResult();
 	
 private:	
+	bool cdThumbDir( QDir &dir );
 	void probe( ThumbRequest &request );
 	void makeThumb( ThumbRequest &request );
 	void compileShader( ThumbRequest &request );

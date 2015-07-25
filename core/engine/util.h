@@ -3,6 +3,8 @@
 
 #include <QColor>
 
+#define MACHINTRUC_DIR "MachinTruc"
+
 
 
 double nearestPTS( double pts, double frameDuration );

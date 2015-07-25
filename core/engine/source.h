@@ -14,6 +14,7 @@ public:
 	Source( InputBase::InputType t, QString path, Profile prof );
 	
 	const QString & getFileName() const;
+	qint64 getSize() const;
 	const Profile & getProfile() const;
 	InputBase::InputType getType() const;
 
@@ -24,6 +25,7 @@ public:
 
 private:
 	QString fileName;
+	qint64 size;
 	Profile profile;
 	InputBase::InputType type;
 };

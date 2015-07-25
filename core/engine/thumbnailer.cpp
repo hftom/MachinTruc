@@ -9,13 +9,17 @@
 
 #include <QGLShaderProgram>
 #include <QGLFramebufferObject>
+#include <QCryptographicHash>
 
 #include "input/input_ff.h"
 #include "input/input_image.h"
 #include "input/input_blank.h"
 #include "engine/source.h"
-
+#include "util.h"
 #include "thumbnailer.h"
+
+#define THUMB_DIR "thumb"
+#define THUMB_EXTENSION ".png"
 
 
 
@@ -31,6 +35,31 @@ Thumbnailer::~Thumbnailer()
 {
 	running = false;
 	wait();
+}
+
+
+
+bool Thumbnailer::cdThumbDir( QDir &dir )
+{
+	dir = QDir::home();
+	if ( !dir.cd( MACHINTRUC_DIR ) ) {
+		if ( !dir.mkdir( MACHINTRUC_DIR ) ) {
+			qDebug() << "Can't create" << MACHINTRUC_DIR << "directory.";
+			return false;
+		}
+		if ( !dir.cd( MACHINTRUC_DIR ) )
+			return false;
+	}
+	if ( !dir.cd( THUMB_DIR ) ) {
+		if ( !dir.mkdir( THUMB_DIR ) ) {
+			qDebug() << "Can't create" << THUMB_DIR << "directory.";
+			return false;
+		}
+		if ( !dir.cd( THUMB_DIR ) )
+			return false;
+	}
+
+	return true;
 }
 
 
@@ -123,6 +152,17 @@ void Thumbnailer::run()
 
 void Thumbnailer::probe( ThumbRequest &request )
 {
+	QDir dir;
+	if ( request.inputType != InputBase::UNDEF && cdThumbDir( dir ) ) {
+		QString s = QCryptographicHash::hash( request.filePath.toUtf8(), QCryptographicHash::Sha256 ).toHex();
+		if ( QFile::exists( dir.filePath( s + THUMB_EXTENSION ) ) ) {
+			request.thumb = QImage( dir.filePath( s + THUMB_EXTENSION ) );
+			if ( !request.thumb.isNull() ) {
+				return;
+			}
+		}
+	}
+
 	InputBase *input = new InputBlank();
 	bool probed = false;
 	if ( input->probe( request.filePath, &request.profile ) )
@@ -143,6 +183,12 @@ void Thumbnailer::probe( ThumbRequest &request )
 		if ( request.profile.hasVideo() ) {
 			input->seekTo( request.profile.getStreamStartTime() + request.profile.getStreamDuration() / 10.0 );
 			request.thumb = getSourceThumb( input->getVideoFrame(), true );
+			if ( !request.thumb.isNull() ) {
+				if ( cdThumbDir( dir ) ) {
+					QString s = QCryptographicHash::hash( request.filePath.toUtf8(), QCryptographicHash::Sha256 ).toHex();
+					request.thumb.save( dir.filePath( s + THUMB_EXTENSION ) );
+				}
+			}
 		}
 		else {
 			request.thumb = QImage( ICONSIZEWIDTH + 4, ICONSIZEHEIGHT + 4, QImage::Format_ARGB32 );
@@ -160,6 +206,19 @@ void Thumbnailer::probe( ThumbRequest &request )
 
 void Thumbnailer::makeThumb( ThumbRequest &request )
 {
+	int nf = (request.thumbPTS - request.profile.getStreamStartTime()) / request.profile.getVideoFrameDuration();
+	QString filename = QCryptographicHash::hash( request.filePath.toUtf8(), QCryptographicHash::Sha256 ).toHex();
+	filename += "." + QString::number( nf ) + THUMB_EXTENSION;
+	QDir dir;
+	if ( cdThumbDir( dir ) ) {
+		if ( QFile::exists( dir.filePath( filename ) ) ) {
+			request.thumb = QImage( dir.filePath( filename ) );
+			if ( !request.thumb.isNull() ) {
+				return;
+			}
+		}
+	}
+
 	InputBase *input;
 	if ( request.inputType == InputBase::GLSL )
 		input = new InputBlank();
@@ -180,6 +239,11 @@ void Thumbnailer::makeThumb( ThumbRequest &request )
 				f = input->getVideoFrame();
 		}
 		request.thumb = getSourceThumb( f, false );
+		if ( !request.thumb.isNull() ) {
+			if ( cdThumbDir( dir ) ) {
+				request.thumb.save( dir.filePath( filename ) );
+			}
+		}
 	}
 	else {
 		request.thumb = QImage( ICONSIZEWIDTH, ICONSIZEHEIGHT, QImage::Format_ARGB32 );

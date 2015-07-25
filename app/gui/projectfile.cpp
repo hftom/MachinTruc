@@ -102,9 +102,77 @@ bool ProjectFile::loadProject( QString filename )
 void ProjectFile::readSource( QDomElement &element )
 {
 	QString name;
+	int type = InputBase::UNDEF;
 	double startTime = 0;
 	double duration = 0;
+	qint64 size = 0;
+	double fps = 0;
+	int width = 0;
+	int height = 0;
+	double sar = 0;
+	bool ilace = false;
+	bool tff = true;
+	int csp = 0;
+	int cprim = 0;
+	bool fullRange = false;
+	int chromaloc = 0;
+	int gamma = 0;
+	QString vcodec;
+	int arate = 0;
+	int achannels = 0;
+	int aformat = -1;
+	int alayout = -1;
+	QString acodec;
+	QString layoutName;
 	
+	type = element.attribute( "type" ).toInt();
+	if ( type < 1 || type > InputBase::IMAGE )
+		type = 0;
+	duration = qMax( 1.0, element.attribute( "duration" ).toDouble() );
+	startTime = element.attribute( "startTime" ).toDouble();
+	fps = element.attribute( "fps" ).toDouble();
+	if ( fps < 1 || fps > 3000 )
+		fps = 0;
+	width = element.attribute( "width" ).toInt();
+	if ( width < 2 || width > MAXPROJECTWIDTH )
+		width = 0;
+	height = element.attribute( "height" ).toInt();
+	if ( height < 2 || height > MAXPROJECTHEIGHT )
+		height = 0;
+	sar = element.attribute( "sar" ).toDouble();
+	if ( sar < 0.5 || sar > 5 )
+		sar = 0;
+	ilace = element.attribute( "ilace" ).toInt() > 0;
+	tff = element.attribute( "tff" ).toInt() > 0;
+	csp = element.attribute( "csp" ).toInt();
+	if ( csp < 1 || csp > Profile::SPC_SRGB )
+		csp = 0;
+	cprim = element.attribute( "cprim" ).toInt();
+	if ( cprim < 1 || cprim > Profile::PRI_601_525 )
+		cprim = 0;
+	fullRange = element.attribute( "fullRange" ).toInt() > 0;
+	chromaloc = element.attribute( "chromaloc" ).toInt();
+	if ( chromaloc < 1 || chromaloc > Profile::LOC_TOPLEFT )
+		chromaloc = 0;
+	gamma = element.attribute( "gamma" ).toInt();
+	if ( gamma < 1 || gamma > Profile::GAMMA_SRGB )
+		gamma = 0;
+	vcodec = element.attribute( "vcodec" );
+	arate = element.attribute( "arate" ).toInt();
+	if ( arate < 1000 || arate > 256000 )
+		arate = 0;
+	achannels = element.attribute( "achannels" ).toInt();
+	if ( achannels < 1 || achannels > 8 )
+		achannels = 0;
+	aformat = element.attribute( "aformat" ).toInt();
+	if ( aformat < 0 || aformat > Profile::SAMPLE_FMT_32F )
+		aformat = -1;
+	alayout = element.attribute( "alayout" ).toInt();
+	if ( alayout < 0 || alayout > Profile::LAYOUT_51 )
+		alayout = -1;
+	acodec = element.attribute( "acodec" );
+	layoutName = element.attribute( "layoutName" );
+
 	QDomNodeList nodes = element.childNodes();
 	for ( int i = 0; i < nodes.count(); ++i ) {
 		QDomElement e = nodes.at( i ).toElement();
@@ -113,13 +181,41 @@ void ProjectFile::readSource( QDomElement &element )
 		
 		if ( e.tagName() == "Name" )
 			name = e.text();
-		else if ( e.tagName() == "StartTime" )
-			startTime = e.text().toDouble();
-		else if ( e.tagName() == "Duration" )
-			duration = e.text().toDouble();
+		else if ( e.tagName() == "Size" )
+			size = e.text().toLongLong();
 	}
 	
-	if ( name.isEmpty() ) {
+	Profile prof;
+	prof.setStreamStartTime( startTime );
+	prof.setStreamDuration( duration );
+	prof.setVideoFrameRate( fps );
+	if ( fps != 0 )
+		prof.setVideoFrameDuration( MICROSECOND / fps );
+	prof.setVideoWidth( width );
+	prof.setVideoHeight( height );
+	prof.setVideoSAR( sar );
+	prof.setVideoInterlaced( ilace );
+	prof.setVideoTopFieldFirst( tff );
+	prof.setStreamStartTime( startTime );
+	prof.setStreamDuration( duration );
+	prof.setVideoColorSpace( csp );
+	prof.setVideoColorPrimaries( cprim );
+	prof.setVideoColorFullRange( fullRange );
+	prof.setVideoChromaLocation( chromaloc );
+	prof.setVideoGammaCurve( gamma );
+	prof.setVideoCodecName( vcodec );
+	if ( width == 0 || height == 0 || sar == 0 )
+		prof.setHasVideo( false );
+	prof.setAudioSampleRate( arate );
+	prof.setAudioChannels( achannels );
+	prof.setAudioFormat( aformat );
+	prof.setAudioLayout( alayout );
+	prof.setAudioCodecName( acodec );
+	prof.setAudioLayoutName( layoutName );
+	if ( arate == 0 || achannels == 0 )
+		prof.setHasAudio( false );
+	
+	if ( name.isEmpty() || duration == 0 ) {
 		readError = true;
 		return;
 	}
@@ -131,8 +227,17 @@ void ProjectFile::readSource( QDomElement &element )
 			return;
 		}
 	}
-
-	Source *source = new Source( name );
+	
+	QFileInfo info( name );
+	if ( !info.exists() )
+		return;
+	Source *source;
+	if ( info.size() != size || type == 0 || (!prof.hasVideo() && !prof.hasAudio()) ) {
+		source = new Source( name );
+	}
+	else {
+		source = new Source( (InputBase::InputType)type, name, prof );
+	}
 	sourcesList.append( source );
 
 	for ( int i = 0; i < nodes.count(); ++i ) {
@@ -258,11 +363,15 @@ void ProjectFile::readClip( QDomElement &element, Scene *scene, int trackIndex )
 		if ( e.tagName() == "VideoFilter" ) {
 			QSharedPointer<Filter> f = readFilter( e, false );
 			if ( !f.isNull() ) {
-				clip->videoFilters.append( f.staticCast<GLFilter>() );
 				if ( f->getIdentifier() == "GLStabilize" ) {
-					GLStabilize *stab = (GLStabilize*)f.data();
-					stab->setSource( clip->getSource() );
+					if ( StabilizeCollection::getGlobalInstance()->hasTransforms( clip->getSource()->getFileName() ) ) {
+						GLStabilize *stab = (GLStabilize*)f.data();
+						stab->setSource( clip->getSource() );
+						clip->videoFilters.append( f.staticCast<GLFilter>() );
+					}
 				}
+				else
+					clip->videoFilters.append( f.staticCast<GLFilter>() );
 			}
 		}
 		else if ( e.tagName() == "AudioFilter" ) {
@@ -643,10 +752,37 @@ void ProjectFile::writeSource( QDomNode &parent, Source *source )
 {
 	QDomElement n1 = document.createElement( "Source" );
 	parent.appendChild( n1 );
+	
+	
+	Profile prof = source->getProfile();
+	n1.setAttribute( "type", QString::number( source->getType() ) );
+	n1.setAttribute( "duration", QString::number( prof.getStreamDuration(), 'e', 17 ) );
+	n1.setAttribute( "startTime", QString::number( prof.getStreamStartTime(), 'e', 17 ) );
+	if ( prof.hasVideo() ) {
+		n1.setAttribute( "fps", QString::number( prof.getVideoFrameRate(), 'e', 17 ) );
+		n1.setAttribute( "width", QString::number( prof.getVideoWidth() ) );
+		n1.setAttribute( "height", QString::number( prof.getVideoHeight() ) );
+		n1.setAttribute( "sar", QString::number( prof.getVideoSAR(), 'e', 17 ) );
+		n1.setAttribute( "ilace", QString::number( prof.getVideoInterlaced() ) );
+		n1.setAttribute( "tff", QString::number( prof.getVideoTopFieldFirst() ) );
+		n1.setAttribute( "csp", QString::number( prof.getVideoColorSpace() ) );
+		n1.setAttribute( "cprim", QString::number( prof.getVideoColorPrimaries() ) );
+		n1.setAttribute( "fullRange", QString::number( prof.getVideoColorFullRange() ) );
+		n1.setAttribute( "chromaloc", QString::number( prof.getVideoChromaLocation() ) );
+		n1.setAttribute( "gamma", QString::number( prof.getVideoGammaCurve() ) );
+		n1.setAttribute( "vcodec", prof.getVideoCodecName() );
+	}
+	if ( prof.hasAudio() ) {
+		n1.setAttribute( "arate", QString::number( prof.getAudioSampleRate() ) );
+		n1.setAttribute( "achannels", QString::number( prof.getAudioChannels() ) );
+		n1.setAttribute( "aformat", QString::number( prof.getAudioFormat() ) );
+		n1.setAttribute( "alayout", QString::number( prof.getAudioLayout() ) );
+		n1.setAttribute( "acodec", prof.getAudioCodecName() );
+		n1.setAttribute( "layoutName", prof.getAudioLayoutName() );
+	}
 
 	createText( n1, "Name", source->getFileName() );
-	createDouble( n1, "StartTime", source->getProfile().getStreamStartTime() );
-	createDouble( n1, "Duration", source->getProfile().getStreamDuration() );
+	createInt64( n1, "Size", source->getSize() );
 	
 	for ( int i = 0; i < source->videoFilters.count(); ++i )
 		writeFilter( n1, false, source->videoFilters.at( i ) );
@@ -813,6 +949,16 @@ void ProjectFile::createText( QDomNode &parent, QString name, QString val )
 
 
 void ProjectFile::createInt( QDomNode &parent, QString name, int val )
+{
+	QDomElement e = document.createElement( name );
+	QDomText t = document.createTextNode( QString::number( val ) );
+	e.appendChild( t );
+	parent.appendChild( e );
+}
+
+
+
+void ProjectFile::createInt64( QDomNode &parent, QString name, qint64 val )
 {
 	QDomElement e = document.createElement( name );
 	QDomText t = document.createTextNode( QString::number( val ) );

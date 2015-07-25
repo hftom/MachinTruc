@@ -1,9 +1,9 @@
 #include <QDebug>
 
+#include "engine/util.h"
 #include "engine/parameter.h"
 #include "shadercollection.h"
 
-#define MACHINTRUC_DIR "machintruc"
 #define SHADER_DIR "movit"
 #define LOCAL_SHADER_DIR "local"
 #define SHADER_EXTENSION ".movit"

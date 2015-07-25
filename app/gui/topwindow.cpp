@@ -681,7 +681,8 @@ void TopWindow::thumbResultReady( ThumbRequest result )
 			return;
 		
 		if ( !result.thumb.isNull() ) {
-			source->setAfter( (InputBase::InputType)result.inputType, result.profile );
+			if ( !source->getType() )
+				source->setAfter( (InputBase::InputType)result.inputType, result.profile );
 			sourcePage->addSource( QPixmap::fromImage( result.thumb ), source );
 		}
 		else {
@@ -781,7 +782,7 @@ void TopWindow::loadProject()
 	if ( projectLoader->loadProject( file ) && projectLoader->sourcesList.count() ) {
 		int i;
 		for ( i = 0; i < projectLoader->sourcesList.count(); ++i ) {
-			thumbnailer->pushRequest( ThumbRequest( projectLoader->sourcesList[i]->getFileName() ) );
+			thumbnailer->pushRequest( ThumbRequest( projectLoader->sourcesList[i]->getFileName(), projectLoader->sourcesList[i]->getType() ) );
 		}
 		if ( i > 0 ) {
 			setEnabled( false );

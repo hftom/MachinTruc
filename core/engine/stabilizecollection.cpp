@@ -5,11 +5,12 @@ extern "C" {
 }
 
 #include <QDebug>
+#include <QCryptographicHash>
 
+#include "util.h"
 #include "input/input_ff.h"
 #include "stabilizecollection.h"
 
-#define MACHINTRUC_DIR "machintruc"
 #define STABILIZE_DIR "stab"
 #define STABILIZE_EXTENSION ".vidstab"
 
@@ -63,7 +64,7 @@ bool StabilizeCollection::cdStabilizeDir( QDir &dir )
 
 QString StabilizeCollection::pathToFileName( QString path )
 {
-	return path.replace( "/", "_" ).replace( "\\", "-" ).replace( ":", "." );
+	return QCryptographicHash::hash( path.toUtf8(), QCryptographicHash::Sha256 ).toHex();
 }
 
 
@@ -104,6 +105,18 @@ void StabilizeCollection::checkDetectionThreads()
 	
 	if ( !stabDetect.count() )
 		checkDetectionTimer.stop();
+}
+
+
+
+bool StabilizeCollection::hasTransforms( QString fileName )
+{
+	QDir dir;
+	if ( !cdStabilizeDir( dir ) )
+		return false;
+	
+	QFile f( dir.filePath( pathToFileName( fileName ) + STABILIZE_EXTENSION ) );
+	return f.exists();
 }
 
 

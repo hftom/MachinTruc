@@ -89,6 +89,7 @@ public:
 	
 	QList<StabilizeTransform>* getTransforms( Source *source, int &status, int &progress );
 	void releaseTransforms( QList<StabilizeTransform> *list );
+	bool hasTransforms( QString fileName );
 	static bool cdStabilizeDir( QDir &dir );
 	static QString pathToFileName( QString path );
 	

@@ -261,6 +261,7 @@ bool FFDecoder::probe( QString fn, Profile *prof )
 		prof->setVideoColorPrimaries( f.profile.getVideoColorPrimaries() );
 		prof->setVideoChromaLocation( f.profile.getVideoChromaLocation() );
 		prof->setVideoColorFullRange( f.profile.getVideoColorFullRange() );
+		prof->setVideoGammaCurve( f.profile.getVideoGammaCurve() );
 		prof->setHasVideo( true );
 	}
 
