@@ -311,8 +311,13 @@ void ProjectFile::readClip( QDomElement &element, Scene *scene, int trackIndex )
 	double posInTrack = 0;
 	double startTime = 0;
 	double length = 0;
+	double speed = 1;
 	bool okName = false, okPos = false, okStart = false, okLen = false;
 	Clip *clip = NULL;
+	
+	speed = element.attribute( "speed" ).toDouble();
+	if ( speed == 0.0 )
+		speed = 1.0;
 	
 	for ( int i = 0; i < nodes.count(); ++i ) {
 		QDomElement e = nodes.at( i ).toElement();
@@ -354,6 +359,8 @@ void ProjectFile::readClip( QDomElement &element, Scene *scene, int trackIndex )
 		readError = true;
 		return;
 	}
+	
+	clip->setSpeed( speed );
 	
 	for ( int i = 0; i < nodes.count(); ++i ) {
 		QDomElement e = nodes.at( i ).toElement();
@@ -817,6 +824,8 @@ void ProjectFile::writeClip( QDomNode &parent, Clip *clip )
 	QDomElement n1 = document.createElement( "Clip" );
 	parent.appendChild( n1 );
 
+	if ( clip->getSpeed() != 1.0 )
+		n1.setAttribute( "speed", QString::number( clip->getSpeed(), 'e', 17 ) );
 	createText( n1, "Name", clip->sourcePath() );
 	createDouble( n1, "PosInTrack", clip->position() );
 	createDouble( n1, "StartTime", clip->start() );
