@@ -136,6 +136,8 @@ TopWindow::TopWindow()
 	connect( actionFrameByFrameBackward, SIGNAL(triggered()), this, SLOT(seekPrevious()) );
 	connect( actionSlower, SIGNAL(triggered()), this, SLOT(playSlower()) );
 	connect( actionProjectSettings, SIGNAL(triggered()), this, SLOT(menuProjectSettings()) );
+	connect( actionZoomIn, SIGNAL(triggered()), this, SLOT(zoomIn()) );
+	connect( actionZoomOut, SIGNAL(triggered()), this, SLOT(zoomOut()) );
 	connect( actionDeleteClip, SIGNAL(triggered()), this, SLOT(deleteKeyPressed()) );
 	connect( actionSplitCurrentClip, SIGNAL(triggered()), timeline, SLOT(splitCurrentClip()) );
 	connect( actionSaveImage, SIGNAL(triggered()), vw, SLOT(shot()) );
@@ -143,8 +145,6 @@ TopWindow::TopWindow()
 	
 	new QShortcut( QKeySequence( "Ctrl+M" ), this, SLOT(showMemoryInfo()) );
 	new QShortcut( QKeySequence( "Space" ), this, SLOT(videoPlayPause()) );
-	new QShortcut( QKeySequence::ZoomIn, this, SLOT(zoomIn()) );
-	new QShortcut( QKeySequence::ZoomOut, this, SLOT(zoomOut()) );
 	
 	timeline->setScene( sampler->getCurrentScene() );
 }

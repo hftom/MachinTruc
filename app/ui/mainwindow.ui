@@ -625,6 +625,8 @@
     <property name="title">
      <string>&amp;Timeline</string>
     </property>
+    <addaction name="actionZoomIn"/>
+    <addaction name="actionZoomOut"/>
     <addaction name="actionDeleteClip"/>
     <addaction name="actionSplitCurrentClip"/>
    </widget>
@@ -636,7 +638,7 @@
    </widget>
    <widget class="QMenu" name="menuRender">
     <property name="title">
-     <string>Render</string>
+     <string>&amp;Render</string>
     </property>
     <addaction name="actionSaveImage"/>
     <addaction name="actionRenderToFile"/>
@@ -790,6 +792,22 @@
    </property>
    <property name="shortcut">
     <string>Left</string>
+   </property>
+  </action>
+  <action name="actionZoomIn">
+   <property name="text">
+    <string>Zoom in</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl++</string>
+   </property>
+  </action>
+  <action name="actionZoomOut">
+   <property name="text">
+    <string>Zoom out</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+-</string>
    </property>
   </action>
  </widget>
