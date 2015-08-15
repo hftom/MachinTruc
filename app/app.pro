@@ -5,6 +5,7 @@ QT += xml
 
 SOURCES = \
 	main.cpp \
+	gui/appconfig.cpp \
 	gui/shadercollection.cpp \
 	gui/renderingdialog.cpp \
 	gui/projectprofiledialog.cpp \
@@ -43,6 +44,7 @@ SOURCES = \
 	animation/keyitem.cpp
 	
 HEADERS = \
+	gui/appconfig.h \
 	gui/shadercollection.h \
 	gui/renderingdialog.h \
 	gui/projectprofiledialog.h \

@@ -12,6 +12,7 @@
 #include "gui/projectclipspage.h"
 #include "gui/fxpage.h"
 #include "gui/fxsettingspage.h"
+#include "gui/appconfig.h"
 
 #include "engine/thumbnailer.h"
 #include "engine/composer.h"
@@ -233,7 +234,7 @@ private:
 
 	SeekSlider *seekSlider;	
 	
-	QString openSourcesCurrentDir;
+	QString openSourcesCurrentDir, openProjectCurrentDir;
 	QStringList unsupportedOpenSources;
 	QStringList duplicateOpenSources;
 	int openSourcesCounter;
@@ -242,6 +243,7 @@ private:
 	Thumbnailer *thumbnailer;
 	
 	Profile tempProfile;
+	AppConfig appConfig;
 	
 signals:
 	void startOSDTimer( bool );

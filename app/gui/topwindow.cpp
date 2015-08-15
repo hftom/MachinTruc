@@ -147,20 +147,21 @@ TopWindow::TopWindow()
 	new QShortcut( QKeySequence( "Space" ), this, SLOT(videoPlayPause()) );
 	
 	timeline->setScene( sampler->getCurrentScene() );
-	
-	
-	QSettings settings( "hftom.fr", "MachinTruc" );
-	
-	settings.beginGroup("MainWindowGeometry");
-    restoreGeometry( settings.value("mainWindow").toByteArray() );
-    videoSplitter->restoreState( settings.value("videoSplitter").toByteArray() );
-	timelineSplitter->restoreState( settings.value("timelineSplitter").toByteArray() );
-	sourcePage->getSplitter()->restoreState( settings.value("sourceSplitter").toByteArray() );
-	fxPage->getVideoSplitter()->restoreState( settings.value("fxVideoSplitter").toByteArray() );
-	fxPage->getVideoGraphSplitter()->restoreState( settings.value("fxVideoGraphSplitter").toByteArray() );
-	fxPage->getAudioSplitter()->restoreState( settings.value("fxAudioSplitter").toByteArray() );
-	fxPage->getAudioGraphSplitter()->restoreState( settings.value("fxAudioGraphSplitter").toByteArray() );
-    settings.endGroup();
+
+	appConfig.beginGroup("MainWindowGeometry");
+    restoreGeometry( appConfig.value("mainWindow").toByteArray() );
+    videoSplitter->restoreState( appConfig.value("videoSplitter").toByteArray() );
+	timelineSplitter->restoreState( appConfig.value("timelineSplitter").toByteArray() );
+	sourcePage->getSplitter()->restoreState( appConfig.value("sourceSplitter").toByteArray() );
+	fxPage->getVideoSplitter()->restoreState( appConfig.value("fxVideoSplitter").toByteArray() );
+	fxPage->getVideoGraphSplitter()->restoreState( appConfig.value("fxVideoGraphSplitter").toByteArray() );
+	fxPage->getAudioSplitter()->restoreState( appConfig.value("fxAudioSplitter").toByteArray() );
+	fxPage->getAudioGraphSplitter()->restoreState( appConfig.value("fxAudioGraphSplitter").toByteArray() );
+    appConfig.endGroup();
+	appConfig.beginGroup("Paths");
+	openSourcesCurrentDir = appConfig.value("openSourcesCurrentDir").toString();
+	openProjectCurrentDir = appConfig.value("openProjectCurrentDir").toString();
+	appConfig.endGroup();
 }
 
 
@@ -169,16 +170,20 @@ void TopWindow::closeEvent( QCloseEvent *event )
 {
 	QSettings settings( "hftom.fr", "MachinTruc" );
 	
-	settings.beginGroup( "MainWindowGeometry" );
-	settings.setValue( "mainWindow", saveGeometry() );
-    settings.setValue( "videoSplitter", videoSplitter->saveState() );
-	settings.setValue( "timelineSplitter", timelineSplitter->saveState() );
-	settings.setValue( "sourceSplitter", sourcePage->getSplitter()->saveState() );
-	settings.setValue( "fxVideoSplitter", fxPage->getVideoSplitter()->saveState() );
-	settings.setValue( "fxVideoGraphSplitter", fxPage->getVideoGraphSplitter()->saveState() );
-	settings.setValue( "fxAudioSplitter", fxPage->getAudioSplitter()->saveState() );
-	settings.setValue( "fxAudioGraphSplitter", fxPage->getAudioGraphSplitter()->saveState() );
-	settings.endGroup();
+	appConfig.beginGroup( "MainWindowGeometry" );
+	appConfig.setValue( "mainWindow", saveGeometry() );
+    appConfig.setValue( "videoSplitter", videoSplitter->saveState() );
+	appConfig.setValue( "timelineSplitter", timelineSplitter->saveState() );
+	appConfig.setValue( "sourceSplitter", sourcePage->getSplitter()->saveState() );
+	appConfig.setValue( "fxVideoSplitter", fxPage->getVideoSplitter()->saveState() );
+	appConfig.setValue( "fxVideoGraphSplitter", fxPage->getVideoGraphSplitter()->saveState() );
+	appConfig.setValue( "fxAudioSplitter", fxPage->getAudioSplitter()->saveState() );
+	appConfig.setValue( "fxAudioGraphSplitter", fxPage->getAudioGraphSplitter()->saveState() );
+	appConfig.endGroup();
+	appConfig.beginGroup("Paths");
+	appConfig.setValue("openSourcesCurrentDir", openSourcesCurrentDir);
+	appConfig.setValue("openProjectCurrentDir", openProjectCurrentDir);
+	appConfig.endGroup();
 }
 
 
@@ -777,11 +782,12 @@ void TopWindow::thumbResultReady( ThumbRequest result )
 void TopWindow::saveProject()
 {
 	QString file = QFileDialog::getSaveFileName( this, tr("Save project"),
-						openSourcesCurrentDir, "MachinTruc(*.mct)" );
+						openProjectCurrentDir, "MachinTruc(*.mct)" );
 
 	if ( file.isEmpty() )
 		return;
 	
+	openProjectCurrentDir = QFileInfo( file ).absolutePath();
 	ProjectFile xml;
 	xml.saveProject( sourcePage->getAllSources(), sampler, file );
 }
@@ -798,11 +804,12 @@ void TopWindow::loadProject()
 	}
 	
 	QString file = QFileDialog::getOpenFileName( this, tr("Open project"),
-						openSourcesCurrentDir, "MachinTruc(*.mct)" );
+						openProjectCurrentDir, "MachinTruc(*.mct)" );
 
 	if ( file.isEmpty() )
 		return;
 	
+	openProjectCurrentDir = QFileInfo( file ).absolutePath();
 	showProjectClipsPage();
 	sampler->clearAll();
 	timeline->setScene( sampler->getCurrentScene() );
