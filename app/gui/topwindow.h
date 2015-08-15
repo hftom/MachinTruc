@@ -157,6 +157,7 @@ public slots:
 	void clipThumbRequest( ThumbRequest request );
 	
 protected:
+	void closeEvent( QCloseEvent *event );
 	void keyPressEvent( QKeyEvent *event );
 	void keyReleaseEvent( QKeyEvent *event );
 

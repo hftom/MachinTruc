@@ -15,6 +15,10 @@ class FxPage : public QWidget, private Ui::StackFx
 	Q_OBJECT
 public:
 	FxPage();
+	QSplitter* getVideoSplitter() { return videoSplitter; }
+	QSplitter* getVideoGraphSplitter() { return videoGraphSplitter; }
+	QSplitter* getAudioSplitter() { return audioSplitter; }
+	QSplitter* getAudioGraphSplitter() { return audioGraphSplitter; }
 	
 public slots:
 	void clipSelected( ClipViewItem *clip );

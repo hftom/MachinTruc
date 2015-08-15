@@ -194,7 +194,7 @@ public:
 		return activeSource->getCut( index, filename ); }
 	void activeSourceSetCurrentPts( double d ) { activeSource->setCurrentPts( d ); }
 	Profile activeSourceGetProfile() { return activeSource->getProfile(); }
-	
+	QSplitter* getSplitter() { return splitter; }
 	
 	
 public slots:

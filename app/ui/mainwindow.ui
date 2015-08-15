@@ -297,14 +297,14 @@
        </widget>
       </item>
       <item>
-       <widget class="QSplitter" name="splitter_2">
+       <widget class="QSplitter" name="videoSplitter">
         <property name="orientation">
          <enum>Qt::Vertical</enum>
         </property>
         <property name="handleWidth">
          <number>3</number>
         </property>
-        <widget class="QSplitter" name="splitter">
+        <widget class="QSplitter" name="timelineSplitter">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
            <horstretch>0</horstretch>
@@ -796,7 +796,7 @@
   </action>
   <action name="actionZoomIn">
    <property name="text">
-    <string>Zoom in</string>
+    <string>&amp;Zoom in</string>
    </property>
    <property name="shortcut">
     <string>Ctrl++</string>
@@ -804,7 +804,7 @@
   </action>
   <action name="actionZoomOut">
    <property name="text">
-    <string>Zoom out</string>
+    <string>Zoom &amp;out</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+-</string>

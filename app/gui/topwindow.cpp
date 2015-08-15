@@ -147,6 +147,38 @@ TopWindow::TopWindow()
 	new QShortcut( QKeySequence( "Space" ), this, SLOT(videoPlayPause()) );
 	
 	timeline->setScene( sampler->getCurrentScene() );
+	
+	
+	QSettings settings( "hftom.fr", "MachinTruc" );
+	
+	settings.beginGroup("MainWindowGeometry");
+    restoreGeometry( settings.value("mainWindow").toByteArray() );
+    videoSplitter->restoreState( settings.value("videoSplitter").toByteArray() );
+	timelineSplitter->restoreState( settings.value("timelineSplitter").toByteArray() );
+	sourcePage->getSplitter()->restoreState( settings.value("sourceSplitter").toByteArray() );
+	fxPage->getVideoSplitter()->restoreState( settings.value("fxVideoSplitter").toByteArray() );
+	fxPage->getVideoGraphSplitter()->restoreState( settings.value("fxVideoGraphSplitter").toByteArray() );
+	fxPage->getAudioSplitter()->restoreState( settings.value("fxAudioSplitter").toByteArray() );
+	fxPage->getAudioGraphSplitter()->restoreState( settings.value("fxAudioGraphSplitter").toByteArray() );
+    settings.endGroup();
+}
+
+
+
+void TopWindow::closeEvent( QCloseEvent *event )
+{
+	QSettings settings( "hftom.fr", "MachinTruc" );
+	
+	settings.beginGroup( "MainWindowGeometry" );
+	settings.setValue( "mainWindow", saveGeometry() );
+    settings.setValue( "videoSplitter", videoSplitter->saveState() );
+	settings.setValue( "timelineSplitter", timelineSplitter->saveState() );
+	settings.setValue( "sourceSplitter", sourcePage->getSplitter()->saveState() );
+	settings.setValue( "fxVideoSplitter", fxPage->getVideoSplitter()->saveState() );
+	settings.setValue( "fxVideoGraphSplitter", fxPage->getVideoGraphSplitter()->saveState() );
+	settings.setValue( "fxAudioSplitter", fxPage->getAudioSplitter()->saveState() );
+	settings.setValue( "fxAudioGraphSplitter", fxPage->getAudioGraphSplitter()->saveState() );
+	settings.endGroup();
 }
 
 
