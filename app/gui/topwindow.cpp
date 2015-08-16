@@ -335,6 +335,7 @@ void TopWindow::newProject()
 		sourcePage->clearAllSources();
 		timelineSeek( 0 );
 		QTimer::singleShot( VIDEOCLEARDELAY, vw, SLOT(clear()) );
+		currentProjectFile = "";
 	}
 }
 
@@ -781,15 +782,19 @@ void TopWindow::thumbResultReady( ThumbRequest result )
 
 void TopWindow::saveProject()
 {
-	QString file = QFileDialog::getSaveFileName( this, tr("Save project"),
+	if ( currentProjectFile.isEmpty() ) {
+		QString file = QFileDialog::getSaveFileName( this, tr("Save project"),
 						openProjectCurrentDir, "MachinTruc(*.mct)" );
 
-	if ( file.isEmpty() )
-		return;
-	
-	openProjectCurrentDir = QFileInfo( file ).absolutePath();
+		if ( file.isEmpty() )
+			return;
+		openProjectCurrentDir = QFileInfo( file ).absolutePath();
+		currentProjectFile = file;
+	}
+
 	ProjectFile xml;
-	xml.saveProject( sourcePage->getAllSources(), sampler, file );
+	xml.saveProject( sourcePage->getAllSources(), sampler, currentProjectFile );
+	vw->showOSDMessage( QString( tr("Saved: %1") ).arg(currentProjectFile), 3 );
 }
 
 
@@ -808,8 +813,7 @@ void TopWindow::loadProject()
 
 	if ( file.isEmpty() )
 		return;
-	
-	openProjectCurrentDir = QFileInfo( file ).absolutePath();
+
 	showProjectClipsPage();
 	sampler->clearAll();
 	timeline->setScene( sampler->getCurrentScene() );
@@ -827,6 +831,9 @@ void TopWindow::loadProject()
 			setEnabled( false );
 			emit startOSDTimer( true );
 		}
+		QFileInfo fi( file );
+		openProjectCurrentDir = fi.absolutePath();
+		currentProjectFile = fi.absoluteFilePath();
 	}
 	else {
 		while ( projectLoader->sourcesList.count() )

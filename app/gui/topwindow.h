@@ -234,7 +234,7 @@ private:
 
 	SeekSlider *seekSlider;	
 	
-	QString openSourcesCurrentDir, openProjectCurrentDir;
+	QString openSourcesCurrentDir, openProjectCurrentDir, currentProjectFile;
 	QStringList unsupportedOpenSources;
 	QStringList duplicateOpenSources;
 	int openSourcesCounter;
