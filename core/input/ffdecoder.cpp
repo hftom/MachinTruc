@@ -471,7 +471,7 @@ bool FFDecoder::seekTo( double p, Frame *f, AudioFrame *af )
 				printf("seekTo !decodeVideo\n");
 				return false;
 			}
-			printf("decoded PTS=%f, timestamp=%f, wanted PTS=%f\n", f->pts(), timestamp, p );
+			//printf("decoded PTS=%f, timestamp=%f, wanted PTS=%f\n", f->pts(), timestamp, p );
 
 			double cur = f->pts();
 			if ( cur < p )
@@ -506,7 +506,7 @@ bool FFDecoder::seekTo( double p, Frame *f, AudioFrame *af )
 					hdur = (f->profile.getVideoFrameDuration() / 2.);
 					if ( cur == lastpts )
 						++loop;
-					printf("frame PTS=%f, wanted PTS=%f, hdur=%f, delta=%f\n", cur, p, hdur, delta );
+					//printf("frame PTS=%f, wanted PTS=%f, hdur=%f, delta=%f\n", cur, p, hdur, delta );
 				} while ( (cur < p) && (delta > hdur) && (loop < maxloop) );
 
 				if ( (cur > p) && ( delta > hdur && !before ) )
