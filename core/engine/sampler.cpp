@@ -265,14 +265,14 @@ void Sampler::updateFrame()
 }
 
 
-
+// called from the composer thread
 void Sampler::fromComposerReleaseVideoFrame( Frame *f )
 {
 	playbackBuffer.releasedVideoFrame( f );
 }
 
 
-
+// called from the composer thread
 bool Sampler::fromComposerUpdateFrame( Frame *f )
 {
 	if ( updateVideoFrame( f ) ) {
@@ -282,7 +282,7 @@ bool Sampler::fromComposerUpdateFrame( Frame *f )
 }
 
 
-
+// called from the composer thread
 double Sampler::fromComposerSetPlaybackBuffer( bool backward )
 {
 	Frame *last = metronom->getLastFrame();
@@ -307,7 +307,7 @@ double Sampler::fromComposerSetPlaybackBuffer( bool backward )
 }
 
 
-
+// called from the composer thread
 void Sampler::fromComposerSeekTo( double p, bool backward, bool seek )
 {
 	int i, j;

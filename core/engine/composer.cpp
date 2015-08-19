@@ -231,11 +231,13 @@ void Composer::setPlaybackBuffer( bool backward )
 void Composer::seekTo( double p, bool backward, bool seek )
 {
 	itcMutex.lock();
+	// remove previously queued RENDERSEEK msg ...
 	while ( !itcMsgList.isEmpty() ) {
 		if ( itcMsgList.last().msgType != ItcMsg::RENDERSEEK )
 			break;
 		itcMsgList.takeLast();
 	}
+	// ... and add this one
 	itcMsgList.append( ItcMsg( p, backward, seek ) );
 	itcMutex.unlock();
 }
@@ -245,11 +247,13 @@ void Composer::seekTo( double p, bool backward, bool seek )
 void Composer::frameByFrame()
 {
 	itcMutex.lock();
+	// remove previously queued RENDERFRAMEBYFRAME msg ...
 	while ( !itcMsgList.isEmpty() ) {
 		if ( itcMsgList.last().msgType != ItcMsg::RENDERFRAMEBYFRAME )
 			break;
 		itcMsgList.takeLast();
 	}
+	// ... and add this one
 	itcMsgList.append( ItcMsg( ItcMsg::RENDERFRAMEBYFRAME ) );
 	itcMutex.unlock();
 }
@@ -268,11 +272,13 @@ void Composer::frameByFrameSetPlaybackBuffer( bool backward )
 void Composer::skipBy( int step )
 {
 	itcMutex.lock();
+	// remove previously queued RENDERSKIPBY msg ...
 	while ( !itcMsgList.isEmpty() ) {
 		if ( itcMsgList.last().msgType != ItcMsg::RENDERSKIPBY )
 			break;
 		itcMsgList.takeLast();
 	}
+	// ... and add this one
 	itcMsgList.append( ItcMsg( ItcMsg::RENDERSKIPBY, step ) );
 	itcMutex.unlock();
 }
@@ -282,11 +288,13 @@ void Composer::skipBy( int step )
 void Composer::updateFrame()
 {
 	itcMutex.lock();
+	// remove previously queued RENDERUPDATE msg ...
 	while ( !itcMsgList.isEmpty() ) {
 		if ( itcMsgList.last().msgType != ItcMsg::RENDERUPDATE )
 			break;
 		itcMsgList.takeLast();
 	}
+	// ... and add this one
 	itcMsgList.append( ItcMsg( ItcMsg::RENDERUPDATE ) );
 	itcMutex.unlock();
 }
