@@ -459,7 +459,7 @@ bool FFDecoder::seekTo( double p, Frame *f, AudioFrame *af )
 	else {
 		while ( loop < maxloop ) {
 			before = false;
-			if ( haveVideo && doYadif )
+			if ( doYadif )
 				yadif.reset( doYadif > Yadif1X, videoStream, formatCtx, videoCodecCtx );
 			seek( timestamp );
 			if ( !seekDecodeNext( f ) ) {
