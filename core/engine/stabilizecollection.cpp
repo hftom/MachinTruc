@@ -269,7 +269,7 @@ void StabMotionDetect::stop()
 	
 void StabMotionDetect::run()
 {
-	setpriority( PRIO_PROCESS, 0, 10 );
+	setpriority( PRIO_PROCESS, 0, 19 );
 	
 	Profile sourceProfile = source->getProfile();
 	Profile outProfile = sourceProfile;
