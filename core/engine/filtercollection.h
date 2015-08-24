@@ -39,6 +39,7 @@
 #include "vfx/glmix.h"
 #include "vfx/glpush.h"
 #include "vfx/glcover.h"
+#include "vfx/glfadeoutin.h"
 #include "vfx/glfrostedglass.h"
 #include "vfx/glhardcut.h"
 #include "vfx/gloverlay.h"

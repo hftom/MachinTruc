@@ -55,6 +55,7 @@ FilterCollection::FilterCollection()
 	videoTransitions.append( FilterEntry( "colors", "GLPush", QObject::tr("Push"), &Maker<GLPush>::make ) );
 	videoTransitions.append( FilterEntry( "colors", "GLCover", QObject::tr("Cover"), &Maker<GLCover>::make ) );
 	videoTransitions.append( FilterEntry( "colors", "GLHardCut", QObject::tr("Hard cut"), &Maker<GLHardCut>::make ) );
+	videoTransitions.append( FilterEntry( "colors", "GLFadeOutIn", QObject::tr("Fade out in"), &Maker<GLFadeOutIn>::make ) );
 	videoTransitions.append( FilterEntry( "colors", "GLFrostedGlass", QObject::tr("Frosted glass"), &Maker<GLFrostedGlass>::make ) );
 
 	// audio filters

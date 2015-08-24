@@ -70,6 +70,7 @@ SOURCES = \
 	vfx/glcustom.cpp \
 	vfx/gldenoise.cpp \
 	vfx/glstabilize.cpp \
+	vfx/glfadeoutin.cpp \
 	\
 	videoout/videowidget.cpp
 
@@ -151,6 +152,7 @@ HEADERS = \
 	vfx/glcustom.h \
 	vfx/gldenoise.h \
 	vfx/glstabilize.h \
+	vfx/glfadeoutin.h \
 	\
 	videoout/videowidget.h
 
