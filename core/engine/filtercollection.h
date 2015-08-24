@@ -51,6 +51,7 @@
 #include "afx/audiocopy.h"
 #include "afx/audiomix.h"
 #include "afx/audiocrossfade.h"
+#include "afx/audiohardcut.h"
 
 
 

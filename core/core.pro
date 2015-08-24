@@ -111,6 +111,7 @@ HEADERS = \
 	afx/audiomix.h \
 	afx/audiovolume.h \
 	afx/audiocrossfade.h \
+	afx/audiohardcut.h \
 	\
 	vfx/movitbackground.h \
 	vfx/gltest.h \

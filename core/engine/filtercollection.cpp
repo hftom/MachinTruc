@@ -68,6 +68,7 @@ FilterCollection::FilterCollection()
 	
 	// audio transitions
 	audioTransitions.append( FilterEntry( "sound", "AudioCrossFade", QObject::tr("Crossfade"), &Maker<AudioCrossFade>::make ) );
+	audioTransitions.append( FilterEntry( "sound", "AudioHardCut", QObject::tr("Hard cut"), &Maker<AudioHardCut>::make ) );
 };
 
 
