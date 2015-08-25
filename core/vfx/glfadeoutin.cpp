@@ -5,7 +5,7 @@
 
 GLFadeOutIn::GLFadeOutIn( QString id, QString name ) : GLFilter( id, name )
 {
-	pause = addParameter( "pause", tr("Black length:"), Parameter::PDOUBLE, 0.0, 0.0, 0.5, true );
+	pause = addParameter( "pause", tr("Black length:"), Parameter::PDOUBLE, 0.0, 0.0, 0.5, false );
 }
 
 
