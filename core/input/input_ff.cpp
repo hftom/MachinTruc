@@ -525,7 +525,8 @@ void InputFF::runBackward()
 
 void InputFF::resample( Frame *f )
 {
-	double delta = ( f->pts() + videoResampler.outputDuration ) - ( videoResampler.outputPts + videoResampler.outputDuration );
+	double duration = (decoder->doYadif > FFDecoder::Yadif1X) ? f->profile.getVideoFrameDuration() / 2.0 : f->profile.getVideoFrameDuration();
+	double delta = ( f->pts() + duration ) - ( videoResampler.outputPts + videoResampler.outputDuration );
 	/*if ( outProfile.getVideoFrameRate() == inProfile.getVideoFrameRate() ) { // no resampling
 		videoFrames.enqueue( f );
 	}
@@ -552,7 +553,8 @@ void InputFF::resample( Frame *f )
 
 void InputFF::resampleBackward( Frame *f )
 {
-	double delta = ( videoResampler.outputPts - videoResampler.outputDuration ) - ( f->pts() - videoResampler.outputDuration );
+	double duration = (decoder->doYadif > FFDecoder::Yadif1X) ? f->profile.getVideoFrameDuration() / 2.0 : f->profile.getVideoFrameDuration();
+	double delta = ( videoResampler.outputPts - videoResampler.outputDuration ) - ( f->pts() - duration );
 	if ( delta >= videoResampler.outputDuration ) {
 		// this frame will be duplicated (delta / videoResampler.outputDuration) times
 		printf("duplicate, delta=%f, f->pts=%f, outputPts=%f\n", delta, f->pts(), videoResampler.outputPts);
