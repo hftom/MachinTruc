@@ -24,8 +24,12 @@ public:
 	virtual bool process( const QList<Effect*>&, double /*pts*/, Frame* /*first*/, Frame* /*second*/, Profile* ) { return true; }
 	
 	virtual QList<Effect*> getMovitEffects() = 0;
+	virtual QList<Effect*> getMovitEffectsFirst() { QList<Effect*> list; return list; }
+	virtual QList<Effect*> getMovitEffectsSecond() { QList<Effect*> list; return list; }
 
 	virtual QString getDescriptor( double, Frame*, Profile* ) { return getIdentifier(); }
+	virtual QString getDescriptorFirst( double, Frame*, Profile* ) { return ""; }
+	virtual QString getDescriptorSecond( double, Frame*, Profile* ) { return ""; }
 };
 
 #endif //GLFILTER_H

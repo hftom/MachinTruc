@@ -1,4 +1,5 @@
 #include <movit/mix_effect.h>
+#include <movit/saturation_effect.h>
 #include "vfx/glmix.h"
 
 

@@ -750,7 +750,11 @@ void Composer::movitRender( Frame *dst, bool update )
 		movitFrameDescriptor( "-", f, &sample->videoFilters, currentDescriptor, &projectProfile );
 		// transition
 		if ( sample->transitionFrame.frame && !sample->transitionFrame.videoTransitionFilter.isNull() ) {
+			// filters applied on first transition frame, if any
+			currentDescriptor.append( "--" + sample->transitionFrame.videoTransitionFilter->getDescriptorFirst( pts, f, &projectProfile ) );
 			movitFrameDescriptor( "->", sample->transitionFrame.frame, &sample->transitionFrame.videoFilters, currentDescriptor, &projectProfile );
+			// filters applied on second transition frame, if any
+			currentDescriptor.append( "-->" + sample->transitionFrame.videoTransitionFilter->getDescriptorSecond( pts, sample->transitionFrame.frame, &projectProfile ) );
 			currentDescriptor.append( "-<" + sample->transitionFrame.videoTransitionFilter->getDescriptor( pts, sample->transitionFrame.frame, &projectProfile ) );
 		}
 		// overlay
@@ -783,9 +787,20 @@ void Composer::movitRender( Frame *dst, bool update )
 			current = movitFrameBuild( f, &sample->videoFilters, &branch );
 			// transition
 			if ( sample->transitionFrame.frame && !sample->transitionFrame.videoTransitionFilter.isNull() ) {
+				QList<Effect*> el = sample->transitionFrame.videoTransitionFilter->getMovitEffects();
+				
+				// filters applied on first transition frame, if any
+				QList<Effect*> first = sample->transitionFrame.videoTransitionFilter->getMovitEffectsFirst();
+				for ( int l = 0; l < first.count(); ++l )
+					current = movitChain.chain->add_effect( first.at( l ) );
+				
 				MovitBranch *branchTrans;
 				Effect *currentTrans = movitFrameBuild( sample->transitionFrame.frame, &sample->transitionFrame.videoFilters, &branchTrans );
-				QList<Effect*> el = sample->transitionFrame.videoTransitionFilter->getMovitEffects();
+				// filters applied on second transition frame, if any
+				QList<Effect*> second = sample->transitionFrame.videoTransitionFilter->getMovitEffectsSecond();
+				for ( int l = 0; l < second.count(); ++l )
+					currentTrans = movitChain.chain->add_effect( second.at( l ) );
+				
 				branchTrans->filters.append( new MovitFilter( el ) );
 				for ( int l = 0; l < el.count(); ++l )
 					current = movitChain.chain->add_effect( el.at( l ), current, currentTrans );

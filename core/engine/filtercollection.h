@@ -43,6 +43,7 @@
 #include "vfx/glfrostedglass.h"
 #include "vfx/glhardcut.h"
 #include "vfx/gloverlay.h"
+#include "vfx/glzoomin.h"
 
 // audio filters
 #include "afx/audiovolume.h"

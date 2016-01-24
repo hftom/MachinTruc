@@ -100,7 +100,7 @@ public:
 	QList<Effect*> getMovitEffects();
 
 		
-private:
+protected:
 	void findPoints( double &x1, double &x2, double first, double last );
 	
 	Parameter *sizePercent;
