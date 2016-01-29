@@ -326,7 +326,6 @@ bool Scene::canResize( Clip *clip, double &newLength, int track )
 	}
 	else {
 		if ( clip->getSource()->getType() == InputBase::FFMPEG && clip->start() + (newLength * qAbs(clip->getSpeed())) > end + margin ) {
-			qDebug() << "coucou 3" << clip->start() + (newLength * qAbs(clip->getSpeed())) - end;
 			return false;
 		}
 	}
