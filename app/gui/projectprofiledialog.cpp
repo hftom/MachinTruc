@@ -130,7 +130,7 @@ ProjectProfileDialog::ProjectProfileDialog( QWidget *parent, Profile &p, int war
 		ratioCombo->setCurrentIndex( 2 );
 	
 	for ( int i = 0; i < nfpspresets; ++i ) {
-		if ( qAbs( p.getVideoFrameRate() - fpsPresets[i] ) < 1e-3 ) {
+		if ( qAbs( p.getVideoFrameRate() * (p.getVideoInterlaced() ? 2 : 1) - fpsPresets[i] ) < 1e-3 ) {
 			framerateCombo->setCurrentIndex( i );
 			break;
 		}
