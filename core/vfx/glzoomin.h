@@ -12,6 +12,8 @@ static const char *FirstOverlayEffect_frag =
 "	return bottom + (1.0 - bottom.a) * top;\n"
 "}\n";
 
+
+
 class FirstOverlayEffect : public Effect {
 public:
 	FirstOverlayEffect() {}

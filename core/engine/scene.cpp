@@ -315,15 +315,20 @@ bool Scene::canResize( Clip *clip, double &newLength, int track )
 	newLength = nearestPTS( newLength, profile.getVideoFrameDuration() );
 	double start = clip->getSource()->getProfile().getStreamStartTime();
 	double end = clip->getSource()->getProfile().getStreamStartTime() + clip->getSource()->getProfile().getStreamDuration();
-	if ( newLength < profile.getVideoFrameDuration() )
+	double margin = profile.getVideoFrameDuration() / 4.0;
+	if ( newLength < profile.getVideoFrameDuration() ) {
 		return false;
+	}
 	if ( clip->getSpeed() < 0 ) {
-		if ( clip->getSource()->getType() == InputBase::FFMPEG && clip->start() + ((clip->length() - newLength) * qAbs(clip->getSpeed())) < start )
+		if ( clip->getSource()->getType() == InputBase::FFMPEG && clip->start() + ((clip->length() - newLength) * qAbs(clip->getSpeed())) < start ) {
 			return false;
+		}
 	}
 	else {
-		if ( clip->getSource()->getType() == InputBase::FFMPEG && clip->start() + (newLength * qAbs(clip->getSpeed())) > end )
+		if ( clip->getSource()->getType() == InputBase::FFMPEG && clip->start() + (newLength * qAbs(clip->getSpeed())) > end + margin ) {
+			qDebug() << "coucou 3" << clip->start() + (newLength * qAbs(clip->getSpeed())) - end;
 			return false;
+		}
 	}
 	
 	return checkPlacement( clip, track, clip->position(), newLength );
