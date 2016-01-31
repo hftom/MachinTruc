@@ -70,6 +70,7 @@ bool GLZoomIn::process( const QList<Effect*> &el, double pts, Frame *first, Fram
 QList<Effect*> GLZoomIn::getMovitEffects()
 {
 	QList<Effect*> list;
+	Effect *e = new OverlayEffect();
 	
 	firstList.clear();
 	secondList.clear();
@@ -81,7 +82,7 @@ QList<Effect*> GLZoomIn::getMovitEffects()
 		rotateAngle->graph.keys.append( AnimationKey( AnimationKey::CURVE, 0, 0 ) );
 		rotateAngle->graph.keys.append( AnimationKey( AnimationKey::CURVE, 1, (getParamValue( rotateStart ).toDouble() / (rotateAngle->max.toDouble() - rotateAngle->min.toDouble())) ) );
 		firstList.append( GLSize::getMovitEffects() );
-		list.append( new FirstOverlayEffect() );
+		e->set_int( "swap_inputs", 1 );
 	}
 	else {
 		sizePercent->graph.keys.append( AnimationKey( AnimationKey::CURVE, 0, 0 ) );
@@ -89,9 +90,9 @@ QList<Effect*> GLZoomIn::getMovitEffects()
 		rotateAngle->graph.keys.append( AnimationKey( AnimationKey::CURVE, 0, (getParamValue( rotateStart ).toDouble() / (rotateAngle->max.toDouble() - rotateAngle->min.toDouble())) ) );
 		rotateAngle->graph.keys.append( AnimationKey( AnimationKey::CURVE, 1, 0 ) );
 		secondList.append( GLSize::getMovitEffects() );
-		list.append( new OverlayEffect() );
-	}	
-
+	}
+	
+	list.append( e );
 	return list;
 }
 
