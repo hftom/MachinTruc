@@ -11,8 +11,7 @@
 #include "engine/frame.h"
 #include "vfx/glfilter.h"
 
-// Do not define unless you know what you do!
-//#define NOMOVIT
+
 
 using namespace movit;
 
