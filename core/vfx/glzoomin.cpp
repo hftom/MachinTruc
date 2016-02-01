@@ -12,6 +12,10 @@ GLZoomIn::GLZoomIn( QString id, QString name ) : GLSize( id, name )
 	softBorder->hidden = true;
 	rotateStart = addParameter( "rotateStart", tr("Start angle:"), Parameter::PDOUBLE, 15.0, -360.0, 360.0, false );
 	inverse = addBooleanParameter( "inverse", tr("Inverse"), 0 );
+	sizePercent->graph.keys.append( AnimationKey( AnimationKey::CURVE, 0, 0 ) );
+	sizePercent->graph.keys.append( AnimationKey( AnimationKey::CURVE, 1, 100.0 / sizePercent->max.toDouble() ) );
+	rotateAngle->graph.keys.append( AnimationKey( AnimationKey::CURVE, 0, (getParamValue( rotateStart ).toDouble() / (rotateAngle->max.toDouble() - rotateAngle->min.toDouble())) ) );
+	rotateAngle->graph.keys.append( AnimationKey( AnimationKey::CURVE, 1, 0 ) );
 }
 
 
@@ -53,11 +57,10 @@ QString GLZoomIn::getDescriptorSecond( double pts, Frame *f, Profile *p )
 bool GLZoomIn::process( const QList<Effect*> &el, double pts, Frame *first, Frame *second, Profile *p )
 {
 	Q_UNUSED( el );
-	Q_UNUSED( first );
 	
 	if ( getParamValue( inverse ).toInt() ) {
 		rotateAngle->graph.keys.last().y = getParamValue( rotateStart ).toDouble() / (rotateAngle->max.toDouble() - rotateAngle->min.toDouble());
-		return GLSize::process( firstList, pts, second, p );
+		return GLSize::process( firstList, pts, first, p );
 	}
 	else {
 		rotateAngle->graph.keys.first().y = getParamValue( rotateStart ).toDouble() / (rotateAngle->max.toDouble() - rotateAngle->min.toDouble());
@@ -74,21 +77,19 @@ QList<Effect*> GLZoomIn::getMovitEffects()
 	
 	firstList.clear();
 	secondList.clear();
-	sizePercent->graph.keys.clear();
-	rotateAngle->graph.keys.clear();
 	if ( getParamValue( inverse ).toInt() ) {
-		sizePercent->graph.keys.append( AnimationKey( AnimationKey::CURVE, 0, 100.0 / sizePercent->max.toDouble() ) );
-		sizePercent->graph.keys.append( AnimationKey( AnimationKey::CURVE, 1, 0 ) );
-		rotateAngle->graph.keys.append( AnimationKey( AnimationKey::CURVE, 0, 0 ) );
-		rotateAngle->graph.keys.append( AnimationKey( AnimationKey::CURVE, 1, (getParamValue( rotateStart ).toDouble() / (rotateAngle->max.toDouble() - rotateAngle->min.toDouble())) ) );
+		sizePercent->graph.keys.first().y = 100.0 / sizePercent->max.toDouble();
+		sizePercent->graph.keys.last().y = 0;
+		rotateAngle->graph.keys.first().y = 0;
+		rotateAngle->graph.keys.last().y = getParamValue( rotateStart ).toDouble() / (rotateAngle->max.toDouble() - rotateAngle->min.toDouble());
 		firstList.append( GLSize::getMovitEffects() );
 		e->set_int( "swap_inputs", 1 );
 	}
 	else {
-		sizePercent->graph.keys.append( AnimationKey( AnimationKey::CURVE, 0, 0 ) );
-		sizePercent->graph.keys.append( AnimationKey( AnimationKey::CURVE, 1, 100.0 / sizePercent->max.toDouble() ) );
-		rotateAngle->graph.keys.append( AnimationKey( AnimationKey::CURVE, 0, (getParamValue( rotateStart ).toDouble() / (rotateAngle->max.toDouble() - rotateAngle->min.toDouble())) ) );
-		rotateAngle->graph.keys.append( AnimationKey( AnimationKey::CURVE, 1, 0 ) );
+		sizePercent->graph.keys.first().y = 0;
+		sizePercent->graph.keys.last().y = 100.0 / sizePercent->max.toDouble();
+		rotateAngle->graph.keys.first().y = getParamValue( rotateStart ).toDouble() / (rotateAngle->max.toDouble() - rotateAngle->min.toDouble());
+		rotateAngle->graph.keys.last().y = 0;
 		secondList.append( GLSize::getMovitEffects() );
 	}
 	
