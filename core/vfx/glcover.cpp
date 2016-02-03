@@ -11,7 +11,7 @@ GLCover::GLCover( QString id, QString name ) : GLFilter( id, name )
 	vertical = addBooleanParameter( "vertical", tr("Vertical"), 0 );
 	direction = addBooleanParameter( "direction", tr("Opposite direction"), 0 );
 	uncover = addBooleanParameter( "uncover", tr("Uncover"), 0 );
-	motionBlur = addParameter( "motionBlur", tr("Motion blur:"), Parameter::PDOUBLE, 0.0, 0.0, 1.0, false );
+	motionBlur = addParameter( "motionBlur", tr("Motion blur:"), Parameter::PDOUBLE, 0.5, 0.0, 1.0, false );
 }
 
 
@@ -56,24 +56,22 @@ bool GLCover::process( const QList<Effect*> &el, double pts, Frame *first, Frame
 	
 	if ( blur > 0.0f ) {
 		float ppos = getParamValue( position, qMax(0.0, pts - p->getVideoFrameDuration()) ).toFloat();
-		float texSize[2] = { 1.0f / first->glWidth, 1.0f / first->glHeight };
+		float texSize[2] = { -1.0f / first->glWidth, -1.0f / first->glHeight };
 		int loop;
 		if ( getParamValue( vertical ).toInt() ) {
-			loop = (pos - ppos) / texSize[1] * blur;
+			loop = (pos - ppos) / -texSize[1] * blur;
 			texSize[1] *= -1.0f;
 			texSize[0] = 0;
 		}
 		else {
-			loop = (pos - ppos) / texSize[0] * blur;
+			loop = (pos - ppos) / -texSize[0] * blur;
 			texSize[1] = 0;
 		}
 		if ( getParamValue( direction ).toInt() ) {
 			texSize[0] *= -1.0f;
 			texSize[1] *= -1.0f;
 		}
-		
-		//qDebug() << "loop" << loop;
-		
+
 		return e->set_float( "position", getParamValue( uncover ).toInt() ? 1.0f - pos : pos )
 			&& e->set_float( "loop", qMax(loop, 1) )
 			&& e->set_vec2( "texSize", texSize );
