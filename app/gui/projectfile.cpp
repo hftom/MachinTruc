@@ -247,8 +247,13 @@ void ProjectFile::readSource( QDomElement &element )
 		
 		if ( e.tagName() == "VideoFilter" ) {
 			QSharedPointer<Filter> f = readFilter( e, false );
-			if ( !f.isNull() )
+			if ( !f.isNull() ) {
+				if ( f->getIdentifier() == "GLStabilize" ) {
+					GLStabilize *stab = (GLStabilize*)f.data();
+					stab->setSource( source );
+				}
 				source->videoFilters.append( f.staticCast<GLFilter>() );
+			}
 		}
 		else if ( e.tagName() == "AudioFilter" ) {
 			QSharedPointer<Filter> f = readFilter( e, true );
@@ -371,14 +376,10 @@ void ProjectFile::readClip( QDomElement &element, Scene *scene, int trackIndex )
 			QSharedPointer<Filter> f = readFilter( e, false );
 			if ( !f.isNull() ) {
 				if ( f->getIdentifier() == "GLStabilize" ) {
-					if ( StabilizeCollection::getGlobalInstance()->hasTransforms( clip->getSource()->getFileName() ) ) {
-						GLStabilize *stab = (GLStabilize*)f.data();
-						stab->setSource( clip->getSource() );
-						clip->videoFilters.append( f.staticCast<GLFilter>() );
-					}
+					GLStabilize *stab = (GLStabilize*)f.data();
+					stab->setSource( clip->getSource() );
 				}
-				else
-					clip->videoFilters.append( f.staticCast<GLFilter>() );
+				clip->videoFilters.append( f.staticCast<GLFilter>() );
 			}
 		}
 		else if ( e.tagName() == "AudioFilter" ) {
