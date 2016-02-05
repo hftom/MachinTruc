@@ -8,6 +8,7 @@ GLStabilize::GLStabilize( QString id, QString name ) : GLFilter( id, name ),
 	source( NULL ),
 	transforms( NULL )
 {
+	strength = addParameter( "strength", tr("Strength:"), Parameter::PDOUBLE, 1.0, 0.0, 1.0, true );
 	stabStatus = addParameter( "status", tr("Stabilization:"), Parameter::PSTATUS, tr("update..."), "", "", false );
 
 	connect( &checkStabTimer, SIGNAL(timeout()), this, SLOT(checkStabData()) );
@@ -101,10 +102,11 @@ bool GLStabilize::process( const QList<Effect*> &el, double pts, Frame *src, Pro
 			++nframe;
 
 		StabilizeTransform ts = transforms->at( nframe );
-		double rad = ts.alpha;
-		double zoom = 1.0 - (ts.zoom / 100.0);
-		double left = ts.x;
-		double top = ts.y;
+		double st = getParamValue( strength, pts ).toDouble();
+		double rad = ts.alpha * st;
+		double zoom = 1.0 - ((ts.zoom * st) / 100.0);
+		double left = ts.x * st;
+		double top = ts.y * st;
 
 		switch ( src->orientation() ) {
 			case 270:

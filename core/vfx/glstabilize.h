@@ -94,7 +94,7 @@ private:
 	Source *source;
 	QList<StabilizeTransform> *transforms;
 	QTimer checkStabTimer;
-	Parameter *stabStatus;
+	Parameter *stabStatus, *strength;
 	
 signals:
 	void statusUpdate( QString );
