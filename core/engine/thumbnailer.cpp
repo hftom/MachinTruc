@@ -300,10 +300,11 @@ void Thumbnailer::compileShader( ThumbRequest &request )
 	s = request.filePath;
 	shader += s.replace( QRegExp("PREFIX\\(([^\\)]*)\\)"), "eff2_\\1" );
 	shader += "\n";
-	shader += read_version_dependent_file( "footer", "frag" ).c_str();
+	shader += read_file( "footer.frag" ).c_str();
 	
 	QGLShaderProgram prog;
-	bool ok = prog.addShaderFromSourceCode( QGLShader::Fragment, shader );
+	bool ok = prog.addShaderFromSourceCode( QGLShader::Fragment, shader )
+		&& prog.addShaderFromSourceCode( QGLShader::Vertex, read_version_dependent_file("vs", "vert").c_str());
 	if ( ok )
 		ok = prog.link();
 	if ( ok ) {
@@ -322,9 +323,6 @@ void Thumbnailer::compileShader( ThumbRequest &request )
 
 QImage Thumbnailer::getSourceThumb( Frame *f, bool border )
 {
-#ifdef NOMOVIT
-	return QImage();
-#endif
 	if ( !f )
 		return QImage();
 
