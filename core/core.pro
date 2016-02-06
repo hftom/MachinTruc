@@ -1,4 +1,17 @@
 SOURCES = \
+	vidstab/boxblur.c \
+	vidstab/frameinfo.c \
+	vidstab/vidstab.c \
+	vidstab/localmotion2transform.c \
+	vidstab/motiondetect.c \
+	vidstab/motiondetect_opt.c \
+	vidstab/serialize.c \
+	vidstab/transform.c \
+	vidstab/transformfixedpoint.c \
+	#vidstab/transformfloat.c \
+	vidstab/transformtype.c \
+	vidstab/vsvector.c \
+	\
 	engine/bufferpool.cpp \
 	engine/util.cpp \
 	engine/parameter.cpp \
@@ -169,7 +182,7 @@ unix {
 	CONFIG += link_pkgconfig
 	PKGCONFIG += movit
 	PKGCONFIG += libavformat libavcodec libavutil libswresample libswscale libavfilter
-	PKGCONFIG += vidstab
+	#PKGCONFIG += vidstab
 	PKGCONFIG += sdl
 	PKGCONFIG += x11
 }

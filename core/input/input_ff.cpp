@@ -589,6 +589,8 @@ Frame* InputFF::getVideoFrame()
 			if ( lastFrame.valid() ) {
 				Frame *f = new Frame();
 				lastFrame.get( f );
+				if ( sourceName.endsWith(".MOD") )
+					f->profile.setVideoSAR( 1024.0/704.0 );
 				return f;
 			}
 			return NULL;
@@ -597,6 +599,8 @@ Frame* InputFF::getVideoFrame()
 	}
 
 	Frame *f = reorderedVideoFrames.dequeue();
+	if ( sourceName.endsWith(".MOD") )
+		f->profile.setVideoSAR( 1024.0/704.0 );
 	return f;
 }
 

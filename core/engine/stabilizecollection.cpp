@@ -1,7 +1,7 @@
 #include <sys/resource.h>
 
 extern "C" { 
-	#include <vid.stab/libvidstab.h>
+	#include "vidstab/vidstab.h"
 }
 
 #include <QDebug>
