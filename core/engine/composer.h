@@ -85,6 +85,8 @@ private:
 	QGLWidget *hiddenContext;
 	GLResource gl;
 	FENCE *composerFence;
+	GLResize resizeFilter;
+	GLPadding paddingFilter;
 
 	MovitBackground movitBackground;
 	MovitChain movitChain;
