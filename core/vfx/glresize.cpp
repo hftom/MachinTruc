@@ -12,7 +12,6 @@ GLResize::GLResize( QString id, QString name ) : GLFilter( id, name )
 
 GLResize::~GLResize()
 {
-	qDebug() << "GLResize destructor";
 }
 
 
