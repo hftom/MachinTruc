@@ -31,7 +31,7 @@ double cosineInterpolate( double y1, double y2, double x )
 
 double sRgbToLinear( double colorComponent )
 {
-	if ( colorComponent < 0.03928 )
+	if ( colorComponent < 0.04045 )
 		return colorComponent / 12.92;
 	else
 		return pow( (colorComponent + 0.055) / 1.055, 2.4 );
