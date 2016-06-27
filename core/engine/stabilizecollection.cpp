@@ -6,6 +6,7 @@ extern "C" {
 
 #include <QDebug>
 #include <QCryptographicHash>
+#include <QDataStream>
 
 #include "util.h"
 #include "input/input_ff.h"
