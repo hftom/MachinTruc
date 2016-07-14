@@ -496,8 +496,7 @@ void Composer::movitFrameDescriptor( QString prefix, Frame *f, QList< QSharedPoi
 			|| ( f->glWidth != projectProfile->getVideoWidth() &&
 			f->glHeight != projectProfile->getVideoHeight() ) )
 		{		
-			GLResize resize;
-			desc.append( prefix + resize.getDescriptor( pts, f, projectProfile ) );
+			desc.append( prefix + resizeFilter.getDescriptor( pts, f, projectProfile ) );
 			f->resizeAuto = true;
 		}
 	}
@@ -505,8 +504,7 @@ void Composer::movitFrameDescriptor( QString prefix, Frame *f, QList< QSharedPoi
 	// padding
 	if ( !sampler->previewMode() ) {
 		if ( f->glWidth != projectProfile->getVideoWidth() || f->glHeight != projectProfile->getVideoHeight() ) {
-			GLPadding padding;
-			desc.append( prefix + padding.getDescriptor( pts, f, projectProfile ) );
+			desc.append( prefix + paddingFilter.getDescriptor( pts, f, projectProfile ) );
 			f->paddingAuto = true;
 		}
 	}
