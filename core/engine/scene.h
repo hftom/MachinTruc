@@ -42,6 +42,8 @@ public:
 	void moveMulti( Clip *clip, int clipTrack, double newPos );
 	void addClip( Clip *clip, int track );
 	bool removeClip( Clip *clip );
+	Transition* getTailTransition(Clip *clip, int track);
+	Clip* getTailClip(Clip *clip, int track);
 	Clip* sceneSplitClip( Clip *clip, int track, double pts );
 
 	bool update;

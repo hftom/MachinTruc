@@ -42,6 +42,7 @@ public:
 	Transition * getTransition() { return transition; }
 	void removeTransition();
 	void setTransition( double len );
+	void setTransition( Transition *trans );
 	
 	void setFrameDuration( double d );
 

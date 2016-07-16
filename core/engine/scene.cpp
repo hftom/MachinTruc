@@ -677,13 +677,40 @@ bool Scene::removeClip( Clip *clip )
 				Clip *c = t->removeClip( j );
 				if ( c ) {
 					update = true;
-					delete c;
+					// don't delete clip, caller takes ownership, usefull for undo
+					// delete c;
 				}
 				return true;
 			}
 		}
 	}
 	return false;
+}
+
+
+
+Transition* Scene::getTailTransition(Clip *clip, int track)
+{
+	Track *t = tracks[track];
+	int cc = t->clipCount();
+	int index = t->indexOf( clip );
+	if (index > -1 && index < cc - 1) {
+		return t->clipAt(index + 1)->getTransition();
+	}
+	return NULL;
+}
+
+
+
+Clip* Scene::getTailClip(Clip *clip, int track)
+{
+	Track *t = tracks[track];
+	int cc = t->clipCount();
+	int index = t->indexOf( clip );
+	if (index > -1 && index < cc - 1) {
+		return t->clipAt(index + 1);
+	}
+	return NULL;
 }
 
 

@@ -5,6 +5,7 @@ QT += xml
 
 SOURCES = \
 	main.cpp \
+	undo.cpp \
 	gui/appconfig.cpp \
 	gui/shadercollection.cpp \
 	gui/renderingdialog.cpp \

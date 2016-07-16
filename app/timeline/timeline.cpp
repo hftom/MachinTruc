@@ -3,6 +3,11 @@
 #include <QInputDialog>
 #include <QMessageBox>
 
+#include "undoclipadd.h"
+#include "undoclipremove.h"
+#include "undoclipmove.h"
+#include "undoclipresize.h"
+
 #include "engine/filtercollection.h"
 #include "gui/mimetypes.h"
 #include "gui/topwindow.h"
@@ -493,12 +498,24 @@ void Timeline::clipItemCanMove( ClipViewItem *clip, QPointF mouse, double clipSt
 
 void Timeline::clipItemMoved( ClipViewItem *clip, QPointF clipStartMouse, bool multiMove )
 {
+	int newTrack = getTrack( clip->sceneBoundingRect().topLeft() );
+	int oldTrack = multiMove ? newTrack : getTrack( clipStartMouse );
+	Clip *c = clip->getClip();
+	double oldPos = c->position();
+	Transition *oldTrans = c->getTransition() ? new Transition(*c->getTransition()) : NULL;
+	Transition *tail = multiMove ? NULL : scene->getTailTransition(c, oldTrack);
+	Transition *oldTail = tail ? new Transition(*tail) : NULL;
 	if ( multiMove ) {
 		scene->moveMulti( clip->getClip(), getTrack( clip->sceneBoundingRect().topLeft() ), clip->getPosition() );
 	}
 	else {
-		scene->move( clip->getClip(), getTrack( clipStartMouse ), clip->getPosition(), getTrack( clip->sceneBoundingRect().topLeft() ) );
+		scene->move( c, oldTrack, clip->getPosition(), newTrack );
 	}
+	UndoClipMove *u = new UndoClipMove(this, c, multiMove, oldTrack, newTrack, oldPos, c->position(), oldTrans, c->getTransition(),
+									   oldTail, multiMove ? NULL : scene->getTailTransition(c, newTrack), true);
+	UndoStack::getStack()->push(u);
+	if (oldTrans) delete oldTrans;
+	if (oldTail) delete oldTail;
 	QTimer::singleShot ( 1, this, SIGNAL(updateFrame()) );
 	QTimer::singleShot ( 1, this, SLOT(updateLength()) );
 }
@@ -538,11 +555,24 @@ void Timeline::clipItemCanResize( ClipViewItem *clip, int way, QPointF mouse, do
 
 void Timeline::clipItemResized( ClipViewItem *clip, int way )
 {
-	if ( way == 2 )
-		scene->resize( clip->getClip(), clip->getLength(), getTrack( clip->sceneBoundingRect().topLeft() ) );
-	else
-		scene->resizeStart( clip->getClip(), clip->getPosition(), clip->getLength(), getTrack( clip->sceneBoundingRect().topLeft() ) );
+	int track = getTrack( clip->sceneBoundingRect().topLeft() );
+	Transition *oldTrans, *newTrans;
+	Clip *c = clip->getClip();
+	double oldPos = c->position();
+	double oldLen = c->length();
+	if ( way == 2 ) {
+		oldTrans = scene->getTailTransition(c, track);
+		scene->resize( c, clip->getLength(), track );
+		newTrans = scene->getTailTransition(c, track);
+	}
+	else {
+		oldTrans = c->getTransition();
+		scene->resizeStart( c, clip->getPosition(), clip->getLength(), track );
+		newTrans = c->getTransition();
+	}
 	clipThumbRequest( clip, way != 2 );
+	UndoClipResize *u = new UndoClipResize(this, c,  way != 2, track, oldPos, c->position(), oldLen, c->length(), oldTrans, newTrans, true);
+	UndoStack::getStack()->push(u);
 	QTimer::singleShot ( 1, this, SIGNAL(updateFrame()) );
 	QTimer::singleShot ( 1, this, SLOT(updateLength()) );
 }
@@ -668,6 +698,23 @@ int Timeline::getTrack( const QPointF &p )
 
 
 
+ClipViewItem* Timeline::getClipViewItem(Clip *clip, int track)
+{
+	QList<QGraphicsItem*> list = tracks.at( track )->childItems();
+	for ( int i = 0; i < list.count(); ++i ) {
+		QGraphicsItem *it = list.at( i );
+		if ( it->data( DATAITEMTYPE ).toInt() == TYPECLIP ) {
+			ClipViewItem *cv = (ClipViewItem*)it;
+			if ( cv->getClip() == clip ) {
+				return cv;
+			}
+		}
+	}
+	return NULL;
+}
+
+
+
 void Timeline::setCursorPos( double pts )
 {
 	double d = scene->getProfile().getVideoFrameDuration();
@@ -759,6 +806,18 @@ void Timeline::setScene( Scene *s )
 	itemSelected( NULL );
 
 	QTimer::singleShot ( 1, this, SLOT(updateLength()) );
+}
+
+
+
+void Timeline::editCut()
+{
+	if ( selectedItem ) {
+		int t = getTrack( selectedItem->sceneBoundingRect().topLeft() );
+		Clip *c = ((ClipViewItem*)selectedItem)->getClip();
+		UndoClipRemove *u = new UndoClipRemove(this, c, t, scene->getTailTransition(c, t));
+		UndoStack::getStack()->push(u);
+	}
 }
 
 
@@ -979,7 +1038,10 @@ void Timeline::dropEvent( QGraphicsSceneDragDropEvent *event )
 	if ( droppedCut.clip ) {
 		if ( droppedCut.shown ) {
 			bool empty = topParent->getSampler()->isProjectEmpty();
-			scene->addClip( droppedCut.clip, getTrack( droppedCut.clipItem->sceneBoundingRect().topLeft() ) );
+			int t = getTrack( droppedCut.clipItem->sceneBoundingRect().topLeft() );
+			scene->addClip( droppedCut.clip, t );
+			UndoClipAdd *u = new UndoClipAdd(this, droppedCut.clip, t, scene->getTailTransition(droppedCut.clip, t), true);
+			UndoStack::getStack()->push(u);
 			clipThumbRequest( droppedCut.clipItem, true );
 			clipThumbRequest( droppedCut.clipItem, false );
 			emit updateFrame();
@@ -1020,5 +1082,100 @@ void Timeline::thumbResultReady( ThumbRequest result )
 			if ( it->setThumb( result ) && it == selectedItem )
 				emit clipSelected( it );
 		}
+	}
+}
+
+
+
+void Timeline::commandAddClip(Clip *clip, int track, Transition *tail)
+{
+	ClipViewItem *cv = new ClipViewItem( clip, zoom );
+	cv->setParentItem( tracks.at( track ) );
+	itemSelected( cv );
+	scene->addClip( clip, track );
+	Clip *next = scene->getTailClip(clip, track);
+	if (next) {
+		next->setTransition(tail ? new Transition(*tail) : NULL);
+	}
+
+	updateTransitions( cv, false );
+	clipThumbRequest( cv, true );
+	clipThumbRequest( cv, false );
+	emit updateFrame();
+	QTimer::singleShot ( 1, this, SLOT(updateLength()) );
+}
+
+
+
+void Timeline::commandRemoveClip(Clip *clip, int track)
+{
+	ClipViewItem *cv = getClipViewItem(clip, track);
+	if (cv) {
+		itemSelected(cv);
+		deleteClip();
+	}
+}
+
+
+
+void Timeline::commandMoveClip(Clip *clip, bool multi, int oldTrack, int newTrack, double pos, Transition *trans, Transition *tail)
+{
+	ClipViewItem *cv = getClipViewItem(clip, oldTrack);
+	if ( cv ) {
+		if (multi) {
+			double start = clip->position();
+			double delta = pos - start;
+			updateTransitions( cv, true );
+			scene->moveMulti( clip, newTrack, pos );
+			QList<QGraphicsItem*> list = tracks.at( newTrack )->childItems();
+			for ( int i = 0; i < list.count(); ++i ) {
+				QGraphicsItem *it = list.at( i );
+				if ( it->data( DATAITEMTYPE ).toInt() >= TYPECLIP ) {
+					AbstractViewItem *av = (AbstractViewItem*)it;
+					if ( av->getPosition() < start )
+						continue;
+					av->moveDelta( delta );
+				}
+			}
+			updateTransitions( cv, false );
+		}
+		else {
+			updateTransitions( cv, true );
+			scene->move( clip, oldTrack, pos, newTrack );
+			clip->setTransition(trans ? new Transition(*trans) : NULL);
+			Clip *next = scene->getTailClip(clip, newTrack);
+			if (next) {
+				next->setTransition(tail ? new Transition(*tail) : NULL);
+			}
+			cv->setParentItem( tracks.at( newTrack ) );
+			cv->setCuts( clip->position(), clip->length(), zoom );
+			updateTransitions( cv, false );
+		}
+		QTimer::singleShot ( 1, this, SIGNAL(updateFrame()) );
+		QTimer::singleShot ( 1, this, SLOT(updateLength()) );
+	}
+}
+
+	
+
+void Timeline::commandResizeClip(Clip *clip, bool resizeStart, int track, double position, double length, Transition *trans)
+{
+	ClipViewItem *cv = getClipViewItem(clip, track);
+	if ( cv ) {
+		if (resizeStart) {
+			scene->resizeStart( clip, position, length, track );
+			updateTransitions( cv, true );
+			cv->setGeometry( position, length );
+			updateTransitions( cv, false );
+		}
+		else {
+			scene->resize( clip, length, track );
+			updateTransitions( cv, true );
+			cv->setLength( length );
+			updateTransitions( cv, false );
+		}
+		clipThumbRequest( cv, resizeStart );
+		QTimer::singleShot ( 1, this, SIGNAL(updateFrame()) );
+		QTimer::singleShot ( 1, this, SLOT(updateLength()) );
 	}
 }

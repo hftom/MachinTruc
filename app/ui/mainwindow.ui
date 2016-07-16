@@ -108,10 +108,6 @@
                <property name="text">
                 <string>...</string>
                </property>
-               <property name="icon">
-                <iconset resource="../resources.qrc">
-                 <normaloff>:/toolbar/icons/edit-undo.png</normaloff>:/toolbar/icons/edit-undo.png</iconset>
-               </property>
                <property name="iconSize">
                 <size>
                  <width>16</width>
@@ -142,10 +138,6 @@
                </property>
                <property name="text">
                 <string>...</string>
-               </property>
-               <property name="icon">
-                <iconset resource="../resources.qrc">
-                 <normaloff>:/toolbar/icons/edit-redo.png</normaloff>:/toolbar/icons/edit-redo.png</iconset>
                </property>
                <property name="iconSize">
                 <size>
@@ -610,7 +602,7 @@
      <x>0</x>
      <y>0</y>
      <width>1051</width>
-     <height>28</height>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

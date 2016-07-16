@@ -80,7 +80,12 @@ public:
 	void thumbResultReady( ThumbRequest result );
 	
 	void zoomInOut( bool in );
-	void deleteClip();
+	void editCut();
+	
+	void commandAddClip(Clip *clip, int track, Transition *tail);
+	void commandRemoveClip(Clip *clip, int track);
+	void commandMoveClip(Clip *clip, bool multi, int oldTrack, int newTrack, double pos, Transition *trans, Transition *tail);
+	void commandResizeClip(Clip *clip, bool resizeStart, int track, double position, double length, Transition *trans);
 	
 public slots:
 	void viewMouseMove( QPointF pos );
@@ -112,7 +117,9 @@ private slots:
 	void updateLength();
 	
 private:
+	void deleteClip();
 	int getTrack( const QPointF &p );
+	ClipViewItem* getClipViewItem(Clip *clip, int track);
 	void snapMove( AbstractViewItem *item, double &pos, double mouseX, double itemScenePos, bool limit = false );
 	void snapResize( AbstractViewItem *item, int way, double &len, double mouseX, double itemScenePos );
 

@@ -6,6 +6,8 @@
 #include "renderingdialog.h"
 #include "projectprofiledialog.h"
 
+#include "undo.h"
+
 #define VIDEOCLEARDELAY 200
 
 
@@ -143,6 +145,13 @@ TopWindow::TopWindow()
 	connect( actionSaveImage, SIGNAL(triggered()), vw, SLOT(shot()) );
 	connect( actionRenderToFile, SIGNAL(triggered()), this, SLOT(renderDialog()) );
 	
+	QAction *act = UndoStack::getStack()->createUndoAction(this);
+	act->setIcon( QIcon(":/toolbar/icons/edit-undo.png") ); 
+	undoToolButton->setDefaultAction( act );
+	act = UndoStack::getStack()->createRedoAction(this);
+	act->setIcon( QIcon(":/toolbar/icons/edit-redo.png") );
+	redoToolButton->setDefaultAction( act );
+	
 	new QShortcut( QKeySequence( "Ctrl+M" ), this, SLOT(showMemoryInfo()) );
 	new QShortcut( QKeySequence( "Space" ), this, SLOT(videoPlayPause()) );
 	
@@ -209,7 +218,7 @@ void TopWindow::keyReleaseEvent( QKeyEvent *event )
 void TopWindow::deleteKeyPressed()
 {
 	if ( timelineStackedWidget->currentIndex() == 0 )
-		timeline->deleteClip();
+		timeline->editCut();
 }
 
 
