@@ -15,10 +15,10 @@ public:
 				 Transition *oldTrans, Transition *newTrans, Transition *oldTail, Transition *newTail, bool alreadyMoved) {
 		clip = c;
 		timeline = t;
-		oldTransition = oldTrans ? new Transition(*oldTrans) : NULL;
-		newTransition = newTrans ? new Transition(*newTrans) : NULL;
-		oldTailTransition = oldTail ? new Transition(*oldTail) : NULL;
-		newTailTransition = newTail ? new Transition(*newTail) : NULL;
+		oldTransition = oldTrans ? new Transition(oldTrans) : NULL;
+		newTransition = newTrans ? new Transition(newTrans) : NULL;
+		oldTailTransition = oldTail ? new Transition(oldTail) : NULL;
+		newTailTransition = newTail ? new Transition(newTail) : NULL;
 		oldTrackNumber = oldTrack;
 		newTrackNumber = newTrack;
 		oldPosition = oldPos;

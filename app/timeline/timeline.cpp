@@ -502,9 +502,9 @@ void Timeline::clipItemMoved( ClipViewItem *clip, QPointF clipStartMouse, bool m
 	int oldTrack = multiMove ? newTrack : getTrack( clipStartMouse );
 	Clip *c = clip->getClip();
 	double oldPos = c->position();
-	Transition *oldTrans = c->getTransition() ? new Transition(*c->getTransition()) : NULL;
+	Transition *oldTrans = c->getTransition() ? new Transition(c->getTransition()) : NULL;
 	Transition *tail = multiMove ? NULL : scene->getTailTransition(c, oldTrack);
-	Transition *oldTail = tail ? new Transition(*tail) : NULL;
+	Transition *oldTail = tail ? new Transition(tail) : NULL;
 	if ( multiMove ) {
 		scene->moveMulti( clip->getClip(), getTrack( clip->sceneBoundingRect().topLeft() ), clip->getPosition() );
 	}
@@ -561,18 +561,21 @@ void Timeline::clipItemResized( ClipViewItem *clip, int way )
 	double oldPos = c->position();
 	double oldLen = c->length();
 	if ( way == 2 ) {
-		oldTrans = scene->getTailTransition(c, track);
+		Transition *trans = scene->getTailTransition(c, track);
+		oldTrans = trans ? new Transition(trans) : NULL;
 		scene->resize( c, clip->getLength(), track );
 		newTrans = scene->getTailTransition(c, track);
 	}
 	else {
-		oldTrans = c->getTransition();
+		Transition *trans = c->getTransition();
+		oldTrans = trans ? new Transition(trans) : NULL;
 		scene->resizeStart( c, clip->getPosition(), clip->getLength(), track );
 		newTrans = c->getTransition();
 	}
 	clipThumbRequest( clip, way != 2 );
 	UndoClipResize *u = new UndoClipResize(this, c,  way != 2, track, oldPos, c->position(), oldLen, c->length(), oldTrans, newTrans, true);
 	UndoStack::getStack()->push(u);
+	if (oldTrans) delete oldTrans;
 	QTimer::singleShot ( 1, this, SIGNAL(updateFrame()) );
 	QTimer::singleShot ( 1, this, SLOT(updateLength()) );
 }
@@ -1091,16 +1094,16 @@ void Timeline::commandAddClip(Clip *clip, int track, Transition *tail)
 {
 	ClipViewItem *cv = new ClipViewItem( clip, zoom );
 	cv->setParentItem( tracks.at( track ) );
-	itemSelected( cv );
 	scene->addClip( clip, track );
 	Clip *next = scene->getTailClip(clip, track);
 	if (next) {
-		next->setTransition(tail ? new Transition(*tail) : NULL);
+		next->setTransition(tail ? new Transition(tail) : NULL);
 	}
 
 	updateTransitions( cv, false );
 	clipThumbRequest( cv, true );
 	clipThumbRequest( cv, false );
+	itemSelected( cv );
 	emit updateFrame();
 	QTimer::singleShot ( 1, this, SLOT(updateLength()) );
 }
@@ -1122,10 +1125,10 @@ void Timeline::commandMoveClip(Clip *clip, bool multi, int oldTrack, int newTrac
 {
 	ClipViewItem *cv = getClipViewItem(clip, oldTrack);
 	if ( cv ) {
+		updateTransitions( cv, true );
 		if (multi) {
 			double start = clip->position();
 			double delta = pos - start;
-			updateTransitions( cv, true );
 			scene->moveMulti( clip, newTrack, pos );
 			QList<QGraphicsItem*> list = tracks.at( newTrack )->childItems();
 			for ( int i = 0; i < list.count(); ++i ) {
@@ -1137,26 +1140,24 @@ void Timeline::commandMoveClip(Clip *clip, bool multi, int oldTrack, int newTrac
 					av->moveDelta( delta );
 				}
 			}
-			updateTransitions( cv, false );
 		}
 		else {
-			updateTransitions( cv, true );
 			scene->move( clip, oldTrack, pos, newTrack );
-			clip->setTransition(trans ? new Transition(*trans) : NULL);
-			Clip *next = scene->getTailClip(clip, newTrack);
-			if (next) {
-				next->setTransition(tail ? new Transition(*tail) : NULL);
-			}
 			cv->setParentItem( tracks.at( newTrack ) );
 			cv->setCuts( clip->position(), clip->length(), zoom );
-			updateTransitions( cv, false );
 		}
+		clip->setTransition(trans ? new Transition(trans) : NULL);
+		Clip *next = scene->getTailClip(clip, newTrack);
+		if (next) {
+			next->setTransition(tail ? new Transition(tail) : NULL);
+		}
+		updateTransitions( cv, false );
 		QTimer::singleShot ( 1, this, SIGNAL(updateFrame()) );
 		QTimer::singleShot ( 1, this, SLOT(updateLength()) );
 	}
 }
 
-	
+
 
 void Timeline::commandResizeClip(Clip *clip, bool resizeStart, int track, double position, double length, Transition *trans)
 {
@@ -1164,12 +1165,17 @@ void Timeline::commandResizeClip(Clip *clip, bool resizeStart, int track, double
 	if ( cv ) {
 		if (resizeStart) {
 			scene->resizeStart( clip, position, length, track );
+			clip->setTransition(trans ? new Transition(trans) : NULL);
 			updateTransitions( cv, true );
 			cv->setGeometry( position, length );
 			updateTransitions( cv, false );
 		}
 		else {
 			scene->resize( clip, length, track );
+			Clip *next = scene->getTailClip(clip, track);
+			if (next) {
+				next->setTransition(trans ? new Transition(trans) : NULL);
+			}
 			updateTransitions( cv, true );
 			cv->setLength( length );
 			updateTransitions( cv, false );

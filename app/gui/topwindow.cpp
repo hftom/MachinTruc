@@ -146,11 +146,15 @@ TopWindow::TopWindow()
 	connect( actionRenderToFile, SIGNAL(triggered()), this, SLOT(renderDialog()) );
 	
 	QAction *act = UndoStack::getStack()->createUndoAction(this);
-	act->setIcon( QIcon(":/toolbar/icons/edit-undo.png") ); 
+	act->setIcon( QIcon(":/toolbar/icons/edit-undo.png") );
+	act->setShortcut(QKeySequence(QKeySequence::Undo));
 	undoToolButton->setDefaultAction( act );
+	menuTimeline->insertAction( actionZoomIn, act );
 	act = UndoStack::getStack()->createRedoAction(this);
 	act->setIcon( QIcon(":/toolbar/icons/edit-redo.png") );
+	act->setShortcut(QKeySequence(QKeySequence::Redo));
 	redoToolButton->setDefaultAction( act );
+	menuTimeline->insertAction( actionZoomIn, act );
 	
 	new QShortcut( QKeySequence( "Ctrl+M" ), this, SLOT(showMemoryInfo()) );
 	new QShortcut( QKeySequence( "Space" ), this, SLOT(videoPlayPause()) );

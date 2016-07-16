@@ -15,8 +15,8 @@ public:
 				 Transition *oldTrans, Transition *newTrans, bool alreadyResized) {
 		clip = c;
 		timeline = t;
-		oldTransition = oldTrans ? new Transition(*oldTrans) : NULL;
-		newTransition = newTrans ? new Transition(*newTrans) : NULL;
+		oldTransition = oldTrans ? new Transition(oldTrans) : NULL;
+		newTransition = newTrans ? new Transition(newTrans) : NULL;
 		trackNumber = track;
 		oldPosition = oldPos;
 		newPosition = newPos;

@@ -14,12 +14,7 @@ public:
 	UndoClipRemove(Timeline *t, Clip *c, int track, Transition *tail) {
 		clip = c;
 		timeline = t;
-		if (tail) {
-			tailTransition = new Transition(*tail);
-		}
-		else {
-			tailTransition = NULL;
-		}
+		tailTransition = tail ? new Transition(tail) : NULL;
 		trackNumber = track;
 		redoState = true;
 		setText(QObject::tr("Remove clip"));

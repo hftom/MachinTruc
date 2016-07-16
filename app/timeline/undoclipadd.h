@@ -14,12 +14,7 @@ public:
 	UndoClipAdd(Timeline *t, Clip *c, int track, Transition *tail, bool alreadyAdded) {
 		clip = c;
 		timeline = t;
-		if (tail) {
-			tailTransition = new Transition(*tail);
-		}
-		else {
-			tailTransition = NULL;
-		}
+		tailTransition = tail ? new Transition(tail) : NULL;
 		trackNumber = track;
 		firstRedo = alreadyAdded;
 		redoState = true;

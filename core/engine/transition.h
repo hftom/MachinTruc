@@ -10,6 +10,7 @@ class Transition
 {
 public:
 	Transition( double posInTrackPTS, double len );
+	Transition(Transition *trans);
 
 	void setVideoFilter( QSharedPointer<GLFilter> f );
 	QSharedPointer<GLFilter> getVideoFilter() { return videoFilter; }
@@ -22,6 +23,7 @@ public:
 	void setLength( double len );
 	
 	void setFrameDuration( double d ) { frameDuration = d; }
+	double getFrameDuration() {return frameDuration;}
 
 private:
 	QSharedPointer<GLFilter> videoFilter;
