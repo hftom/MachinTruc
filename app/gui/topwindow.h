@@ -165,6 +165,8 @@ protected:
 private slots:
 	void showMemoryInfo();
 	
+	bool saveAndContinue();
+	
 	void renderDialog();
 	void renderStart( double startPts );
 	void renderFinished( double pts );

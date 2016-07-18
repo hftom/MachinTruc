@@ -7,6 +7,7 @@
 #include "undoclipremove.h"
 #include "undoclipmove.h"
 #include "undoclipresize.h"
+#include "undoclipspeed.h"
 
 #include "engine/filtercollection.h"
 #include "gui/mimetypes.h"
@@ -326,35 +327,41 @@ void Timeline::clipRightClick( ClipViewItem *cv )
 	if ( !action )
 		return;
 
-	double oldSpeed = cv->getClip()->getSpeed();
+	Clip *c = cv->getClip();
+	double oldSpeed = c->getSpeed();
+	double oldLength = c->length();
 	double speed = QInputDialog::getDouble( topParent, tr("Clip speed"), tr("Set a negative value to reverse."), oldSpeed, -10.0, 10.0, 2 );
 	if ( speed == 0 )
 		speed = 0.01;
 	if ( speed != oldSpeed ) {
-		double newLength = (1.0 / qAbs(speed)) * cv->getClip()->length() / (1.0 / qAbs(oldSpeed));
+		double newLength = (1.0 / qAbs(speed)) * c->length() / (1.0 / qAbs(oldSpeed));
 		int track = getTrack( cv->sceneBoundingRect().topLeft() );
 		// set new speed now, since scene->canResize needs it
 		// and restore oldSpeed if we can't resize
 		// We set a positive speed so that scene->canResize
 		// does not change clip->start
-		cv->getClip()->setSpeed( qAbs(speed) );
-		if ( scene->canResize( cv->getClip(), newLength, track ) ) {
+		c->setSpeed( qAbs(speed) );
+		Transition *tail = scene->getTailTransition(c, track);
+		Transition *oldTail = tail ? new Transition(tail) : NULL;
+		if ( scene->canResize( c, newLength, track ) ) {
 			updateTransitions( cv, true );
 			cv->setLength( newLength );
 			updateTransitions( cv, false );
-			scene->resize( cv->getClip(), newLength, track );
+			scene->resize( c, newLength, track );
 			// set the real speed now
-			cv->getClip()->setSpeed( speed );
+			c->setSpeed( speed );
 			clipThumbRequest( cv, true );
 			clipThumbRequest( cv, false );
 			// force scene update
 			scene->update = true;
+			UndoClipSpeed *u = new UndoClipSpeed(this, c, track, oldSpeed, speed, oldLength, c->length(), oldTail, scene->getTailTransition(c, track), true);
+			UndoStack::getStack()->push(u);
 			QTimer::singleShot ( 1, this, SIGNAL(updateFrame()) );
 			QTimer::singleShot ( 1, this, SLOT(updateLength()) );
 		}
 		else {
 			QMessageBox::warning( topParent, tr("Warning"), tr("There is not enougth room to resize this clip. Move next clips and try again.") );
-			cv->getClip()->setSpeed( oldSpeed );
+			c->setSpeed( oldSpeed );
 		}
 	}
 }
@@ -1184,4 +1191,28 @@ void Timeline::commandResizeClip(Clip *clip, bool resizeStart, int track, double
 		QTimer::singleShot ( 1, this, SIGNAL(updateFrame()) );
 		QTimer::singleShot ( 1, this, SLOT(updateLength()) );
 	}
+}
+
+
+
+void Timeline::commandClipSpeed(Clip *c, int track, double speed, double length, Transition *tail)
+{
+	ClipViewItem *cv = getClipViewItem(c, track);
+	c->setSpeed( qAbs(speed) );
+	updateTransitions( cv, true );
+	cv->setLength( length );
+	updateTransitions( cv, false );
+	scene->resize( c, length, track );
+	Clip *next = scene->getTailClip(c, track);
+	if (next) {
+		next->setTransition(tail ? new Transition(tail) : NULL);
+	}
+	// set the real speed now
+	c->setSpeed( speed );
+	clipThumbRequest( cv, true );
+	clipThumbRequest( cv, false );
+	// force scene update
+	scene->update = true;
+	QTimer::singleShot ( 1, this, SIGNAL(updateFrame()) );
+	QTimer::singleShot ( 1, this, SLOT(updateLength()) );
 }

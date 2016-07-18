@@ -179,10 +179,29 @@ TopWindow::TopWindow()
 
 
 
+bool TopWindow::saveAndContinue() {
+	if (!UndoStack::getStack()->isClean()) {
+		int ret = QMessageBox::question(this, tr("Unsaved changes"), tr("This project has been modified.\nDo you want to save your changes?"),
+										QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel, QMessageBox::Yes);
+		if (ret == QMessageBox::Yes) {
+			saveProject();
+		}
+		else if (ret == QMessageBox::Cancel) {
+			return false;
+		}
+	}
+	return true;
+}
+
+
+
 void TopWindow::closeEvent( QCloseEvent *event )
 {
-	QSettings settings( "hftom.fr", "MachinTruc" );
-	
+	if (!saveAndContinue()) {
+		event->ignore();
+		return;
+	}
+
 	appConfig.beginGroup( "MainWindowGeometry" );
 	appConfig.setValue( "mainWindow", saveGeometry() );
     appConfig.setValue( "videoSplitter", videoSplitter->saveState() );
@@ -337,6 +356,10 @@ void TopWindow::newProject()
 		msgBox.exec();
 		return;
 	}
+	
+	if (!saveAndContinue()) {
+		return;
+	}
 
 	tempProfile = Profile();
 	ProjectProfileDialog dlg( this, tempProfile, WARNNO );
@@ -349,6 +372,7 @@ void TopWindow::newProject()
 		timelineSeek( 0 );
 		QTimer::singleShot( VIDEOCLEARDELAY, vw, SLOT(clear()) );
 		currentProjectFile = "";
+		UndoStack::getStack()->clear();
 	}
 }
 
@@ -808,6 +832,7 @@ void TopWindow::saveProject()
 	ProjectFile xml;
 	xml.saveProject( sourcePage->getAllSources(), sampler, currentProjectFile );
 	vw->showOSDMessage( QString( tr("Saved: %1") ).arg(currentProjectFile), 3 );
+	UndoStack::getStack()->setClean();
 }
 
 
@@ -821,6 +846,10 @@ void TopWindow::loadProject()
 		return;
 	}
 	
+	if (!saveAndContinue()) {
+		return;
+	}
+	
 	QString file = QFileDialog::getOpenFileName( this, tr("Open project"),
 						openProjectCurrentDir, "MachinTruc(*.mct)" );
 
@@ -831,6 +860,7 @@ void TopWindow::loadProject()
 	sampler->clearAll();
 	timeline->setScene( sampler->getCurrentScene() );
 	sourcePage->clearAllSources();
+	UndoStack::getStack()->clear();
 	QTimer::singleShot( VIDEOCLEARDELAY, vw, SLOT(clear()) );
 
 	projectLoader = new ProjectFile();
