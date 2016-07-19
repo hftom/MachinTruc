@@ -90,9 +90,13 @@ Clip* Scene::sceneSplitClip( Clip *clip, int track, double pts )
 					if ( fc->videoFilters[ j ].identifier == f->getIdentifier() ) {
 						QSharedPointer<Filter> nf = fc->videoFilters[ j ].create();
 						GLFilter *gf = (GLFilter*)nf.data();
-						if ( fc->videoFilters[ j ].identifier == "GLCustom" ) {
+						if ( nf->getIdentifier() == "GLCustom" ) {
 							GLCustom *gc = (GLCustom*)gf;
 							gc->setCustomParams( f->getParameters().last()->value.toString() );
+						}
+						else if ( nf->getIdentifier() == "GLStabilize"  ) {
+							GLStabilize *gs = (GLStabilize*)gf;
+							gs->setSource( nc->getSource() );
 						}
 						f->splitParameters( gf, newLength );
 						nf->setPosition( nc->position() );
