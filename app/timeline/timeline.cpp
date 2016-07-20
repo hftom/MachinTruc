@@ -8,6 +8,7 @@
 #include "undoclipmove.h"
 #include "undoclipresize.h"
 #include "undoclipspeed.h"
+#include "undoclipsplit.h"
 
 #include "engine/filtercollection.h"
 #include "gui/mimetypes.h"
@@ -851,22 +852,52 @@ void Timeline::deleteClip()
 
 void Timeline::splitCurrentClip()
 {
-	if ( selectedItem && selectedItem->data( DATAITEMTYPE ).toInt() == TYPECLIP ) {
+	if ( selectedItem && selectedItem->data( DATAITEMTYPE ).toInt() == TYPECLIP) {
 		ClipViewItem *cv = (ClipViewItem*)selectedItem;
+		Clip *current_clip = cv->getClip();
 		double cursor_pts = cursor->mapRectToScene( cursor->rect() ).left() * zoom ;
 		int t = getTrack( cv->sceneBoundingRect().topLeft() );
-		Clip *current_clip = cv->getClip();
-		Clip *c = scene->sceneSplitClip( current_clip, t, cursor_pts );
-		if ( c ) {
-			QGraphicsItem *it = new ClipViewItem( c, zoom );
-			it->setParentItem( tracks.at( t ) );
-			cv->setLength( current_clip->length() );
-			itemSelected( (ClipViewItem*)it );
-			clipThumbRequest( cv, false );
-			clipThumbRequest( (ClipViewItem*)it, true );
-			clipThumbRequest( (ClipViewItem*)it, false );
-			emit updateFrame();
+		if (!scene->canSplitClip(current_clip, t, cursor_pts)) {
+			return;
 		}
+		Clip *dup = scene->duplicateClip(current_clip);
+		Transition *startTrans = current_clip->getTransition() ? new Transition(current_clip->getTransition()) : NULL;
+		Transition *trans = scene->getTailTransition(current_clip, t);
+		Transition *tail = trans ? new Transition(trans) : NULL;
+		updateTransitions(cv, true);
+		itemSelected(NULL);
+		removeItem(cv);
+		delete cv;
+		scene->removeClip(current_clip);
+		scene->addClip(dup, t);
+		if (startTrans) {
+			dup->setTransition(new Transition(startTrans));
+		}
+		if (tail) {
+			Clip *next = scene->getTailClip(dup, t);
+			next->setTransition(new Transition(tail));
+		}
+		Clip *c = scene->sceneSplitClip( dup, t, cursor_pts );
+		UndoClipSplit *u = new UndoClipSplit(this, current_clip, dup, c, t, startTrans, tail, true);
+		UndoStack::getStack()->push(u);
+		if (tail) {
+			delete tail;
+		}
+		if (startTrans) {
+			delete startTrans;
+		}
+		ClipViewItem *cv1 = new ClipViewItem( dup, zoom );
+		cv1->setParentItem( tracks.at( t ) );
+		updateTransitions(cv1, false);
+		ClipViewItem *cv2 = new ClipViewItem( c, zoom );
+		cv2->setParentItem( tracks.at( t ) );
+		updateTransitions(cv2, false);
+		itemSelected( cv2 );
+		clipThumbRequest( cv1, true );
+		clipThumbRequest( cv1, false );
+		clipThumbRequest( cv2, true );
+		clipThumbRequest( cv2, false );
+		emit updateFrame();
 	}
 }
 
@@ -1215,4 +1246,65 @@ void Timeline::commandClipSpeed(Clip *c, int track, double speed, double length,
 	scene->update = true;
 	QTimer::singleShot ( 1, this, SIGNAL(updateFrame()) );
 	QTimer::singleShot ( 1, this, SLOT(updateLength()) );
+}
+
+
+
+void Timeline::commandSplitClip(Clip *c, Clip *c1, Clip *c2, int track, Transition *trans, Transition *tail, bool redo)
+{
+	itemSelected( NULL );
+	if (redo) {
+		ClipViewItem *cv = getClipViewItem(c, track);
+		updateTransitions( cv, true );
+		removeItem(cv);
+		delete cv;
+		scene->removeClip(c);
+		scene->addClip(c1, track);
+		scene->addClip(c2, track);
+		if (trans) {
+			c1->setTransition(new Transition(trans));
+		}
+		if (tail) {
+			Clip *next = scene->getTailClip(c2, track);
+			next->setTransition(new Transition(tail));
+		}
+		ClipViewItem *cv1 = new ClipViewItem( c1, zoom );
+		cv1->setParentItem( tracks.at( track ) );
+		updateTransitions( cv1, false );
+		ClipViewItem *cv2 = new ClipViewItem( c2, zoom );
+		cv2->setParentItem( tracks.at( track ) );
+		updateTransitions( cv2, false );
+		itemSelected(cv2);
+		clipThumbRequest( cv1, true );
+		clipThumbRequest( cv1, false );
+		clipThumbRequest( cv2, true );
+		clipThumbRequest( cv2, false );
+	}
+	else {
+		ClipViewItem *cv1 = getClipViewItem(c1, track);
+		updateTransitions( cv1, true );
+		removeItem(cv1);
+		delete cv1;
+		ClipViewItem *cv2 = getClipViewItem(c2, track);
+		updateTransitions( cv2, true );
+		removeItem(cv2);
+		delete cv2;
+		scene->removeClip(c1);
+		scene->removeClip(c2);
+		scene->addClip(c, track);
+		if (trans) {
+			c->setTransition(new Transition(trans));
+		}
+		if (tail) {
+			Clip *next = scene->getTailClip(c, track);
+			next->setTransition(new Transition(tail));
+		}
+		ClipViewItem *cv = new ClipViewItem( c, zoom );
+		cv->setParentItem( tracks.at( track ) );
+		updateTransitions( cv, false );
+		itemSelected(cv);
+		clipThumbRequest( cv, true );
+		clipThumbRequest( cv, false );
+	}
+	emit updateFrame();
 }

@@ -37,6 +37,7 @@ public:
 	
 	virtual QList<Parameter*> getParameters() { return parameters; }
 	void splitParameters( Filter *second, double posPts );
+	void duplicateFilter( QSharedPointer<Filter> f );
 
 	virtual void setPosition( double p ) { posInTrack = p; }
 	virtual double getPosition() { return posInTrack; }

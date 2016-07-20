@@ -87,6 +87,7 @@ public:
 	void commandMoveClip(Clip *clip, bool multi, int oldTrack, int newTrack, double pos, Transition *trans, Transition *tail);
 	void commandResizeClip(Clip *clip, bool resizeStart, int track, double position, double length, Transition *trans);
 	void commandClipSpeed(Clip *c, int track, double speed, double length, Transition *tail);
+	void commandSplitClip(Clip *c, Clip *c1, Clip *c2, int track, Transition *trans, Transition *tail, bool redo);
 	
 public slots:
 	void viewMouseMove( QPointF pos );
