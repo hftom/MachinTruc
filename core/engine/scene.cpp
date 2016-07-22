@@ -157,7 +157,6 @@ Clip* Scene::sceneSplitClip( Clip *clip, int track, double pts )
 		if (next->getTransition()) {
 			end -= next->getTransition()->length() + profile.getVideoFrameDuration();
 			tail = new Transition(next->getTransition());
-			qDebug() << "has tail trans" << tail;
 		}
 	}
 
@@ -208,7 +207,6 @@ Clip* Scene::sceneSplitClip( Clip *clip, int track, double pts )
 	addClip( nc, track );
 	if (tail) {
 		next->setTransition(tail);
-		qDebug() << "add tail trans" << tail->getVideoFilter()->getIdentifier();
 	}
 
 	return nc;

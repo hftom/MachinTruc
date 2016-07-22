@@ -340,6 +340,13 @@ void TopWindow::trackRequest( bool rm, int index )
 
 
 
+void TopWindow::timelineTrackAddRemove( int index, bool remove )
+{
+	sampler->trackRequest( remove, index );
+}
+
+
+
 void TopWindow::clipAddedToTimeline( Profile prof )
 {
 	tempProfile = prof;

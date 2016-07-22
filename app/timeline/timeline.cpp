@@ -9,6 +9,9 @@
 #include "undoclipresize.h"
 #include "undoclipspeed.h"
 #include "undoclipsplit.h"
+#include "undoeffectadd.h"
+#include "undoeffectremove.h"
+#include "undotrackadd.h"
 
 #include "engine/filtercollection.h"
 #include "gui/mimetypes.h"
@@ -253,15 +256,8 @@ void Timeline::trackPressedRightBtn( TrackViewItem *t, QPoint p )
 
 void Timeline::trackRemoved( int index )
 {
-	QGraphicsItem *it = tracks.takeAt( index );
-	removeItem( it );
-	delete it;
-	
-	for ( int i = 0; i < tracks.count(); ++i )
-		tracks.at( tracks.count() - 1 - i )->setPos( 0, (TRACKVIEWITEMHEIGHT + 1) * i );
-
-	cursor->setHeight( tracks.count() * (TRACKVIEWITEMHEIGHT + 1) );
-	QTimer::singleShot ( 1, this, SLOT(updateLength()) );
+	UndoTrackAdd *u = new UndoTrackAdd(this, index, true);
+	UndoStack::getStack()->push(u);
 }
 
 
@@ -269,6 +265,19 @@ void Timeline::trackRemoved( int index )
 void Timeline::trackAdded( int index )
 {
 	addTrack( index );
+}
+
+
+
+void Timeline::addTrack( int index, bool noUndo )
+{
+	if (noUndo) {
+		commandTrackAddRemove(index, false, true);
+	}
+	else {
+		UndoTrackAdd *u = new UndoTrackAdd(this, index, false);
+		UndoStack::getStack()->push(u);
+	}
 }
 
 
@@ -711,13 +720,29 @@ int Timeline::getTrack( const QPointF &p )
 
 ClipViewItem* Timeline::getClipViewItem(Clip *clip, int track)
 {
-	QList<QGraphicsItem*> list = tracks.at( track )->childItems();
-	for ( int i = 0; i < list.count(); ++i ) {
-		QGraphicsItem *it = list.at( i );
-		if ( it->data( DATAITEMTYPE ).toInt() == TYPECLIP ) {
-			ClipViewItem *cv = (ClipViewItem*)it;
-			if ( cv->getClip() == clip ) {
-				return cv;
+	if (track < 0) {
+		for ( int j = 0; j < tracks.count(); ++j ) {
+			QList<QGraphicsItem*> list = tracks.at( j )->childItems();
+			for ( int i = 0; i < list.count(); ++i ) {
+				QGraphicsItem *it = list.at( i );
+				if ( it->data( DATAITEMTYPE ).toInt() == TYPECLIP ) {
+					ClipViewItem *cv = (ClipViewItem*)it;
+					if ( cv->getClip() == clip ) {
+						return cv;
+					}
+				}
+			}
+		}
+	}
+	else {
+		QList<QGraphicsItem*> list = tracks.at( track )->childItems();
+		for ( int i = 0; i < list.count(); ++i ) {
+			QGraphicsItem *it = list.at( i );
+			if ( it->data( DATAITEMTYPE ).toInt() == TYPECLIP ) {
+				ClipViewItem *cv = (ClipViewItem*)it;
+				if ( cv->getClip() == clip ) {
+					return cv;
+				}
 			}
 		}
 	}
@@ -733,21 +758,6 @@ void Timeline::setCursorPos( double pts )
 	pts = i * d;
 	cursor->setX( pts / zoom );
 	emit ensureVisible( cursor );
-}
-
-
-
-void Timeline::addTrack( int index )
-{
-	TrackViewItem *tv = new TrackViewItem();
-	tracks.insert( index, tv );
-	addItem( tv );
-	int i;
-	for ( i = 0; i < tracks.count(); ++i )
-		tracks.at( tracks.count() - 1 - i )->setPos( 0, (TRACKVIEWITEMHEIGHT + 1) * i );
-	
-	cursor->setHeight( tracks.count() * (TRACKVIEWITEMHEIGHT + 1) );
-	QTimer::singleShot ( 1, this, SLOT(updateLength()) );
 }
 
 
@@ -798,7 +808,7 @@ void Timeline::setScene( Scene *s )
 	}
 
 	for ( i = 0; i < s->tracks.count(); ++i ) {
-		addTrack( i );
+		addTrack( i, true );
 		Track *t = s->tracks[i];
 		for ( j = 0; j < t->clipCount(); ++j ) {
 			Clip *c = t->clipAt( j );
@@ -906,6 +916,7 @@ void Timeline::splitCurrentClip()
 void Timeline::addFilter( ClipViewItem *clip, QString fx, int index )
 {
 	int i;
+	bool isVideo = true;
 	FilterCollection *fc = FilterCollection::getGlobalInstance();
 	Clip *c = clip->getClip();
 	QSharedPointer<Filter> f;
@@ -919,10 +930,6 @@ void Timeline::addFilter( ClipViewItem *clip, QString fx, int index )
 					return;
 				f.staticCast<GLStabilize>()->setSource( c->getSource() );
 			}
-			if ( index == -1 )
-				c->videoFilters.append( f.staticCast<GLFilter>() );
-			else
-				c->videoFilters.insert( index, f.staticCast<GLFilter>() );
 			break;
 		}
 	}
@@ -932,10 +939,7 @@ void Timeline::addFilter( ClipViewItem *clip, QString fx, int index )
 				return;
 			if ( fc->audioFilters[ i ].identifier == fx ) {
 				f = fc->audioFilters[ i ].create();
-				if ( index == -1 )
-					c->audioFilters.append( f.staticCast<AudioFilter>() );
-				else
-					c->audioFilters.insert( index, f.staticCast<AudioFilter>() );
+				isVideo = false;
 				break;
 			}
 		}
@@ -953,19 +957,40 @@ void Timeline::addFilter( ClipViewItem *clip, QString fx, int index )
 		f->setPositionOffset( 0 );
 	else
 		f->setLength( c->length() );
-			
-	itemSelected( clip );
-	emit updateFrame();
+	
+	UndoEffectAdd *u = new UndoEffectAdd(this, c, getTrack(clip->sceneBoundingRect().topLeft()), f, isVideo, index);
+	UndoStack::getStack()->push(u);
 }
 
 
 
 void Timeline::filterDeleted( Clip *c, QSharedPointer<Filter> f )
 {
-	if ( !c->videoFilters.remove( f.staticCast<GLFilter>() ) )
-		c->audioFilters.remove( f.staticCast<AudioFilter>() );
+	bool isVideo = true;
+	ClipViewItem *cv = getClipViewItem(c, -1);
+	int index = -1;
+	
+	for ( int i = 0; i < c->videoFilters.count(); ++i ) {
+		if ( c->videoFilters.at( i )->getIdentifier() == f->getIdentifier() ) {
+			index = i;
+			break;
+		}
+	}
+	if (index == -1) {
+		for ( int i = 0; i < c->audioFilters.count(); ++i ) {
+			if ( c->audioFilters.at(i)->getIdentifier() == f->getIdentifier() ) {
+				index = i;
+				isVideo = false;
+				break;
+			}
+		}
+	}
+	
+	if (index == -1)
+		return;
 
-	emit updateFrame();
+	UndoEffectRemove *u = new UndoEffectRemove(this, c, getTrack(cv->sceneBoundingRect().topLeft()), f, isVideo, index);
+	UndoStack::getStack()->push(u);
 }
 
 
@@ -1307,4 +1332,60 @@ void Timeline::commandSplitClip(Clip *c, Clip *c1, Clip *c2, int track, Transiti
 		clipThumbRequest( cv, false );
 	}
 	emit updateFrame();
+}
+
+
+
+void Timeline::commandEffectAddRemove(Clip *c, int track, QSharedPointer<Filter> f, bool isVideo, int index, bool remove)
+{
+	if (remove) {
+		if (isVideo)
+			c->videoFilters.remove( f.staticCast<GLFilter>() );
+		else
+			c->audioFilters.remove( f.staticCast<AudioFilter>() );
+	}
+	else {
+		if (isVideo) {
+			if ( index == -1 )
+				c->videoFilters.append( f.staticCast<GLFilter>() );
+			else
+				c->videoFilters.insert( index, f.staticCast<GLFilter>() );
+		}
+		else {
+			if ( index == -1 )
+				c->audioFilters.append( f.staticCast<AudioFilter>() );
+			else
+				c->audioFilters.insert( index, f.staticCast<AudioFilter>() );
+		}
+	}
+
+	itemSelected(getClipViewItem(c, track));
+	emit updateFrame();
+}
+
+
+
+void Timeline::commandTrackAddRemove(int index, bool remove, bool noparent)
+{
+	if ( !noparent )
+		topParent->timelineTrackAddRemove(index, remove);
+
+	if (remove) {
+		QGraphicsItem *it = tracks.takeAt( index );
+		removeItem( it );
+		delete it;
+		for ( int i = 0; i < tracks.count(); ++i )
+			tracks.at( tracks.count() - 1 - i )->setPos( 0, (TRACKVIEWITEMHEIGHT + 1) * i );
+	}
+	else {
+		TrackViewItem *tv = new TrackViewItem();
+		tracks.insert( index, tv );
+		addItem( tv );
+		int i;
+		for ( i = 0; i < tracks.count(); ++i )
+			tracks.at( tracks.count() - 1 - i )->setPos( 0, (TRACKVIEWITEMHEIGHT + 1) * i );
+	}
+	
+	cursor->setHeight( tracks.count() * (TRACKVIEWITEMHEIGHT + 1) );
+	QTimer::singleShot ( 1, this, SLOT(updateLength()) );
 }

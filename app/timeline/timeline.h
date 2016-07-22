@@ -76,6 +76,7 @@ public:
 	
 	void trackRemoved( int index );
 	void trackAdded( int index );
+	void addTrack( int index, bool noUndo = false );
 	
 	void thumbResultReady( ThumbRequest result );
 	
@@ -88,13 +89,14 @@ public:
 	void commandResizeClip(Clip *clip, bool resizeStart, int track, double position, double length, Transition *trans);
 	void commandClipSpeed(Clip *c, int track, double speed, double length, Transition *tail);
 	void commandSplitClip(Clip *c, Clip *c1, Clip *c2, int track, Transition *trans, Transition *tail, bool redo);
+	void commandEffectAddRemove(Clip *c, int track, QSharedPointer<Filter> f, bool isVideo, int index, bool remove);
+	void commandTrackAddRemove(int index, bool remove, bool noparent = false);
 	
 public slots:
 	void viewMouseMove( QPointF pos );
 	void viewMouseLeave();
 	void viewSizeChanged( const QSize &size );
 	void setCursorPos( double pts );
-	void addTrack( int index );
 	
 	void setScene( Scene *s );
 	void addFilter( ClipViewItem *clip, QString fx, int index = -1 );
