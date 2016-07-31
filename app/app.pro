@@ -45,6 +45,7 @@ SOURCES = \
 	animation/keyitem.cpp
 	
 HEADERS = \
+	undo.h \
 	gui/appconfig.h \
 	gui/shadercollection.h \
 	gui/renderingdialog.h \

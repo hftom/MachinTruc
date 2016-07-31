@@ -43,6 +43,7 @@ private:
 signals:
 	void filterDeleted( Clip*, QSharedPointer<Filter> );
 	void filterAdded( ClipViewItem*, QString, int );
+	void filterReordered( Clip *c, bool video, int index, int newIndex );
 	void editAnimation( FilterWidget*, ParameterWidget*, Parameter* );
 	void updateFrame();
 	void showEffect( bool isVideo, int index );

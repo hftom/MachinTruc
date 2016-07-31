@@ -85,7 +85,7 @@ void RenderingDialog::startRender()
 	}
 	
 	if ( !out->init( s, profile, videoRateSpin->value(), mpeg2RadBtn->isChecked(), endPts ) ) {
-		QMessageBox::warning( this, tr("Error"), tr("Could not setup encoding.") );
+		QMessageBox::warning( this, tr("Error"), tr("Could not setup encoder.") );
 		return;
 	}
 	

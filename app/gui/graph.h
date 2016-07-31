@@ -56,7 +56,7 @@ signals:
 	void filterSelected( Clip*, int index );
 	void filterDeleted( Clip*, QSharedPointer<Filter> );
 	void filterAdded( ClipViewItem*, QString, int );
-	void updateFrame();
+	void filterReordered( Clip *c, bool video, int index, int newIndex );
 	void showVerticalScrollBar( bool );
 	void showEffect( int index );
 };

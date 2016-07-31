@@ -91,6 +91,9 @@ public:
 	void commandSplitClip(Clip *c, Clip *c1, Clip *c2, int track, Transition *trans, Transition *tail, bool redo);
 	void commandEffectAddRemove(Clip *c, int track, QSharedPointer<Filter> f, bool isVideo, int index, bool remove);
 	void commandTrackAddRemove(int index, bool remove, bool noparent = false);
+	void commandEffectMove(Clip *c, double newPos, bool isVideo, int index);
+	void commandEffectResize(Clip *c, bool resizeStart, double offset, double position, double length, bool video, int effectIndex);
+	void commandEffectReorder(Clip *c, int track, int oldIndex, int newIndex, bool isVideo);
 	
 public slots:
 	void viewMouseMove( QPointF pos );
@@ -103,6 +106,7 @@ public slots:
 	void splitCurrentClip();
 	
 	void filterDeleted( Clip *c, QSharedPointer<Filter> f );
+	void filterReordered( Clip *c, bool video, int index, int newIndex );
 	
 	void showEffect( bool isVideo, int index );
 	

@@ -63,6 +63,7 @@ bool ProjectFile::loadProject( QString filename )
 	if ( s.isEmpty() )
 		return false;
 	//projectProfile.setAudioLayout( s.toInt() );
+	backupFilename = rootElement.attribute( "backup" );
 	
 	QDomNodeList nodes = rootElement.childNodes();
 	
@@ -720,7 +721,7 @@ void ProjectFile::readParameter( QDomElement &element, QSharedPointer<Filter> f 
 
 
 
-bool ProjectFile::saveProject( QList<Source*> sources, Sampler *sampler, QString filename )
+bool ProjectFile::saveProject( QList<Source*> sources, Sampler *sampler, QString filename, QString backupProjectFilename )
 {
 	document =  QDomDocument( "MachinTrucVideoEdit" );
 	QDomElement root = document.createElement( "MachinTruc" );
@@ -736,6 +737,7 @@ bool ProjectFile::saveProject( QList<Source*> sources, Sampler *sampler, QString
 	root.setAttribute( "samplerate", QString::number( prof.getAudioSampleRate() ) );
 	root.setAttribute( "channels", QString::number( prof.getAudioChannels() ) );
 	root.setAttribute( "layout", QString::number( prof.getAudioLayout() ) );
+	root.setAttribute( "backup",backupProjectFilename );
 
 	for ( int i = 0; i < sources.count(); ++i )
 		writeSource( root, sources[i] );

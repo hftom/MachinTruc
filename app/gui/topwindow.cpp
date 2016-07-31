@@ -2,6 +2,7 @@
 #include <QFileDialog>
 #include <QShortcut>
 
+#include "engine/util.h"
 #include "gui/topwindow.h"
 #include "renderingdialog.h"
 #include "projectprofiledialog.h"
@@ -9,6 +10,7 @@
 #include "undo.h"
 
 #define VIDEOCLEARDELAY 200
+#define AUTORECOVERY "autorecovery.mct"
 
 
 
@@ -71,6 +73,7 @@ TopWindow::TopWindow()
 	connect( fxPage, SIGNAL(filterDeleted(Clip*,QSharedPointer<Filter>)), timeline, SLOT(filterDeleted(Clip*,QSharedPointer<Filter>)) );
 	connect( fxPage, SIGNAL(filterDeleted(Clip*,QSharedPointer<Filter>)), animEditor, SLOT(filterDeleted(Clip*,QSharedPointer<Filter>)) );
 	connect( fxPage, SIGNAL(filterAdded(ClipViewItem*,QString,int)), timeline, SLOT(addFilter(ClipViewItem*,QString,int)) );
+	connect( fxPage, SIGNAL(filterReordered(Clip*,bool,int,int)), timeline, SLOT(filterReordered(Clip*,bool,int,int)) );
 	connect( fxPage, SIGNAL(updateFrame()), sampler, SLOT(updateFrame()) );
 	connect( fxPage, SIGNAL(editAnimation(FilterWidget*,ParameterWidget*,Parameter*)), this, SLOT(editAnimation(FilterWidget*,ParameterWidget*,Parameter*)) );
 	connect( fxPage, SIGNAL(showEffect(bool,int)), timeline, SLOT(showEffect(bool,int)) );
@@ -129,7 +132,7 @@ TopWindow::TopWindow()
 
 	connect( actionNewProject, SIGNAL(triggered()), this, SLOT(newProject()) );
 	connect( actionSave, SIGNAL(triggered()), this, SLOT(saveProject()) );
-	connect( actionOpen, SIGNAL(triggered()), this, SLOT(loadProject()) );
+	connect( actionOpen, SIGNAL(triggered()), this, SLOT(openProject()) );
 	connect( actionPlayPause, SIGNAL(triggered()), this, SLOT(videoPlayPause()) );
 	connect( actionForward, SIGNAL(triggered()), this, SLOT(playForward()) );
 	connect( actionBackward, SIGNAL(triggered()), this, SLOT(playBackward()) );
@@ -175,6 +178,20 @@ TopWindow::TopWindow()
 	openSourcesCurrentDir = appConfig.value("openSourcesCurrentDir").toString();
 	openProjectCurrentDir = appConfig.value("openProjectCurrentDir").toString();
 	appConfig.endGroup();
+	
+	QDir dir = QDir::home();
+	dir.cd(MACHINTRUC_DIR);
+	QString backup = dir.filePath(AUTORECOVERY);
+	if (QFile::exists(backup)) {
+		QFileInfo info(backup);
+		QDateTime lastModified = info.lastModified();
+		if (lastModified.secsTo(QDateTime::currentDateTime()) <= 3600 * 24) {
+			QTimer::singleShot(1, this, SLOT(loadBackup()));
+		}
+	}
+
+	connect(&backupTimer, SIGNAL(timeout()), this, SLOT(doBackup()));
+	backupTimer.start(300000);
 }
 
 
@@ -191,6 +208,65 @@ bool TopWindow::saveAndContinue() {
 		}
 	}
 	return true;
+}
+
+
+
+void TopWindow::loadBackup()
+{
+	QDir dir = QDir::home();
+	dir.cd(MACHINTRUC_DIR);
+	QString backup = dir.filePath(AUTORECOVERY);
+	QString backupFilename = "";
+
+	if (loadProject( backup, backupFilename )) {
+		if (backupFilename != "") {
+			QFileInfo fi( backupFilename );
+			openProjectCurrentDir = fi.absolutePath();
+			currentProjectFile = fi.absoluteFilePath();
+		}
+		
+		QMessageBox msgBox;
+		msgBox.setText( tr("Auto Recovery found and loaded.") );
+		msgBox.exec();
+	}
+	else {
+		QMessageBox msgBox;
+		msgBox.setText( tr("Auto Recovery failed.\nThe file seems corrupted.") );
+		msgBox.exec();
+	}
+}
+
+
+
+void TopWindow::doBackup()
+{
+	QDir dir = QDir::home();
+	if ( !dir.cd( MACHINTRUC_DIR ) ) {
+		if ( !dir.mkdir( MACHINTRUC_DIR ) ) {
+			qDebug() << "Can't create" << MACHINTRUC_DIR << "directory.";
+			return;
+		}
+		if ( !dir.cd( MACHINTRUC_DIR ) ) {
+			qDebug() << "Can't enter" << MACHINTRUC_DIR << "directory.";
+			return;
+		}
+	}
+
+	ProjectFile xml;
+	QList<Source*> sources = sourcePage->getAllSources();
+	if (sources.count()) {
+		xml.saveProject( sources, sampler, dir.filePath(AUTORECOVERY), currentProjectFile );
+	}
+}
+
+
+
+void TopWindow::removeBackup()
+{
+	QDir dir = QDir::home();
+	dir.cd(MACHINTRUC_DIR);
+	QFile::remove(dir.filePath(AUTORECOVERY));
 }
 
 
@@ -216,6 +292,8 @@ void TopWindow::closeEvent( QCloseEvent *event )
 	appConfig.setValue("openSourcesCurrentDir", openSourcesCurrentDir);
 	appConfig.setValue("openProjectCurrentDir", openProjectCurrentDir);
 	appConfig.endGroup();
+	
+	removeBackup();
 }
 
 
@@ -840,11 +918,13 @@ void TopWindow::saveProject()
 	xml.saveProject( sourcePage->getAllSources(), sampler, currentProjectFile );
 	vw->showOSDMessage( QString( tr("Saved: %1") ).arg(currentProjectFile), 3 );
 	UndoStack::getStack()->setClean();
+
+	removeBackup();
 }
 
 
 
-void TopWindow::loadProject()
+void TopWindow::openProject()
 {
 	if ( openSourcesCounter != 0 ) {
 		QMessageBox msgBox;
@@ -870,9 +950,36 @@ void TopWindow::loadProject()
 	UndoStack::getStack()->clear();
 	QTimer::singleShot( VIDEOCLEARDELAY, vw, SLOT(clear()) );
 
+	QString backup; // unused here
+	
+	if (loadProject( file, backup )) {
+		QFileInfo fi( file );
+		openProjectCurrentDir = fi.absolutePath();
+		currentProjectFile = fi.absoluteFilePath();
+	}
+	else {
+		QMessageBox msgBox;
+		msgBox.setText( tr("Project loading failed.\nThe file seems corrupted.") );
+		msgBox.exec();
+	}
+}
+
+
+
+bool TopWindow::loadProject(QString filename, QString &backupFilename)
+{
+	bool ret = false;
+
+	showProjectClipsPage();
+	sampler->clearAll();
+	timeline->setScene( sampler->getCurrentScene() );
+	sourcePage->clearAllSources();
+	UndoStack::getStack()->clear();
+	QTimer::singleShot( VIDEOCLEARDELAY, vw, SLOT(clear()) );
+
 	projectLoader = new ProjectFile();
 
-	if ( projectLoader->loadProject( file ) && projectLoader->sourcesList.count() ) {
+	if ( projectLoader->loadProject( filename ) && projectLoader->sourcesList.count() ) {
 		int i;
 		for ( i = 0; i < projectLoader->sourcesList.count(); ++i ) {
 			thumbnailer->pushRequest( ThumbRequest( projectLoader->sourcesList[i]->getFileName(), projectLoader->sourcesList[i]->getType() ) );
@@ -881,9 +988,8 @@ void TopWindow::loadProject()
 			setEnabled( false );
 			emit startOSDTimer( true );
 		}
-		QFileInfo fi( file );
-		openProjectCurrentDir = fi.absolutePath();
-		currentProjectFile = fi.absoluteFilePath();
+		backupFilename = projectLoader->backupFilename;
+		ret = true;
 	}
 	else {
 		while ( projectLoader->sourcesList.count() )
@@ -891,11 +997,10 @@ void TopWindow::loadProject()
 		
 		while ( projectLoader->sceneList.count() )
 			delete projectLoader->sceneList.takeFirst();
-			
-		QMessageBox msgBox;
-		msgBox.setText( tr("Project loading failed.\nThe file seems corrupted.") );
-		msgBox.exec();
+
 		delete projectLoader;
 		projectLoader = NULL;
 	}
+	
+	return ret;
 }

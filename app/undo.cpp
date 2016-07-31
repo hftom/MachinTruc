@@ -1,3 +1,3 @@
 #include "undo.h"
 
-UndoStack* UndoStack::stack = new UndoStack();
+UndoStack UndoStack::stack = UndoStack();

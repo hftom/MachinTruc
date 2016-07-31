@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QSlider>
 #include <QProgressDialog>
+#include <QTimer>
 
 #include "ui_mainwindow.h"
 #include "ui_blankdialog.h"
@@ -167,6 +168,8 @@ private slots:
 	void showMemoryInfo();
 	
 	bool saveAndContinue();
+	void doBackup();
+	void loadBackup();
 	
 	void renderDialog();
 	void renderStart( double startPts );
@@ -183,7 +186,7 @@ private slots:
 
 	void newProject();
 	void saveProject();
-	void loadProject();
+	void openProject();
 	
 	void ensureVisible( const QGraphicsItem *it );
 	void centerOn( const QGraphicsItem *it );
@@ -222,6 +225,8 @@ private slots:
 	void zoomOut();
 	
 private:
+	bool loadProject(QString filename, QString &backupFilename);
+	void removeBackup();
 	void unsupportedDuplicateMessage();
 	
 	ProjectSourcesPage *sourcePage;
@@ -247,6 +252,7 @@ private:
 	
 	Profile tempProfile;
 	AppConfig appConfig;
+	QTimer backupTimer;
 	
 signals:
 	void startOSDTimer( bool );
