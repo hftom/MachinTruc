@@ -19,7 +19,7 @@ RenderingDialog::RenderingDialog( QWidget *parent, Profile &prof, double playhea
 {
 	setupUi( this );
 	
-	mpeg2RadBtn->setChecked( true );
+	h264RadBtn->setChecked( true );
 	playheadRadBtn->setChecked( true );
 	cancelBtn->setFocus();
 	
@@ -84,7 +84,13 @@ void RenderingDialog::startRender()
 		encodeStartPts = playheadPts;
 	}
 	
-	if ( !out->init( s, profile, videoRateSpin->value(), mpeg2RadBtn->isChecked(), endPts ) ) {
+	int vcodec = OutputFF::VCODEC_H264;
+	if (mpeg2RadBtn->isChecked())
+		vcodec = OutputFF::VCODEC_MPEG2;
+	else if (hevcRadBtn->isChecked())
+		vcodec = OutputFF::VCODEC_HEVC;
+
+	if ( !out->init( s, profile, videoRateSpin->value(), vcodec, endPts ) ) {
 		QMessageBox::warning( this, tr("Error"), tr("Could not setup encoder.") );
 		return;
 	}
@@ -100,8 +106,8 @@ void RenderingDialog::startRender()
 void RenderingDialog::frameEncoded( Frame *f )
 {
 	double prc = (f->pts() - encodeStartPts) * 100.0 / encodeLength;
-	int elapsed = eta.elapsed();
-	int still = (elapsed * 100 / prc) - elapsed;
+	double elapsed = eta.elapsed();
+	double still = (elapsed * 100.0 / prc) - elapsed;
 	QString s = tr("Remaining time:");
 	s += "  " + QTime( 0, 0, 0 ).addMSecs( still ).toString("hh:mm:ss");
 	etaLab->setText( s );

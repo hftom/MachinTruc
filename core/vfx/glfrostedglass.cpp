@@ -20,7 +20,6 @@ GLFrostedGlass::GLFrostedGlass( QString id, QString name ) : GLFilter( id, name 
 
 bool GLFrostedGlass::process( const QList<Effect*> &el, double pts, Frame *first, Frame *second, Profile *p )
 {
-	Q_UNUSED( first );
 	Q_UNUSED( second );
 	Q_UNUSED( p );
 	Effect *e = el[0];

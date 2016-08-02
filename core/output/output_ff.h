@@ -13,18 +13,20 @@ class OutputFF : public QThread
 {
 	Q_OBJECT
 public:
+	enum videoCodec{VCODEC_HEVC, VCODEC_H264, VCODEC_MPEG2};
+
 	OutputFF( MQueue<Frame*> *vf, MQueue<Frame*> *af );
 	~OutputFF();
 	
-	bool init( QString filename, Profile &prof, int vrate, bool mpeg, double end );
+	bool init( QString filename, Profile &prof, int vrate, int vcodec, double end );
 	void startEncode( bool show = true );
 	bool cancel();
 	
 private:
 	void run();
 	void close();
-	bool openFormat( QString filename, Profile &prof, int vrate, bool mpeg );
-	bool openVideo( Profile &prof, int vrate, bool mpeg );
+	bool openFormat( QString filename, Profile &prof, int vrate, int vcodec );
+	bool openVideo( Profile &prof, int vrate, int vcodec );
 	bool openAudio( Profile &prof );
 	bool encodeVideo( Frame *f, int nFrame );
 	bool encodeAudio( Frame *f, int nFrame );

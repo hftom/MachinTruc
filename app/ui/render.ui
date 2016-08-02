@@ -22,17 +22,24 @@
         <string/>
        </property>
        <layout class="QGridLayout" name="gridLayout_2">
-        <item row="0" column="0">
+        <item row="0" column="1">
          <widget class="QRadioButton" name="h264RadBtn">
           <property name="text">
-           <string>H264</string>
+           <string>&amp;H264</string>
           </property>
          </widget>
         </item>
-        <item row="0" column="1">
+        <item row="0" column="2">
          <widget class="QRadioButton" name="mpeg2RadBtn">
           <property name="text">
-           <string>MPEG2</string>
+           <string>&amp;MPEG2</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QRadioButton" name="hevcRadBtn">
+          <property name="text">
+           <string>HE&amp;VC</string>
           </property>
          </widget>
         </item>
@@ -113,14 +120,14 @@
         <item row="0" column="0">
          <widget class="QRadioButton" name="timelineRadBtn">
           <property name="text">
-           <string>Whole timeline</string>
+           <string>&amp;Whole timeline</string>
           </property>
          </widget>
         </item>
         <item row="1" column="0">
          <widget class="QRadioButton" name="playheadRadBtn">
           <property name="text">
-           <string>From playhead</string>
+           <string>F&amp;rom playhead</string>
           </property>
          </widget>
         </item>
@@ -153,7 +160,7 @@
         <item row="2" column="0" colspan="2">
          <widget class="QRadioButton" name="playheadToEndRadBtn">
           <property name="text">
-           <string>From playhead to the end</string>
+           <string>From playhead &amp;to the end</string>
           </property>
          </widget>
         </item>

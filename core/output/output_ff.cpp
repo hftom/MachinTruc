@@ -68,11 +68,13 @@ void OutputFF::close()
 
 
 
-bool OutputFF::openVideo( Profile &prof, int vrate, bool mpeg )
+bool OutputFF::openVideo( Profile &prof, int vrate, int vcodec )
 {
 	AVCodecID vcodec_id = AV_CODEC_ID_H264;
-	if ( mpeg )
-		vcodec_id = AV_CODEC_ID_MPEG2VIDEO;
+	switch (vcodec) {
+		case VCODEC_HEVC: vcodec_id = AV_CODEC_ID_H265; break;
+		case VCODEC_MPEG2: vcodec_id = AV_CODEC_ID_MPEG2VIDEO; break;
+	}
 	AVCodec *codec = avcodec_find_encoder( vcodec_id );
 	if ( !codec ) {
 		qDebug() << "Could not find video encoder.";
@@ -233,7 +235,7 @@ bool OutputFF::openAudio( Profile &prof )
 
 
 
-bool OutputFF::openFormat( QString filename, Profile &prof, int vrate, bool mpeg )
+bool OutputFF::openFormat( QString filename, Profile &prof, int vrate, int vcodec )
 {
 	int ret;
 
@@ -244,7 +246,7 @@ bool OutputFF::openFormat( QString filename, Profile &prof, int vrate, bool mpeg
 		return false;
 	}
 	
-	if ( !openVideo( prof, vrate, mpeg ) ) {
+	if ( !openVideo( prof, vrate, vcodec ) ) {
 		close();
 		return false;
 	}
@@ -277,14 +279,14 @@ bool OutputFF::openFormat( QString filename, Profile &prof, int vrate, bool mpeg
 
 
 
-bool OutputFF::init( QString filename, Profile &prof, int vrate, bool mpeg, double end )
+bool OutputFF::init( QString filename, Profile &prof, int vrate, int vcodec, double end )
 {
 	close();
 
 	if ( !audioFrames || !videoFrames )
 		return false;
 
-	if ( !openFormat( filename, prof, vrate, mpeg ) )
+	if ( !openFormat( filename, prof, vrate, vcodec ) )
 		return false;	
 
 	endPTS = end;
