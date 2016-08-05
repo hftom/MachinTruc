@@ -100,8 +100,7 @@ FORMS = \
 	ui/profile.ui \
 	ui/filters.ui \
 	ui/animeditor.ui \
-	ui/render.ui \
-	ui/blankdialog.ui
+	ui/render.ui
 
 TARGET = ../machintruc
 

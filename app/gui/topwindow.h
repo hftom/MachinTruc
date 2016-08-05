@@ -7,7 +7,6 @@
 #include <QTimer>
 
 #include "ui_mainwindow.h"
-#include "ui_blankdialog.h"
 
 #include "gui/filter/shaderedit.h"
 #include "gui/projectclipspage.h"
@@ -21,22 +20,6 @@
 #include "timeline/timeline.h"
 #include "animation/animeditor.h"
 #include "projectfile.h"
-
-
-
-class BlankDialog : public QDialog, private Ui::BlankDialog
-{
-	Q_OBJECT
-public:
-	BlankDialog( QWidget *parent, int w, int h ) : QDialog( parent ) {
-		setupUi( this );
-		widthSpinBox->setValue( w );
-		heightSpinBox->setValue( h );
-	}
-	
-	int getWidth() { return widthSpinBox->value(); }
-	int getHeight() { return heightSpinBox->value(); }
-};
 
 
 

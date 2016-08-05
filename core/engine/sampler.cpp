@@ -490,12 +490,12 @@ InputBase* Sampler::getClipInput( Clip *c, double pts )
 			if ( pts < c->position() + c->length() )
 				pos = c->start() + ((pts - c->position()) * absSpeed);
 			else
-				pos = c->start() + (c->length() * absSpeed) - currentScene->getProfile().getVideoFrameDuration();
+				pos = c->start() + (c->length() * absSpeed) - cur.getVideoFrameDuration();
 		}
 	}
 	else {
 		if ( speed < 0 ) {
-			pos = c->start() + (c->length() * absSpeed) - currentScene->getProfile().getVideoFrameDuration();
+			pos = c->start() + (c->length() * absSpeed) - cur.getVideoFrameDuration();
 			if ( c->position() < pts )
 				pos -= (pts - c->position()) * absSpeed;
 		}
@@ -508,6 +508,11 @@ InputBase* Sampler::getClipInput( Clip *c, double pts )
 	printf("%f %s cpos:%f, cstart:%f, seek:%f\n", pts, c->sourcePath().toLatin1().data(), c->position(), c->start(), pos);
 	
 	in->setSpeed( c->getSpeed() );
+	if (in->getType() == InputBase::GLSL) {
+		p.setVideoWidth(cur.getVideoWidth());
+		p.setVideoHeight(cur.getVideoHeight());
+		p.setVideoSAR(cur.getVideoSAR());
+	}
 	in->setProfile( c->getProfile(), p );
 	in->openSeekPlay( c->sourcePath(), pos, speed < 0 ? !playBackward : playBackward );
 	c->setInput( in );
