@@ -12,12 +12,14 @@ public:
 	UndoTrackAdd(Timeline *t, int trackIndex, bool remove) {
 		timeline = t;
 		index = trackIndex;
+		firstRedo = true;
 		rm = remove;
 		setText(rm ? QObject::tr("Remove track") : QObject::tr("Add track"));
 	}
 	
 	void redo() {
-		timeline->commandTrackAddRemove(index, rm);
+		timeline->commandTrackAddRemove(index, rm, firstRedo);
+		firstRedo = false;
 	}
 	
 	void undo() {
@@ -26,7 +28,7 @@ public:
 	
 private:
 	int index;
-	bool rm;
+	bool rm, firstRedo;
 	Timeline *timeline;
 };
 

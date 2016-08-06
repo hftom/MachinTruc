@@ -86,6 +86,7 @@ public:
 	QList<Effect*> getMovitEffects();
 	
 	void setSource( Source *aSource );
+	void filterRemoved();
 
 private slots:
 	void checkStabData();

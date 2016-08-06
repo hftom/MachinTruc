@@ -479,9 +479,17 @@ void TopWindow::projectSettings( int warn )
 	ProjectProfileDialog dlg( this, tempProfile, warn );
 	dlg.exec();
 	if ( dlg.result() == QDialog::Accepted ) {
+		if (warn == WARNCHANGE) {
+			if (!saveAndContinue()) {
+				return;
+			}
+			UndoStack::getStack()->clear();
+		}
+		
 		if ( !sampler->setProfile( dlg.getCurrentProfile() ) )
-			QMessageBox::warning( this, tr("Error"), tr("Somme errors occured while changing profile.\nCheck clips alignement.") );
+			QMessageBox::warning( this, tr("Error"), tr("Somme errors occured while changing profile.\nCheck clips alignment.") );
 		timeline->setScene( sampler->getCurrentScene() );
+		
 	}
 }
 

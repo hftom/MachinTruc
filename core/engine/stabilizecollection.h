@@ -2,6 +2,7 @@
 #include <QDir>
 #include <QList>
 #include <QTimer>
+#include <QDateTime>
 
 #include "source.h"
 
@@ -38,6 +39,8 @@ public:
 	bool getStarted() { return started; }
 	int getProgress() { return progress; }
 	QString getFileName() { return source->getFileName(); }
+	void setLastQuery() { lastQuery = QDateTime::currentDateTime(); }
+	bool isOutDatedQuery() { return lastQuery.secsTo(QDateTime::currentDateTime()) > 10; }
 	
 protected:
 	void run();
@@ -49,6 +52,7 @@ private:
 	bool running;
 	Source *source;
 	QList<StabilizeTransform> *transforms;
+	QDateTime lastQuery;
 };
 
 

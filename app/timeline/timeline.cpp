@@ -890,23 +890,6 @@ void Timeline::editCut()
 
 
 
-void Timeline::deleteClip()
-{
-	if ( selectedItem ) {
-		if ( scene->removeClip( ((ClipViewItem*)selectedItem)->getClip() ) ) {
-			updateTransitions( (ClipViewItem*)selectedItem, true );
-			removeItem( selectedItem );
-			delete selectedItem;
-			selectedItem = NULL;
-			itemSelected( NULL );
-			QTimer::singleShot ( 1, this, SIGNAL(updateFrame()) );
-			QTimer::singleShot ( 1, this, SLOT(updateLength()) );
-		}
-	}
-}
-
-
-
 void Timeline::splitCurrentClip()
 {
 	if ( selectedItem && selectedItem->data( DATAITEMTYPE ).toInt() == TYPECLIP) {
@@ -972,10 +955,8 @@ void Timeline::addFilter( ClipViewItem *clip, QString fx, int index )
 			if ( !c->getSource()->getProfile().hasVideo() )
 				return;
 			f = fc->videoFilters[ i ].create();
-			if ( f->getIdentifier() == "GLStabilize"  ) {
-				if ( c->getSource()->getType() != InputBase::FFMPEG )
-					return;
-				f.staticCast<GLStabilize>()->setSource( c->getSource() );
+			if ( f->getIdentifier() == "GLStabilize" && c->getSource()->getType() != InputBase::FFMPEG ) {
+				return;
 			}
 			break;
 		}
@@ -1225,6 +1206,12 @@ void Timeline::commandAddClip(Clip *clip, int track, Transition *tail)
 	if (next) {
 		next->setTransition(tail ? new Transition(tail) : NULL);
 	}
+	
+	for ( int i = 0; i < clip->videoFilters.count(); ++i ) {
+		if ( clip->videoFilters.at( i )->getIdentifier() == "GLStabilize" ) {
+			clip->videoFilters.at( i ).staticCast<GLStabilize>()->setSource(clip->getSource());
+		}
+	}
 
 	updateTransitions( cv, false );
 	clipThumbRequest( cv, true );
@@ -1241,7 +1228,24 @@ void Timeline::commandRemoveClip(Clip *clip, int track)
 	ClipViewItem *cv = getClipViewItem(clip, track);
 	if (cv) {
 		itemSelected(cv);
-		deleteClip();
+		
+		for ( int i = 0; i < clip->videoFilters.count(); ++i ) {
+			if ( clip->videoFilters.at( i )->getIdentifier() == "GLStabilize" ) {
+				clip->videoFilters.at( i ).staticCast<GLStabilize>()->filterRemoved();
+			}
+		}
+	
+		if ( selectedItem ) {
+			if ( scene->removeClip( ((ClipViewItem*)selectedItem)->getClip() ) ) {
+				updateTransitions( (ClipViewItem*)selectedItem, true );
+				removeItem( selectedItem );
+				delete selectedItem;
+				selectedItem = NULL;
+				itemSelected( NULL );
+				QTimer::singleShot ( 1, this, SIGNAL(updateFrame()) );
+				QTimer::singleShot ( 1, this, SLOT(updateLength()) );
+			}
+		}
 	}
 }
 
@@ -1402,13 +1406,20 @@ void Timeline::commandSplitClip(Clip *c, Clip *c1, Clip *c2, int track, Transiti
 void Timeline::commandEffectAddRemove(Clip *c, int track, QSharedPointer<Filter> f, bool isVideo, int index, bool remove)
 {
 	if (remove) {
-		if (isVideo)
+		if (isVideo) {
+			if ( f->getIdentifier() == "GLStabilize"  ) {
+				f.staticCast<GLStabilize>()->filterRemoved();
+			}
 			c->videoFilters.remove( f.staticCast<GLFilter>() );
+		}
 		else
 			c->audioFilters.remove( f.staticCast<AudioFilter>() );
 	}
 	else {
 		if (isVideo) {
+			if ( f->getIdentifier() == "GLStabilize"  ) {
+				f.staticCast<GLStabilize>()->setSource( c->getSource() );
+			}
 			if ( index == -1 )
 				c->videoFilters.append( f.staticCast<GLFilter>() );
 			else

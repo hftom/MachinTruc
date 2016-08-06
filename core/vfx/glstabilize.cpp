@@ -18,8 +18,16 @@ GLStabilize::GLStabilize( QString id, QString name ) : GLFilter( id, name ),
 
 GLStabilize::~GLStabilize()
 {
+	filterRemoved();
+}
+
+
+
+void GLStabilize::filterRemoved()
+{
 	if ( checkStabTimer.isActive() )
 		checkStabTimer.stop();
+
 	if ( transforms )
 		StabilizeCollection::getGlobalInstance()->releaseTransforms( transforms );
 }
