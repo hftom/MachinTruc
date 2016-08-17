@@ -15,6 +15,7 @@
 #include "undoeffectmove.h"
 #include "undoeffectresize.h"
 #include "undoeffectreorder.h"
+#include "undoeffectparam.h"
 
 #include "engine/filtercollection.h"
 #include "gui/mimetypes.h"
@@ -1227,7 +1228,7 @@ void Timeline::commandAddClip(Clip *clip, int track, Transition *tail)
 	if (next) {
 		next->setTransition(tail ? new Transition(tail) : NULL);
 	}
-	
+
 	updateStabilize(clip, false);
 
 	updateTransitions( cv, false );
@@ -1520,5 +1521,26 @@ void Timeline::commandEffectReorder(Clip *c, int track, int oldIndex, int newInd
 	}
 	
 	itemSelected(cv);
+	QTimer::singleShot ( 1, this, SIGNAL(updateFrame()) );
+}
+
+
+
+void Timeline::paramUndoCommand(QSharedPointer<Filter> f, Parameter *p, QVariant oldValue, QVariant newValue)
+{
+	UndoEffectParam *u = new UndoEffectParam(this, f, p, oldValue, newValue);
+	UndoStack::getStack()->push(u);
+}
+
+
+
+void Timeline::commandEffectParam(QSharedPointer<Filter> filter, Parameter *param, QVariant value)
+{
+	param->value = value;
+	itemSelected(selectedItem);
+	if ( param->type == Parameter::PSHADEREDIT ) {
+		GLCustom *f = (GLCustom*) filter.data();
+		f->setCustomParams( value.toString() );
+	}
 	QTimer::singleShot ( 1, this, SIGNAL(updateFrame()) );
 }

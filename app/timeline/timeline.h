@@ -94,6 +94,7 @@ public:
 	void commandEffectMove(Clip *c, double newPos, bool isVideo, int index);
 	void commandEffectResize(Clip *c, bool resizeStart, double offset, double position, double length, bool video, int effectIndex);
 	void commandEffectReorder(Clip *c, int track, int oldIndex, int newIndex, bool isVideo);
+	void commandEffectParam(QSharedPointer<Filter> filter, Parameter *param, QVariant value);
 	
 public slots:
 	void viewMouseMove( QPointF pos );
@@ -107,6 +108,7 @@ public slots:
 	
 	void filterDeleted( Clip *c, QSharedPointer<Filter> f );
 	void filterReordered( Clip *c, bool video, int index, int newIndex );
+	void paramUndoCommand(QSharedPointer<Filter> f, Parameter *p, QVariant oldValue, QVariant newValue);
 	
 	void showEffect( bool isVideo, int index );
 	

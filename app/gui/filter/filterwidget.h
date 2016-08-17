@@ -43,6 +43,7 @@ signals:
 	void compileShaderRequest( ThumbRequest );
 	void reloadCurrentFilter();
 	void updateFrame();
+	void paramUndoCommand(QSharedPointer<Filter>, Parameter*, QVariant, QVariant);
 };
 
 #endif // FILTERWIDGET_H

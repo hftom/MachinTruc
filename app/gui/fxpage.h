@@ -49,6 +49,7 @@ signals:
 	void showEffect( bool isVideo, int index );
 	void currentFilterChanged( int );
 	void compileShaderRequest( ThumbRequest );
+	void paramUndoCommand(QSharedPointer<Filter>, Parameter*, QVariant, QVariant);
 	
 	void ovdValueChanged(ParameterWidget*);
 };

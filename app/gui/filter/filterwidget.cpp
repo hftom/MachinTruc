@@ -153,6 +153,7 @@ void FilterWidget::moveDown()
 
 void FilterWidget::valueChanged( Parameter *p, QVariant val )
 {
+	QVariant old = p->value;
 	switch ( p->type ) {
 		case Parameter::PDOUBLE:
 		case Parameter::PINPUTDOUBLE: {
@@ -164,6 +165,8 @@ void FilterWidget::valueChanged( Parameter *p, QVariant val )
 			break;
 		}
 	}
+	
+	emit paramUndoCommand(filter, p, old, p->value);
 	
 	if ( p->type == Parameter::PSHADEREDIT ) {
 		GLCustom *f = (GLCustom*) filter.data();

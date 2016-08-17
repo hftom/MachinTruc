@@ -18,7 +18,7 @@ public:
 		oldIndex = oldId;
 		newIndex = newId;
 		trackNumber = track;
-		setText(QObject::tr("Reorder clip"));
+		setText(QObject::tr("Reorder effect"));
 	}
 	
 	void redo() {

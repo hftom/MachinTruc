@@ -74,6 +74,7 @@ TopWindow::TopWindow()
 	connect( fxPage, SIGNAL(filterDeleted(Clip*,QSharedPointer<Filter>)), animEditor, SLOT(filterDeleted(Clip*,QSharedPointer<Filter>)) );
 	connect( fxPage, SIGNAL(filterAdded(ClipViewItem*,QString,int)), timeline, SLOT(addFilter(ClipViewItem*,QString,int)) );
 	connect( fxPage, SIGNAL(filterReordered(Clip*,bool,int,int)), timeline, SLOT(filterReordered(Clip*,bool,int,int)) );
+	connect( fxPage, SIGNAL(paramUndoCommand(QSharedPointer<Filter>,Parameter*,QVariant,QVariant)), timeline, SLOT(paramUndoCommand(QSharedPointer<Filter>,Parameter*,QVariant,QVariant)) );
 	connect( fxPage, SIGNAL(updateFrame()), sampler, SLOT(updateFrame()) );
 	connect( fxPage, SIGNAL(editAnimation(FilterWidget*,ParameterWidget*,Parameter*)), this, SLOT(editAnimation(FilterWidget*,ParameterWidget*,Parameter*)) );
 	connect( fxPage, SIGNAL(showEffect(bool,int)), timeline, SLOT(showEffect(bool,int)) );

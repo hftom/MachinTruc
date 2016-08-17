@@ -5,8 +5,7 @@
 #include <QUndoCommand>
 #include <QDebug>
 
-#define UNDO_CLIP_ADD
-#define UNDO_CLIP_SIZE_POSITION
+#define UNDO_EFFECT_PARAM 1
 
 
 
