@@ -20,7 +20,7 @@ public:
 		setText(QObject::tr("%1 value").arg(param->name));
 		firstRedo = true;
 	}
-	
+
 	void redo() {
 		if (firstRedo) {
 			firstRedo = false;
@@ -29,19 +29,23 @@ public:
 			timeline->commandEffectParam(filter, param, newValue);
 		}
 	}
-	
+
 	void undo() {
 		timeline->commandEffectParam(filter, param, oldValue);
 	}
-	
+
 	int id() const {
 		return UNDO_EFFECT_PARAM;
 	}
-	
+
 	bool mergeWith(const QUndoCommand *other) {
-		if (other->id() != id())
+		if (other->id() != id()
+			|| getFilterPointer() != static_cast<const UndoEffectParam*>(other)->getFilterPointer()
+			|| param->name != static_cast<const UndoEffectParam*>(other)->getParamName()
+		) {
 			return false;
-		
+		}
+
 		newValue = static_cast<const UndoEffectParam*>(other)->getNewValue();
 		return true;
 	}
@@ -49,7 +53,15 @@ public:
 	QVariant getNewValue() const {
 		return newValue;
 	}
-	
+
+	Filter* getFilterPointer() const {
+		return (Filter*)filter.data();
+	}
+
+	QString getParamName() const {
+		return param->name;
+	}
+
 private:
 	Timeline *timeline;
 	QSharedPointer<Filter> filter;
