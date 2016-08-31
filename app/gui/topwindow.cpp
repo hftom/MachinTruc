@@ -362,7 +362,7 @@ void TopWindow::renderDialog()
 	if ( f && !sampler->previewMode() )
 		playhead = f->pts();
 	else
-		playhead = sampler->getCurrentScene()->currentPTS;		
+		playhead = sampler->getCurrentScene()->currentPTS;
 
 	RenderingDialog *dlg = new RenderingDialog( this,
 								sampler->getCurrentScene()->getProfile(),
@@ -371,7 +371,7 @@ void TopWindow::renderDialog()
 								&sampler->getMetronom()->audioFrames,
 								&sampler->getMetronom()->encodeVideoFrames );
 
-	connect( dlg, SIGNAL(renderStarted(double)), this, SLOT(renderStart(double)) );
+	connect( dlg, SIGNAL(renderStarted(double, QSize)), this, SLOT(renderStart(double, QSize)) );
 	connect( dlg, SIGNAL(renderFinished(double)), this, SLOT(renderFinished(double)) );
 	connect( dlg, SIGNAL(showFrame(Frame*)), vw, SLOT(showFrame(Frame*)) );
 	connect( this, SIGNAL(timelineReadyForEncode()), dlg, SLOT(timelineReady()) );
@@ -379,8 +379,9 @@ void TopWindow::renderDialog()
 	delete dlg;
 }
 
-void TopWindow::renderStart( double startPts )
+void TopWindow::renderStart( double startPts, QSize out )
 {
+	sampler->setOutputResize(out);
 	timelineSeek( startPts );
 	vw->clear();
 	sampler->getMetronom()->setRenderMode( true );
@@ -392,6 +393,7 @@ void TopWindow::renderFinished( double pts )
 {
 	timelineSeek( pts );
 	sampler->getMetronom()->setRenderMode( false );
+	sampler->setOutputResize(QSize(0, 0));
 	timelineSeek( pts );
 }
 

@@ -7,7 +7,7 @@
 
 
 
-RenderingDialog::RenderingDialog( QWidget *parent, Profile &prof, double playhead, 
+RenderingDialog::RenderingDialog( QWidget *parent, Profile prof, double playhead, 
 								double sceneLen, MQueue<Frame*> *af, MQueue<Frame*> *vf )
 	: QDialog( parent ),
 	playheadPts( playhead ),
@@ -18,6 +18,14 @@ RenderingDialog::RenderingDialog( QWidget *parent, Profile &prof, double playhea
 	encoderRunning( false )
 {
 	setupUi( this );
+	
+	widthSpin->setRange( 64, MAXPROJECTWIDTH );
+	widthSpin->setSingleStep( 2 );
+	heightSpin->setRange( 64, MAXPROJECTHEIGHT );
+	heightSpin->setSingleStep( 2 );
+
+	widthSpin->setValue(prof.getVideoWidth());
+	heightSpin->setValue(prof.getVideoHeight());
 	
 	h264RadBtn->setChecked( true );
 	playheadRadBtn->setChecked( true );
@@ -30,6 +38,8 @@ RenderingDialog::RenderingDialog( QWidget *parent, Profile &prof, double playhea
 	connect( openBtn, SIGNAL(clicked()), this, SLOT(openFile()) );
 	connect( renderBtn, SIGNAL(clicked()), this, SLOT(startRender()) );
 	connect( cancelBtn, SIGNAL(clicked()), this, SLOT(canceled()) );
+	
+	connect( heightSpin, SIGNAL(valueChanged(int)), this, SLOT(heightChanged(int)) );
 }
 
 
@@ -37,6 +47,22 @@ RenderingDialog::RenderingDialog( QWidget *parent, Profile &prof, double playhea
 RenderingDialog::~RenderingDialog()
 {
 	delete out;
+}
+
+
+
+void RenderingDialog::heightChanged( int val )
+{
+	if (val % 2) {
+		++val;
+	}
+	
+	int w = (double)profile.getVideoWidth() * (double)val / (double)profile.getVideoHeight();
+	if (w % 2) {
+		++w;
+	}
+	widthSpin->setValue(w);
+	heightSpin->setValue(val);
 }
 
 
@@ -89,8 +115,12 @@ void RenderingDialog::startRender()
 		vcodec = OutputFF::VCODEC_MPEG2;
 	else if (hevcRadBtn->isChecked())
 		vcodec = OutputFF::VCODEC_HEVC;
+	
+	Profile p = profile;
+	p.setVideoWidth(widthSpin->value());
+	p.setVideoHeight(heightSpin->value());
 
-	if ( !out->init( s, profile, videoRateSpin->value(), vcodec, endPts ) ) {
+	if ( !out->init( s, p, videoRateSpin->value(), vcodec, endPts ) ) {
 		QMessageBox::warning( this, tr("Error"), tr("Could not setup encoder.") );
 		return;
 	}
@@ -98,7 +128,7 @@ void RenderingDialog::startRender()
 	encoderRunning = true;
 	enableUI( false );
 	eta.start();
-	emit renderStarted( encodeStartPts );
+	emit renderStarted( encodeStartPts, QSize(widthSpin->value(), heightSpin->value()) );
 }
 
 

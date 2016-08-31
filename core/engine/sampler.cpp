@@ -132,6 +132,13 @@ bool Sampler::setProfile( Profile p )
 
 
 
+void Sampler::setOutputResize( QSize size )
+{
+	composer->setOutputResize( size );
+}
+
+
+
 void Sampler::switchMode( bool down )
 {
 	if ( (down ? timelineScene : preview) == currentScene )

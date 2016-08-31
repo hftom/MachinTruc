@@ -3,6 +3,7 @@
 #include <QTime>
 
 #include <movit/init.h>
+#include <movit/resample_effect.h>
 
 #include "engine/composer.h"
 
@@ -21,6 +22,7 @@ Composer::Composer( Sampler *samp, PlaybackBuffer *pb )
 	playbackBuffer( pb ),
 	audioSampleDelta( 0 )
 {
+	outputResize = QSize(0, 0);
 }
 
 
@@ -609,7 +611,12 @@ void Composer::movitRender( Frame *dst, bool update )
 	// background
 	currentDescriptor.append( movitBackground.getDescriptor( pts, NULL, &projectProfile ) );
 	// output
-	currentDescriptor.append( QString("OUTPUT %1 %2").arg( ow ).arg( oh ) );
+	if (outputResize.width() > 0) {
+		currentDescriptor.append( QString("Resized output %1 %2").arg( outputResize.width() ).arg( outputResize.height() ) );
+	}
+	else {
+		currentDescriptor.append( QString("OUTPUT %1 %2").arg( ow ).arg( oh ) );
+	}
 
 	// rebuild the chain if neccessary
 	if ( currentDescriptor !=  movitChain.descriptor ) {
@@ -660,6 +667,13 @@ void Composer::movitRender( Frame *dst, bool update )
 		// background
 		QList<Effect*> el = movitBackground.getMovitEffects();
 		movitChain.chain->add_effect( el[0] );
+		// output resizer
+		if (outputResize.width() > 0) {
+			Effect *e = new ResampleEffect();
+			e->set_int( "width", outputResize.width() );
+			e->set_int( "height", outputResize.height() );
+			movitChain.chain->add_effect( e );
+		}
 		// output
 		movitChain.chain->set_dither_bits( 8 );
 		ImageFormat output_format;
@@ -718,6 +732,11 @@ void Composer::movitRender( Frame *dst, bool update )
 
 	// render
 	waitFence();
+	// output resizer
+	if (outputResize.width() > 0) {
+		w = outputResize.width();
+		h = outputResize.height();
+	}
 	FBO *fbo = gl.getFBO( w, h, GL_RGBA );
 	movitChain.chain->render_to_fbo( fbo->fbo(), w, h );
 	

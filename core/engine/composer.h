@@ -52,6 +52,8 @@ public:
 	void skipBy( int step );
 	void updateFrame();
 	bool isPlaying();
+	
+	void setOutputResize( QSize size ) { outputResize = size; }
 
 public slots:
 	void setSharedContext( QGLWidget *shared );
@@ -95,6 +97,8 @@ private:
 	Sampler *sampler;
 	PlaybackBuffer *playbackBuffer;
 	double audioSampleDelta;
+	
+	QSize outputResize;
 
 signals:
 	void newFrame( Frame* );

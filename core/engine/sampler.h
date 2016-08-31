@@ -33,6 +33,8 @@ public:
 	void shiftCurrentPTSAudio();
 	void rewardPTS();
 	
+	void setOutputResize( QSize size );
+	
 	void newProject( Profile p );
 	bool setProfile( Profile p );
 	Profile getProfile();

@@ -12,7 +12,7 @@ class RenderingDialog : public QDialog, protected Ui::RenderDialog
 {
 	Q_OBJECT
 public:
-	RenderingDialog( QWidget *parent, Profile &p, double playhead,
+	RenderingDialog( QWidget *parent, Profile p, double playhead,
 		double sceneLen, MQueue<Frame*> *af, MQueue<Frame*> *vf );
 	~RenderingDialog();
 	
@@ -27,6 +27,8 @@ private slots:
 	void outputFinished();
 	void frameEncoded( Frame *f );
 	
+	void heightChanged(int val);
+	
 private:
 	void enableUI( bool b );
 
@@ -40,7 +42,7 @@ private:
 	QTime eta;
 	
 signals:
-	void renderStarted( double startPts );
+	void renderStarted( double startPts, QSize out );
 	void renderFinished( double pts );
 	void showFrame( Frame* );
 };

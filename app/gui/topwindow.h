@@ -155,7 +155,7 @@ private slots:
 	void loadBackup();
 	
 	void renderDialog();
-	void renderStart( double startPts );
+	void renderStart( double startPts, QSize out );
 	void renderFinished( double pts );
 	
 	void openSources();
