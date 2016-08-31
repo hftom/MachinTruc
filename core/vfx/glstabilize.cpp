@@ -97,7 +97,7 @@ bool GLStabilize::process( const QList<Effect*> &el, double pts, Frame *src, Pro
 
 	Effect *e = el[0];
 	
-	if ( transforms ) {
+	if ( transforms && transforms->size() > 1 ) {
 		double srcpts = src->pts();
 		double d =  transforms->at( 1 ).pts - transforms->first().pts;
 		int nframe = ((srcpts - transforms->first().pts) / d) + 0.5;

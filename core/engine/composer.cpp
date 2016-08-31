@@ -419,17 +419,23 @@ bool Composer::renderVideoFrame( Frame *dst )
 	sampler->getVideoTracks( dst );
 	if ( !getNextFrame( dst, i ) ) {
 		Profile projectProfile = sampler->getProfile();
+		int w = projectProfile.getVideoWidth();
+		int h = projectProfile.getVideoHeight();
+		if (outputResize.width() > 0) {
+			w = outputResize.width();
+			h = outputResize.height();
+		}
 		
 		if ( skipFrame > 0 ) {
 			//qDebug() << "skipFrame" << sampler->currentPTS();
 			--skipFrame;
-			dst->setVideoFrame( Frame::NONE, projectProfile.getVideoWidth(), projectProfile.getVideoHeight(), projectProfile.getVideoSAR(),
+			dst->setVideoFrame( Frame::NONE, w, h, projectProfile.getVideoSAR(),
 								false, false, sampler->currentPTS(), projectProfile.getVideoFrameDuration() );
 			return true;
 		}
 		
 		// make black
-		dst->setVideoFrame( Frame::GLTEXTURE, projectProfile.getVideoWidth(), projectProfile.getVideoHeight(), projectProfile.getVideoSAR(),
+		dst->setVideoFrame( Frame::GLTEXTURE, w, h, projectProfile.getVideoSAR(),
 							false, false, sampler->currentPTS(), projectProfile.getVideoFrameDuration() );
 		waitFence();
 		if ( !gl.black( dst ) )
@@ -458,7 +464,13 @@ bool Composer::renderVideoFrame( Frame *dst )
 			//qDebug() << "skipFrame" << sampler->currentPTS();
 			--skipFrame;
 			Profile projectProfile = sampler->getProfile();
-			dst->setVideoFrame( Frame::NONE, projectProfile.getVideoWidth(), projectProfile.getVideoHeight(), projectProfile.getVideoSAR(),
+			int w = projectProfile.getVideoWidth();
+			int h = projectProfile.getVideoHeight();
+			if (outputResize.width() > 0) {
+				w = outputResize.width();
+				h = outputResize.height();
+			}
+			dst->setVideoFrame( Frame::NONE, w, h, projectProfile.getVideoSAR(),
 								false, false, sampler->currentPTS(), projectProfile.getVideoFrameDuration() );
 			return true;
 		}
