@@ -128,7 +128,11 @@ void RenderingDialog::startRender()
 	encoderRunning = true;
 	enableUI( false );
 	eta.start();
-	emit renderStarted( encodeStartPts, QSize(widthSpin->value(), heightSpin->value()) );
+	QSize outputSize = QSize(0, 0);
+	if (profile.getVideoHeight() != heightSpin->value()) {
+		outputSize = QSize(widthSpin->value(), heightSpin->value());
+	}
+	emit renderStarted( encodeStartPts, outputSize );
 }
 
 
