@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>344</width>
-    <height>321</height>
+    <height>357</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -271,10 +271,12 @@
   </layout>
  </widget>
  <tabstops>
-  <tabstop>cancelBtn</tabstop>
+  <tabstop>hevcRadBtn</tabstop>
   <tabstop>h264RadBtn</tabstop>
   <tabstop>mpeg2RadBtn</tabstop>
   <tabstop>videoRateSpin</tabstop>
+  <tabstop>widthSpin</tabstop>
+  <tabstop>heightSpin</tabstop>
   <tabstop>filenameLE</tabstop>
   <tabstop>openBtn</tabstop>
   <tabstop>timelineRadBtn</tabstop>
@@ -282,6 +284,7 @@
   <tabstop>durationSpin</tabstop>
   <tabstop>playheadToEndRadBtn</tabstop>
   <tabstop>renderBtn</tabstop>
+  <tabstop>cancelBtn</tabstop>
  </tabstops>
  <resources>
   <include location="../resources.qrc"/>
