@@ -28,6 +28,7 @@ private slots:
 	void frameEncoded( Frame *f );
 	
 	void heightChanged(int val);
+	void videoCodecSelected(int id);
 	
 private:
 	void enableUI( bool b );

@@ -27,6 +27,6 @@ digraph G {
 
  Composer -> Metronom;
  Metronom -> Screen;
- Metronom -> AudioOut
+ Metronom -> AudioOut;
 
 }

@@ -165,6 +165,10 @@ bool OutputFF::openAudio( Profile &prof )
 	audioStream->id = formatCtx->nb_streams - 1;
 
 	AVCodecContext *audioCodecCtx = audioStream->codec;
+	
+	// set strict -2
+	//audioCodecCtx->strict_std_compliance = -2;
+	
 	/* put sample parameters */
 	audioCodecCtx->bit_rate = 256000;
 	/* check that the encoder supports s16 pcm input */

@@ -30,6 +30,8 @@ RenderingDialog::RenderingDialog( QWidget *parent, Profile prof, double playhead
 	h264RadBtn->setChecked( true );
 	playheadRadBtn->setChecked( true );
 	cancelBtn->setFocus();
+
+	videoCodecSelected(0);
 	
 	out = new OutputFF( vf, af );
 	connect( out, SIGNAL(finished()), this, SLOT(outputFinished()) );
@@ -40,6 +42,8 @@ RenderingDialog::RenderingDialog( QWidget *parent, Profile prof, double playhead
 	connect( cancelBtn, SIGNAL(clicked()), this, SLOT(canceled()) );
 	
 	connect( heightSpin, SIGNAL(valueChanged(int)), this, SLOT(heightChanged(int)) );
+	
+	connect( buttonGroup, SIGNAL(buttonClicked(int)), this, SLOT(videoCodecSelected(int)) );
 }
 
 
@@ -47,6 +51,18 @@ RenderingDialog::RenderingDialog( QWidget *parent, Profile prof, double playhead
 RenderingDialog::~RenderingDialog()
 {
 	delete out;
+}
+
+
+
+void RenderingDialog::videoCodecSelected(int id)
+{
+	double brRatio = 1.0;
+	if (mpeg2RadBtn->isChecked())
+		brRatio = 2.0;
+	else if (hevcRadBtn->isChecked())
+		brRatio = 0.5;
+	videoRateSpin->setValue(qRound(0.12 * brRatio * widthSpin->value() * heightSpin->value() * profile.getVideoFrameRate() / 1000000));
 }
 
 
@@ -63,6 +79,8 @@ void RenderingDialog::heightChanged( int val )
 	}
 	widthSpin->setValue(w);
 	heightSpin->setValue(val);
+	
+	videoCodecSelected(0);
 }
 
 
