@@ -10,6 +10,7 @@ extern "C" {
 #include <movit/util.h>
 
 #include <QTimer>
+#include <QMutexLocker>
 
 #include "engine/stabilizecollection.h"
 
@@ -96,6 +97,8 @@ private:
 	QList<StabilizeTransform> *transforms;
 	QTimer checkStabTimer;
 	Parameter *stabStatus, *strength;
+	
+	QMutex transformsMutex;
 	
 signals:
 	void statusUpdate( QString );

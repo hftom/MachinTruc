@@ -25,11 +25,15 @@ GLStabilize::~GLStabilize()
 
 void GLStabilize::filterRemoved()
 {
-	if ( checkStabTimer.isActive() )
+	if ( checkStabTimer.isActive() ) {
 		checkStabTimer.stop();
+	}
 
-	if ( transforms )
+	QMutexLocker ml(&transformsMutex);
+	if ( transforms ) {
 		StabilizeCollection::getGlobalInstance()->releaseTransforms( transforms );
+		transforms = NULL;
+	}
 }
 
 
@@ -39,6 +43,8 @@ void GLStabilize::setSource( Source *aSource )
 	source = aSource;
 	int status;
 	int progress;
+
+	transformsMutex.lock();
 	transforms = StabilizeCollection::getGlobalInstance()->getTransforms( source, status, progress );
 	if ( !transforms ) {
 		if ( status != StabilizeTransform::STABERROR )
@@ -54,9 +60,11 @@ void GLStabilize::setSource( Source *aSource )
 				stabStatus->value = tr("an error occured.");
 		}
 	}
-	else
+	else {
 		stabStatus->value = tr("done.");
-	
+	}
+	transformsMutex.unlock();
+
 	emit statusUpdate( stabStatus->value.toString() );
 }
 
@@ -66,6 +74,8 @@ void GLStabilize::checkStabData()
 {
 	int status;
 	int progress;
+	
+	transformsMutex.lock();
 	transforms = StabilizeCollection::getGlobalInstance()->getTransforms( source, status, progress );
 	if ( !transforms ) {
 		switch ( status ) {
@@ -84,6 +94,7 @@ void GLStabilize::checkStabData()
 		stabStatus->value = tr("done.");
 		checkStabTimer.stop();
 	}
+	transformsMutex.unlock();
 	
 	emit statusUpdate( stabStatus->value.toString() );
 }
@@ -97,6 +108,7 @@ bool GLStabilize::process( const QList<Effect*> &el, double pts, Frame *src, Pro
 
 	Effect *e = el[0];
 	
+	QMutexLocker ml(&transformsMutex);
 	if ( transforms && transforms->size() > 1 ) {
 		double srcpts = src->pts();
 		double d =  transforms->at( 1 ).pts - transforms->first().pts;
