@@ -27,7 +27,7 @@ private:
 	void close();
 	bool openFormat( QString filename, Profile &prof, int vrate, int vcodec );
 	bool openVideo( Profile &prof, int vrate, int vcodec );
-	bool openAudio( Profile &prof );
+	bool openAudio( Profile &prof, int vcodec );
 	bool encodeVideo( Frame *f, int nFrame );
 	bool encodeAudio( Frame *f, int nFrame );
 	
@@ -46,7 +46,8 @@ private:
 	int audioSamplesSize;
 	uint8_t *audioBuffer;
 	int audioBufferLen;
-	double firstAudioPts;
+	int totalSamples;
+	int audioCodecFrameSize;
 	SwrContext *swr;
 
 	double endPTS;

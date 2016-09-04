@@ -110,8 +110,6 @@ void RenderingDialog::startRender()
 	if ( !suffix.isEmpty() )
 		s.truncate( s.length() - suffix.length() - 1 );
 	
-	s += ".mkv";
-	
 	double endPts = timelineLength - profile.getVideoFrameDuration();
 	if ( playheadRadBtn->isChecked() ) {
 		double end = playheadPts + (double)durationSpin->value() * MICROSECOND;
@@ -129,10 +127,12 @@ void RenderingDialog::startRender()
 	}
 	
 	int vcodec = OutputFF::VCODEC_H264;
-	if (mpeg2RadBtn->isChecked())
+	if (mpeg2RadBtn->isChecked()) {
 		vcodec = OutputFF::VCODEC_MPEG2;
-	else if (hevcRadBtn->isChecked())
+	}
+	else if (hevcRadBtn->isChecked()) {
 		vcodec = OutputFF::VCODEC_HEVC;
+	}
 	
 	Profile p = profile;
 	p.setVideoWidth(widthSpin->value());

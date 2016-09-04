@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>344</width>
-    <height>357</height>
+    <width>422</width>
+    <height>413</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -25,7 +25,7 @@
         <item row="0" column="1">
          <widget class="QRadioButton" name="h264RadBtn">
           <property name="text">
-           <string>&amp;H264</string>
+           <string>MP4 (&amp;h264/aac)</string>
           </property>
           <attribute name="buttonGroup">
            <string notr="true">buttonGroup</string>
@@ -35,7 +35,7 @@
         <item row="0" column="2">
          <widget class="QRadioButton" name="mpeg2RadBtn">
           <property name="text">
-           <string>&amp;MPEG2</string>
+           <string>&amp;MPG (mpeg2/mp2)</string>
           </property>
           <attribute name="buttonGroup">
            <string notr="true">buttonGroup</string>
@@ -45,7 +45,7 @@
         <item row="0" column="0">
          <widget class="QRadioButton" name="hevcRadBtn">
           <property name="text">
-           <string>HE&amp;VC</string>
+           <string>M&amp;KV (hevc/aac)</string>
           </property>
           <attribute name="buttonGroup">
            <string notr="true">buttonGroup</string>
@@ -100,7 +100,7 @@
        <item>
         <widget class="QLabel" name="label_6">
          <property name="text">
-          <string>Size:</string>
+          <string>Resize:</string>
          </property>
         </widget>
        </item>
