@@ -202,6 +202,7 @@ void RenderingDialog::enableUI( bool b )
 {
 	h264RadBtn->setEnabled( b );
 	mpeg2RadBtn->setEnabled( b );
+	hevcRadBtn->setEnabled( b );
 	filenameLE->setEnabled( b );
 	timelineRadBtn->setEnabled( b );
 	playheadRadBtn->setEnabled( b );
