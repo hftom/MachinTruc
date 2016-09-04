@@ -19,6 +19,9 @@ GLStabilize::GLStabilize( QString id, QString name ) : GLFilter( id, name ),
 GLStabilize::~GLStabilize()
 {
 	filterRemoved();
+	if (source) {
+		source->release();
+	}
 }
 
 
@@ -40,6 +43,9 @@ void GLStabilize::filterRemoved()
 
 void GLStabilize::setSource( Source *aSource )
 {
+	if (!source) {
+		aSource->use();
+	}
 	source = aSource;
 	int status;
 	int progress;

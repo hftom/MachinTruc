@@ -1,7 +1,6 @@
 TODO
 
 1.0
-- make Source a shared pointer (will fix glstabilize calling getTransforms after source delete on new project)
 - finish Undo (transition effect change, animation change)
 - Timeline multiselection
 - SourcesList multiselection
