@@ -1,5 +1,23 @@
 TODO
 
+1.0
+- make Source a shared pointer (will fix glstabilize calling getTransforms after source delete on new project)
+- finish Undo (transition effect change, animation change)
+- Timeline multiselection
+- SourcesList multiselection
+- Timeline copy/cut/paste
+- Filter copy/paste
+- finish animation editor
+- Timeline edit workflow (insert, remove gap, ripple ..)
+- title animation (producers ?)
+- embed vidstab (started in stab branch) 
+- switch audio to packed float32
 
-DONE
-- fix repeat_pict (cihy.ts, CBS_HD.m2t)
+2.0
+- selection mask
+- multi timeline
+- nested timeline
+- multicam
+- reintroduce glcustom
+- custom audio params
+- audio waveform (maybe in animation editor?)
