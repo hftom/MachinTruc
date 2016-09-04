@@ -47,6 +47,7 @@ private:
 	uint8_t *audioBuffer;
 	int audioBufferLen;
 	double firstAudioPts;
+	SwrContext *swr;
 
 	double endPTS;
 	

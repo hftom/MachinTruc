@@ -64,6 +64,10 @@ void OutputFF::close()
 		avformat_free_context( formatCtx );
 		formatCtx = NULL;
 	}
+	
+	if ( swr ) {
+		swr_free( &swr );
+	}
 }
 
 
@@ -148,7 +152,7 @@ bool OutputFF::openVideo( Profile &prof, int vrate, int vcodec )
 
 bool OutputFF::openAudio( Profile &prof )
 {
-	AVCodecID codec_id = AV_CODEC_ID_MP2;
+	AVCodecID codec_id = AV_CODEC_ID_AAC;
 
 	// find the video encoder
 	AVCodec *codec = avcodec_find_encoder( codec_id );
@@ -167,19 +171,16 @@ bool OutputFF::openAudio( Profile &prof )
 	AVCodecContext *audioCodecCtx = audioStream->codec;
 	
 	// set strict -2
-	//audioCodecCtx->strict_std_compliance = -2;
+	audioCodecCtx->strict_std_compliance = -2;
 	
 	/* put sample parameters */
 	audioCodecCtx->bit_rate = 256000;
-	/* check that the encoder supports s16 pcm input */
-    audioCodecCtx->sample_fmt = AV_SAMPLE_FMT_S16;
-	/*if ( !check_sample_fmt( codec, audioCodecCtx->sample_fmt ) ) {
-		qDebug() << "Audio encoder does not support sample format"
-				<< av_get_sample_fmt_name( audioCodecCtx->sample_fmt );
-		return false;
-	}*/
+	
+	// set encoder sample format
+    audioCodecCtx->sample_fmt = AV_SAMPLE_FMT_FLTP;
+
 	/* select other audio parameters supported by the encoder */
-    audioCodecCtx->sample_rate = 48000;
+    audioCodecCtx->sample_rate = prof.getAudioSampleRate();
     audioCodecCtx->channel_layout = AV_CH_LAYOUT_STEREO;
     audioCodecCtx->channels = av_get_channel_layout_nb_channels( audioCodecCtx->channel_layout );
 	
@@ -233,7 +234,15 @@ bool OutputFF::openAudio( Profile &prof )
 		qDebug() << "Could not setup audio frame";
 		return false;
 	}
-	
+
+	// set audio resampler 
+	swr = swr_alloc_set_opts( swr, AV_CH_LAYOUT_STEREO, audioCodecCtx->sample_fmt, audioCodecCtx->sample_rate, AV_CH_LAYOUT_STEREO,
+							  AV_SAMPLE_FMT_S16, prof.getAudioSampleRate(), 0, NULL );
+	if (swr_init( swr ) < 0) {
+		qDebug-) << "Could not init resampler";
+		return false;
+	}
+
 	return true;
 }
 
@@ -242,7 +251,8 @@ bool OutputFF::openAudio( Profile &prof )
 bool OutputFF::openFormat( QString filename, Profile &prof, int vrate, int vcodec )
 {
 	int ret;
-
+	
+	// matroska, mp4, mpeg
 	avformat_alloc_output_context2( &formatCtx, NULL, "matroska", filename.toLatin1().data()  );
 	
 	if ( !formatCtx ) {
@@ -495,7 +505,7 @@ bool OutputFF::encodeAudio( Frame *f, int nFrame )
 	av_frame_make_writable( audioFrame );
 		
 	uint8_t *buf = f->data();
-	int dataLen = f->audioSamples() * f->profile.getAudioChannels() * 2;
+	int dataLen = f->audioSamples() * f->profile.getAudioChannels() * f->profile.bytesPerChannel();
 	
 	if ( audioBufferLen + dataLen < audioSamplesSize ) {
 		memcpy( audioBuffer + audioBufferLen, buf, dataLen );
