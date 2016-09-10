@@ -127,7 +127,7 @@ private slots:
 	void updateLength();
 	
 private:
-	void updateStabilize(Clip *clip, bool stop);
+	void updateStabilize(Clip *clip, Filter *f, bool stop);
 	int getTrack( const QPointF &p );
 	ClipViewItem* getClipViewItem(Clip *clip, int track);
 	void snapMove( AbstractViewItem *item, double &pos, double mouseX, double itemScenePos, bool limit = false );

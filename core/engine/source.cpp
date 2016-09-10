@@ -34,9 +34,8 @@ void Source::use()
 
 void Source::release()
 {
-	qDebug() << "release" << fileName;
-	if (--refcount) return;
-	qDebug() << "delete" << fileName;
+	if (--refcount)
+		return;
 	delete this;
 }
 
