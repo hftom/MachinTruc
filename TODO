@@ -20,5 +20,5 @@ TODO
 - nested timeline
 - multicam
 - reintroduce glcustom
-- custom audio params
+- project audio params (samplerate, layout)
 - audio waveform (maybe in animation editor?)

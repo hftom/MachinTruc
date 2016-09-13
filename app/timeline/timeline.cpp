@@ -1001,14 +1001,14 @@ void Timeline::filterDeleted( Clip *c, QSharedPointer<Filter> f )
 	int index = -1;
 	
 	for ( int i = 0; i < c->videoFilters.count(); ++i ) {
-		if ( c->videoFilters.at( i )->getIdentifier() == f->getIdentifier() ) {
+		if ( c->videoFilters.at( i ).data() == f.data() ) {
 			index = i;
 			break;
 		}
 	}
 	if (index == -1) {
 		for ( int i = 0; i < c->audioFilters.count(); ++i ) {
-			if ( c->audioFilters.at(i)->getIdentifier() == f->getIdentifier() ) {
+			if ( c->audioFilters.at(i).data() == f.data() ) {
 				index = i;
 				isVideo = false;
 				break;
