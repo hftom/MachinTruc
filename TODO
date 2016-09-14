@@ -1,5 +1,24 @@
 TODO
 
+1.0
+- finish Undo (transition effect change, animation change, source filters)
+- Timeline multiselection
+- SourcesList multiselection
+- OVD crop
+- Source properties override
+- Timeline copy/cut/paste
+- Filter copy/paste
+- finish animation editor
+- Timeline edit workflow (insert, remove gap, ripple ..)
+- title animation (producers ?)
+- embed vidstab (started in stab branch) 
+- switch audio to packed float32
 
-DONE
-- fix repeat_pict (cihy.ts, CBS_HD.m2t)
+2.0
+- selection mask
+- multi timeline
+- nested timeline
+- multicam
+- reintroduce glcustom
+- project audio params (samplerate, layout)
+- audio waveform (maybe in animation editor?)

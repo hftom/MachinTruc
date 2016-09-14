@@ -7,7 +7,8 @@
 Source::Source( InputBase::InputType t, QString path, Profile prof ) 
 	: fileName( path ),
 	profile( prof ),
-	type( t )
+	type( t ),
+	refcount( 1 )
 {
 	size = QFileInfo( path ).size();
 }
@@ -16,9 +17,26 @@ Source::Source( InputBase::InputType t, QString path, Profile prof )
 
 Source::Source( QString path )
 	: fileName( path ),
-	type( InputBase::UNDEF )
+	type( InputBase::UNDEF ),
+	refcount( 1 )
 {
 	size = QFileInfo( path ).size();
+}
+
+
+
+void Source::use()
+{
+	++refcount;
+}
+
+
+
+void Source::release()
+{
+	if (--refcount)
+		return;
+	delete this;
 }
 
 

@@ -76,7 +76,12 @@ void StabilizeCollection::checkDetectionThreads()
 
 	for ( int i = 0; i < stabDetect.count(); ++i ) {
 		StabMotionDetect *stab = stabDetect.at( i );
-		if ( stab->getStarted() ) {
+		if (stab->isOutDatedQuery()) {
+			stab->stop();
+			stabDetect.takeAt( i-- );
+			delete stab;
+		}
+		else if ( stab->getStarted() ) {
 			if ( !stab->isRunning() ) {
 				if ( stab->getFinishedSuccess() ) {
 					QList<StabilizeTransform> *list = stab->getTransformsOwnership();
@@ -188,6 +193,7 @@ QList<StabilizeTransform>* StabilizeCollection::getTransforms( Source *source, i
 			else {
 				status = StabilizeTransform::STABENQUEUED;
 			}
+			detect->setLastQuery();
 			return NULL;
 		}
 	}
@@ -223,7 +229,7 @@ StabMotionDetect::StabMotionDetect( Source *aSource )
 	source( aSource ),
 	transforms( NULL )
 {
-	
+	lastQuery = QDateTime::currentDateTime();
 }
 
 
@@ -263,6 +269,7 @@ void StabMotionDetect::stop()
 	if ( transforms ) {
 		transforms->clear();
 		delete transforms;
+		transforms = NULL;
 	}
 }
 	

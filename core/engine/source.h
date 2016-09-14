@@ -13,6 +13,9 @@ public:
 	Source( QString path );
 	Source( InputBase::InputType t, QString path, Profile prof );
 	
+	void use();
+	void release();
+	
 	const QString & getFileName() const;
 	qint64 getSize() const;
 	const Profile & getProfile() const;
@@ -28,5 +31,8 @@ private:
 	qint64 size;
 	Profile profile;
 	InputBase::InputType type;
+	
+	// HACK for glstabilize
+	int refcount;
 };
 #endif //SOURCE_H

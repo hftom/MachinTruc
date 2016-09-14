@@ -128,3 +128,22 @@ void Filter::splitParameters( Filter *second, double posPts )
 		}
 	}
 }
+
+
+
+void Filter::duplicateFilter( QSharedPointer<Filter> f )
+{
+	f->setPosition( getPosition() );
+	f->setLength( getLength() );
+	f->setPositionOffset( getPositionOffset() );
+	QList<Parameter*> params = getParameters();
+	QList<Parameter*> pf = f->getParameters();
+	for ( int i = 0; i < params.count(); ++i ) {
+		Parameter *p = params[i];
+		Parameter *p1 = pf[i];
+		p1->value = p->value;
+		for ( int j = 0; j < p->graph.keys.count(); ++j ) {
+			p1->graph.keys.append( AnimationKey( p->graph.keys[j].keyType, p->graph.keys[j].x, p->graph.keys[j].y ) );
+		}
+	}
+}

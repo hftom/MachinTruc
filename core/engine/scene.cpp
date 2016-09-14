@@ -66,65 +66,150 @@ Clip* Scene::createClip( Source *src, double posInTrackPTS, double strt, double 
 
 
 
-Clip* Scene::sceneSplitClip( Clip *clip, int track, double pts )
+Clip* Scene::duplicateClip(Clip *c)
+{
+	Clip *nc = createClip( c->getSource(), c->position(), c->start(), c->length() );
+	nc->setFrameDuration( profile.getVideoFrameDuration() );
+	nc->setSpeed( c->getSpeed() );
+	Transition *t = c->getTransition();
+	nc->setTransition( t ? new Transition(t) : NULL );
+	
+	FilterCollection *fc = FilterCollection::getGlobalInstance();
+	for ( int i = 0; i < c->videoFilters.count(); ++i ) {
+		QSharedPointer<GLFilter> f = c->videoFilters.at( i );
+		for ( int j = 0; j < fc->videoFilters.count(); ++j ) {
+			if ( fc->videoFilters[ j ].identifier == f->getIdentifier() ) {
+				QSharedPointer<Filter> nf = fc->videoFilters[ j ].create();
+				f->duplicateFilter( nf );
+				GLFilter *gf = (GLFilter*)nf.data();
+				if ( nf->getIdentifier() == "GLCustom" ) {
+					GLCustom *gc = (GLCustom*)gf;
+					gc->setCustomParams( f->getParameters().last()->value.toString() );
+				}
+				else if ( nf->getIdentifier() == "GLStabilize"  ) {
+					GLStabilize *gs = (GLStabilize*)gf;
+					gs->setSource( nc->getSource() );
+				}
+				nc->videoFilters.append( nf.staticCast<GLFilter>() );
+				break;
+			}
+		}
+	}
+	for ( int i = 0; i < c->audioFilters.count(); ++i ) {
+		QSharedPointer<AudioFilter> f = c->audioFilters.at( i );
+		for ( int j = 0; j < fc->audioFilters.count(); ++j ) {
+			if ( fc->audioFilters[ j ].identifier == f->getIdentifier() ) {
+				QSharedPointer<Filter> nf = fc->audioFilters[ j ].create();
+				f->duplicateFilter( nf );
+				nc->audioFilters.append( nf.staticCast<AudioFilter>() );
+				break;
+			}
+		}
+	}
+	
+	return nc;
+}
+
+
+
+bool Scene::canSplitClip(Clip *clip, int track, double pts)
 {
 	double margin = profile.getVideoFrameDuration() / 4.0;
 	pts = nearestPTS( pts, profile.getVideoFrameDuration() );
+	
+	double start = clip->position();
+	if (clip->getTransition()) {
+		start += clip->getTransition()->length();
+	}
+	double end = clip->position() + clip->length();
+	Track *t = tracks[track];
+	int cc = t->clipCount();
+	int index = t->indexOf(clip);
+	if (index > -1 && index < cc - 1) {
+		Clip *next = t->clipAt(index + 1);
+		if (next->getTransition()) {
+			end -= next->getTransition()->length() + profile.getVideoFrameDuration();
+		}
+	}
 
-	if ( pts <= clip->position() + profile.getVideoFrameDuration() - margin )
-		return NULL;
-	if ( pts >= clip->position() + clip->length() - profile.getVideoFrameDuration() + margin )
-		return NULL;
+	return (pts > start + profile.getVideoFrameDuration() - margin 
+			&& pts < end - profile.getVideoFrameDuration() + margin );
+}
+
+
+
+Clip* Scene::sceneSplitClip( Clip *clip, int track, double pts )
+{
+	pts = nearestPTS( pts, profile.getVideoFrameDuration() );
+	
+	double start = clip->position();
+	if (clip->getTransition()) {
+		start += clip->getTransition()->length();
+	}
+	double end = clip->position() + clip->length();
+	Track *t = tracks[track];
+	int cc = t->clipCount();
+	int index = t->indexOf(clip);
+	Transition *tail = NULL;
+	Clip *next = NULL;
+	if (index > -1 && index < cc - 1) {
+		next = t->clipAt(index + 1);
+		if (next->getTransition()) {
+			end -= next->getTransition()->length() + profile.getVideoFrameDuration();
+			tail = new Transition(next->getTransition());
+		}
+	}
 
 	double oldLength = clip->length();
 	double newLength = pts - clip->position();
-	if ( canResize( clip, newLength, track ) ) {
-		Clip *nc = createClip( clip->getSource(), pts, clip->start() + newLength, oldLength - newLength );
-		double newPos = nc->position();
-		if ( canMove( nc, nc->length(), newPos, track ) ) {
-			nc->setPosition( newPos );
-			FilterCollection *fc = FilterCollection::getGlobalInstance();
-			for ( int i = 0; i < clip->videoFilters.count(); ++i ) {
-				QSharedPointer<GLFilter> f = clip->videoFilters.at( i );
-				for ( int j = 0; j < fc->videoFilters.count(); ++j ) {
-					if ( fc->videoFilters[ j ].identifier == f->getIdentifier() ) {
-						QSharedPointer<Filter> nf = fc->videoFilters[ j ].create();
-						GLFilter *gf = (GLFilter*)nf.data();
-						if ( fc->videoFilters[ j ].identifier == "GLCustom" ) {
-							GLCustom *gc = (GLCustom*)gf;
-							gc->setCustomParams( f->getParameters().last()->value.toString() );
-						}
-						f->splitParameters( gf, newLength );
-						nf->setPosition( nc->position() );
-						nf->setLength( nc->length() );
-						nc->videoFilters.append( nf.staticCast<GLFilter>() );
-						break;
-					}
+	
+	resize( clip, newLength, track );
+	Clip *nc = createClip( clip->getSource(), pts, clip->start() + newLength, oldLength - newLength );
+	double newPos = nc->position();
+	nc->setPosition( newPos );
+	FilterCollection *fc = FilterCollection::getGlobalInstance();
+	for ( int i = 0; i < clip->videoFilters.count(); ++i ) {
+		QSharedPointer<GLFilter> f = clip->videoFilters.at( i );
+		for ( int j = 0; j < fc->videoFilters.count(); ++j ) {
+			if ( fc->videoFilters[ j ].identifier == f->getIdentifier() ) {
+				QSharedPointer<Filter> nf = fc->videoFilters[ j ].create();
+				GLFilter *gf = (GLFilter*)nf.data();
+				if ( nf->getIdentifier() == "GLCustom" ) {
+					GLCustom *gc = (GLCustom*)gf;
+					gc->setCustomParams( f->getParameters().last()->value.toString() );
 				}
-			}
-			for ( int i = 0; i < clip->audioFilters.count(); ++i ) {
-				QSharedPointer<AudioFilter> f = clip->audioFilters.at( i );
-				for ( int j = 0; j < fc->audioFilters.count(); ++j ) {
-					if ( fc->audioFilters[ j ].identifier == f->getIdentifier() ) {
-						QSharedPointer<Filter> nf = fc->audioFilters[ j ].create();
-						AudioFilter *af = (AudioFilter*)nf.data();
-						f->splitParameters( af, newLength );
-						nf->setPosition( nc->position() );
-						nf->setLength( nc->length() );
-						nc->audioFilters.append( nf.staticCast<AudioFilter>() );
-						break;
-					}
+				else if ( nf->getIdentifier() == "GLStabilize"  ) {
+					GLStabilize *gs = (GLStabilize*)gf;
+					gs->setSource( nc->getSource() );
 				}
+				f->splitParameters( gf, newLength );
+				nf->setPosition( nc->position() );
+				nf->setLength( nc->length() );
+				nc->videoFilters.append( nf.staticCast<GLFilter>() );
+				break;
 			}
-			resize( clip, newLength, track );
-			addClip( nc, track );
-			return nc;
 		}
-		else
-			delete nc;
+	}
+	for ( int i = 0; i < clip->audioFilters.count(); ++i ) {
+		QSharedPointer<AudioFilter> f = clip->audioFilters.at( i );
+		for ( int j = 0; j < fc->audioFilters.count(); ++j ) {
+			if ( fc->audioFilters[ j ].identifier == f->getIdentifier() ) {
+				QSharedPointer<Filter> nf = fc->audioFilters[ j ].create();
+				AudioFilter *af = (AudioFilter*)nf.data();
+				f->splitParameters( af, newLength );
+				nf->setPosition( nc->position() );
+				nf->setLength( nc->length() );
+				nc->audioFilters.append( nf.staticCast<AudioFilter>() );
+				break;
+			}
+		}
+	}
+	addClip( nc, track );
+	if (tail) {
+		next->setTransition(tail);
 	}
 
-	return NULL;
+	return nc;
 }
 
 
@@ -677,13 +762,40 @@ bool Scene::removeClip( Clip *clip )
 				Clip *c = t->removeClip( j );
 				if ( c ) {
 					update = true;
-					delete c;
+					// don't delete clip, caller takes ownership, usefull for undo
+					// delete c;
 				}
 				return true;
 			}
 		}
 	}
 	return false;
+}
+
+
+
+Transition* Scene::getTailTransition(Clip *clip, int track)
+{
+	Track *t = tracks[track];
+	int cc = t->clipCount();
+	int index = t->indexOf( clip );
+	if (index > -1 && index < cc - 1) {
+		return t->clipAt(index + 1)->getTransition();
+	}
+	return NULL;
+}
+
+
+
+Clip* Scene::getTailClip(Clip *clip, int track)
+{
+	Track *t = tracks[track];
+	int cc = t->clipCount();
+	int index = t->indexOf( clip );
+	if (index > -1 && index < cc - 1) {
+		return t->clipAt(index + 1);
+	}
+	return NULL;
 }
 
 

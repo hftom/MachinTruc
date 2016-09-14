@@ -24,6 +24,7 @@ public:
 	bool addTrack( int index );
 	
 	Clip* createClip( Source *src, double posInTrackPTS, double strt, double len );
+	Clip* duplicateClip(Clip *c);
 	
 	bool effectCanMove( Clip *clip, double &newPos, bool isVideo, int index );
 	void effectMove( Clip *clip, double newPos, bool isVideo, int index );
@@ -42,6 +43,9 @@ public:
 	void moveMulti( Clip *clip, int clipTrack, double newPos );
 	void addClip( Clip *clip, int track );
 	bool removeClip( Clip *clip );
+	Transition* getTailTransition(Clip *clip, int track);
+	Clip* getTailClip(Clip *clip, int track);
+	bool canSplitClip(Clip *clip, int track, double pts);
 	Clip* sceneSplitClip( Clip *clip, int track, double pts );
 
 	bool update;

@@ -269,7 +269,6 @@ void Metronom::runRender()
 
 	while ( running ) {
 		if ( (f = videoFrames.dequeue()) ) {
-			glGetError();
 			int w = f->profile.getVideoWidth();
 			int h = f->profile.getVideoHeight();
 			if ( !rgbData ) {

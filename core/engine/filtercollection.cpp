@@ -15,7 +15,7 @@ FilterCollection::FilterCollection()
 	videoFilters.append( FilterEntry( "colors", "GLWhiteBalance", QObject::tr("White balance"), &Maker<GLWhiteBalance>::make ) );
 	videoFilters.append( FilterEntry( "colors", "GLLiftGammaGain", QObject::tr("Color grading"), &Maker<GLLiftGammaGain>::make ) );
 	videoFilters.append( FilterEntry( "lens", "GLBlur", QObject::tr("Blur"), &Maker<GLBlur>::make ) );
-	videoFilters.append( FilterEntry( "lens", "GLDeconvolutionSharpen", QObject::tr("Sharpen (deconvlolution)"), &Maker<GLDeconvolutionSharpen>::make ) );
+	videoFilters.append( FilterEntry( "lens", "GLDeconvolutionSharpen", QObject::tr("Sharpen (deconvolution)"), &Maker<GLDeconvolutionSharpen>::make ) );
 	videoFilters.append( FilterEntry( "lens", "GLSharpen", QObject::tr("Sharpen (unsharp mask)"), &Maker<GLSharpen>::make ) );
 	videoFilters.append( FilterEntry( "lens", "GLDenoise", QObject::tr("Denoise"), &Maker<GLDenoise>::make ) );
 	videoFilters.append( FilterEntry( "lens", "GLDiffusion", QObject::tr("Diffusion"), &Maker<GLDiffusion>::make ) );
@@ -38,7 +38,7 @@ FilterCollection::FilterCollection()
 	videoFilters.append( FilterEntry( "deform", "GLDefish", QObject::tr("Defish"), &Maker<GLDefish>::make ) );
 	videoFilters.append( FilterEntry( "deform", "GLPixelize", QObject::tr("Pixelize"), &Maker<GLPixelize>::make ) );
 	videoFilters.append( FilterEntry( "deform", "GLWater", QObject::tr("Water"), &Maker<GLWater>::make ) );
-	videoFilters.append( FilterEntry( "deform", "GLCustom", QObject::tr("Custom"), &Maker<GLCustom>::make ) );
+	//videoFilters.append( FilterEntry( "deform", "GLCustom", QObject::tr("Custom"), &Maker<GLCustom>::make ) );
 	
 	// source video filters, a subset of videoFilters
 	sourceVideoFilters.append( FilterEntry( "colors", "GLSaturation", QObject::tr("Saturation"), &Maker<GLSaturation>::make ) );

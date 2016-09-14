@@ -43,11 +43,13 @@ private:
 signals:
 	void filterDeleted( Clip*, QSharedPointer<Filter> );
 	void filterAdded( ClipViewItem*, QString, int );
+	void filterReordered( Clip *c, bool video, int index, int newIndex );
 	void editAnimation( FilterWidget*, ParameterWidget*, Parameter* );
 	void updateFrame();
 	void showEffect( bool isVideo, int index );
 	void currentFilterChanged( int );
 	void compileShaderRequest( ThumbRequest );
+	void paramUndoCommand(QSharedPointer<Filter>, Parameter*, QVariant, QVariant);
 	
 	void ovdValueChanged(ParameterWidget*);
 };

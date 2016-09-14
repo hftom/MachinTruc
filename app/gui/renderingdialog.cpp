@@ -7,7 +7,7 @@
 
 
 
-RenderingDialog::RenderingDialog( QWidget *parent, Profile &prof, double playhead, 
+RenderingDialog::RenderingDialog( QWidget *parent, Profile prof, double playhead, 
 								double sceneLen, MQueue<Frame*> *af, MQueue<Frame*> *vf )
 	: QDialog( parent ),
 	playheadPts( playhead ),
@@ -19,9 +19,19 @@ RenderingDialog::RenderingDialog( QWidget *parent, Profile &prof, double playhea
 {
 	setupUi( this );
 	
-	mpeg2RadBtn->setChecked( true );
+	widthSpin->setRange( 64, MAXPROJECTWIDTH );
+	widthSpin->setSingleStep( 2 );
+	heightSpin->setRange( 64, MAXPROJECTHEIGHT );
+	heightSpin->setSingleStep( 2 );
+
+	widthSpin->setValue(prof.getVideoWidth());
+	heightSpin->setValue(prof.getVideoHeight());
+	
+	h264RadBtn->setChecked( true );
 	playheadRadBtn->setChecked( true );
 	cancelBtn->setFocus();
+
+	videoCodecSelected(0);
 	
 	out = new OutputFF( vf, af );
 	connect( out, SIGNAL(finished()), this, SLOT(outputFinished()) );
@@ -30,6 +40,10 @@ RenderingDialog::RenderingDialog( QWidget *parent, Profile &prof, double playhea
 	connect( openBtn, SIGNAL(clicked()), this, SLOT(openFile()) );
 	connect( renderBtn, SIGNAL(clicked()), this, SLOT(startRender()) );
 	connect( cancelBtn, SIGNAL(clicked()), this, SLOT(canceled()) );
+	
+	connect( heightSpin, SIGNAL(valueChanged(int)), this, SLOT(heightChanged(int)) );
+	
+	connect( buttonGroup, SIGNAL(buttonClicked(int)), this, SLOT(videoCodecSelected(int)) );
 }
 
 
@@ -37,6 +51,36 @@ RenderingDialog::RenderingDialog( QWidget *parent, Profile &prof, double playhea
 RenderingDialog::~RenderingDialog()
 {
 	delete out;
+}
+
+
+
+void RenderingDialog::videoCodecSelected(int id)
+{
+	double brRatio = 1.0;
+	if (mpeg2RadBtn->isChecked())
+		brRatio = 2.0;
+	else if (hevcRadBtn->isChecked())
+		brRatio = 0.5;
+	videoRateSpin->setValue(qRound(0.12 * brRatio * widthSpin->value() * heightSpin->value() * profile.getVideoFrameRate() / 1000000));
+}
+
+
+
+void RenderingDialog::heightChanged( int val )
+{
+	if (val % 2) {
+		++val;
+	}
+	
+	int w = (double)profile.getVideoWidth() * (double)val / (double)profile.getVideoHeight();
+	if (w % 2) {
+		++w;
+	}
+	widthSpin->setValue(w);
+	heightSpin->setValue(val);
+	
+	videoCodecSelected(0);
 }
 
 
@@ -66,8 +110,6 @@ void RenderingDialog::startRender()
 	if ( !suffix.isEmpty() )
 		s.truncate( s.length() - suffix.length() - 1 );
 	
-	s += ".mkv";
-	
 	double endPts = timelineLength - profile.getVideoFrameDuration();
 	if ( playheadRadBtn->isChecked() ) {
 		double end = playheadPts + (double)durationSpin->value() * MICROSECOND;
@@ -84,15 +126,31 @@ void RenderingDialog::startRender()
 		encodeStartPts = playheadPts;
 	}
 	
-	if ( !out->init( s, profile, videoRateSpin->value(), mpeg2RadBtn->isChecked(), endPts ) ) {
-		QMessageBox::warning( this, tr("Error"), tr("Could not setup encoding.") );
+	int vcodec = OutputFF::VCODEC_H264;
+	if (mpeg2RadBtn->isChecked()) {
+		vcodec = OutputFF::VCODEC_MPEG2;
+	}
+	else if (hevcRadBtn->isChecked()) {
+		vcodec = OutputFF::VCODEC_HEVC;
+	}
+	
+	Profile p = profile;
+	p.setVideoWidth(widthSpin->value());
+	p.setVideoHeight(heightSpin->value());
+
+	if ( !out->init( s, p, videoRateSpin->value(), vcodec, endPts ) ) {
+		QMessageBox::warning( this, tr("Error"), tr("Could not setup encoder.") );
 		return;
 	}
 	
 	encoderRunning = true;
 	enableUI( false );
 	eta.start();
-	emit renderStarted( encodeStartPts );
+	QSize outputSize = QSize(0, 0);
+	if (profile.getVideoHeight() != heightSpin->value()) {
+		outputSize = QSize(widthSpin->value(), heightSpin->value());
+	}
+	emit renderStarted( encodeStartPts, outputSize );
 }
 
 
@@ -100,8 +158,8 @@ void RenderingDialog::startRender()
 void RenderingDialog::frameEncoded( Frame *f )
 {
 	double prc = (f->pts() - encodeStartPts) * 100.0 / encodeLength;
-	int elapsed = eta.elapsed();
-	int still = (elapsed * 100 / prc) - elapsed;
+	double elapsed = eta.elapsed();
+	double still = (elapsed * 100.0 / prc) - elapsed;
 	QString s = tr("Remaining time:");
 	s += "  " + QTime( 0, 0, 0 ).addMSecs( still ).toString("hh:mm:ss");
 	etaLab->setText( s );
@@ -144,6 +202,7 @@ void RenderingDialog::enableUI( bool b )
 {
 	h264RadBtn->setEnabled( b );
 	mpeg2RadBtn->setEnabled( b );
+	hevcRadBtn->setEnabled( b );
 	filenameLE->setEnabled( b );
 	timelineRadBtn->setEnabled( b );
 	playheadRadBtn->setEnabled( b );

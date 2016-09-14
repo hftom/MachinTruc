@@ -18,7 +18,7 @@ OutputFF::OutputFF( MQueue<Frame*> *vf, MQueue<Frame*> *af )
 	audioSamplesSize( 0 ),
 	audioBuffer( NULL ),
 	audioBufferLen( 0 ),
-	firstAudioPts( 0 ),
+	swr( NULL ),
 	endPTS( 0 ),
 	showFrameProgress( true )
 {
@@ -64,15 +64,21 @@ void OutputFF::close()
 		avformat_free_context( formatCtx );
 		formatCtx = NULL;
 	}
+	
+	if ( swr ) {
+		swr_free( &swr );
+	}
 }
 
 
 
-bool OutputFF::openVideo( Profile &prof, int vrate, bool mpeg )
+bool OutputFF::openVideo( Profile &prof, int vrate, int vcodec )
 {
 	AVCodecID vcodec_id = AV_CODEC_ID_H264;
-	if ( mpeg )
-		vcodec_id = AV_CODEC_ID_MPEG2VIDEO;
+	switch (vcodec) {
+		case VCODEC_HEVC: vcodec_id = AV_CODEC_ID_H265; break;
+		case VCODEC_MPEG2: vcodec_id = AV_CODEC_ID_MPEG2VIDEO; break;
+	}
 	AVCodec *codec = avcodec_find_encoder( vcodec_id );
 	if ( !codec ) {
 		qDebug() << "Could not find video encoder.";
@@ -144,9 +150,12 @@ bool OutputFF::openVideo( Profile &prof, int vrate, bool mpeg )
 
 
 
-bool OutputFF::openAudio( Profile &prof )
+bool OutputFF::openAudio( Profile &prof, int vcodec )
 {
-	AVCodecID codec_id = AV_CODEC_ID_MP2;
+	AVCodecID codec_id = AV_CODEC_ID_AAC;
+	if (vcodec == VCODEC_MPEG2) {
+		codec_id = AV_CODEC_ID_MP2;
+	}
 
 	// find the video encoder
 	AVCodec *codec = avcodec_find_encoder( codec_id );
@@ -163,17 +172,22 @@ bool OutputFF::openAudio( Profile &prof )
 	audioStream->id = formatCtx->nb_streams - 1;
 
 	AVCodecContext *audioCodecCtx = audioStream->codec;
+	
 	/* put sample parameters */
 	audioCodecCtx->bit_rate = 256000;
-	/* check that the encoder supports s16 pcm input */
-    audioCodecCtx->sample_fmt = AV_SAMPLE_FMT_S16;
-	/*if ( !check_sample_fmt( codec, audioCodecCtx->sample_fmt ) ) {
-		qDebug() << "Audio encoder does not support sample format"
-				<< av_get_sample_fmt_name( audioCodecCtx->sample_fmt );
-		return false;
-	}*/
+	
+	// set encoder sample format
+	if (vcodec == VCODEC_MPEG2) {
+		audioCodecCtx->sample_fmt = AV_SAMPLE_FMT_S16;
+	}
+	else {
+		audioCodecCtx->sample_fmt = AV_SAMPLE_FMT_FLTP;
+		// set strict -2
+		audioCodecCtx->strict_std_compliance = -2;
+	}
+
 	/* select other audio parameters supported by the encoder */
-    audioCodecCtx->sample_rate = 48000;
+    audioCodecCtx->sample_rate = prof.getAudioSampleRate();
     audioCodecCtx->channel_layout = AV_CH_LAYOUT_STEREO;
     audioCodecCtx->channels = av_get_channel_layout_nb_channels( audioCodecCtx->channel_layout );
 	
@@ -203,6 +217,8 @@ bool OutputFF::openAudio( Profile &prof )
 	audioSamplesSize = av_samples_get_buffer_size( NULL, audioCodecCtx->channels,
 												audioCodecCtx->frame_size,
 												audioCodecCtx->sample_fmt, 0 );
+	audioCodecFrameSize = audioCodecCtx->frame_size;
+
 	if ( audioSamplesSize < 0 ) {
 		qDebug() << "Could not get samples buffer size.";
 		return false;
@@ -213,7 +229,7 @@ bool OutputFF::openAudio( Profile &prof )
 		qDebug() << "Could not allocate samples buffer.";
 		return false;
 	}
-	audioBuffer = (uint8_t*)av_malloc( audioSamplesSize );
+	audioBuffer = (uint8_t*)av_malloc( audioCodecCtx->frame_size * prof.getAudioChannels() * Profile::bytesPerChannel(&prof) );
 	audioBufferLen = 0;
 	if ( !audioBuffer ) {
 		qDebug() << "Could not allocate audio buffer.";
@@ -227,29 +243,54 @@ bool OutputFF::openAudio( Profile &prof )
 		qDebug() << "Could not setup audio frame";
 		return false;
 	}
-	
+
+	// set audio resampler 
+	swr = swr_alloc_set_opts( swr, AV_CH_LAYOUT_STEREO, audioCodecCtx->sample_fmt, audioCodecCtx->sample_rate, AV_CH_LAYOUT_STEREO,
+							  AV_SAMPLE_FMT_S16, prof.getAudioSampleRate(), 0, NULL );
+	if (!swr || swr_init( swr ) < 0) {
+		qDebug() << "Could not init resampler";
+		return false;
+	}
+
 	return true;
 }
 
 
 
-bool OutputFF::openFormat( QString filename, Profile &prof, int vrate, bool mpeg )
+bool OutputFF::openFormat( QString filename, Profile &prof, int vrate, int vcodec )
 {
 	int ret;
-
-	avformat_alloc_output_context2( &formatCtx, NULL, "matroska", filename.toLatin1().data()  );
+	QString container;
+	
+	switch (vcodec) {
+		case VCODEC_HEVC: {
+			container = "matroska";
+			filename += ".mkv";
+			break;
+		}
+		case VCODEC_MPEG2: {
+			container = "mpeg";
+			filename += ".mpg";
+			break;
+		}
+		default: {
+			container = "mp4";
+			filename += ".mp4";
+		}
+	}
+	avformat_alloc_output_context2( &formatCtx, NULL, container.toLatin1().data(), filename.toLatin1().data() );
 	
 	if ( !formatCtx ) {
 		qDebug() << "Could not open format context.";
 		return false;
 	}
 	
-	if ( !openVideo( prof, vrate, mpeg ) ) {
+	if ( !openVideo( prof, vrate, vcodec ) ) {
 		close();
 		return false;
 	}
 
-	if ( !openAudio( prof ) ) {
+	if ( !openAudio( prof, vcodec ) ) {
 		close();
 		return false;
 	}
@@ -277,14 +318,14 @@ bool OutputFF::openFormat( QString filename, Profile &prof, int vrate, bool mpeg
 
 
 
-bool OutputFF::init( QString filename, Profile &prof, int vrate, bool mpeg, double end )
+bool OutputFF::init( QString filename, Profile &prof, int vrate, int vcodec, double end )
 {
 	close();
 
 	if ( !audioFrames || !videoFrames )
 		return false;
 
-	if ( !openFormat( filename, prof, vrate, mpeg ) )
+	if ( !openFormat( filename, prof, vrate, vcodec ) )
 		return false;	
 
 	endPTS = end;
@@ -320,6 +361,7 @@ void OutputFF::run()
 	bool videoEnd = false;
 	QTime time;
 	time.start();
+	totalSamples = 0;
 	
 	while ( running ) {
 		wait = true;
@@ -341,8 +383,6 @@ void OutputFF::run()
 		}
 		if ( nAudio < nVideo ) {
 			if ( (f = audioFrames->dequeue()) ) {
-				if ( !nAudio )
-					firstAudioPts = f->pts();
 				encodeAudio( f, nAudio );
 				//qDebug() << "N audio:" << nAudio;
 				f->release();
@@ -482,31 +522,29 @@ bool OutputFF::encodeAudio( Frame *f, int nFrame )
 	av_init_packet( &pkt );
 	pkt.data = NULL;    // packet data will be allocated by the encoder
 	pkt.size = 0;
-	
-	/* when we pass a frame to the encoder, it may keep a reference to it
-	* internally;
-	* make sure we do not overwrite it here */
-	av_frame_make_writable( audioFrame );
 		
 	uint8_t *buf = f->data();
-	int dataLen = f->audioSamples() * f->profile.getAudioChannels() * 2;
-	
-	if ( audioBufferLen + dataLen < audioSamplesSize ) {
-		memcpy( audioBuffer + audioBufferLen, buf, dataLen );
-		audioBufferLen += dataLen;
-	}
-	else {
-		int totalSamples = ( f->pts() - firstAudioPts ) * 48000 / MICROSECOND;
-		do {
-			if ( audioBufferLen > 0 ) {
-				totalSamples -= audioBufferLen / 4;
-				memcpy( audioSamples, audioBuffer, audioBufferLen );
-			}
-			int size = qMin( dataLen, audioSamplesSize - audioBufferLen );
-			memcpy( audioSamples + audioBufferLen, buf, size );
-			audioBufferLen = 0;
-			dataLen -= size;
-			buf += size; 
+	int nSamples = f->audioSamples();
+	int inBytesPerSample = f->profile.getAudioChannels() * Profile::bytesPerChannel(&f->profile);
+	uint8_t *end = buf + (nSamples * inBytesPerSample);
+
+	do {
+		int ns = qMin( nSamples, audioCodecFrameSize - (audioBufferLen / inBytesPerSample) );
+		memcpy( audioBuffer + audioBufferLen, buf, ns * inBytesPerSample );
+		audioBufferLen += ns * inBytesPerSample;
+		nSamples -= ns;
+		buf += ns * inBytesPerSample;
+
+		if ( audioBufferLen == audioCodecFrameSize * inBytesPerSample ) {
+			// convert
+			swr_convert( swr, (uint8_t**)audioFrame->extended_data, audioCodecFrameSize,
+						 (const uint8_t**)&audioBuffer, audioCodecFrameSize );
+			
+			/* when we pass a frame to the encoder, it may keep a reference to it
+			* internally;
+			* make sure we do not overwrite it here */
+			av_frame_make_writable( audioFrame );
+			
 			
 			audioFrame->pts = av_rescale_q( totalSamples,
 											(AVRational){1, audioStream->codec->sample_rate},
@@ -528,15 +566,10 @@ bool OutputFF::encodeAudio( Frame *f, int nFrame )
 					qDebug() << "Error while writing audio frame.";
 			}
 			
-			totalSamples += audioSamplesSize / 4;
-
-		} while ( dataLen >= audioSamplesSize );
-		
-		if ( dataLen ) {
-			memcpy( audioBuffer, buf, dataLen );
-			audioBufferLen = dataLen;
+			totalSamples += audioCodecFrameSize;
+			audioBufferLen = 0;
 		}
-	}
+	} while (buf < end);
 
 	return true;
 }

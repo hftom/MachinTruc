@@ -4,9 +4,9 @@
 #include <QMainWindow>
 #include <QSlider>
 #include <QProgressDialog>
+#include <QTimer>
 
 #include "ui_mainwindow.h"
-#include "ui_blankdialog.h"
 
 #include "gui/filter/shaderedit.h"
 #include "gui/projectclipspage.h"
@@ -20,22 +20,6 @@
 #include "timeline/timeline.h"
 #include "animation/animeditor.h"
 #include "projectfile.h"
-
-
-
-class BlankDialog : public QDialog, private Ui::BlankDialog
-{
-	Q_OBJECT
-public:
-	BlankDialog( QWidget *parent, int w, int h ) : QDialog( parent ) {
-		setupUi( this );
-		widthSpinBox->setValue( w );
-		heightSpinBox->setValue( h );
-	}
-	
-	int getWidth() { return widthSpinBox->value(); }
-	int getHeight() { return heightSpinBox->value(); }
-};
 
 
 
@@ -153,6 +137,7 @@ public:
 	
 	Source* getDroppedCut( int index, QString mime, QString filename, double &start, double &len );
 	Sampler* getSampler() { return sampler; };
+	void timelineTrackAddRemove( int index, bool remove );
 
 public slots:
 	void clipThumbRequest( ThumbRequest request );
@@ -165,8 +150,12 @@ protected:
 private slots:
 	void showMemoryInfo();
 	
+	bool saveAndContinue();
+	void doBackup();
+	void loadBackup();
+	
 	void renderDialog();
-	void renderStart( double startPts );
+	void renderStart( double startPts, QSize out );
 	void renderFinished( double pts );
 	
 	void openSources();
@@ -180,7 +169,7 @@ private slots:
 
 	void newProject();
 	void saveProject();
-	void loadProject();
+	void openProject();
 	
 	void ensureVisible( const QGraphicsItem *it );
 	void centerOn( const QGraphicsItem *it );
@@ -219,6 +208,8 @@ private slots:
 	void zoomOut();
 	
 private:
+	bool loadProject(QString filename, QString &backupFilename);
+	void removeBackup();
 	void unsupportedDuplicateMessage();
 	
 	ProjectSourcesPage *sourcePage;
@@ -244,6 +235,7 @@ private:
 	
 	Profile tempProfile;
 	AppConfig appConfig;
+	QTimer backupTimer;
 	
 signals:
 	void startOSDTimer( bool );

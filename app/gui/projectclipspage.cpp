@@ -68,7 +68,7 @@ void ProjectSourcesPage::clearAllSources()
 {
 	for ( int i = 0; i < sourceListWidget->count(); ++i ) {
 		SourceListItem *it = (SourceListItem*)sourceListWidget->item( i );
-		delete it->getSource();
+		it->getSource()->release();
 	}
 	model.setSource( NULL );
 	activeSource = NULL;

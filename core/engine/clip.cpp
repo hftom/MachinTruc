@@ -138,6 +138,16 @@ void Clip::setTransition( double len )
 
 
 
+void Clip::setTransition( Transition *trans )
+{
+	if (transition) {
+		delete transition;
+	}
+	transition = trans;
+}
+
+
+
 void Clip::removeTransition()
 {
 	if ( transition )

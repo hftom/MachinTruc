@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>344</width>
-    <height>321</height>
+    <width>422</width>
+    <height>413</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,27 +17,84 @@
    <item row="0" column="0">
     <layout class="QVBoxLayout" name="verticalLayout">
      <item>
-      <widget class="QGroupBox" name="groupBox_2">
+      <widget class="QGroupBox" name="videoCodecGroupBox">
        <property name="title">
         <string/>
        </property>
        <layout class="QGridLayout" name="gridLayout_2">
-        <item row="0" column="0">
+        <item row="0" column="1">
          <widget class="QRadioButton" name="h264RadBtn">
           <property name="text">
-           <string>H264</string>
+           <string>MP4 (&amp;h264/aac)</string>
           </property>
+          <attribute name="buttonGroup">
+           <string notr="true">buttonGroup</string>
+          </attribute>
          </widget>
         </item>
-        <item row="0" column="1">
+        <item row="0" column="2">
          <widget class="QRadioButton" name="mpeg2RadBtn">
           <property name="text">
-           <string>MPEG2</string>
+           <string>&amp;MPG (mpeg2/mp2)</string>
           </property>
+          <attribute name="buttonGroup">
+           <string notr="true">buttonGroup</string>
+          </attribute>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QRadioButton" name="hevcRadBtn">
+          <property name="text">
+           <string>M&amp;KV (hevc/aac)</string>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">buttonGroup</string>
+          </attribute>
          </widget>
         </item>
        </layout>
       </widget>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_5">
+       <item>
+        <widget class="QLabel" name="label_6">
+         <property name="text">
+          <string>Resize:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QSpinBox" name="widthSpin">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_7">
+         <property name="text">
+          <string>x</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QSpinBox" name="heightSpin"/>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_3">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
      </item>
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -57,7 +114,7 @@
           <number>1</number>
          </property>
          <property name="maximum">
-          <number>24</number>
+          <number>48</number>
          </property>
          <property name="value">
           <number>10</number>
@@ -113,14 +170,14 @@
         <item row="0" column="0">
          <widget class="QRadioButton" name="timelineRadBtn">
           <property name="text">
-           <string>Whole timeline</string>
+           <string>&amp;Whole timeline</string>
           </property>
          </widget>
         </item>
         <item row="1" column="0">
          <widget class="QRadioButton" name="playheadRadBtn">
           <property name="text">
-           <string>From playhead</string>
+           <string>F&amp;rom playhead</string>
           </property>
          </widget>
         </item>
@@ -153,7 +210,7 @@
         <item row="2" column="0" colspan="2">
          <widget class="QRadioButton" name="playheadToEndRadBtn">
           <property name="text">
-           <string>From playhead to the end</string>
+           <string>From playhead &amp;to the end</string>
           </property>
          </widget>
         </item>
@@ -223,9 +280,11 @@
   </layout>
  </widget>
  <tabstops>
-  <tabstop>cancelBtn</tabstop>
+  <tabstop>hevcRadBtn</tabstop>
   <tabstop>h264RadBtn</tabstop>
   <tabstop>mpeg2RadBtn</tabstop>
+  <tabstop>widthSpin</tabstop>
+  <tabstop>heightSpin</tabstop>
   <tabstop>videoRateSpin</tabstop>
   <tabstop>filenameLE</tabstop>
   <tabstop>openBtn</tabstop>
@@ -234,9 +293,13 @@
   <tabstop>durationSpin</tabstop>
   <tabstop>playheadToEndRadBtn</tabstop>
   <tabstop>renderBtn</tabstop>
+  <tabstop>cancelBtn</tabstop>
  </tabstops>
  <resources>
   <include location="../resources.qrc"/>
  </resources>
  <connections/>
+ <buttongroups>
+  <buttongroup name="buttonGroup"/>
+ </buttongroups>
 </ui>

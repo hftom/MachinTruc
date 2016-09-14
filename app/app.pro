@@ -5,6 +5,7 @@ QT += xml
 
 SOURCES = \
 	main.cpp \
+	undo.cpp \
 	gui/appconfig.cpp \
 	gui/shadercollection.cpp \
 	gui/renderingdialog.cpp \
@@ -44,6 +45,7 @@ SOURCES = \
 	animation/keyitem.cpp
 	
 HEADERS = \
+	undo.h \
 	gui/appconfig.h \
 	gui/shadercollection.h \
 	gui/renderingdialog.h \
@@ -98,8 +100,7 @@ FORMS = \
 	ui/profile.ui \
 	ui/filters.ui \
 	ui/animeditor.ui \
-	ui/render.ui \
-	ui/blankdialog.ui
+	ui/render.ui
 
 TARGET = ../machintruc
 

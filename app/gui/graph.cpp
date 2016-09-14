@@ -285,13 +285,8 @@ void Graph::effectReleased( GraphEffectItem *it )
 	}
 	
 	if ( index != -1 ) {
-		if ( isAudio )
-			currentClip->getClip()->audioFilters.move( it->index(), index );
-		else
-			currentClip->getClip()->videoFilters.move( it->index(), index );
-		emit updateFrame();
+		emit filterReordered( currentClip->getClip(), !isAudio, it->index(), index );
 	}
-	QTimer::singleShot ( 1, this, SLOT(rebuildGraph()) );
 }
 
 

@@ -26,7 +26,7 @@ FxPage::FxPage()
 	connect( videoGraph, SIGNAL(filterSelected(Clip*,int)), this, SLOT(videoFilterSelected(Clip*,int)) );
 	connect( videoGraph, SIGNAL(filterDeleted(Clip*,QSharedPointer<Filter>)), this, SIGNAL(filterDeleted(Clip*,QSharedPointer<Filter>)) );
 	connect( videoGraph, SIGNAL(filterAdded(ClipViewItem*,QString,int)), this, SIGNAL(filterAdded(ClipViewItem*,QString,int)) );
-	connect( videoGraph, SIGNAL(updateFrame()), this, SIGNAL(updateFrame()) );
+	connect( videoGraph, SIGNAL(filterReordered(Clip*,bool,int,int)), this, SIGNAL(filterReordered(Clip*,bool,int,int)) );
 	connect( videoGraph, SIGNAL(showEffect(int)), this, SLOT(showVideoEffect(int)) );
 	
 	audioEffectsListView->setModel( new EffectListModel( &fc->audioFilters ) );
@@ -37,7 +37,7 @@ FxPage::FxPage()
 	connect( audioGraph, SIGNAL(filterSelected(Clip*,int)), this, SLOT(audioFilterSelected(Clip*,int)) );
 	connect( audioGraph, SIGNAL(filterDeleted(Clip*,QSharedPointer<Filter>)), this, SIGNAL(filterDeleted(Clip*,QSharedPointer<Filter>)) );
 	connect( audioGraph, SIGNAL(filterAdded(ClipViewItem*,QString,int)), this, SIGNAL(filterAdded(ClipViewItem*,QString,int)) );
-	connect( audioGraph, SIGNAL(updateFrame()), this, SIGNAL(updateFrame()) );
+	connect( audioGraph, SIGNAL(filterReordered(Clip*,bool,int,int)), this, SIGNAL(filterReordered(Clip*,bool,int,int)) );
 	connect( audioGraph, SIGNAL(showEffect(int)), this, SLOT(showAudioEffect(int)) );
 }
 
@@ -72,6 +72,7 @@ void FxPage::videoFilterSelected( Clip *c, int index )
 	connect( fw, SIGNAL(updateFrame()), this, SIGNAL(updateFrame()) );
 	connect( fw, SIGNAL(editAnimation(FilterWidget*,ParameterWidget*,Parameter*)), this, SIGNAL(editAnimation(FilterWidget*,ParameterWidget*,Parameter*)) );
 	connect( fw, SIGNAL(compileShaderRequest(ThumbRequest)), this, SIGNAL(compileShaderRequest(ThumbRequest)) );
+	connect( fw, SIGNAL(paramUndoCommand(QSharedPointer<Filter>,Parameter*,QVariant,QVariant)), this, SIGNAL(paramUndoCommand(QSharedPointer<Filter>,Parameter*,QVariant,QVariant)) );
 	connect( fw, SIGNAL(reloadCurrentFilter()), videoGraph, SLOT(reloadCurrentFilter()) );
 	connect( this, SIGNAL(ovdValueChanged(ParameterWidget*)), fw, SLOT(ovdValueChanged(ParameterWidget*)) );
 	effectsWidgetLayout->addWidget( fw, 0, 1 );
@@ -101,6 +102,7 @@ void FxPage::audioFilterSelected( Clip *c, int index )
 	FilterWidget *fw = new FilterWidget( currentEffectsWidgetAudio, c, c->audioFilters.at( index ) );
 	connect( fw, SIGNAL(updateFrame()), this, SIGNAL(updateFrame()) );
 	connect( fw, SIGNAL(editAnimation(FilterWidget*,ParameterWidget*,Parameter*)), this, SIGNAL(editAnimation(FilterWidget*,ParameterWidget*,Parameter*)) );
+	connect( fw, SIGNAL(paramUndoCommand(QSharedPointer<Filter>,Parameter*,QVariant,QVariant)), this, SIGNAL(paramUndoCommand(QSharedPointer<Filter>,Parameter*,QVariant,QVariant)) );
 	effectsWidgetLayoutAudio->addWidget( fw, 0, 1 );
 	effectsWidgetLayoutAudio->setRowStretch( 1, 1 );
 	audioEffectsWidget->setWidget( currentEffectsWidgetAudio );

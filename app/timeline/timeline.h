@@ -76,24 +76,39 @@ public:
 	
 	void trackRemoved( int index );
 	void trackAdded( int index );
+	void addTrack( int index, bool noUndo = false );
 	
 	void thumbResultReady( ThumbRequest result );
 	
 	void zoomInOut( bool in );
-	void deleteClip();
+	void editCut();
+	
+	void commandAddClip(Clip *clip, int track, Transition *tail);
+	void commandRemoveClip(Clip *clip, int track);
+	void commandMoveClip(Clip *clip, bool multi, int oldTrack, int newTrack, double pos, Transition *trans, Transition *tail);
+	void commandResizeClip(Clip *clip, bool resizeStart, int track, double position, double length, Transition *trans);
+	void commandClipSpeed(Clip *c, int track, double speed, double length, Transition *tail);
+	void commandSplitClip(Clip *c, Clip *c1, Clip *c2, int track, Transition *trans, Transition *tail, bool redo);
+	void commandEffectAddRemove(Clip *c, int track, QSharedPointer<Filter> f, bool isVideo, int index, bool remove);
+	void commandTrackAddRemove(int index, bool remove, bool noparent = false);
+	void commandEffectMove(Clip *c, double newPos, bool isVideo, int index);
+	void commandEffectResize(Clip *c, bool resizeStart, double offset, double position, double length, bool video, int effectIndex);
+	void commandEffectReorder(Clip *c, int track, int oldIndex, int newIndex, bool isVideo);
+	void commandEffectParam(QSharedPointer<Filter> filter, Parameter *param, QVariant value);
 	
 public slots:
 	void viewMouseMove( QPointF pos );
 	void viewMouseLeave();
 	void viewSizeChanged( const QSize &size );
 	void setCursorPos( double pts );
-	void addTrack( int index );
 	
 	void setScene( Scene *s );
 	void addFilter( ClipViewItem *clip, QString fx, int index = -1 );
 	void splitCurrentClip();
 	
 	void filterDeleted( Clip *c, QSharedPointer<Filter> f );
+	void filterReordered( Clip *c, bool video, int index, int newIndex );
+	void paramUndoCommand(QSharedPointer<Filter> f, Parameter *p, QVariant oldValue, QVariant newValue);
 	
 	void showEffect( bool isVideo, int index );
 	
@@ -112,7 +127,9 @@ private slots:
 	void updateLength();
 	
 private:
+	void updateStabilize(Clip *clip, Filter *f, bool stop);
 	int getTrack( const QPointF &p );
+	ClipViewItem* getClipViewItem(Clip *clip, int track);
 	void snapMove( AbstractViewItem *item, double &pos, double mouseX, double itemScenePos, bool limit = false );
 	void snapResize( AbstractViewItem *item, int way, double &len, double mouseX, double itemScenePos );
 

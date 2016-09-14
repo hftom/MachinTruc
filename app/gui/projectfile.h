@@ -10,11 +10,12 @@ public:
 	ProjectFile() : readError( false ) {}
 
 	bool loadProject( QString filename );
-	bool saveProject( QList<Source*> sources, Sampler *sampler, QString filename );
+	bool saveProject( QList<Source*> sources, Sampler *sampler, QString filename, QString backupProjectFilename = "" );
 
 	
 	QList<Source*> sourcesList;
 	QList<Scene*> sceneList;
+	QString backupFilename;
 	bool readError;
 	
 private:
@@ -35,7 +36,7 @@ private:
 	void createInt( QDomNode &parent, QString name, int val );
 	void createInt64( QDomNode &parent, QString name, qint64 val );
 	void createDouble( QDomNode &parent, QString name, double val );
-	
+
 	QDomDocument document;
 	Profile projectProfile;
 };
