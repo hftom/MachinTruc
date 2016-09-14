@@ -450,18 +450,14 @@ void TopWindow::newProject()
 	}
 
 	tempProfile = Profile();
-	ProjectProfileDialog dlg( this, tempProfile, WARNNO );
-	dlg.exec();
-	if ( dlg.result() == QDialog::Accepted ) {
-		showProjectClipsPage();
-		sampler->newProject( dlg.getCurrentProfile() );
-		timeline->setScene( sampler->getCurrentScene() );
-		sourcePage->clearAllSources();
-		timelineSeek( 0 );
-		QTimer::singleShot( VIDEOCLEARDELAY, vw, SLOT(clear()) );
-		currentProjectFile = "";
-		UndoStack::getStack()->clear();
-	}
+	showProjectClipsPage();
+	sampler->newProject( tempProfile );
+	timeline->setScene( sampler->getCurrentScene() );
+	sourcePage->clearAllSources();
+	timelineSeek( 0 );
+	QTimer::singleShot( VIDEOCLEARDELAY, vw, SLOT(clear()) );
+	currentProjectFile = "";
+	UndoStack::getStack()->clear();
 }
 
 
