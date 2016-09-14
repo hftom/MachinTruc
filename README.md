@@ -7,8 +7,7 @@ MachinTruc is a non linear video editor.
 
 Deps:
 - ffmpeg (libavformat, libavcodec, libavutil, libavfilter, libswresample, libswscale)
-- vid.stab (https://github.com/georgmartius/vid.stab)
-	I strongly recommend to apply this patch : http://hftom.fr/vidstab.memleak-fix.diff
+- OpenMP
 - SDL (sound output)
 - Movit (http://git.sesse.net/?p=movit)
 - Qt 5
