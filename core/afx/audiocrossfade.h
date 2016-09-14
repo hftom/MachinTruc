@@ -50,9 +50,9 @@ public:
 		}
 
 		if ( first && second ) {
-			int16_t *in = (int16_t*)buf1->data();
-			int16_t *in2 = (int16_t*)buf2->data();
-			int16_t *out = (int16_t*)dst->data();
+			float *in = (float*)buf1->data();
+			float *in2 = (float*)buf2->data();
+			float *out = (float*)dst->data();
 
 			for ( int i = 0; i < samples; ++i ) {
 				for ( int j = 0; j < channels; ++j )
@@ -60,11 +60,11 @@ public:
 			}
 		}
 		else if ( first ) {
-			int bps = first->profile.getAudioChannels() * first->profile.bytesPerChannel( &first->profile );
+			int bps = first->profile.getAudioChannels() * Profile::bytesPerChannel( &first->profile );
 			memcpy( dst->data(), buf1->data(), samples * bps );
 		}
 		else {
-			int bps = second->profile.getAudioChannels() * second->profile.bytesPerChannel( &second->profile );
+			int bps = second->profile.getAudioChannels() * Profile::bytesPerChannel( &second->profile );
 			memcpy( dst->data(), buf2->data(), samples * bps );
 		}
 

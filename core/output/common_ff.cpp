@@ -2,6 +2,7 @@
 #include <QMutex>
 
 #include "common_ff.h"
+#include "engine/profile.h"
 
 
 
@@ -62,6 +63,26 @@ bool FFmpegCommon::initFFmpeg()
 	}
 
 	return initDone;
+}
+
+
+
+AVSampleFormat FFmpegCommon::convertProfileSampleFormat( int f )
+{
+	if ( f == Profile::SAMPLE_FMT_32F )
+		return AV_SAMPLE_FMT_FLT;
+
+	return AV_SAMPLE_FMT_S16;
+}
+
+
+
+qint64 FFmpegCommon::convertProfileAudioLayout( int layout )
+{
+	if ( layout == Profile::LAYOUT_51 )
+		return AV_CH_LAYOUT_5POINT1 ;
+
+	return AV_CH_LAYOUT_STEREO;
 }
 
 

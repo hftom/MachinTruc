@@ -335,26 +335,6 @@ bool FFDecoder::ffOpen( QString fn )
 
 
 
-AVSampleFormat FFDecoder::convertProfileSampleFormat( int f )
-{
-	if ( f == Profile::SAMPLE_FMT_32F )
-		return AV_SAMPLE_FMT_FLT;
-
-	return AV_SAMPLE_FMT_S16;
-}
-
-
-
-qint64 FFDecoder::convertProfileAudioLayout( int layout )
-{
-	if ( layout == Profile::LAYOUT_51 )
-		return AV_CH_LAYOUT_5POINT1 ;
-
-	return AV_CH_LAYOUT_STEREO;
-}
-
-
-
 void FFDecoder::resetAudioResampler()
 {
 	if ( !haveAudio )
@@ -371,8 +351,9 @@ void FFDecoder::resetAudioResampler()
 	lastLayout = (audioCodecCtx->channel_layout && audioCodecCtx->channels == av_get_channel_layout_nb_channels(audioCodecCtx->channel_layout)) ?
 								audioCodecCtx->channel_layout : av_get_default_channel_layout(audioCodecCtx->channels);
 	lastChannels = audioCodecCtx->channels;
-	swr = swr_alloc_set_opts( swr, convertProfileAudioLayout( outProfile.getAudioLayout() ), convertProfileSampleFormat( outProfile.getAudioFormat() ),
-								outProfile.getAudioSampleRate(), lastLayout, audioCodecCtx->sample_fmt, audioCodecCtx->sample_rate, 0, NULL );
+	swr = swr_alloc_set_opts( swr, FFmpegCommon::getGlobalInstance()->convertProfileAudioLayout( outProfile.getAudioLayout() ),
+							  FFmpegCommon::getGlobalInstance()->convertProfileSampleFormat( outProfile.getAudioFormat() ),
+							  outProfile.getAudioSampleRate(), lastLayout, audioCodecCtx->sample_fmt, audioCodecCtx->sample_rate, 0, NULL );
 	swr_init( swr );
 }
 
@@ -770,7 +751,7 @@ bool FFDecoder::decodeAudio( AudioFrame *f, int sync, double *pts )
 				// roundup estimate
 				int outSamples = av_rescale_rnd( swr_get_delay( swr, audioCodecCtx->sample_rate ) + audioAvframe->nb_samples, outProfile.getAudioSampleRate(), audioCodecCtx->sample_rate, AV_ROUND_UP );
 				// FIXME:nasty hack to avoid ringbuffer overflow
-				outSamples *= outProfile.getAudioChannels();
+				//outSamples *= outProfile.getAudioChannels();
 
 				// audio channels and layout may have changed
 				// if so, we flush swr internal buffer and reset

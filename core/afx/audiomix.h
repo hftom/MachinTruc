@@ -16,9 +16,9 @@ public:
 		Q_UNUSED( p );
 		Q_UNUSED( second );
 		int i, j, samples = first->audioSamples(), channels = first->profile.getAudioChannels();
-		int16_t *in1 = (int16_t*)buf1->data();
-		int16_t *in2 = (int16_t*)buf2->data();
-		int16_t *out = (int16_t*)dst->data();
+		float *in1 = (float*)buf1->data();
+		float *in2 = (float*)buf2->data();
+		float *out = (float*)dst->data();
 
 		// MLt combine_audio
 		double vp[6];
@@ -33,8 +33,8 @@ public:
 		for ( i = 0; i < samples; i++ ) {
 			for ( j = 0; j < channels; j++ ) {
 				v = (double)( 1.0 * in2[ i * channels + j ] + in1[ i * channels + j ] );
-				v = v < -32767 ? -32767 : v > 32767 ? 32767 : v;
-				vp[ j ] = out[ i * channels + j ] = (int16_t)( v * A + vp[ j ] * B );
+				v = v < -1 ? -1 : v > 1 ? 1 : v;
+				vp[ j ] = out[ i * channels + j ] = (float)( v * A + vp[ j ] * B );
 			}
 		}
 

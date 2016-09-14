@@ -2,7 +2,7 @@
 
 #include <QMutexLocker>
 
-#include <SDL/SDL.h>
+#include <SDL2/SDL.h>
 
 #include "audioout/ao_sdl.h"
 
@@ -17,14 +17,15 @@ AudioOutSDL::AudioOutSDL()
 	running( false )
 {
 	buffer = (uint8_t*)malloc( bufferSize );
+	Profile p;
 
 	SDL_Init( SDL_INIT_AUDIO );
 
 	SDL_AudioSpec ss, obt;
 	ss.freq = sampleRate = DEFAULTSAMPLERATE;
-	ss.format = AUDIO_S16SYS;
+	ss.format = AUDIO_F32SYS;
 	ss.channels = DEFAULTCHANNELS;
-	bytesPerSample = ss.channels * 2;
+	bytesPerSample = ss.channels * Profile::bytesPerChannel(&p);
 	ss.silence = 0;
 	ss.samples = bufferSize;
 	ss.callback = streamRequestCallback;
@@ -119,7 +120,7 @@ void AudioOutSDL::streamRequestCallback( void *userdata, uint8_t *stream, int le
 		}
 		ao->readData( &data, (tv.tv_sec * MICROSECOND) + tv.tv_usec + latency, ao->readUserData );
 		if ( data ) {
-			int s = data->profile.bytesPerChannel( &data->profile ) * data->profile.getAudioChannels() * data->audioSamples();
+			int s = Profile::bytesPerChannel( &data->profile ) * data->profile.getAudioChannels() * data->audioSamples();
 			latency += MICROSECOND * ( (double)s / (double)ao->bytesPerSample ) / (double)ao->sampleRate;
 			if ( size < s ) {
 				memcpy( dst, data->data(), size );

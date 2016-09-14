@@ -19,7 +19,7 @@ Profile::Profile()
 	haveAudio( true ),
 	audioSampleRate( DEFAULTSAMPLERATE ),
 	audioChannels( DEFAULTCHANNELS ),
-	audioFormat( SAMPLE_FMT_S16 ),
+	audioFormat( DEFAULTSAMPLEFORMAT ),
 	audioLayout( DEFAULTLAYOUT ),
 	streamStartTime( 0 ),
 	streamDuration( 0 )

@@ -15,8 +15,8 @@ public:
 	bool process( Frame *f, Buffer *src, Buffer *dst, Profile *p ) {
 		Q_UNUSED( p );
 		int samples = f->audioSamples(), channels = f->profile.getAudioChannels();
-		int16_t *in = (int16_t*)src->data();
-		int16_t *out = (int16_t*)dst->data();
+		float *in = (float*)src->data();
+		float *out = (float*)dst->data();
 		double vol = getParamValue( volume, f->pts() ).toDouble();
 		double d = (double)samples * MICROSECOND / (double)f->profile.getAudioSampleRate();
 		double vol2 = getParamValue( volume, f->pts() + d ).toDouble();

@@ -25,6 +25,8 @@ extern "C" {
 #include <libavfilter/buffersrc.h>
 }
 
+#include <QString>
+
 
 
 const int NCFR = 8;
@@ -47,6 +49,9 @@ public:
 	FFmpegCommon();
 	bool initFFmpeg();
 	static FFmpegCommon* getGlobalInstance();
+	
+	AVSampleFormat convertProfileSampleFormat( int f );
+	qint64 convertProfileAudioLayout( int layout );
 	
 private:
 	bool initDone;

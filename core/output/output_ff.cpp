@@ -246,7 +246,8 @@ bool OutputFF::openAudio( Profile &prof, int vcodec )
 
 	// set audio resampler 
 	swr = swr_alloc_set_opts( swr, AV_CH_LAYOUT_STEREO, audioCodecCtx->sample_fmt, audioCodecCtx->sample_rate, AV_CH_LAYOUT_STEREO,
-							  AV_SAMPLE_FMT_S16, prof.getAudioSampleRate(), 0, NULL );
+							  FFmpegCommon::getGlobalInstance()->convertProfileSampleFormat(prof.getAudioFormat()),
+							  prof.getAudioSampleRate(), 0, NULL );
 	if (!swr || swr_init( swr ) < 0) {
 		qDebug() << "Could not init resampler";
 		return false;

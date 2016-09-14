@@ -204,7 +204,7 @@ void Metronom::readData( Frame **data, double time, void *userdata )
 
 		int speed = m->speed;
 		if ( speed != 0 ) {
-			int sampleSize = f->profile.getAudioChannels() * 2;
+			int sampleSize = f->profile.getAudioChannels() * Profile::bytesPerChannel(&f->profile);
 			int offset, keep;
 			Buffer *buffer = NULL;
 			uint8_t *buf = f->data();

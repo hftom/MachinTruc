@@ -169,7 +169,7 @@ void Sampler::setSource( Source *source, double pts )
 	p.setAudioSampleRate( DEFAULTSAMPLERATE );
 	p.setAudioChannels( DEFAULTCHANNELS );
 	p.setAudioLayout( DEFAULTLAYOUT );
-	p.setAudioFormat( Profile::SAMPLE_FMT_S16 );
+	p.setAudioFormat( DEFAULTSAMPLEFORMAT );
 	if ( p.getVideoInterlaced() ) {
 		p.setVideoFrameRate( p.getVideoFrameRate() * 2.0 );
 		p.setVideoFrameDuration( p.getVideoFrameDuration() / 2.0 );

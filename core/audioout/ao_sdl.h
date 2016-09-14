@@ -5,7 +5,7 @@
 
 #include <sys/time.h>
 
-#include <SDL/SDL_audio.h>
+#include <SDL2/SDL_audio.h>
 
 #include "engine/playbackbuffer.h"
 

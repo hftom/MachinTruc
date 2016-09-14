@@ -20,22 +20,22 @@ public:
 		if ( first && second ) {
 			int samples = first->audioSamples();
 			if ( getNormalizedTime( first->pts() ) < getParamValue( position ).toDouble() ) {
-				int bps = first->profile.getAudioChannels() * first->profile.bytesPerChannel( &first->profile );
+				int bps = first->profile.getAudioChannels() * Profile::bytesPerChannel( &first->profile );
 				memcpy( dst->data(), buf1->data(), samples * bps );
 			}
 			else {
-				int bps = second->profile.getAudioChannels() * second->profile.bytesPerChannel( &second->profile );
+				int bps = second->profile.getAudioChannels() * Profile::bytesPerChannel( &second->profile );
 				memcpy( dst->data(), buf2->data(), samples * bps );
 			}
 		}
 		else if ( first ) {
 			int samples = first->audioSamples();
-			int bps = first->profile.getAudioChannels() * first->profile.bytesPerChannel( &first->profile );
+			int bps = first->profile.getAudioChannels() * Profile::bytesPerChannel( &first->profile );
 			memcpy( dst->data(), buf1->data(), samples * bps );
 		}
 		else {
 			int samples = second->audioSamples();
-			int bps = second->profile.getAudioChannels() * second->profile.bytesPerChannel( &second->profile );
+			int bps = second->profile.getAudioChannels() * Profile::bytesPerChannel( &second->profile );
 			memcpy( dst->data(), buf2->data(), samples * bps );
 		}
 

@@ -23,7 +23,7 @@ unix {
 	CONFIG += link_pkgconfig
 	PKGCONFIG += movit
 	PKGCONFIG += libavformat libavcodec libavutil libswresample libswscale libavfilter
-	PKGCONFIG += sdl
+	PKGCONFIG += sdl2
 	PKGCONFIG += x11
 	
 	QMAKE_CXXFLAGS += -fopenmp

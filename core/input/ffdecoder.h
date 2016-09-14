@@ -156,8 +156,6 @@ private:
 	void shiftCurrentAudioPacket( int len );
 	void shiftCurrentAudioPacketPts( double pts );
 	void resetAudioResampler();
-	AVSampleFormat convertProfileSampleFormat( int f );
-	qint64 convertProfileAudioLayout( int nChannels );
 	bool seek( double t );
 	bool seekDecodeNext( Frame *f );
 
