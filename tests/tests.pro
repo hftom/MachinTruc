@@ -23,9 +23,12 @@ unix {
 	CONFIG += link_pkgconfig
 	PKGCONFIG += movit
 	PKGCONFIG += libavformat libavcodec libavutil libswresample libswscale libavfilter
-	#PKGCONFIG += vidstab
 	PKGCONFIG += sdl
 	PKGCONFIG += x11
+	
+	QMAKE_CXXFLAGS += -fopenmp
+	QMAKE_CFLAGS += -fopenmp
+	QMAKE_LFLAGS += -fopenmp
 }
 
 # ffmpeg
