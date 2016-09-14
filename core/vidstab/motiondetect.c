@@ -33,9 +33,7 @@
 #include <string.h>
 #include <assert.h>
 
-#ifdef USE_OMP
 #include <omp.h>
-#endif
 
 #include "boxblur.h"
 #include "vidstabdefines.h"
@@ -89,11 +87,9 @@ int vsMotionDetectInit(VSMotionDetect* md, const VSMotionDetectConfig* conf, con
     return VS_ERROR;
   }
 
-#ifdef USE_OMP
   if(md->conf.numThreads==0)
     md->conf.numThreads=VS_MAX(omp_get_max_threads()*0.8,1);
   vs_log_info(md->conf.modName, "Multitheading: use %i threads\n",md->conf.numThreads);
-#endif
 
   vsFrameAllocate(&md->prev, &md->fi);
   if (vsFrameIsNull(&md->prev)) {
@@ -726,10 +722,9 @@ LocalMotions calcTransFields(VSMotionDetect* md,
 
   VSVector goodflds = selectfields(md, fields, contrastfunc);
   // use all "good" fields and calculate optimal match to previous frame
-#ifdef USE_OMP
+
   omp_set_num_threads(md->conf.numThreads);
 #pragma omp parallel for shared(goodflds, md, localmotions)
-#endif
   for(int index=0; index < vs_vector_size(&goodflds); index++){
     int i = ((contrast_idx*)vs_vector_get(&goodflds,index))->index;
     LocalMotion m;

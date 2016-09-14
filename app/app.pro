@@ -119,6 +119,10 @@ unix {
 	#PKGCONFIG += vidstab
 	PKGCONFIG += sdl
 	PKGCONFIG += x11
+	
+	QMAKE_CXXFLAGS += -fopenmp
+	QMAKE_CFLAGS += -fopenmp
+	QMAKE_LFLAGS += -fopenmp
 }
 
 # ffmpeg
