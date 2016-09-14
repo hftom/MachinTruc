@@ -8,7 +8,7 @@ MachinTruc is a non linear video editor.
 Deps:
 - ffmpeg (libavformat, libavcodec, libavutil, libavfilter, libswresample, libswscale)
 - OpenMP
-- SDL (sound output)
+- SDL2 (sound output)
 - Movit (http://git.sesse.net/?p=movit)
 - Qt 5
 - X11
