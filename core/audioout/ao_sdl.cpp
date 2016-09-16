@@ -23,7 +23,7 @@ AudioOutSDL::AudioOutSDL()
 
 	SDL_AudioSpec ss, obt;
 	ss.freq = sampleRate = DEFAULTSAMPLERATE;
-	ss.format = AUDIO_F32SYS;
+	ss.format = DEFAULTSAMPLEFORMAT == Profile::SAMPLE_FMT_32F ? AUDIO_F32SYS : AUDIO_S16SYS;
 	ss.channels = DEFAULTCHANNELS;
 	bytesPerSample = ss.channels * Profile::bytesPerChannel(&p);
 	ss.silence = 0;
@@ -71,7 +71,6 @@ void AudioOutSDL::stop()
 
 void AudioOutSDL::setReadCallback( void *func, void *userdata )
 {
-	printf("setReadCallback\n");
 	readData = (READDATACALLBACK)func;
 	readUserData = userdata;
 }

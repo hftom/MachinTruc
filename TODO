@@ -8,6 +8,7 @@ TODO
 - Source properties override
 - Timeline copy/cut/paste
 - Filter copy/paste
+- Show source's filters in filter graph (readonly ?)
 - finish animation editor
 - Timeline edit workflow (insert, remove gap, ripple ..)
 - title animation (producers ?)
