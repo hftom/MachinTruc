@@ -31,7 +31,8 @@ public:
 			delete list.takeFirst();
 		bytesPerSample = Profile::bytesPerChannel( &p ) * p.getAudioChannels();
 		sampleRate = p.getAudioSampleRate();
-		maxSamples = (((double)sampleRate / p.getVideoFrameRate()) + 1) * NUMINPUTFRAMES;
+		double fps = qMax(p.getVideoFrameRate(), 1.0);
+		maxSamples = (((double)sampleRate / fps) + 1) * NUMINPUTFRAMES;
 	}
 	bool readable( int nSamples ) {
 		QMutexLocker ml( &mutex );
