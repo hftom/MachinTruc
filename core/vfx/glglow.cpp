@@ -5,9 +5,9 @@
 
 GLGlow::GLGlow( QString id, QString name ) : GLFilter( id, name )
 {
-	radius = addParameter( "radius", tr("Radius:"), Parameter::PDOUBLE, 20.0, 0.0, 100.0, true );
+	radius = addParameter( "radius", tr("Radius:"), Parameter::PDOUBLE, 20.0, 0.0, 100.0, false );
 	glow = addParameter( "glow", tr("Glow:"), Parameter::PDOUBLE, 1.0, 0.0, 10.0, true );
-	highlight = addParameter( "highlight", tr("Highlight:"), Parameter::PDOUBLE, 0.2, 0.0, 1.0, true );
+	highlight = addParameter( "highlight", tr("Highlight:"), Parameter::PDOUBLE, 0.2, 0.0, 1.0, false );
 }
 
 

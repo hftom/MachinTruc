@@ -69,7 +69,7 @@ private:
 class GraphEffectItem : public GraphItem
 {
 public:
-	GraphEffectItem( QString name, QString icon, int id );
+	GraphEffectItem( QString name, QString icon, int id, bool isSource = false );
 	void paint( QPainter *painter, const QStyleOptionGraphicsItem*, QWidget* );
 	void setSelected( bool b );
 	int index() { return filterIndex; }
@@ -88,6 +88,8 @@ private:
 	
 	double mouseOffset, moveStart;
 	bool mouseFirstMove;
+	
+	bool isSourceEffect;
 };
 
 #endif // GRAPHEFFECTITEM_H

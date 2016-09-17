@@ -81,7 +81,7 @@ void Graph::setCurrentClip( ClipViewItem *c )
 			y += ICONSIZEHEIGHT + ITEMSPACING;
 		}
 	}
-	else {	
+	else {
 		int index = currentClip->getClip()->videoFilters.currentIndex();
 		for ( int i = 0; i < currentClip->getClip()->videoFilters.count(); ++i ) {
 			QString icon = "lens";

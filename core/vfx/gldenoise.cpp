@@ -4,7 +4,7 @@
 
 GLDenoise::GLDenoise( QString id, QString name ) : GLFilter( id, name )
 {
-	blur = addParameter( "blur", tr("Denoise blur:"), Parameter::PDOUBLE, 0.2, 0.0, 2.0, false, "%" );
+	blur = addParameter( "blur", tr("Denoise blur:"), Parameter::PDOUBLE, 0.12, 0.0, 2.0, false, "%" );
 	amp = addParameter( "amp", tr("Edge strength:"), Parameter::PDOUBLE, 10.0, 0.0, 20.0, false );
 	eblur = addParameter( "eblur", tr("Edge smoothing:"), Parameter::PDOUBLE, 1.0, 0.0, 4.0, false );
 }

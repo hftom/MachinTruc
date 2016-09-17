@@ -1,3 +1,4 @@
+
 #include "grapheffectitem.h"
 
 
@@ -8,17 +9,23 @@
 
 
 
-GraphEffectItem::GraphEffectItem( QString name, QString icon, int id )
+GraphEffectItem::GraphEffectItem( QString name, QString icon, int id, bool isSource )
 	: GraphItem( true ),
 	mouseOffset( 0 ),
 	moveStart( 0 )
 {
+	isSourceEffect = isSource;
 	image = QImage( QString(":/images/icons/%1.png").arg( icon ) );
 	text = name;
 	filterIndex = id;
 	textPen.setColor( "white" );
 	backPen.setColor( QColor(0,0,0,0) );
-	backBrush = QBrush( QColor(0,0,0,180) );
+	if (isSourceEffect) {
+		backBrush = QBrush( QColor(0,0,128,180) );
+	}
+	else {
+		backBrush = QBrush( QColor(0,0,0,180) );
+	}
 	selectedBrush = QBrush( QColor(128,0,0,180) );
 	setRect( 0, 0, ICONSIZEWIDTH, ICONSIZEHEIGHT );
 }
