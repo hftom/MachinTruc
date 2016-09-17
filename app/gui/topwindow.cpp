@@ -557,16 +557,6 @@ void TopWindow::setOutPoint()
 
 Source* TopWindow::getDroppedCut( int index, QString mime, QString filename, double &start, double &len )
 {
-	if ( mime == MIMETYPECUT ) {
-		if ( !sourcePage->hasActiveSource() )
-			return NULL;
-		Cut *cut = sourcePage->activeSourceGetCut( index, filename );
-		if ( !cut )
-			return NULL;
-		start = cut->getStart();
-		len = cut->getLength();
-		return cut->getSource();
-	}
 	if ( mime == MIMETYPESOURCE ) {
 		Source *source = sourcePage->getSource( index, filename );
 		start = source->getProfile().getStreamStartTime();
@@ -780,7 +770,7 @@ void TopWindow::openBlank()
 void TopWindow::openSources()
 {
 	QStringList	list = QFileDialog::getOpenFileNames( this, tr("Open files"), openSourcesCurrentDir,
-		"Videos(*.3gp *.dv *.m2t *.mts *.mkv *.mpg *.mpeg *.ts *.avi *.mov *.vob *.wmv *.mjpg *.mp4 *.ogg *.wav *.mp3 *.ac3 *.mp2 *.mpa *.mpc *.png *.jpg)" );
+		"Videos(*.3gp *.ac3 *.avi *.dv *.eac3 *.flac *.flv *.jpg *.jpeg *.m2t *.mjpg *.mkv *.mov *.mp2 *.mp3 *.mp4 *.mpa *.mpc *.mpeg *.mpg *.mts *.ogg *.png *.ts *.vob *.wav *webm *.wma *.wmv)" );
 
 	if ( !list.isEmpty() ) {
 		openSourcesCurrentDir = QFileInfo( list[0] ).absolutePath();

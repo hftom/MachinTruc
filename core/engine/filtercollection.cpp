@@ -15,8 +15,8 @@ FilterCollection::FilterCollection()
 	videoFilters.append( FilterEntry( "colors", "GLWhiteBalance", QObject::tr("White balance"), &Maker<GLWhiteBalance>::make ) );
 	videoFilters.append( FilterEntry( "colors", "GLLiftGammaGain", QObject::tr("Color grading"), &Maker<GLLiftGammaGain>::make ) );
 	videoFilters.append( FilterEntry( "lens", "GLBlur", QObject::tr("Blur"), &Maker<GLBlur>::make ) );
-	videoFilters.append( FilterEntry( "lens", "GLDeconvolutionSharpen", QObject::tr("Sharpen (deconvolution)"), &Maker<GLDeconvolutionSharpen>::make ) );
-	videoFilters.append( FilterEntry( "lens", "GLSharpen", QObject::tr("Sharpen (unsharp mask)"), &Maker<GLSharpen>::make ) );
+	//videoFilters.append( FilterEntry( "lens", "GLDeconvolutionSharpen", QObject::tr("Sharpen (deconvolution)"), &Maker<GLDeconvolutionSharpen>::make ) );
+	videoFilters.append( FilterEntry( "lens", "GLSharpen", QObject::tr("Sharpen"), &Maker<GLSharpen>::make ) );
 	videoFilters.append( FilterEntry( "lens", "GLDenoise", QObject::tr("Denoise"), &Maker<GLDenoise>::make ) );
 	videoFilters.append( FilterEntry( "lens", "GLDiffusion", QObject::tr("Diffusion"), &Maker<GLDiffusion>::make ) );
 	videoFilters.append( FilterEntry( "lens", "GLGlow", QObject::tr("Glow"), &Maker<GLGlow>::make ) );

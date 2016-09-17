@@ -1045,9 +1045,7 @@ void Timeline::dragEnterEvent( QGraphicsSceneDragDropEvent *event )
 {
 	const QMimeData *mimeData = event->mimeData();
 	QString t;
-	if ( mimeData->formats().contains( MIMETYPECUT ) )
-		t = mimeData->data( MIMETYPECUT ).data();
-	else if ( mimeData->formats().contains( MIMETYPESOURCE ) )
+	if ( mimeData->formats().contains( MIMETYPESOURCE ) )
 		t = mimeData->data( MIMETYPESOURCE ).data();
 	int i = t.indexOf( " " );
 	if ( i != -1 ) {

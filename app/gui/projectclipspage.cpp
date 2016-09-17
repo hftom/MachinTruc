@@ -21,13 +21,6 @@ ProjectSourcesPage::ProjectSourcesPage( Sampler *samp )
 {	
 	setupUi( this );
 	
-	cutListView->setModel( &model );
-	cutListView->setViewMode( QListView::IconMode );
-	cutListView->setResizeMode( QListView::Adjust );
-	cutListView->setSpacing( 4 );
-	cutListView->setDragEnabled( true );
-	cutListView->setAcceptDrops( false );
-	
 	sourceListWidget->setIconSize( QSize( ICONSIZEWIDTH + 4, ICONSIZEHEIGHT + 4 ) );
 	sourceListWidget->setContextMenuPolicy( Qt::CustomContextMenu );
 	connect( sourceListWidget, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(sourceItemMenu(const QPoint&)) );
@@ -70,7 +63,6 @@ void ProjectSourcesPage::clearAllSources()
 		SourceListItem *it = (SourceListItem*)sourceListWidget->item( i );
 		it->getSource()->release();
 	}
-	model.setSource( NULL );
 	activeSource = NULL;
 	sourceListWidget->clear();
 }
@@ -102,17 +94,6 @@ void ProjectSourcesPage::sourceItemActivated( QListWidgetItem *item, QListWidget
 	SourceListItem *it = (SourceListItem*)item;
 	activeSource = it;
 	emit sourceActivated();
-	model.setSource( it );
-	cutListView->setIconSize( it->getThumbSize() );
-	cutListView->reset();
-}
-
-
-
-void ProjectSourcesPage::newCut( SourceListItem* item )
-{
-	item->addCut();
-	cutListView->reset();
 }
 
 
