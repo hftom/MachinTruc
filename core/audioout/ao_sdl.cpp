@@ -1,7 +1,5 @@
 #include <unistd.h>
 
-#include <QMutexLocker>
-
 #include <SDL2/SDL.h>
 
 #include "audioout/ao_sdl.h"
@@ -61,10 +59,15 @@ void AudioOutSDL::go()
 
 void AudioOutSDL::stop()
 {
-	SDL_PauseAudio( 1 );
+	mutex.lock();
 	running = false;
-	QMutexLocker ml( &mutex );
+	mutex.unlock();
+	
+	SDL_PauseAudio( 1 );
+	
+	mutex.lock();
 	bufferLen = bufferOffset = 0;
+	mutex.unlock();
 }
 
 
@@ -92,8 +95,7 @@ void AudioOutSDL::streamRequestCallback( void *userdata, uint8_t *stream, int le
 	uint8_t *dst = stream;
 	int size = len;
 	
-	QMutexLocker ml( &ao->mutex );
-
+	ao->mutex.lock();
 	// first, copy the remaining samples from previous Frame
 	if ( ao->bufferLen ) {
 		if ( ao->bufferLen >= size ) {
@@ -102,6 +104,7 @@ void AudioOutSDL::streamRequestCallback( void *userdata, uint8_t *stream, int le
 			ao->bufferLen -= size;
 			if ( !ao->bufferLen )
 				ao->bufferOffset = 0;
+			ao->mutex.unlock();
 			return;
 		}
 		else {
@@ -112,9 +115,12 @@ void AudioOutSDL::streamRequestCallback( void *userdata, uint8_t *stream, int le
 			ao->bufferOffset = 	ao->bufferLen = 0;
 		}
 	}
+	ao->mutex.unlock();
 
 	while ( size ) {
+		ao->mutex.lock();
 		if ( !ao->running ) {
+			ao->mutex.unlock();
 			break;
 		}
 		ao->readData( &data, (tv.tv_sec * MICROSECOND) + tv.tv_usec + latency, ao->readUserData );
@@ -147,6 +153,7 @@ void AudioOutSDL::streamRequestCallback( void *userdata, uint8_t *stream, int le
 			usleep( 1000 );
 			latency += 1000;
 		}
+		ao->mutex.unlock();
 	}
 }
 
