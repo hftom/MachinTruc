@@ -33,12 +33,18 @@ private slots:
 	void colorChanged( const QColor& );
 	void backgroundColorChanged( const QColor& );
 	
+	void hhBtnClicked();
+	void mmBtnClicked();
+	void ssBtnClicked();
+	void iiBtnClicked();
+	
 private:
 	QTextEdit *editor;
 	QFontComboBox *fontCombo;
 	QSpinBox *fontSizeSpin, *outlineSizeSpin;
 	QToolButton *boldBtn, *italicBtn, *colorBtn, *backgroundColorBtn, *outlineColorBtn;
 	QToolButton *alignLeftBtn, *alignCenterBtn, *alignRightBtn;
+	QToolButton *hhBtn, *mmBtn, *ssBtn, *iiBtn;
 	QBoxLayout *box;
 	
 	QColor fontColor, backgroundColor, outlineColor;

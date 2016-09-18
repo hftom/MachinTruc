@@ -215,7 +215,7 @@ void Sampler::setFencesContext( QGLWidget *shared )
 
 bool Sampler::play( bool b, bool backward )
 {
-	if ( b ) {	
+	if ( b ) {
 		if ( playBackward != backward ) {
 			stopComposer();
 			metronom->flush();

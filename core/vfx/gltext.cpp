@@ -8,7 +8,7 @@
 
 GLText::GLText( QString id, QString name ) : GLFilter( id, name )
 {
-	editor = addParameter( "editor", tr("Editor:"), Parameter::PSTRING, "", "", "", false );
+	editor = addParameter( "editor", tr("Editor:"), Parameter::PSTRING, "Arial,12,-1,5,50,0,0,0,0,0|30|0|0|#ffffff.255|#000000.0|1|0|#000000.255\nText", "", "", false );
 	opacity = addParameter( "opacity", tr("Opacity:"), Parameter::PDOUBLE, 1.0, 0.0, 1.0, true );
 	xOffset = addParameter( "xOffset", tr("X:"), Parameter::PINPUTDOUBLE, 0.0, -10000.0, 10000.0, true );
 	yOffset = addParameter( "yOffset", tr("Y:"), Parameter::PINPUTDOUBLE, 0.0, -10000.0, 10000.0, true );
@@ -30,14 +30,29 @@ void GLText::ovdUpdate( QString type, QVariant val )
 
 
 bool GLText::process( const QList<Effect*> &el, double pts, Frame *src, Profile *p )
-{
-	Q_UNUSED( p );
-	
+{	
 	MyTextEffect *e = (MyTextEffect*)el[0];
 	bool ok = e->set_float( "left", getParamValue( xOffset, pts ).toDouble() )
 		&& e->set_float( "top", getParamValue( yOffset, pts ).toDouble() )
 		&& e->set_float( "opacity", getParamValue( opacity, pts ).toDouble() );
-	e->setText( getParamValue( editor ).toString(), src->glWidth, src->glHeight );
+		
+	QString text = getParamValue( editor ).toString();
+	if (text.contains("##")) {
+		double secs = pts / MICROSECOND;
+		int hour = secs / 3600;
+		int min =(secs - (hour * 3600)) / 60;
+		int sec = secs - (hour * 3600) - (min * 60);
+		int img = qRound((secs - (hour * 3600) - (min * 60) - sec) * p->getVideoFrameRate());
+		text.replace("##h##", QString("%1").arg(hour));
+		text.replace("##hh##", QString("%1").arg(hour,2,10,QChar('0')));
+		text.replace("##m##", QString("%1").arg(min));
+		text.replace("##mm##", QString("%1").arg(min,2,10,QChar('0')));
+		text.replace("##s##", QString("%1").arg(sec));
+		text.replace("##ss##", QString("%1").arg(sec,2,10,QChar('0')));
+		text.replace("##i##", QString("%1").arg(img));
+		text.replace("##ii##", QString("%1").arg(img,2,10,QChar('0')));
+	}
+	e->setText(text, src->glWidth, src->glHeight);
 		
 	if ( ovdEnabled() ) {
 		src->glOVD = FilterTransform::TRANSLATE;

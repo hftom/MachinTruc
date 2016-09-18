@@ -202,8 +202,9 @@ void Composer::run()
 			case ItcMsg::RENDERPLAY: {
 				ret = process( &f );
 				if ( ret == PROCESSEND ) {
-					while ( !sampler->getMetronom()->videoFrames.queueEmpty() )
+					while ( !sampler->getMetronom()->videoFrames.queueEmpty() ) {
 						usleep( 5000 );
+					}
 					lastMsg.msgType = ItcMsg::RENDERSTOP;
 					break;
 				}

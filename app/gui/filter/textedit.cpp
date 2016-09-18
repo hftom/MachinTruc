@@ -87,6 +87,28 @@ TextEdit::TextEdit( QWidget *parent, Parameter *p ) : ParameterWidget( parent, p
 	outlineColorBtn->setIcon( QIcon(":/toolbar/icons/format-text-color.png") );
 	outlineLayout->addWidget( outlineColorBtn );
 	
+	outlineLayout->addSpacerItem( new QSpacerItem(20,0) );
+	
+	hhBtn = new QToolButton();
+	hhBtn->setText("hh");
+	widgets.append( hhBtn );
+	outlineLayout->addWidget( hhBtn );
+	
+	mmBtn = new QToolButton();
+	mmBtn->setText("mm");
+	widgets.append( mmBtn );
+	outlineLayout->addWidget( mmBtn );
+	
+	ssBtn = new QToolButton();
+	ssBtn->setText("ss");
+	widgets.append( ssBtn );
+	outlineLayout->addWidget( ssBtn );
+	
+	iiBtn = new QToolButton();
+	iiBtn->setText("ii");
+	widgets.append( iiBtn );
+	outlineLayout->addWidget( iiBtn );
+	
 	outlineLayout->insertStretch( -1, 1 );
 	box->addLayout( outlineLayout );
 	
@@ -139,6 +161,11 @@ TextEdit::TextEdit( QWidget *parent, Parameter *p ) : ParameterWidget( parent, p
 			editor->setPlainText( sl.join("\n") );
 		}
 	}
+	
+	connect( hhBtn, SIGNAL(clicked()), this, SLOT(hhBtnClicked()) );
+	connect( mmBtn, SIGNAL(clicked()), this, SLOT(mmBtnClicked()) );
+	connect( ssBtn, SIGNAL(clicked()), this, SLOT(ssBtnClicked()) );
+	connect( iiBtn, SIGNAL(clicked()), this, SLOT(iiBtnClicked()) );
 
 	connect( fontCombo, SIGNAL(currentFontChanged(const QFont&)), this, SLOT(fontChanged(const QFont&)) );
 	connect( fontSizeSpin, SIGNAL(valueChanged(int)), this, SLOT(fontSizeChanged(int)) );
@@ -152,6 +179,34 @@ TextEdit::TextEdit( QWidget *parent, Parameter *p ) : ParameterWidget( parent, p
 	connect( outlineSizeSpin, SIGNAL(valueChanged(int)), this, SLOT(outlineSizeChanged(int)) );
 	connect( outlineColorBtn, SIGNAL(clicked()), this, SLOT(showOutlineColorDialog()) );
 	connect( editor, SIGNAL(textChanged()), this, SLOT(textChanged()) );
+}
+
+
+
+void TextEdit::hhBtnClicked()
+{
+	editor->insertPlainText("##hh##");
+}
+
+
+
+void TextEdit::mmBtnClicked()
+{
+	editor->insertPlainText("##mm##");
+}
+
+
+
+void TextEdit::ssBtnClicked()
+{
+	editor->insertPlainText("##ss##");
+}
+
+
+
+void TextEdit::iiBtnClicked()
+{
+	editor->insertPlainText("##ii##");
 }
 
 

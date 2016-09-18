@@ -122,7 +122,7 @@ public:
 	
 	virtual bool process( const QList<Effect*> &el, double pts, Frame *src, Profile *p );
 	virtual void ovdUpdate( QString type, QVariant val );
-
+	
 	QList<Effect*> getMovitEffects();
 	
 private:
