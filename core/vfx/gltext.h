@@ -37,6 +37,9 @@ public:
 	
 	~MyTextEffect() {
 		glDeleteTextures( 1, &texnum );
+		if (currentImage) {
+			delete currentImage;
+		}
 	}
 	
 	virtual std::string effect_type_id() const { return "MyTextEffect"; }
