@@ -62,7 +62,7 @@ void AudioOutSDL::stop()
 	mutex.lock();
 	running = false;
 	mutex.unlock();
-	
+
 	SDL_PauseAudio( 1 );
 	
 	mutex.lock();
@@ -120,8 +120,9 @@ void AudioOutSDL::streamRequestCallback( void *userdata, uint8_t *stream, int le
 	while ( size ) {
 		ao->mutex.lock();
 		if ( !ao->running ) {
+			memset(dst, 0, size);
 			ao->mutex.unlock();
-			break;
+			return;
 		}
 		ao->readData( &data, (tv.tv_sec * MICROSECOND) + tv.tv_usec + latency, ao->readUserData );
 		if ( data ) {
@@ -148,12 +149,13 @@ void AudioOutSDL::streamRequestCallback( void *userdata, uint8_t *stream, int le
 			}
 			ao->playbackBuffer->releasedAudioFrame( data );
 			data = NULL;
+			ao->mutex.unlock();
 		}
 		else {
+			ao->mutex.unlock();
 			usleep( 1000 );
 			latency += 1000;
 		}
-		ao->mutex.unlock();
 	}
 }
 
