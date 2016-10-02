@@ -3,7 +3,7 @@
 
 
 AbstractViewItem::AbstractViewItem( double heightFactor )
-	: selected( false ),
+	: selected( 0 ),
 	position( 0 ),
 	length( 0 ),
 	scaleFactor( 1 )

@@ -178,7 +178,7 @@ qreal Timeline::getCurrentZoom()
 
 
 
-void Timeline::itemSelected( AbstractViewItem *it )
+void Timeline::itemSelected( AbstractViewItem *it, bool extend )
 {
 	if ( effectItem ) {
 		removeItem( effectItem );
@@ -187,9 +187,9 @@ void Timeline::itemSelected( AbstractViewItem *it )
 	}
 
 	if ( selectedItem )
-		selectedItem->setSelected( false );
+		selectedItem->setSelected( 0 );
 	if ( it ) {
-		it->setSelected (true );
+		it->setSelected( extend ? 1 : 2 );
 		selectedItem = it;
 		if ( it->data( DATAITEMTYPE ).toInt() == TYPECLIP ) {
 			emit clipSelected( (ClipViewItem*)it );

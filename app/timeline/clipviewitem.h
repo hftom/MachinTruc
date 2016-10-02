@@ -17,7 +17,7 @@ public:
 	void updateTransition( double len );
 
 	void paint( QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget );
-	void setSelected( bool b );
+	void setSelected( int i );
 	bool setThumb( ThumbRequest res );
 	QImage& getStartThumb() { return startThumb; }
 	
@@ -37,9 +37,9 @@ protected:
 
 private:	
 	QString filename;
-	QPen normalPen, selectionPen;
-	QBrush normalBrush, selectionBrush;
-	QBrush titleNormalBrush, titleSelectionBrush;
+	QPen normalPen, selectionPen, currentPen;
+	QBrush normalBrush, selectionBrush, currentBrush;
+	QBrush titleNormalBrush, titleSelectionBrush, titleCurrentBrush;
 	Clip *clip;
 	
 	double moveStartPosition;

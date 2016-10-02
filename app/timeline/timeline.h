@@ -70,7 +70,7 @@ public:
 	
 	void trackPressed( QPointF p );
 	void trackPressedRightBtn( TrackViewItem *t, QPoint p );
-	void itemSelected( AbstractViewItem *it );
+	void itemSelected( AbstractViewItem *it, bool extend = false );
 	
 	void playheadMoved( double p );
 	

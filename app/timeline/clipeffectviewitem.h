@@ -14,7 +14,7 @@ class ClipEffectViewItem : public AbstractViewItem
 public:
 	ClipEffectViewItem( Clip *c, QString name, bool video, int id, double scale );
 	void paint( QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget );
-	virtual void setSelected( bool ) {}
+	virtual void setSelected( int ) {}
 	Clip* getClip() { return clip; }
 	bool isVideoEffect() { return isVideo; }
 	int getIndex() { return index; }

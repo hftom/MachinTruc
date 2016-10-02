@@ -38,27 +38,36 @@ ClipViewItem::ClipViewItem( Clip *c, double scale ) : AbstractViewItem(),
 	normalPen.setColor( "blue" );
 	
 	selectionPen.setJoinStyle( Qt::MiterJoin );
-	selectionPen.setColor( "red" );
+	selectionPen.setColor( "purple" );
+	
+	currentPen.setJoinStyle( Qt::MiterJoin );
+	currentPen.setColor( "red" );
 
 	QLinearGradient grad( QPointF(0, 0), QPointF(0, 1) );
 	grad.setCoordinateMode( QGradient::ObjectBoundingMode );
-	//grad.setColorAt( 0, "lightskyblue" );
-	//grad.setColorAt( 1, "darkblue" );
 	grad.setColorAt( 0, QColor(135,206,250,180) );
 	grad.setColorAt( 1, QColor(0,0,89,180) );
 	normalBrush = QBrush( grad );
 	
+	grad.setColorAt( 0, QColor(193,182,255,180) );
+	grad.setColorAt( 1, QColor(44,0,44,180) );
+	selectionBrush = QBrush( grad );
+	
 	grad.setColorAt( 0, QColor(255,182,193,180) );
 	grad.setColorAt( 1, QColor(89,0,0,180) );
-	selectionBrush = QBrush( grad );
+	currentBrush = QBrush( grad );
 	
 	grad.setColorAt( 1, "#2A2AA5" );
 	grad.setColorAt( 0, "#000060" );
 	titleNormalBrush = QBrush( grad );
+
+	grad.setColorAt( 1, "#A000A0" );
+	grad.setColorAt( 0, "#300030" );
+	titleSelectionBrush = QBrush( grad );
 	
 	grad.setColorAt( 1, "brown" );
 	grad.setColorAt( 0, "#600000" );
-	titleSelectionBrush = QBrush( grad );
+	titleCurrentBrush = QBrush( grad );
 	
 	setPen( normalPen );
 	setBrush( normalBrush );
@@ -170,7 +179,10 @@ void ClipViewItem::paint( QPainter *painter, const QStyleOptionGraphicsItem *opt
 	
 	// draw title
 	painter->setPen( QColor(0,0,0,0) );
-	if ( selected )
+	if (selected == 2) {
+		painter->setBrush( titleCurrentBrush );
+	}
+	else if ( selected == 1)
 		painter->setBrush( titleSelectionBrush );
 	else
 		painter->setBrush( titleNormalBrush );
@@ -185,10 +197,15 @@ void ClipViewItem::paint( QPainter *painter, const QStyleOptionGraphicsItem *opt
 
 
 
-void ClipViewItem::setSelected( bool b )
+void ClipViewItem::setSelected( int i )
 {
-	selected = b;
-	if ( selected ) {
+	selected = i;
+	if ( selected == 2 ) {
+		setZValue( ZCLIPCURRENT );
+		setBrush( currentBrush );
+		setPen( currentPen );
+	}
+	else if ( selected == 1 ) {
 		setZValue( ZCLIPSELECTED );
 		setBrush( selectionBrush );
 		setPen( selectionPen );
@@ -236,7 +253,7 @@ void ClipViewItem::mousePressEvent( QGraphicsSceneMouseEvent *event )
 	}		
 	moveStartMouse = event->scenePos();
 	Timeline* t = (Timeline*)scene();
-	t->itemSelected( this );
+	t->itemSelected( this, event->modifiers() & Qt::ControlModifier );
 }
 
 

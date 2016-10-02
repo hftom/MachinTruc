@@ -23,10 +23,10 @@ public:
 	void setCuts( double pos, double len, double scale );
 	void setScale( double scale );
 	
-	virtual void setSelected( bool b ) = 0;		
+	virtual void setSelected( int i ) = 0;
 	
 protected:
-	bool selected;
+	int selected;
 	double position;
 	double length;
 	double scaleFactor;

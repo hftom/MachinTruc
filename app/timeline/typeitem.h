@@ -11,11 +11,12 @@
 #define TYPERULER 6
 
 #define ZCLIP 1
-#define ZCLIPSELECTED 2
-#define ZTRANSITION 3
-#define ZFILTER 4
-#define ZRULER 9
-#define ZCURSOR 10
+#define ZCLIPSELECTED 10
+#define ZCLIPCURRENT 20
+#define ZTRANSITION 30
+#define ZFILTER 40
+#define ZRULER 50
+#define ZCURSOR 60
 
 #define TRACKVIEWITEMHEIGHT 42
 #define SNAPWIDTH 8

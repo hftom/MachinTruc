@@ -13,7 +13,7 @@ public:
 	TransitionViewItem( QGraphicsItem *parent, double pos, double len, double scale );
 
 	void paint( QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget );
-	void setSelected( bool b ) { selected = b; }
+	void setSelected( int i ) { selected = i; }
 	
 protected:
 	void mousePressEvent( QGraphicsSceneMouseEvent *event );	
