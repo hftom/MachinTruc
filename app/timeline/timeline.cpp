@@ -33,7 +33,6 @@ Timeline::Timeline( TopWindow *parent ) : QGraphicsScene(),
 	zoom( DEFAULTZOOM ),
 	currentZoom( DEFAULTZOOM ),
 	viewWidth( 0 ),
-	selectedItem( NULL ),
 	effectItem( NULL ),
 	scene( NULL ),
 	topParent( parent )
@@ -186,19 +185,39 @@ void Timeline::itemSelected( AbstractViewItem *it, bool extend )
 		effectItem = NULL;
 	}
 
-	if ( selectedItem )
-		selectedItem->setSelected( 0 );
-	if ( it ) {
-		it->setSelected( extend ? 1 : 2 );
-		selectedItem = it;
-		if ( it->data( DATAITEMTYPE ).toInt() == TYPECLIP ) {
-			emit clipSelected( (ClipViewItem*)it );
+	if (!it || !extend) {
+		while (selectedItems.count()) {
+			selectedItems.takeFirst()->setSelected( 0 );
 		}
 	}
-	else {
-		selectedItem = NULL;
-		emit clipSelected( NULL );
+	if ( it ) {
+		if (!selectedItems.count() || !extend) {
+			it->setSelected( 2 );
+		}
+		else {
+			it->setSelected( 1 );
+		}
+		selectedItems.append(it);
+	}	
+	
+	emit clipSelected( selectedItems.count() 
+			? selectedItems.first()->data( DATAITEMTYPE ).toInt() == TYPECLIP ? (ClipViewItem*)selectedItems.first() : NULL
+			: NULL
+		);
+}
+
+
+
+ClipViewItem* Timeline::getSelectedClip()
+{
+	ClipViewItem *it = NULL;
+	if ( selectedItems.count() ) {
+		if ( selectedItems.first()->data( DATAITEMTYPE ).toInt() == TYPECLIP ) {
+			it = (ClipViewItem*)selectedItems.first();
+		}
 	}
+	
+	return it;
 }
 
 
@@ -305,7 +324,7 @@ void Timeline::showEffect( bool isVideo, int index )
 	if ( index == -1 )
 		return;
 	
-	ClipViewItem *cv = (ClipViewItem*)selectedItem;
+	ClipViewItem *cv = (ClipViewItem*)selectedItems.first();
 	QSharedPointer<Filter> f;
 	if ( isVideo )
 		f = cv->getClip()->videoFilters.at( index );
@@ -881,9 +900,10 @@ void Timeline::setScene( Scene *s )
 
 void Timeline::editCut()
 {
-	if ( selectedItem ) {
-		int t = getTrack( selectedItem->sceneBoundingRect().topLeft() );
-		Clip *c = ((ClipViewItem*)selectedItem)->getClip();
+	ClipViewItem *selected = getSelectedClip();
+	if ( selected ) {
+		int t = getTrack( selected->sceneBoundingRect().topLeft() );
+		Clip *c = selected->getClip();
 		UndoClipRemove *u = new UndoClipRemove(this, c, t, scene->getTailTransition(c, t));
 		UndoStack::getStack()->push(u);
 	}
@@ -893,8 +913,8 @@ void Timeline::editCut()
 
 void Timeline::splitCurrentClip()
 {
-	if ( selectedItem && selectedItem->data( DATAITEMTYPE ).toInt() == TYPECLIP) {
-		ClipViewItem *cv = (ClipViewItem*)selectedItem;
+	ClipViewItem *cv = getSelectedClip();
+	if ( cv ) {
 		Clip *current_clip = cv->getClip();
 		double cursor_pts = cursor->mapRectToScene( cursor->rect() ).left() * zoom ;
 		int t = getTrack( cv->sceneBoundingRect().topLeft() );
@@ -1027,8 +1047,8 @@ void Timeline::filterDeleted( Clip *c, QSharedPointer<Filter> f )
 
 void Timeline::filterReordered( Clip *c, bool video, int index, int newIndex )
 {
-	if ( selectedItem && selectedItem->data( DATAITEMTYPE ).toInt() == TYPECLIP ) {
-		ClipViewItem *cv = (ClipViewItem*)selectedItem;
+	ClipViewItem *cv = getSelectedClip();
+	if ( cv ) {
 		if (cv->getClip() != c) {
 			cv = getClipViewItem(c, -1);
 		}
@@ -1130,7 +1150,6 @@ void Timeline::dragLeaveEvent( QGraphicsSceneDragDropEvent *event )
 {
 	if ( droppedCut.clip ) {
 		if ( droppedCut.shown ) {
-			selectedItem = NULL;
 			itemSelected( NULL );
 			updateTransitions( droppedCut.clipItem, true );
 			removeItem( droppedCut.clipItem );
@@ -1189,8 +1208,9 @@ void Timeline::thumbResultReady( ThumbRequest result )
 	if ( !result.thumb.isNull() && result.caller != NULL ) {
 		ClipViewItem *it = (ClipViewItem*)result.caller;
 		if ( items().contains( it ) ) {
-			if ( it->setThumb( result ) && it == selectedItem )
-				emit clipSelected( it );
+			ClipViewItem *selected = getSelectedClip();
+			if ( it->setThumb( result ) && it == selected )
+				emit clipSelected( selected );
 		}
 	}
 }
@@ -1247,13 +1267,14 @@ void Timeline::commandRemoveClip(Clip *clip, int track)
 	if (cv) {
 		itemSelected(cv);
 		updateStabilize(clip, NULL, true);
-		if ( selectedItem ) {
-			if ( scene->removeClip( ((ClipViewItem*)selectedItem)->getClip() ) ) {
-				updateTransitions( (ClipViewItem*)selectedItem, true );
-				removeItem( selectedItem );
-				delete selectedItem;
-				selectedItem = NULL;
+		
+		ClipViewItem *selected = getSelectedClip();
+		if ( selected ) {
+			if ( scene->removeClip( selected->getClip() ) ) {
+				updateTransitions( selected, true );
 				itemSelected( NULL );
+				removeItem( selected );
+				delete selected;
 				QTimer::singleShot ( 1, this, SIGNAL(updateFrame()) );
 				QTimer::singleShot ( 1, this, SLOT(updateLength()) );
 			}
@@ -1537,7 +1558,7 @@ void Timeline::paramUndoCommand(QSharedPointer<Filter> f, Parameter *p, QVariant
 void Timeline::commandEffectParam(QSharedPointer<Filter> filter, Parameter *param, QVariant value)
 {
 	param->value = value;
-	itemSelected(selectedItem);
+	itemSelected(getSelectedClip());
 	if ( param->type == Parameter::PSHADEREDIT ) {
 		GLCustom *f = (GLCustom*) filter.data();
 		f->setCustomParams( value.toString() );

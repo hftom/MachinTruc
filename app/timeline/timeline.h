@@ -127,6 +127,7 @@ private slots:
 	void updateLength();
 	
 private:
+	ClipViewItem* getSelectedClip();
 	void updateStabilize(Clip *clip, Filter *f, bool stop);
 	int getTrack( const QPointF &p );
 	ClipViewItem* getClipViewItem(Clip *clip, int track);
@@ -147,7 +148,7 @@ private:
 	
 	QList<TrackViewItem*> tracks;
 	
-	AbstractViewItem *selectedItem;
+	QList<AbstractViewItem*> selectedItems;
 	ClipEffectViewItem *effectItem;
 	
 	Scene *scene;
