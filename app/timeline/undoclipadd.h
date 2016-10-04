@@ -12,22 +12,31 @@ class UndoClipAdd : public QUndoCommand
 {
 public:
 	UndoClipAdd(Timeline *t, Clip *c, int track, Transition *tail, bool alreadyAdded) {
-		clip = c;
 		timeline = t;
-		tailTransition = tail ? new Transition(tail) : NULL;
-		trackNumber = track;
 		firstRedo = alreadyAdded;
 		redoState = true;
-		setText(QObject::tr("Add clip"));
+		append(c, track, tail);
+	}
+	
+	void append(Clip *c, int track, Transition *tail) {
+		trackNumbers.append(track);
+		clips.append(c);
+		tailTransitions.append(tail ? new Transition(tail) : NULL);
+		if (clips.count() == 1) {
+			setText(QObject::tr("Add clip"));
+		}
+		else if (clips.count() == 2) {
+			setText(QObject::tr("Add clips"));
+		}
 	}
 	
 	~UndoClipAdd() {
 		if (!redoState) {
-			delete clip;
+			while (clips.count()) 
+				delete clips.takeFirst();
 		}
-		if (tailTransition) {
-			delete tailTransition;
-		}
+		while (tailTransitions.count()) 
+			delete tailTransitions.takeFirst();
 	}
 	
 	void redo() {
@@ -35,23 +44,23 @@ public:
 			firstRedo = false;
 		}
 		else {
-			timeline->commandAddClip(clip, trackNumber, tailTransition);
+			timeline->commandAddClip(clips, trackNumbers, tailTransitions);
 		}
 		redoState = true;
 	}
 	
 	void undo() {
-		timeline->commandRemoveClip(clip, trackNumber);
+		timeline->commandRemoveClip(clips, trackNumbers);
 		redoState = false;
 	}
 	
 private:
 	bool firstRedo;
 	bool redoState;
-	int trackNumber;
-	Clip *clip;
 	Timeline *timeline;
-	Transition *tailTransition;
+	QList<int> trackNumbers;
+	QList<Clip*> clips;
+	QList<Transition*> tailTransitions;
 };
 
 #endif // UNDO_CLIP_ADD_H

@@ -83,8 +83,8 @@ public:
 	void zoomInOut( bool in );
 	void editCut();
 	
-	void commandAddClip(Clip *clip, int track, Transition *tail);
-	void commandRemoveClip(Clip *clip, int track);
+	void commandAddClip(QList<Clip*> clips, QList<int> ltracks, QList<Transition*> tails);
+	void commandRemoveClip(QList<Clip*> clips, QList<int> ltracks);
 	void commandMoveClip(Clip *clip, bool multi, int oldTrack, int newTrack, double pos, Transition *trans, Transition *tail);
 	void commandResizeClip(Clip *clip, bool resizeStart, int track, double position, double length, Transition *trans);
 	void commandClipSpeed(Clip *c, int track, double speed, double length, Transition *tail);

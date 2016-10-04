@@ -191,14 +191,24 @@ void Timeline::itemSelected( AbstractViewItem *it, bool extend )
 		}
 	}
 	if ( it ) {
-		if (!selectedItems.count() || !extend) {
-			it->setSelected( 2 );
+		int pos = selectedItems.indexOf(it);
+		if (pos == -1) {
+			if (!selectedItems.count() || !extend) {
+				it->setSelected( 2 );
+			}
+			else {
+				it->setSelected( 1 );
+			}
+			selectedItems.append(it);
 		}
 		else {
-			it->setSelected( 1 );
+			it->setSelected( 0 );
+			selectedItems.takeAt( pos );
+			if ( selectedItems.count() ) {
+				selectedItems.first()->setSelected( 2 );
+			}
 		}
-		selectedItems.append(it);
-	}	
+	}
 	
 	emit clipSelected( selectedItems.count() 
 			? selectedItems.first()->data( DATAITEMTYPE ).toInt() == TYPECLIP ? (ClipViewItem*)selectedItems.first() : NULL
@@ -900,12 +910,24 @@ void Timeline::setScene( Scene *s )
 
 void Timeline::editCut()
 {
-	ClipViewItem *selected = getSelectedClip();
-	if ( selected ) {
-		int t = getTrack( selected->sceneBoundingRect().topLeft() );
-		Clip *c = selected->getClip();
-		UndoClipRemove *u = new UndoClipRemove(this, c, t, scene->getTailTransition(c, t));
-		UndoStack::getStack()->push(u);
+	int n = 0;
+	if ( selectedItems.count() ) {
+		UndoClipRemove *u = new UndoClipRemove(this);
+		for (int i = 0; i < selectedItems.count(); ++i) {
+			if (selectedItems.at(i)->data( DATAITEMTYPE ).toInt() == TYPECLIP) {
+				++n;
+				ClipViewItem *cv = (ClipViewItem*)selectedItems.at(i);
+				Clip *c = cv->getClip();
+				int t = getTrack( cv->sceneBoundingRect().topLeft() );
+				u->append(c, t, scene->getTailTransition(c, t));
+			}
+		}
+		if (n) {
+			UndoStack::getStack()->push(u);
+		}
+		else {
+			delete u;
+		}
 	}
 }
 
@@ -1239,47 +1261,62 @@ void Timeline::updateStabilize(Clip *clip, Filter *f, bool stop)
 
 
 
-void Timeline::commandAddClip(Clip *clip, int track, Transition *tail)
+void Timeline::commandAddClip(QList<Clip*> clips, QList<int> ltracks, QList<Transition*> tails)
 {
-	ClipViewItem *cv = new ClipViewItem( clip, zoom );
-	cv->setParentItem( tracks.at( track ) );
-	scene->addClip( clip, track );
-	Clip *next = scene->getTailClip(clip, track);
-	if (next) {
-		next->setTransition(tail ? new Transition(tail) : NULL);
+	QList<ClipViewItem*> cvs;
+	for (int i = 0; i < clips.count(); ++i) {
+		int track = ltracks.at(i);
+		Clip *clip = clips.at(i);
+		Transition *tail = tails.at(i);
+		
+		ClipViewItem *cv = new ClipViewItem( clip, zoom );
+		cvs.append(cv);
+		cv->setParentItem( tracks.at( track ) );
+		scene->addClip( clip, track );
+		Clip *next = scene->getTailClip(clip, track);
+		if (next) {
+			next->setTransition(tail ? new Transition(tail) : NULL);
+		}
+
+		updateStabilize(clip, NULL, false);
+
+		updateTransitions( cv, false );
+		clipThumbRequest( cv, true );
+		clipThumbRequest( cv, false );
 	}
-
-	updateStabilize(clip, NULL, false);
-
-	updateTransitions( cv, false );
-	clipThumbRequest( cv, true );
-	clipThumbRequest( cv, false );
-	itemSelected( cv );
+	for (int i = 0; i < cvs.count(); ++i) {
+		if (i == 0) {
+			itemSelected( cvs.at(i) );
+		}
+		else {
+			itemSelected( cvs.at(i), true );
+		}
+	}
 	QTimer::singleShot ( 1, this, SIGNAL(updateFrame()) );
 	QTimer::singleShot ( 1, this, SLOT(updateLength()) );
 }
 
 
 
-void Timeline::commandRemoveClip(Clip *clip, int track)
+void Timeline::commandRemoveClip(QList<Clip*> clips, QList<int> ltracks)
 {
-	ClipViewItem *cv = getClipViewItem(clip, track);
-	if (cv) {
-		itemSelected(cv);
-		updateStabilize(clip, NULL, true);
+	itemSelected( NULL );
+	for (int i = 0; i < clips.count(); ++i) {
+		int track = ltracks.at(i);
+		Clip *clip = clips.at(i);
 		
-		ClipViewItem *selected = getSelectedClip();
-		if ( selected ) {
-			if ( scene->removeClip( selected->getClip() ) ) {
-				updateTransitions( selected, true );
-				itemSelected( NULL );
-				removeItem( selected );
-				delete selected;
-				QTimer::singleShot ( 1, this, SIGNAL(updateFrame()) );
-				QTimer::singleShot ( 1, this, SLOT(updateLength()) );
+		ClipViewItem *cv = getClipViewItem(clip, track);
+		if (cv) {
+			updateStabilize(clip, NULL, true);
+			if ( scene->removeClip( cv->getClip() ) ) {
+				updateTransitions( cv, true );
+				removeItem( cv );
+				delete cv;
 			}
 		}
 	}
+	QTimer::singleShot ( 1, this, SIGNAL(updateFrame()) );
+	QTimer::singleShot ( 1, this, SLOT(updateLength()) );
 }
 
 
