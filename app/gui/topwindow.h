@@ -20,6 +20,7 @@
 #include "timeline/timeline.h"
 #include "animation/animeditor.h"
 #include "projectfile.h"
+#include "clipboard.h"
 
 
 
@@ -203,9 +204,14 @@ private slots:
 	void quitEditor();
 	void hideAnimEditor(int);
 	
-	void deleteKeyPressed();
+	void editCopy();
+	void editCut();
+	void editPaste();
+
 	void zoomIn();
 	void zoomOut();
+	
+	void filterCopy(QSharedPointer<Filter>, bool audio);
 	
 private:
 	bool loadProject(QString filename, QString &backupFilename);
@@ -236,6 +242,8 @@ private:
 	Profile tempProfile;
 	AppConfig appConfig;
 	QTimer backupTimer;
+	
+	ClipBoard clipboard;
 	
 signals:
 	void startOSDTimer( bool );

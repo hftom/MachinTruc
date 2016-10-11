@@ -1,5 +1,7 @@
-#include <QtXml>
+#ifndef PROJECTFILE_H
+#define PROJECTFILE_H
 
+#include "xmlizer.h"
 #include "engine/sampler.h"
 
 
@@ -12,7 +14,6 @@ public:
 	bool loadProject( QString filename );
 	bool saveProject( QList<Source*> sources, Sampler *sampler, QString filename, QString backupProjectFilename = "" );
 
-	
 	QList<Source*> sourcesList;
 	QList<Scene*> sceneList;
 	QString backupFilename;
@@ -24,19 +25,13 @@ private:
 	void readTrack( QDomElement &element, Scene *scene, int index );
 	void readClip( QDomElement &element, Scene *scene, int trackIndex );
 	void readTransition( QDomElement &element, Clip *clip );
-	QSharedPointer<Filter> readFilter( QDomElement &element, bool audio, bool transition = false );
-	void readParameter( QDomElement &element, QSharedPointer<Filter> f );
 	
 	void writeSource( QDomNode &parent, Source *source );
 	void writeTracks( QDomNode &parent, Sampler *sampler );
 	void writeClip( QDomNode &parent, Clip *clip );
-	void writeFilter( QDomNode &parent, bool audio, QSharedPointer<Filter> f );
-	
-	void createText( QDomNode &parent, QString name, QString val );
-	void createInt( QDomNode &parent, QString name, int val );
-	void createInt64( QDomNode &parent, QString name, qint64 val );
-	void createDouble( QDomNode &parent, QString name, double val );
 
 	QDomDocument document;
 	Profile projectProfile;
 };
+
+#endif //PROJECTFILE_H

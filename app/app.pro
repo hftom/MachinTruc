@@ -11,6 +11,8 @@ SOURCES = \
 	gui/renderingdialog.cpp \
 	gui/projectprofiledialog.cpp \
 	gui/projectfile.cpp \
+	gui/xmlizer.cpp \
+	gui/clipboard.cpp \
 	gui/topwindow.cpp \
 	gui/projectclipspage.cpp \
 	gui/fxpage.cpp \
@@ -51,6 +53,8 @@ HEADERS = \
 	gui/renderingdialog.h \
 	gui/projectprofiledialog.h \
 	gui/projectfile.h \
+	gui/xmlizer.h \
+	gui/clipboard.h \
 	gui/topwindow.h \
 	gui/projectclipspage.h \
 	gui/fxgraphicsview.h \

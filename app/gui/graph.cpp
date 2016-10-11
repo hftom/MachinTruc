@@ -172,6 +172,7 @@ void Graph::effectRightClick( GraphEffectItem *it )
 {
 	QMenu menu;
 	QAction *show = menu.addAction( tr("Show in timeline") );
+	QAction *copy = menu.addAction( tr("Copy") );
 	QAction *del = menu.addAction( tr("Delete") );
 	QAction *action = menu.exec( QCursor::pos() );
 	if ( action == show ) {
@@ -186,8 +187,17 @@ void Graph::effectRightClick( GraphEffectItem *it )
 		emit showEffect( -1 );
 		QTimer::singleShot ( 1, this, SLOT(rebuildGraph()) );
 	}
+	else if ( action == copy ) {
+		if ( isAudio ) {
+			emit filterCopy(currentClip->getClip()->audioFilters.at( it->index() ), isAudio);
+		}
+		else {
+			emit filterCopy(currentClip->getClip()->videoFilters.at( it->index() ), isAudio);
+		}
+	}
 	
 	delete show;
+	delete copy;
 	delete del;
 }
 

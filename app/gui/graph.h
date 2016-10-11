@@ -59,6 +59,7 @@ signals:
 	void filterReordered( Clip *c, bool video, int index, int newIndex );
 	void showVerticalScrollBar( bool );
 	void showEffect( int index );
+	void filterCopy(QSharedPointer<Filter>, bool isAudio);
 };
 
 #endif // GRAPH_H

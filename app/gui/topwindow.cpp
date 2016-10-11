@@ -80,6 +80,7 @@ TopWindow::TopWindow()
 	connect( fxPage, SIGNAL(showEffect(bool,int)), timeline, SLOT(showEffect(bool,int)) );
 	connect( fxPage, SIGNAL(currentFilterChanged(int)), this, SLOT(hideAnimEditor(int)) );
 	connect( fxPage, SIGNAL(compileShaderRequest(ThumbRequest)), this, SLOT(clipThumbRequest(ThumbRequest)) );
+	connect( fxPage, SIGNAL(filterCopy(QSharedPointer<Filter>,bool)), this, SLOT(filterCopy(QSharedPointer<Filter>,bool)) );
 	
 	fxSettingsPage = new FxSettingsPage();
 	connect( timeline, SIGNAL(clipSelected(ClipViewItem*)), fxSettingsPage, SLOT(clipSelected(ClipViewItem*)) );
@@ -144,7 +145,9 @@ TopWindow::TopWindow()
 	connect( actionProjectSettings, SIGNAL(triggered()), this, SLOT(menuProjectSettings()) );
 	connect( actionZoomIn, SIGNAL(triggered()), this, SLOT(zoomIn()) );
 	connect( actionZoomOut, SIGNAL(triggered()), this, SLOT(zoomOut()) );
-	connect( actionDeleteClip, SIGNAL(triggered()), this, SLOT(deleteKeyPressed()) );
+	connect( actionCopy, SIGNAL(triggered()), this, SLOT(editCopy()) );
+	connect( actionCut, SIGNAL(triggered()), this, SLOT(editCut()) );
+	connect( actionPaste, SIGNAL(triggered()), this, SLOT(editPaste()) );
 	connect( actionSplitCurrentClip, SIGNAL(triggered()), timeline, SLOT(splitCurrentClip()) );
 	connect( actionSaveImage, SIGNAL(triggered()), vw, SLOT(shot()) );
 	connect( actionRenderToFile, SIGNAL(triggered()), this, SLOT(renderDialog()) );
@@ -153,12 +156,13 @@ TopWindow::TopWindow()
 	act->setIcon( QIcon(":/toolbar/icons/edit-undo.png") );
 	act->setShortcut(QKeySequence(QKeySequence::Undo));
 	undoToolButton->setDefaultAction( act );
-	menuTimeline->insertAction( actionZoomIn, act );
+	menuTimeline->insertAction( actionCopy, act );
 	act = UndoStack::getStack()->createRedoAction(this);
 	act->setIcon( QIcon(":/toolbar/icons/edit-redo.png") );
 	act->setShortcut(QKeySequence(QKeySequence::Redo));
 	redoToolButton->setDefaultAction( act );
-	menuTimeline->insertAction( actionZoomIn, act );
+	menuTimeline->insertAction( actionCopy, act );
+	menuTimeline->insertSeparator( actionCopy );
 	
 	new QShortcut( QKeySequence( "Ctrl+M" ), this, SLOT(showMemoryInfo()) );
 	new QShortcut( QKeySequence( "Space" ), this, SLOT(videoPlayPause()) );
@@ -193,6 +197,35 @@ TopWindow::TopWindow()
 
 	connect(&backupTimer, SIGNAL(timeout()), this, SLOT(doBackup()));
 	backupTimer.start(300000);
+}
+
+
+
+void TopWindow::filterCopy(QSharedPointer<Filter> f, bool audio)
+{
+	clipboard.filterCopy(f, audio);
+}
+
+
+
+void TopWindow::editPaste()
+{
+	if ( timelineStackedWidget->currentIndex() == 0 )
+		timeline->editPaste(&clipboard);
+}
+
+
+
+void TopWindow::editCopy()
+{
+}
+
+
+
+void TopWindow::editCut()
+{
+	if ( timelineStackedWidget->currentIndex() == 0 )
+		timeline->editCut(&clipboard);
 }
 
 
@@ -313,14 +346,6 @@ void TopWindow::keyReleaseEvent( QKeyEvent *event )
 	if ( event->key() == Qt::Key_Control )
 		vw->controlKeyPressed( false );
 	QMainWindow::keyPressEvent( event );
-}
-
-
-
-void TopWindow::deleteKeyPressed()
-{
-	if ( timelineStackedWidget->currentIndex() == 0 )
-		timeline->editCut();
 }
 
 

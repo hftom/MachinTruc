@@ -607,7 +607,7 @@
    </property>
    <widget class="QMenu" name="menuFile">
     <property name="title">
-     <string>File</string>
+     <string>Fi&amp;le</string>
     </property>
     <addaction name="actionNewProject"/>
     <addaction name="actionOpen"/>
@@ -617,10 +617,14 @@
     <property name="title">
      <string>&amp;Timeline</string>
     </property>
+    <addaction name="actionCopy"/>
+    <addaction name="actionCut"/>
+    <addaction name="actionPaste"/>
+    <addaction name="separator"/>
+    <addaction name="actionSplitCurrentClip"/>
+    <addaction name="separator"/>
     <addaction name="actionZoomIn"/>
     <addaction name="actionZoomOut"/>
-    <addaction name="actionDeleteClip"/>
-    <addaction name="actionSplitCurrentClip"/>
    </widget>
    <widget class="QMenu" name="menuSettings">
     <property name="title">
@@ -647,8 +651,8 @@
     <addaction name="actionFrameByFrameBackward"/>
    </widget>
    <addaction name="menuFile"/>
-   <addaction name="menuPlayer"/>
    <addaction name="menuTimeline"/>
+   <addaction name="menuPlayer"/>
    <addaction name="menuSettings"/>
    <addaction name="menuRender"/>
   </widget>
@@ -670,9 +674,9 @@
     <string>Transparent background</string>
    </property>
   </action>
-  <action name="actionDeleteClip">
+  <action name="actionCut">
    <property name="text">
-    <string>&amp;Delete selected clip</string>
+    <string>Cut</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+X</string>
@@ -800,6 +804,22 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+-</string>
+   </property>
+  </action>
+  <action name="actionCopy">
+   <property name="text">
+    <string>Copy</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+C</string>
+   </property>
+  </action>
+  <action name="actionPaste">
+   <property name="text">
+    <string>Paste</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+V</string>
    </property>
   </action>
  </widget>

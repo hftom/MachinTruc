@@ -908,7 +908,7 @@ void Timeline::setScene( Scene *s )
 
 
 
-void Timeline::editCut()
+void Timeline::editCut(ClipBoard *clipboard)
 {
 	int n = 0;
 	if ( selectedItems.count() ) {
@@ -920,6 +920,46 @@ void Timeline::editCut()
 				Clip *c = cv->getClip();
 				int t = getTrack( cv->sceneBoundingRect().topLeft() );
 				u->append(c, t, scene->getTailTransition(c, t));
+			}
+		}
+		if (n) {
+			UndoStack::getStack()->push(u);
+		}
+		else {
+			delete u;
+		}
+	}
+}
+
+
+
+void Timeline::editPaste(ClipBoard *clipboard)
+{
+	int n = 0;
+	if ( selectedItems.count() ) {
+		UndoEffectAdd *u = new UndoEffectAdd(this);
+		for (int i = 0; i < selectedItems.count(); ++i) {
+			if (selectedItems.at(i)->data( DATAITEMTYPE ).toInt() == TYPECLIP) {
+				++n;
+				ClipViewItem *cv = (ClipViewItem*)selectedItems.at(i);
+				Clip *c = cv->getClip();
+				QSharedPointer<Filter> f = clipboard->getFilter();
+				if (f->getIdentifier().startsWith("GL")) {
+					u->append(c, getTrack(cv->sceneBoundingRect().topLeft()), f, -1, true);
+				}
+				else {
+					u->append(c, getTrack(cv->sceneBoundingRect().topLeft()), f, -1, false);
+				}
+				
+				f->setPosition( c->position() );
+				if ( f->getLength() > c->length() )
+					f->setLength( c->length() );
+				if ( f->getSnap() == Filter::SNAPEND )
+					f->setPositionOffset( c->length() - f->getLength() );
+				else if ( f->getSnap() == Filter::SNAPSTART )
+					f->setPositionOffset( 0 );
+				else
+					f->setLength( c->length() );
 			}
 		}
 		if (n) {
@@ -1030,7 +1070,8 @@ void Timeline::addFilter( ClipViewItem *clip, QString fx, int index )
 	else
 		f->setLength( c->length() );
 	
-	UndoEffectAdd *u = new UndoEffectAdd(this, c, getTrack(clip->sceneBoundingRect().topLeft()), f, isVideo, index);
+	UndoEffectAdd *u = new UndoEffectAdd(this);
+	u->append( c, getTrack(clip->sceneBoundingRect().topLeft()), f, index, isVideo );
 	UndoStack::getStack()->push(u);
 }
 
@@ -1061,7 +1102,8 @@ void Timeline::filterDeleted( Clip *c, QSharedPointer<Filter> f )
 	if (index == -1)
 		return;
 
-	UndoEffectRemove *u = new UndoEffectRemove(this, c, getTrack(cv->sceneBoundingRect().topLeft()), f, isVideo, index);
+	UndoEffectRemove *u = new UndoEffectRemove(this);
+	u->append(c, getTrack(cv->sceneBoundingRect().topLeft()), f, index, isVideo);
 	UndoStack::getStack()->push(u);
 }
 
@@ -1479,33 +1521,46 @@ void Timeline::commandSplitClip(Clip *c, Clip *c1, Clip *c2, int track, Transiti
 
 
 
-void Timeline::commandEffectAddRemove(Clip *c, int track, QSharedPointer<Filter> f, bool isVideo, int index, bool remove)
+void Timeline::commandEffectAddRemove(QList<Clip*> clips, QList<int> ltracks, QList< QSharedPointer<Filter> > filters, bool isVideo, QList<int> indexes, bool remove)
 {
 	if (remove) {
-		updateStabilize(c, f.data(), true);
-		if (isVideo) {
-			c->videoFilters.remove( f.staticCast<GLFilter>() );
+		for (int i = 0; i < clips.count(); ++i) {
+			Clip *c = clips.at(i);
+			QSharedPointer<Filter> f = filters.at(i);
+			
+			updateStabilize(c, f.data(), true);
+			if (isVideo) {
+				c->videoFilters.remove( f.staticCast<GLFilter>() );
+			}
+			else
+				c->audioFilters.remove( f.staticCast<AudioFilter>() );
 		}
-		else
-			c->audioFilters.remove( f.staticCast<AudioFilter>() );
 	}
 	else {
-		if (isVideo) {
-			if ( index == -1 )
-				c->videoFilters.append( f.staticCast<GLFilter>() );
-			else
-				c->videoFilters.insert( index, f.staticCast<GLFilter>() );
+		for (int i = 0; i < clips.count(); ++i) {
+			Clip *c = clips.at(i);
+			QSharedPointer<Filter> f = filters.at(i);
+			int index = indexes.at(i);
+		
+			if (isVideo) {
+				if ( index == -1 )
+					c->videoFilters.append( f.staticCast<GLFilter>() );
+				else
+					c->videoFilters.insert( index, f.staticCast<GLFilter>() );
+			}
+			else {
+				if ( index == -1 )
+					c->audioFilters.append( f.staticCast<AudioFilter>() );
+				else
+					c->audioFilters.insert( index, f.staticCast<AudioFilter>() );
+			}
+			updateStabilize(c, f.data(), false);
 		}
-		else {
-			if ( index == -1 )
-				c->audioFilters.append( f.staticCast<AudioFilter>() );
-			else
-				c->audioFilters.insert( index, f.staticCast<AudioFilter>() );
-		}
-		updateStabilize(c, f.data(), false);
 	}
 
-	itemSelected(getClipViewItem(c, track));
+	for (int i = 0; i < clips.count(); ++i) {
+		itemSelected(getClipViewItem(clips.at(i), ltracks.at(i)), i > 0);
+	}
 	QTimer::singleShot ( 1, this, SIGNAL(updateFrame()) );
 }
 

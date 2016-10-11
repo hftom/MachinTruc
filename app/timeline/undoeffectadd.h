@@ -11,34 +11,40 @@
 class UndoEffectAdd : public QUndoCommand
 {
 public:
-	UndoEffectAdd(Timeline *t, Clip *c, int track, QSharedPointer<Filter> f, bool isVideo, int index) {
-		clip = c;
+	UndoEffectAdd(Timeline *t) {
 		timeline = t;
-		trackNumber = track;
-		filter = f;
+	}
+	
+	void append(Clip *c, int track, QSharedPointer<Filter> f, int index, bool isVideo) {
+		clips.append(c);
+		trackNumbers.append(track);
+		filters.append(f);
+		indexInEffectList.append(index);
 		isVideoEffect = isVideo;
-		indexInEffectList = index;
-		setText(QObject::tr("Add %1 effect").arg(f->getFilterName()));
+		
+		if (clips.count() == 1) {
+			setText(QObject::tr("Add %1 effect").arg(f->getFilterName()));
+		}
 	}
 	
 	~UndoEffectAdd() {
 	}
 	
 	void redo() {
-		timeline->commandEffectAddRemove(clip, trackNumber, filter, isVideoEffect, indexInEffectList, false);
+		timeline->commandEffectAddRemove(clips, trackNumbers, filters, isVideoEffect, indexInEffectList, false);
 	}
 	
 	void undo() {
-		timeline->commandEffectAddRemove(clip, trackNumber, filter, isVideoEffect, indexInEffectList, true);
+		timeline->commandEffectAddRemove(clips, trackNumbers, filters, isVideoEffect, indexInEffectList, true);
 	}
 	
 private:
-	int trackNumber;
-	Clip *clip;
+	QList<int> trackNumbers;
+	QList<Clip*> clips;
 	Timeline *timeline;
-	QSharedPointer<Filter> filter;
+	QList< QSharedPointer<Filter> > filters;
 	bool isVideoEffect;
-	int indexInEffectList;
+	QList<int> indexInEffectList;
 };
 
 #endif // UNDO_EFFECT_ADD_H

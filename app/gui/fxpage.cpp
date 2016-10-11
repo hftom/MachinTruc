@@ -28,6 +28,7 @@ FxPage::FxPage()
 	connect( videoGraph, SIGNAL(filterAdded(ClipViewItem*,QString,int)), this, SIGNAL(filterAdded(ClipViewItem*,QString,int)) );
 	connect( videoGraph, SIGNAL(filterReordered(Clip*,bool,int,int)), this, SIGNAL(filterReordered(Clip*,bool,int,int)) );
 	connect( videoGraph, SIGNAL(showEffect(int)), this, SLOT(showVideoEffect(int)) );
+	connect( videoGraph, SIGNAL(filterCopy(QSharedPointer<Filter>,bool)), this, SIGNAL(filterCopy(QSharedPointer<Filter>,bool)) );
 	
 	audioEffectsListView->setModel( new EffectListModel( &fc->audioFilters ) );
 	audioGraph = new Graph( true );
@@ -39,6 +40,7 @@ FxPage::FxPage()
 	connect( audioGraph, SIGNAL(filterAdded(ClipViewItem*,QString,int)), this, SIGNAL(filterAdded(ClipViewItem*,QString,int)) );
 	connect( audioGraph, SIGNAL(filterReordered(Clip*,bool,int,int)), this, SIGNAL(filterReordered(Clip*,bool,int,int)) );
 	connect( audioGraph, SIGNAL(showEffect(int)), this, SLOT(showAudioEffect(int)) );
+	connect( audioGraph, SIGNAL(filterCopy(QSharedPointer<Filter>,bool)), this, SIGNAL(filterCopy(QSharedPointer<Filter>,bool)) );
 }
 
 

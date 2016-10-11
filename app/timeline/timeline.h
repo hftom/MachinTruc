@@ -12,6 +12,8 @@
 #include "transitionviewitem.h"
 #include "clipeffectviewitem.h"
 
+#include "gui/clipboard.h"
+
 
 
 class TopWindow;
@@ -81,7 +83,8 @@ public:
 	void thumbResultReady( ThumbRequest result );
 	
 	void zoomInOut( bool in );
-	void editCut();
+	void editCut(ClipBoard *clipboard);
+	void editPaste(ClipBoard *clipboard);
 	
 	void commandAddClip(QList<Clip*> clips, QList<int> ltracks, QList<Transition*> tails);
 	void commandRemoveClip(QList<Clip*> clips, QList<int> ltracks);
@@ -89,7 +92,7 @@ public:
 	void commandResizeClip(Clip *clip, bool resizeStart, int track, double position, double length, Transition *trans);
 	void commandClipSpeed(Clip *c, int track, double speed, double length, Transition *tail);
 	void commandSplitClip(Clip *c, Clip *c1, Clip *c2, int track, Transition *trans, Transition *tail, bool redo);
-	void commandEffectAddRemove(Clip *c, int track, QSharedPointer<Filter> f, bool isVideo, int index, bool remove);
+	void commandEffectAddRemove(QList<Clip*> clips, QList<int> ltracks, QList< QSharedPointer<Filter> > filters, bool isVideo, QList<int> indexes, bool remove);
 	void commandTrackAddRemove(int index, bool remove, bool noparent = false);
 	void commandEffectMove(Clip *c, double newPos, bool isVideo, int index);
 	void commandEffectResize(Clip *c, bool resizeStart, double offset, double position, double length, bool video, int effectIndex);
