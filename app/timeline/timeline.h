@@ -83,6 +83,7 @@ public:
 	void thumbResultReady( ThumbRequest result );
 	
 	void zoomInOut( bool in );
+	void selectAll();
 	void editCut(ClipBoard *clipboard);
 	void editPaste(ClipBoard *clipboard);
 	

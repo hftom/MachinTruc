@@ -201,6 +201,14 @@ TopWindow::TopWindow()
 
 
 
+void TopWindow::selectAll()
+{
+	if ( timelineStackedWidget->currentIndex() == 0 )
+		timeline->selectAll();
+}
+
+
+
 void TopWindow::filterCopy(QSharedPointer<Filter> f, bool audio)
 {
 	clipboard.filterCopy(f, audio);

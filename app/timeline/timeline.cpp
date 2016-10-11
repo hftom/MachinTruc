@@ -177,6 +177,23 @@ qreal Timeline::getCurrentZoom()
 
 
 
+void Timeline::selectAll()
+{
+	int n = 0;
+	for ( int j = 0; j < tracks.count(); ++j ) {
+		QList<QGraphicsItem*> list = tracks.at( j )->childItems();
+		for ( int i = 0; i < list.count(); ++i ) {
+			QGraphicsItem *it = list.at( i );
+			if ( it->data( DATAITEMTYPE ).toInt() == TYPECLIP ) {
+				ClipViewItem *cv = (ClipViewItem*)it;
+				itemSelected((ClipViewItem*)it, n++ > 0);
+			}
+		}
+	}
+}
+
+
+
 void Timeline::itemSelected( AbstractViewItem *it, bool extend )
 {
 	if ( effectItem ) {
