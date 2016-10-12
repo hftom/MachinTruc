@@ -84,6 +84,7 @@ public:
 	
 	void zoomInOut( bool in );
 	void selectAll();
+	void editCopy(ClipBoard *clipboard);
 	void editCut(ClipBoard *clipboard);
 	void editPaste(ClipBoard *clipboard);
 	
@@ -101,6 +102,9 @@ public:
 	void commandEffectParam(QSharedPointer<Filter> filter, Parameter *param, QVariant value);
 	
 public slots:
+	void nextEdge();
+	void previousEdge();
+
 	void viewMouseMove( QPointF pos );
 	void viewMouseLeave();
 	void viewSizeChanged( const QSize &size );
@@ -161,6 +165,8 @@ private:
 	DroppedCut droppedCut;
 	
 	QPropertyAnimation *zoomAnim;
+	
+	bool dontEnsureVisible;
 	
 signals:
 	void ensureVisible( const QGraphicsItem* );

@@ -25,7 +25,7 @@ public:
 		newPosition = newPos;
 		firstRedo = alreadyMoved;
 		multiMove = multi;
-		setText(multi ? QObject::tr("Move all subsequent clips") : QObject::tr("Move clip"));
+		setText(multi ? QObject::tr("Move clip's tail") : QObject::tr("Move clip"));
 	}
 	
 	~UndoClipMove() {

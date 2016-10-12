@@ -726,6 +726,71 @@ bool Scene::updateCurrentPosition( double begin, double end )
 }
 
 
+
+double Scene::nextEdge(double pts)
+{
+	double margin = profile.getVideoFrameDuration() / 4.0;
+	double npts = 0, max = 0;
+	
+	for ( int i = 0; i < tracks.count(); ++i ) {
+		if ( !tracks[ i ]->clipCount() )
+			continue;
+		Clip *c = tracks[ i ]->clipAt( tracks[ i ]->clipCount() - 1 );
+		double d = c->position() + c->length();
+		if ( d > max )
+			max = d;
+	}
+	
+	npts = max;
+	
+	for ( int i = 0; i < tracks.count(); ++i ) {
+		Track *t = tracks[ i ];
+		for ( int j = 0; j < t->clipCount(); ++j ) {
+			Clip *c = t->clipAt( j );
+			double pos = c->position() - margin;
+			if ( pos > pts && pos < npts ) {
+				npts = pos + margin;
+			}
+			else {
+				pos += c->length();
+				if ( pos > pts && pos < npts ) {
+					npts = pos + margin;
+				}
+			}
+		}
+	}
+	
+	return (qAbs(npts - max) < 1) ? max - profile.getVideoFrameDuration() : npts;
+}
+
+
+
+double Scene::previousEdge(double pts)
+{
+	double margin = profile.getVideoFrameDuration() / 4.0;
+	double npts = 0;
+	
+	for ( int i = 0; i < tracks.count(); ++i ) {
+		Track *t = tracks[ i ];
+		for ( int j = t->clipCount() -1; j > -1; --j ) {
+			Clip *c = t->clipAt( j );
+			double pos = c->position() + c->length() + margin;
+			if ( pos < pts && pos > npts ) {
+				npts = pos;
+			}
+			else {
+				pos -= c->length();
+				if ( pos < pts && pos > npts ) {
+					npts = pos;
+				}
+			}
+		}
+	}
+	
+	return npts;
+}
+
+
 	
 void Scene::addClip( Clip *clip, int track )
 {

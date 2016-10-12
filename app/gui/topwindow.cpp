@@ -141,6 +141,8 @@ TopWindow::TopWindow()
 	connect( actionFaster, SIGNAL(triggered()), this, SLOT(playFaster()) );
 	connect( actionFrameByFrame, SIGNAL(triggered()), this, SLOT(seekNext()) );
 	connect( actionFrameByFrameBackward, SIGNAL(triggered()), this, SLOT(seekPrevious()) );
+	connect( actionNextEdge, SIGNAL(triggered()), timeline, SLOT(nextEdge()) );
+	connect( actionPreviousEdge, SIGNAL(triggered()), timeline, SLOT(previousEdge()) );
 	connect( actionSlower, SIGNAL(triggered()), this, SLOT(playSlower()) );
 	connect( actionProjectSettings, SIGNAL(triggered()), this, SLOT(menuProjectSettings()) );
 	connect( actionZoomIn, SIGNAL(triggered()), this, SLOT(zoomIn()) );
@@ -148,7 +150,9 @@ TopWindow::TopWindow()
 	connect( actionCopy, SIGNAL(triggered()), this, SLOT(editCopy()) );
 	connect( actionCut, SIGNAL(triggered()), this, SLOT(editCut()) );
 	connect( actionPaste, SIGNAL(triggered()), this, SLOT(editPaste()) );
+	connect( actionSelectAll, SIGNAL(triggered()), this, SLOT(selectAll()) );
 	connect( actionSplitCurrentClip, SIGNAL(triggered()), timeline, SLOT(splitCurrentClip()) );
+	connect( actionMoveMulti, SIGNAL(triggered()), this, SLOT(moveMulti()) );
 	connect( actionSaveImage, SIGNAL(triggered()), vw, SLOT(shot()) );
 	connect( actionRenderToFile, SIGNAL(triggered()), this, SLOT(renderDialog()) );
 	
@@ -226,6 +230,8 @@ void TopWindow::editPaste()
 
 void TopWindow::editCopy()
 {
+	if ( timelineStackedWidget->currentIndex() == 0 )
+		timeline->editCopy(&clipboard);
 }
 
 
@@ -234,6 +240,13 @@ void TopWindow::editCut()
 {
 	if ( timelineStackedWidget->currentIndex() == 0 )
 		timeline->editCut(&clipboard);
+}
+
+
+
+void TopWindow::moveMulti()
+{
+	QMessageBox::information(this, tr("Advice"), tr("Hold down the SHIFT key before dragging a clip to also move all the clips on its right side."));
 }
 
 
@@ -603,7 +616,7 @@ Source* TopWindow::getDroppedCut( int index, QString mime, QString filename, dou
 
 void TopWindow::ensureVisible( const QGraphicsItem *it )
 {
-	if ( playToolButton->isChecked() )
+	//if ( playToolButton->isChecked() )
 		timelineView->ensureVisible( it, 100, 100 );
 }
 

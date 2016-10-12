@@ -35,7 +35,8 @@ Timeline::Timeline( TopWindow *parent ) : QGraphicsScene(),
 	viewWidth( 0 ),
 	effectItem( NULL ),
 	scene( NULL ),
-	topParent( parent )
+	topParent( parent ),
+	dontEnsureVisible( false )
 {
 	setBackgroundBrush( QBrush( QColor(20,20,20) ) );
 	
@@ -227,6 +228,7 @@ void Timeline::itemSelected( AbstractViewItem *it, bool extend )
 		}
 	}
 	
+	dontEnsureVisible = true;
 	emit clipSelected( selectedItems.count() 
 			? selectedItems.first()->data( DATAITEMTYPE ).toInt() == TYPECLIP ? (ClipViewItem*)selectedItems.first() : NULL
 			: NULL
@@ -265,6 +267,20 @@ void Timeline::playheadMoved( double p )
 	qint64 i = pts / scene->getProfile().getVideoFrameDuration();
 	pts = i;
 	emit seekTo( pts * scene->getProfile().getVideoFrameDuration() );
+}
+
+
+
+void Timeline::nextEdge()
+{
+	emit seekTo( scene->nextEdge(cursor->x() * zoom) );
+}
+
+
+
+void Timeline::previousEdge()
+{
+	emit seekTo( scene->previousEdge(cursor->x() * zoom) );
 }
 
 
@@ -853,7 +869,10 @@ void Timeline::setCursorPos( double pts )
 	qint64 i = ( pts + ( d / 2.0 ) ) / d;
 	pts = i * d;
 	cursor->setX( pts / zoom );
-	emit ensureVisible( cursor );
+	if (!dontEnsureVisible) {
+		emit ensureVisible( cursor );
+	}
+	dontEnsureVisible = false;
 }
 
 
@@ -925,6 +944,12 @@ void Timeline::setScene( Scene *s )
 
 
 
+void Timeline::editCopy(ClipBoard *clipboard)
+{
+}
+
+
+
 void Timeline::editCut(ClipBoard *clipboard)
 {
 	int n = 0;
@@ -953,7 +978,7 @@ void Timeline::editCut(ClipBoard *clipboard)
 void Timeline::editPaste(ClipBoard *clipboard)
 {
 	int n = 0;
-	if ( selectedItems.count() ) {
+	if ( selectedItems.count() && !clipboard->getFilter().isNull() ) {
 		UndoEffectAdd *u = new UndoEffectAdd(this);
 		for (int i = 0; i < selectedItems.count(); ++i) {
 			if (selectedItems.at(i)->data( DATAITEMTYPE ).toInt() == TYPECLIP) {
@@ -1326,22 +1351,28 @@ void Timeline::commandAddClip(QList<Clip*> clips, QList<int> ltracks, QList<Tran
 	for (int i = 0; i < clips.count(); ++i) {
 		int track = ltracks.at(i);
 		Clip *clip = clips.at(i);
-		Transition *tail = tails.at(i);
 		
 		ClipViewItem *cv = new ClipViewItem( clip, zoom );
 		cvs.append(cv);
 		cv->setParentItem( tracks.at( track ) );
 		scene->addClip( clip, track );
-		Clip *next = scene->getTailClip(clip, track);
-		if (next) {
-			next->setTransition(tail ? new Transition(tail) : NULL);
-		}
 
 		updateStabilize(clip, NULL, false);
 
 		updateTransitions( cv, false );
 		clipThumbRequest( cv, true );
 		clipThumbRequest( cv, false );
+	}
+	// reset transitions after all clips have been added.
+	for (int i = 0; i < clips.count(); ++i) {
+		int track = ltracks.at(i);
+		Clip *clip = clips.at(i);
+		Transition *tail = tails.at(i);
+
+		Clip *next = scene->getTailClip(clip, track);
+		if (next) {
+			next->setTransition(tail ? new Transition(tail) : NULL);
+		}
 	}
 	for (int i = 0; i < cvs.count(); ++i) {
 		if (i == 0) {

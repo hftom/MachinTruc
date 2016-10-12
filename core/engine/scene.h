@@ -47,6 +47,9 @@ public:
 	Clip* getTailClip(Clip *clip, int track);
 	bool canSplitClip(Clip *clip, int track, double pts);
 	Clip* sceneSplitClip( Clip *clip, int track, double pts );
+	
+	double nextEdge(double pts);
+	double previousEdge(double pts);
 
 	bool update;
 	QList<Track*> tracks;

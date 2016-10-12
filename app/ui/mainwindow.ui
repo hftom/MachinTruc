@@ -621,9 +621,10 @@
     <addaction name="actionCut"/>
     <addaction name="actionPaste"/>
     <addaction name="separator"/>
-    <addaction name="actionSelect_all_clips"/>
+    <addaction name="actionSelectAll"/>
     <addaction name="separator"/>
     <addaction name="actionSplitCurrentClip"/>
+    <addaction name="actionMoveMulti"/>
     <addaction name="separator"/>
     <addaction name="actionZoomIn"/>
     <addaction name="actionZoomOut"/>
@@ -652,6 +653,8 @@
     <addaction name="actionSlower"/>
     <addaction name="actionFrameByFrame"/>
     <addaction name="actionFrameByFrameBackward"/>
+    <addaction name="actionNextEdge"/>
+    <addaction name="actionPreviousEdge"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuTimeline"/>
@@ -825,12 +828,33 @@
     <string>Ctrl+V</string>
    </property>
   </action>
-  <action name="actionSelect_all_clips">
+  <action name="actionSelectAll">
    <property name="text">
     <string>Select all clips</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+A</string>
+   </property>
+  </action>
+  <action name="actionMoveMulti">
+   <property name="text">
+    <string>Move the clip's tail</string>
+   </property>
+  </action>
+  <action name="actionNextEdge">
+   <property name="text">
+    <string>Next edge</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+Right</string>
+   </property>
+  </action>
+  <action name="actionPreviousEdge">
+   <property name="text">
+    <string>Previous edge</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+Left</string>
    </property>
   </action>
  </widget>

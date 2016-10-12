@@ -205,7 +205,8 @@ private slots:
 	void hideAnimEditor(int);
 	
 	void selectAll();
-	
+	void moveMulti();
+
 	void editCopy();
 	void editCut();
 	void editPaste();
