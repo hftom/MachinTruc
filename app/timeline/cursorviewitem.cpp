@@ -11,11 +11,23 @@
 CursorViewItem::CursorViewItem()
 {
 	setData( DATAITEMTYPE, TYPECURSOR );
-	setRect( 0, 0, 8, TRACKVIEWITEMHEIGHT - 2 );
+	setRect( 0, 0, 10, TRACKVIEWITEMHEIGHT - 2 );
 	setAcceptHoverEvents(true);
 	
-	setPen( QColor(0, 255, 0, 128) );
-	setBrush( QColor(0, 255, 0, 128) );
+	setPen( QColor(0, 255, 0, 100) );
+	setBrush( QColor(0, 255, 0, 100) );
+	
+	trackMarker = QPixmap(":/images/icons/point.png");
+	setActiveTrack( 0 );
+}
+
+
+
+void CursorViewItem::setActiveTrack( int t )
+{
+	activeTrack = qMax(t, 0);
+	markerYPos = rect().height() - 4 - (TRACKVIEWITEMHEIGHT / 2) - (activeTrack * TRACKVIEWITEMHEIGHT);
+	update();
 }
 
 
@@ -35,6 +47,7 @@ void CursorViewItem::paint( QPainter *painter, const QStyleOptionGraphicsItem *o
 	QGraphicsRectItem::paint( painter, option, widget );
 	
 	QRectF r = rect();
+	painter->drawPixmap(QPointF(r.left() + 1.0, markerYPos), trackMarker);
 	painter->setPen( QColor(0,0,0) );
 	painter->drawLine( r.topLeft(), r.bottomLeft() );
 }
@@ -43,6 +56,10 @@ void CursorViewItem::paint( QPainter *painter, const QStyleOptionGraphicsItem *o
 
 void CursorViewItem::mousePressEvent( QGraphicsSceneMouseEvent *event )
 {
+	if ( event->buttons() & Qt::RightButton ) {
+		setActiveTrack((rect().height() - event->pos().y() - 5) / TRACKVIEWITEMHEIGHT);
+		return;
+	}
 	startMoveOffset = event->scenePos().x() - mapToScene( rect().topLeft() ).x();
 }
 
@@ -50,6 +67,9 @@ void CursorViewItem::mousePressEvent( QGraphicsSceneMouseEvent *event )
 
 void CursorViewItem::mouseMoveEvent( QGraphicsSceneMouseEvent *event )
 {
+	if ( event->buttons() & Qt::RightButton ) {
+		return;
+	}
 	Timeline *t = (Timeline*)scene();
 	t->playheadMoved( event->scenePos().x() - startMoveOffset );
 }

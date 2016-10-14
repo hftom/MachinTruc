@@ -139,6 +139,7 @@ public:
 	Source* getDroppedCut( int index, QString mime, QString filename, double &start, double &len );
 	Sampler* getSampler() { return sampler; };
 	void timelineTrackAddRemove( int index, bool remove );
+	QList<Source*> getAllSources();
 
 public slots:
 	void clipThumbRequest( ThumbRequest request );

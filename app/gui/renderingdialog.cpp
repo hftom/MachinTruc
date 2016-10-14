@@ -212,6 +212,7 @@ void RenderingDialog::enableUI( bool b )
 	openBtn->setEnabled( b );
 	videoRateSpin->setEnabled( b );
 	progressBar->setValue( 0 );
+	heightSpin->setEnabled( b );
 }
 
 

@@ -11,11 +11,10 @@
 class UndoClipAdd : public QUndoCommand
 {
 public:
-	UndoClipAdd(Timeline *t, Clip *c, int track, Transition *tail, bool alreadyAdded) {
+	UndoClipAdd(Timeline *t, bool alreadyAdded) {
 		timeline = t;
 		firstRedo = alreadyAdded;
 		redoState = true;
-		append(c, track, tail);
 	}
 	
 	void append(Clip *c, int track, Transition *tail) {

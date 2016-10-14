@@ -47,6 +47,7 @@
 	<file>icons/transparency.png</file>
 	<file>icons/color-wheel.png</file>
 	<file>icons/cursor.png</file>
+	<file>icons/point.png</file>
 	<file>icons/stabilize.png</file>
   </qresource>
 </RCC>

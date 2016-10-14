@@ -215,7 +215,7 @@ void TopWindow::selectAll()
 
 void TopWindow::filterCopy(QSharedPointer<Filter> f, bool audio)
 {
-	clipboard.filterCopy(f, audio);
+	clipboard.copyFilter(f, audio);
 }
 
 
@@ -470,6 +470,13 @@ void TopWindow::trackRequest( bool rm, int index )
 void TopWindow::timelineTrackAddRemove( int index, bool remove )
 {
 	sampler->trackRequest( remove, index );
+}
+
+
+
+QList<Source*> TopWindow::getAllSources()
+{
+	return sourcePage->getAllSources();
 }
 
 

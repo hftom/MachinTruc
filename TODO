@@ -3,8 +3,6 @@ TODO
 1.0
 - finish Undo (transition effect change, animation change, source filters)
 - Timeline multiselection
-- Timeline copy/cut/paste
-- Filter copy/paste
 - SourcesList multiselection ?
 - OVD crop
 - Source properties override

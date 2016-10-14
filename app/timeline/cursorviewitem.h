@@ -12,7 +12,8 @@ public:
 	CursorViewItem();
 
 	virtual void paint( QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget );
-	
+	void setActiveTrack( int t );
+	int getActiveTrack() { return activeTrack; }
 	void setHeight( double h );
 	
 protected:
@@ -22,6 +23,9 @@ protected:
 	
 private:
 	double startMoveOffset;
+	QPixmap trackMarker;
+	int activeTrack;
+	double markerYPos;
 };
 
 #endif // CURSORVIEWITEM_H

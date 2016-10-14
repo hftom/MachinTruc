@@ -299,148 +299,18 @@ void ProjectFile::readTrack( QDomElement &element, Scene *scene, int index )
 		if ( e.isNull() )
 			continue;
 		
-		if ( e.tagName() == "Clip" )
-			readClip( e, scene, index );
-	}
-}
-
-
-
-void ProjectFile::readClip( QDomElement &element, Scene *scene, int trackIndex )
-{
-	QDomNodeList nodes = element.childNodes();
-	
-	QString name;
-	double posInTrack = 0;
-	double startTime = 0;
-	double length = 0;
-	double speed = 1;
-	bool okName = false, okPos = false, okStart = false, okLen = false;
-	Clip *clip = NULL;
-	
-	speed = element.attribute( "speed" ).toDouble();
-	if ( speed == 0.0 )
-		speed = 1.0;
-	
-	for ( int i = 0; i < nodes.count(); ++i ) {
-		QDomElement e = nodes.at( i ).toElement();
-		if ( e.isNull() )
-			continue;
-		
-		if ( e.tagName() == "Name" ) {
-			name = e.text();
-			okName = true;
-		}
-		else if ( e.tagName() == "PosInTrack" ) {
-			posInTrack = e.text().toDouble();
-			okPos = true;
-		}
-		else if ( e.tagName() == "StartTime" ) {
-			startTime = e.text().toDouble();
-			okStart = true;
-		}
-		else if ( e.tagName() == "Length" ) {
-			length = e.text().toDouble();
-			okLen = true;
-		}
-	}
-	
-	if ( !( okName && okPos && okStart && okLen ) ) {
-		readError = true;
-		return;
-	}
-	
-	// check if source exists and create clip
-	for ( int i = 0; i < sourcesList.count(); ++i ) {
-		if ( sourcesList[ i ]->getFileName() == name ) {
-			clip = scene->createClip( sourcesList[ i ], posInTrack, startTime, length );
-			break;
-		}
-	}
-	
-	if ( !clip ) {
-		readError = true;
-		return;
-	}
-	
-	clip->setSpeed( speed );
-	
-	for ( int i = 0; i < nodes.count(); ++i ) {
-		QDomElement e = nodes.at( i ).toElement();
-		if ( e.isNull() )
-			continue;
-		
-		if ( e.tagName() == "VideoFilter" ) {
-			QSharedPointer<Filter> f = XMLizer::readFilter( e, false, readError );
-			if ( !f.isNull() ) {
-				if ( f->getIdentifier() == "GLStabilize" ) {
-					GLStabilize *stab = (GLStabilize*)f.data();
-					stab->setSource( clip->getSource() );
+		if ( e.tagName() == "Clip" ) {
+			Clip *clip = XMLizer::readClip( e, &sourcesList, scene, readError );
+			if (clip) {
+				double posInTrack = clip->position();
+				if ( !scene->canMove( clip, clip->length(), posInTrack, index ) ) {
+					delete clip;
+					readError = true;
 				}
-				clip->videoFilters.append( f.staticCast<GLFilter>() );
+				else {
+					scene->addClip( clip, index );
+				}
 			}
-		}
-		else if ( e.tagName() == "AudioFilter" ) {
-			QSharedPointer<Filter> f = XMLizer::readFilter( e, true, readError );
-			if ( !f.isNull() )
-				clip->audioFilters.append( f.staticCast<AudioFilter>() );
-		}
-		else if ( e.tagName() == "Transition" ) {
-			readTransition( e, clip );
-		}
-	}
-	
-	if ( !scene->canMove( clip, length, posInTrack, trackIndex ) ) {
-		delete clip;
-		readError = true;
-		return;
-	}
-	else {
-		scene->addClip( clip, trackIndex );
-	}
-}
-
-
-
-void ProjectFile::readTransition( QDomElement &element, Clip *clip )
-{
-	QDomNodeList nodes = element.childNodes();
-	
-	double length = 0;
-	bool okLen = false;
-	
-	for ( int i = 0; i < nodes.count(); ++i ) {
-		QDomElement e = nodes.at( i ).toElement();
-		if ( e.isNull() )
-			continue;
-
-		if ( e.tagName() == "Length" ) {
-			length = e.text().toDouble();
-			okLen = true;
-		}
-	}
-	
-	if ( !okLen ) {
-		readError = true;
-		return;
-	}
-	
-	clip->setTransition( length );
-		
-	for ( int i = 0; i < nodes.count(); ++i ) {
-		QDomElement e = nodes.at( i ).toElement();
-		if ( e.isNull() )
-			continue;
-		
-		if ( e.tagName() == "VideoFilter" ) {
-			QSharedPointer<Filter> f = XMLizer::readFilter( e, false, readError, true );
-			if ( !f.isNull() )
-				clip->getTransition()->setVideoFilter( f.staticCast<GLFilter>() );
-		}
-		else if ( e.tagName() == "AudioFilter" ) {
-			QSharedPointer<Filter> f = XMLizer::readFilter( e, true, readError, true );
-			if ( !f.isNull() )
-				clip->getTransition()->setAudioFilter( f.staticCast<AudioFilter>() );
 		}
 	}
 }
@@ -541,41 +411,7 @@ void ProjectFile::writeTracks( QDomNode &parent, Sampler *sampler )
 			n.appendChild( n1 );
 			Track *track = scene->tracks[i];
 			for ( int j = 0; j < track->clipCount(); ++j )
-				writeClip( n1, track->clipAt( j ) );
+				XMLizer::writeClip( document, n1, track->clipAt( j ) );
 		}
-	}
-}
-
-
-
-void ProjectFile::writeClip( QDomNode &parent, Clip *clip )
-{
-	QDomElement n1 = document.createElement( "Clip" );
-	parent.appendChild( n1 );
-
-	if ( clip->getSpeed() != 1.0 )
-		n1.setAttribute( "speed", QString::number( clip->getSpeed(), 'e', 17 ) );
-	XMLizer::createText( document, n1, "Name", clip->sourcePath() );
-	XMLizer::createDouble( document, n1, "PosInTrack", clip->position() );
-	XMLizer::createDouble( document, n1, "StartTime", clip->start() );
-	XMLizer::createDouble( document, n1, "Length", clip->length() );
-	
-	for ( int i = 0; i < clip->videoFilters.count(); ++i )
-		XMLizer::writeFilter( document, n1, false, clip->videoFilters.at( i ) );
-	
-	for ( int i = 0; i < clip->audioFilters.count(); ++i )
-		XMLizer::writeFilter( document, n1, true, clip->audioFilters.at( i ) );
-	
-	Transition *trans = clip->getTransition();
-	if ( trans ) {
-		QDomElement t = document.createElement( "Transition" );
-		n1.appendChild( t );
-		
-		XMLizer::createDouble( document, t, "PosInTrack", trans->position() );
-		XMLizer::createDouble( document, t, "Length", trans->length() );
-		if ( !trans->getVideoFilter().isNull() )
-			XMLizer::writeFilter( document, t, false, trans->getVideoFilter() );
-		if ( !trans->getAudioFilter().isNull() )
-			XMLizer::writeFilter( document, t, true, trans->getAudioFilter() );
 	}
 }

@@ -28,7 +28,6 @@ private:
 	
 	void writeSource( QDomNode &parent, Source *source );
 	void writeTracks( QDomNode &parent, Sampler *sampler );
-	void writeClip( QDomNode &parent, Clip *clip );
 
 	QDomDocument document;
 	Profile projectProfile;
