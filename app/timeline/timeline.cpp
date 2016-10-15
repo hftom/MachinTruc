@@ -36,7 +36,8 @@ Timeline::Timeline( TopWindow *parent ) : QGraphicsScene(),
 	effectItem( NULL ),
 	scene( NULL ),
 	topParent( parent ),
-	selectWindowItem( NULL )
+	selectWindowItem( NULL ),
+	forceEnsureVisible( false )
 {
 	setBackgroundBrush( QBrush( QColor(20,20,20) ) );
 	
@@ -316,6 +317,9 @@ void Timeline::trackSelectWindowRelease(bool extend)
 			++n;
 		}
 	}
+	if (!extend) {
+		itemSelected(NULL);
+	}
 	for (int i = 0; i < list.count(); ++i) {
 		QGraphicsItem *it = list.at(i);
 		if ( it->data( DATAITEMTYPE ).toInt() == TYPECLIP ) {
@@ -366,6 +370,7 @@ void Timeline::nextEdge()
 		}
 	}
 	
+	forceEnsureVisible = true;
 	emit seekTo( spts );
 }
 
@@ -397,6 +402,7 @@ void Timeline::previousEdge()
 		}
 	}
 	
+	forceEnsureVisible = true;
 	emit seekTo( spts );
 }
 
@@ -986,8 +992,9 @@ void Timeline::setCursorPos( double pts, bool isPlaying )
 	qint64 i = ( pts + ( d / 2.0 ) ) / d;
 	pts = i * d;
 	cursor->setX( pts / zoom );
-	if (isPlaying) {
+	if (isPlaying || forceEnsureVisible) {
 		emit ensureVisible( cursor );
+		forceEnsureVisible = false;
 	}
 }
 

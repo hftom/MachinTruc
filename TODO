@@ -2,17 +2,18 @@ TODO
 
 1.0
 - finish Undo (transition effect change, animation change, source filters)
-- Timeline multiselection
+- finish animation editor
+- check stabilize finish before render
+- copy several filters ?
+
+- Timeline edit workflow (insert, remove gap, ripple ..)
 - SourcesList multiselection ?
 - OVD crop
-- Source properties override
-- Show source's filters in filter graph (readonly ?)
-- finish animation editor
-- Timeline edit workflow (insert, remove gap, ripple ..)
-- title animation (producers ?)
-- check stabilize finish before render
 
 2.0
+- title animation (producers ?)
+- Source properties override
+- Show source's filters in filter graph (readonly ?)
 - selection mask
 - multi timeline
 - nested timeline

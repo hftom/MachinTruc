@@ -174,6 +174,8 @@ private:
 	
 	QPointF mouseScenePosition;
 	
+	bool forceEnsureVisible;
+	
 signals:
 	void ensureVisible( const QGraphicsItem* );
 	void centerOn( const QGraphicsItem* );
