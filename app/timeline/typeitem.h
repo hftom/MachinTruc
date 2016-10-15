@@ -9,12 +9,14 @@
 #define TYPETRANSITION 4
 #define TYPEFILTER 5
 #define TYPERULER 6
+#define TYPESELECTWINDOW 7
 
 #define ZCLIP 1
 #define ZCLIPSELECTED 10
 #define ZCLIPCURRENT 20
 #define ZTRANSITION 30
 #define ZFILTER 40
+#define ZSELECTWINDOW 45
 #define ZRULER 50
 #define ZCURSOR 60
 

@@ -11,6 +11,7 @@
 #include "trackviewitem.h"
 #include "transitionviewitem.h"
 #include "clipeffectviewitem.h"
+#include "selectwindowitem.h"
 
 #include "gui/clipboard.h"
 
@@ -72,6 +73,9 @@ public:
 	
 	void trackPressed( QPointF p );
 	void trackPressedRightBtn( TrackViewItem *t, QPoint p );
+	void trackSelectWindow( QPointF p );
+	void trackSelectWindowMove( QPointF p );
+	void trackSelectWindowRelease(bool extend);
 	void itemSelected( AbstractViewItem *it, bool extend = false, bool moreToCome = false );
 	
 	void playheadMoved( double p );
@@ -132,9 +136,10 @@ protected:
 	void dropEvent( QGraphicsSceneDragDropEvent *event );
 	
 private slots:
-	void updateLength();
+	void updateAfterEdit(bool doFrame, bool doLength);
 	
 private:
+	void updateLength();
 	ClipViewItem* getSelectedClip();
 	void updateStabilize(Clip *clip, Filter *f, bool stop);
 	int getTrack( const QPointF &p );
@@ -163,10 +168,13 @@ private:
 	TopWindow *topParent;
 	
 	DroppedCut droppedCut;
+	SelectWindowItem *selectWindowItem;
 	
 	QPropertyAnimation *zoomAnim;
 	
 	bool dontEnsureVisible;
+	
+	QPointF mouseScenePosition;
 	
 signals:
 	void ensureVisible( const QGraphicsItem* );

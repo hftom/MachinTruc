@@ -36,6 +36,7 @@ Timeline::Timeline( TopWindow *parent ) : QGraphicsScene(),
 	effectItem( NULL ),
 	scene( NULL ),
 	topParent( parent ),
+	selectWindowItem( NULL ),
 	dontEnsureVisible( false )
 {
 	setBackgroundBrush( QBrush( QColor(20,20,20) ) );
@@ -54,6 +55,8 @@ Timeline::Timeline( TopWindow *parent ) : QGraphicsScene(),
 	zoomAnim = new QPropertyAnimation( this, "animZoom" );
 	zoomAnim->setDuration( 250 );
 	zoomAnim->setEasingCurve( QEasingCurve::InOutSine );
+	
+	mouseScenePosition = QPointF( -1, -1 );
 }
 
 
@@ -85,6 +88,8 @@ void Timeline::viewMouseMove( QPointF pos )
 		y = (double)(tc - t) * (TRACKVIEWITEMHEIGHT + 1);
 
 	ruler->setPosition( qMax( 0.0, pos.x() - RULERWIDTH / 2 ), y );
+
+	mouseScenePosition = QPointF( pos.x(), t );
 }
 
 
@@ -105,6 +110,8 @@ void Timeline::dockRuler()
 
 void Timeline::viewMouseLeave() {
 	ruler->setPosition( ruler->pos().x(), 0 );
+	
+	mouseScenePosition = QPointF( -1, -1 );
 }
 
 
@@ -112,7 +119,7 @@ void Timeline::viewMouseLeave() {
 void Timeline::viewSizeChanged( const QSize &size )
 {
 	viewWidth = size.width();
-	QTimer::singleShot ( 1, this, SLOT(updateLength()) );
+	updateAfterEdit( false, true );
 }
 
 
@@ -271,6 +278,57 @@ void Timeline::trackPressed( QPointF p )
 	qint64 i = pts / scene->getProfile().getVideoFrameDuration();
 	pts = i;
 	emit seekTo( pts * scene->getProfile().getVideoFrameDuration() );
+}
+
+
+
+void Timeline::trackSelectWindow( QPointF p )
+{
+	if ( selectWindowItem ) {
+		removeItem( selectWindowItem );
+		delete selectWindowItem;
+		selectWindowItem = NULL;
+	}
+	
+	selectWindowItem = new SelectWindowItem( p );
+	addItem( selectWindowItem );
+}
+
+
+
+void Timeline::trackSelectWindowMove( QPointF p )
+{
+	if (selectWindowItem) {
+		selectWindowItem->setEndPoint( p );
+	}
+}
+
+
+
+void Timeline::trackSelectWindowRelease(bool extend)
+{
+	if ( !selectWindowItem ) {
+		return;
+	}
+	
+	QList<QGraphicsItem *> list = selectWindowItem->collidingItems();
+	int n = 0;
+	for (int i = 0; i < list.count(); ++i) {
+		QGraphicsItem *it = list.at(i);
+		if ( it->data( DATAITEMTYPE ).toInt() == TYPECLIP ) {
+			++n;
+		}
+	}
+	for (int i = 0; i < list.count(); ++i) {
+		QGraphicsItem *it = list.at(i);
+		if ( it->data( DATAITEMTYPE ).toInt() == TYPECLIP ) {
+			itemSelected( (ClipViewItem*)it, extend || i > 0, i < n - 1 );
+		}
+	}
+	
+	removeItem( selectWindowItem );
+	delete selectWindowItem;
+	selectWindowItem = NULL;
 }
 
 
@@ -539,7 +597,7 @@ void Timeline::effectMoved( QPointF clipMouseStart )
 		UndoStack::getStack()->push(u);
 	}
 
-	QTimer::singleShot ( 1, this, SIGNAL(updateFrame()) );
+	updateAfterEdit(true, false);
 }
 
 
@@ -589,7 +647,7 @@ void Timeline::effectResized( int way )
 											   oldLen, f->getLength(), effectItem->isVideoEffect(), effectItem->getIndex(), true);
 	UndoStack::getStack()->push(u);
 
-	QTimer::singleShot ( 1, this, SIGNAL(updateFrame()) );
+	updateAfterEdit(true, false);
 }
 
 
@@ -698,8 +756,8 @@ void Timeline::clipItemMoved( ClipViewItem *clip, QPointF clipStartMouse, bool m
 	UndoStack::getStack()->push(u);
 	if (oldTrans) delete oldTrans;
 	if (oldTail) delete oldTail;
-	QTimer::singleShot ( 1, this, SIGNAL(updateFrame()) );
-	QTimer::singleShot ( 1, this, SLOT(updateLength()) );
+	
+	updateAfterEdit(true, true);
 }
 
 
@@ -764,8 +822,8 @@ void Timeline::clipItemResized( ClipViewItem *clip, int way )
 	UndoClipResize *u = new UndoClipResize(this, c,  way != 2, track, oldPos, c->position(), oldLen, c->length(), oldTrans, newTrans, true);
 	UndoStack::getStack()->push(u);
 	if (oldTrans) delete oldTrans;
-	QTimer::singleShot ( 1, this, SIGNAL(updateFrame()) );
-	QTimer::singleShot ( 1, this, SLOT(updateLength()) );
+	
+	updateAfterEdit(true, true);
 }
 
 
@@ -939,6 +997,19 @@ void Timeline::setCursorPos( double pts )
 
 
 
+void Timeline::updateAfterEdit(bool doFrame, bool doLength)
+{
+	if (doLength) {
+		updateLength();
+	}
+	if (doFrame) {
+		dontEnsureVisible = true;
+		emit updateFrame();
+	}
+}
+
+
+
 void Timeline::updateLength()
 {
 	int i, j, maxlen=0;
@@ -1001,7 +1072,7 @@ void Timeline::setScene( Scene *s )
 	setCursorPos( 0 );
 	ruler->setFrameDuration( scene->getProfile().getVideoFrameDuration() );
 
-	QTimer::singleShot ( 1, this, SLOT(updateLength()) );
+	updateAfterEdit(false, true);
 }
 
 
@@ -1107,7 +1178,11 @@ void Timeline::editPaste(ClipBoard *clipboard)
 	}
 	else if (type.startsWith("Track")) {
 		QList< QList<Clip*>* > *list = clipboard->getClips( topParent->getAllSources(), scene );
+		
 		int activeTrack = cursor->getActiveTrack();
+		if (mouseScenePosition.y() >= 0 && mouseScenePosition.x() >= 0) {
+			activeTrack = mouseScenePosition.y();
+		}
 		if ((activeTrack + 1 - list->count() < 0)) {
 			clipboard->deleteClips(list);
 			return;
@@ -1124,8 +1199,14 @@ void Timeline::editPaste(ClipBoard *clipboard)
 		}
 		
 		int trackBase = activeTrack - list->count() + 1;
-		QRectF dst = cursor->mapRectToScene( cursor->rect() );
-		double cursorPos = (dst.left() * zoom) + (scene->getProfile().getVideoFrameDuration() / 4.0);
+		double cursorPos = 0;
+		if (mouseScenePosition.y() >= 0 && mouseScenePosition.x() >= 0) {
+			cursorPos = mouseScenePosition.x() ;
+		}
+		else {
+			cursorPos = cursor->mapRectToScene( cursor->rect() ).left();
+		}
+		cursorPos = (cursorPos * zoom) + (scene->getProfile().getVideoFrameDuration() / 4.0);
 		double offset = cursorPos - oldPos;
 		QList<Clip*> added;
 		for (int i = 0; i < list->count(); ++i) {
@@ -1176,9 +1257,8 @@ void Timeline::editPaste(ClipBoard *clipboard)
 			}
 		}
 		UndoStack::getStack()->push(u);
-		
-		QTimer::singleShot ( 1, this, SIGNAL(updateFrame()) );
-		QTimer::singleShot ( 1, this, SLOT(updateLength()) );
+
+		updateAfterEdit(true, true);
 	}
 }
 
@@ -1232,7 +1312,8 @@ void Timeline::splitCurrentClip()
 		clipThumbRequest( cv1, false );
 		clipThumbRequest( cv2, true );
 		clipThumbRequest( cv2, false );
-		QTimer::singleShot ( 1, this, SIGNAL(updateFrame()) );
+		
+		updateAfterEdit(true, false);
 	}
 }
 
@@ -1547,8 +1628,8 @@ void Timeline::commandAddClip(QList<Clip*> clips, QList<int> ltracks, QList<Tran
 	for (int i = 0; i < cvs.count(); ++i) {
 		itemSelected( cvs.at(i), i > 0, i < cvs.count() - 1 );
 	}
-	QTimer::singleShot ( 1, this, SIGNAL(updateFrame()) );
-	QTimer::singleShot ( 1, this, SLOT(updateLength()) );
+	
+	updateAfterEdit(true, true);
 }
 
 
@@ -1570,8 +1651,8 @@ void Timeline::commandRemoveClip(QList<Clip*> clips, QList<int> ltracks)
 			}
 		}
 	}
-	QTimer::singleShot ( 1, this, SIGNAL(updateFrame()) );
-	QTimer::singleShot ( 1, this, SLOT(updateLength()) );
+	
+	QTimer::singleShot(500, this, SLOT(updateAfterEdit(true, true)));
 }
 
 
@@ -1607,8 +1688,8 @@ void Timeline::commandMoveClip(Clip *clip, bool multi, int oldTrack, int newTrac
 			next->setTransition(tail ? new Transition(tail) : NULL);
 		}
 		updateTransitions( cv, false );
-		QTimer::singleShot ( 1, this, SIGNAL(updateFrame()) );
-		QTimer::singleShot ( 1, this, SLOT(updateLength()) );
+		
+		updateAfterEdit(true, true);
 	}
 }
 
@@ -1636,8 +1717,8 @@ void Timeline::commandResizeClip(Clip *clip, bool resizeStart, int track, double
 			updateTransitions( cv, false );
 		}
 		clipThumbRequest( cv, resizeStart );
-		QTimer::singleShot ( 1, this, SIGNAL(updateFrame()) );
-		QTimer::singleShot ( 1, this, SLOT(updateLength()) );
+		
+		updateAfterEdit(true, true);
 	}
 }
 
@@ -1661,8 +1742,8 @@ void Timeline::commandClipSpeed(Clip *c, int track, double speed, double length,
 	clipThumbRequest( cv, false );
 	// force scene update
 	scene->update = true;
-	QTimer::singleShot ( 1, this, SIGNAL(updateFrame()) );
-	QTimer::singleShot ( 1, this, SLOT(updateLength()) );
+
+	updateAfterEdit(true, true);
 }
 
 
@@ -1729,7 +1810,7 @@ void Timeline::commandSplitClip(Clip *c, Clip *c1, Clip *c2, int track, Transiti
 		clipThumbRequest( cv, true );
 		clipThumbRequest( cv, false );
 	}
-	QTimer::singleShot ( 1, this, SIGNAL(updateFrame()) );
+	updateAfterEdit(true, false);
 }
 
 
@@ -1774,7 +1855,7 @@ void Timeline::commandEffectAddRemove(QList<Clip*> clips, QList<int> ltracks, QL
 	for (int i = 0; i < clips.count(); ++i) {
 		itemSelected(getClipViewItem(clips.at(i), ltracks.at(i)), i > 0, i < clips.count() - 1);
 	}
-	QTimer::singleShot ( 1, this, SIGNAL(updateFrame()) );
+	updateAfterEdit(true, false);
 }
 
 
@@ -1802,7 +1883,7 @@ void Timeline::commandTrackAddRemove(int index, bool remove, bool noparent)
 	
 	cursor->setHeight( tracks.count() * (TRACKVIEWITEMHEIGHT + 1) );
 	cursor->setActiveTrack(0);
-	QTimer::singleShot ( 1, this, SLOT(updateLength()) );
+	updateAfterEdit(false, true);
 }
 
 
@@ -1814,7 +1895,7 @@ void Timeline::commandEffectMove(Clip *c, double newPos, bool isVideo, int index
 		effectItem->setPosition(newPos);
 	}
 
-	QTimer::singleShot ( 1, this, SIGNAL(updateFrame()) );
+	updateAfterEdit(true, false);
 }
 
 
@@ -1832,7 +1913,7 @@ void Timeline::commandEffectResize(Clip *c, bool resizeStart, double offset, dou
 		effectItem->setGeometry(position + offset, length);
 	}
 
-	QTimer::singleShot ( 1, this, SIGNAL(updateFrame()) );
+	updateAfterEdit(true, false);
 }
 
 
@@ -1848,7 +1929,7 @@ void Timeline::commandEffectReorder(Clip *c, int track, int oldIndex, int newInd
 	}
 	
 	itemSelected(cv);
-	QTimer::singleShot ( 1, this, SIGNAL(updateFrame()) );
+	updateAfterEdit(true, false);
 }
 
 
@@ -1869,5 +1950,6 @@ void Timeline::commandEffectParam(QSharedPointer<Filter> filter, Parameter *para
 		GLCustom *f = (GLCustom*) filter.data();
 		f->setCustomParams( value.toString() );
 	}
-	QTimer::singleShot ( 1, this, SIGNAL(updateFrame()) );
+	
+	updateAfterEdit(true, false);
 }

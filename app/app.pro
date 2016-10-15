@@ -40,6 +40,7 @@ SOURCES = \
 	timeline/cursorviewitem.cpp \
 	timeline/trackviewitem.cpp \
 	timeline/rulerviewitem.cpp \
+	timeline/selectwindowitem.cpp \
 	\
 	animation/animeditor.cpp \
 	animation/animscene.cpp \
@@ -89,6 +90,7 @@ HEADERS = \
 	timeline/cursorviewitem.h \
 	timeline/trackviewitem.h \
 	timeline/rulerviewitem.h \
+	timeline/selectwindowitem.h \
 	\
 	animation/animeditor.h \
 	animation/animscene.h \
