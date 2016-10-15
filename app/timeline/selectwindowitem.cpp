@@ -8,7 +8,7 @@
 
 SelectWindowItem::SelectWindowItem( QPointF start )
 {
-	setData( DATAITEMTYPE, TYPETRACK );
+	setData( DATAITEMTYPE, TYPESELECTWINDOW );
 	setZValue( ZSELECTWINDOW );
 	startX = start.x();
 	startY = start.y();
