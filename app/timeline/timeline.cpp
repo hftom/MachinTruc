@@ -1064,7 +1064,7 @@ void Timeline::setScene( Scene *s )
 		}
 	}
 	
-	setCursorPos( 0 );
+	setCursorPos( 0, true );
 	ruler->setFrameDuration( scene->getProfile().getVideoFrameDuration() );
 
 	updateAfterEdit(false, true);
