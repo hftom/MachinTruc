@@ -36,8 +36,7 @@ Timeline::Timeline( TopWindow *parent ) : QGraphicsScene(),
 	effectItem( NULL ),
 	scene( NULL ),
 	topParent( parent ),
-	selectWindowItem( NULL ),
-	dontEnsureVisible( false )
+	selectWindowItem( NULL )
 {
 	setBackgroundBrush( QBrush( QColor(20,20,20) ) );
 	
@@ -245,8 +244,6 @@ void Timeline::itemSelected( AbstractViewItem *it, bool extend, bool moreToCome 
 			}
 		}
 	}
-	
-	dontEnsureVisible = true;
 	
 	if (!moreToCome) {
 		emit clipSelected( selectedItems.count() 
@@ -983,16 +980,15 @@ ClipViewItem* Timeline::getClipViewItem(Clip *clip, int track)
 
 
 
-void Timeline::setCursorPos( double pts )
+void Timeline::setCursorPos( double pts, bool isPlaying )
 {
 	double d = scene->getProfile().getVideoFrameDuration();
 	qint64 i = ( pts + ( d / 2.0 ) ) / d;
 	pts = i * d;
 	cursor->setX( pts / zoom );
-	if (!dontEnsureVisible) {
+	if (isPlaying) {
 		emit ensureVisible( cursor );
 	}
-	dontEnsureVisible = false;
 }
 
 
@@ -1003,7 +999,6 @@ void Timeline::updateAfterEdit(bool doFrame, bool doLength)
 		updateLength();
 	}
 	if (doFrame) {
-		dontEnsureVisible = true;
 		emit updateFrame();
 	}
 }

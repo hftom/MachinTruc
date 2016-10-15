@@ -21,6 +21,7 @@ public:
 	~Metronom();
 	void setRenderMode( bool b );
 	void play( bool b, bool backward = false );
+	bool isPlaying() { return isRunning(); }
 	void changeSpeed( int s );
 	void flush();
 	Frame* getLastFrame();

@@ -252,6 +252,6 @@ private:
 signals:
 	void startOSDTimer( bool );
 	void timelineReadyForEncode();
-	void setCursorPos( double );
+	void setCursorPos( double pts, bool isPlaying );
 };
 #endif // TOPWINDOW_H

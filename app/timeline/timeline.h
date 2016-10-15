@@ -112,7 +112,7 @@ public slots:
 	void viewMouseMove( QPointF pos );
 	void viewMouseLeave();
 	void viewSizeChanged( const QSize &size );
-	void setCursorPos( double pts );
+	void setCursorPos( double pts, bool isPlaying );
 	
 	void setScene( Scene *s );
 	void addFilter( ClipViewItem *clip, QString fx, int index = -1 );
@@ -171,8 +171,6 @@ private:
 	SelectWindowItem *selectWindowItem;
 	
 	QPropertyAnimation *zoomAnim;
-	
-	bool dontEnsureVisible;
 	
 	QPointF mouseScenePosition;
 	

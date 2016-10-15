@@ -45,7 +45,7 @@ TopWindow::TopWindow()
 	timelineView->setAcceptDrops( true );
 	timelineStackedWidget->addWidget( timelineView );
 	
-	connect( this, SIGNAL(setCursorPos(double)), timeline, SLOT(setCursorPos(double)) );
+	connect( this, SIGNAL(setCursorPos(double,bool)), timeline, SLOT(setCursorPos(double,bool)) );
 	connect( timeline, SIGNAL(seekTo(double)), this, SLOT(timelineSeek(double)) );
 	connect( timeline, SIGNAL(ensureVisible(const QGraphicsItem*)), this, SLOT(ensureVisible(const QGraphicsItem*)) );
 	connect( timeline, SIGNAL(centerOn(const QGraphicsItem*)), this, SLOT(centerOn(const QGraphicsItem*)) );
@@ -672,7 +672,7 @@ void TopWindow::currentFramePts( double d )
 		sourcePage->activeSourceSetCurrentPts( d );
 	}
 	else {
-		emit setCursorPos( d ); 
+		emit setCursorPos( d, sampler->getMetronom()->isPlaying() ); 
 	}
 	
 	if ( !seekSlider->isButtonDown() ) {
