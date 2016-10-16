@@ -156,6 +156,9 @@ TopWindow::TopWindow()
 	connect( actionSaveImage, SIGNAL(triggered()), vw, SLOT(shot()) );
 	connect( actionRenderToFile, SIGNAL(triggered()), this, SLOT(renderDialog()) );
 	
+	clipboard = new ClipBoard(actionCopy, actionCut, actionPaste);
+	connect( timeline, SIGNAL(clipSelected(ClipViewItem*)), clipboard, SLOT(clipSelected(ClipViewItem*)) );
+	
 	QAction *act = UndoStack::getStack()->createUndoAction(this);
 	act->setIcon( QIcon(":/toolbar/icons/edit-undo.png") );
 	act->setShortcut(QKeySequence(QKeySequence::Undo));
@@ -215,7 +218,7 @@ void TopWindow::selectAll()
 
 void TopWindow::filterCopy(QSharedPointer<Filter> f, bool audio)
 {
-	clipboard.copyFilter(f, audio);
+	clipboard->copyFilter(f, audio);
 }
 
 
@@ -223,7 +226,7 @@ void TopWindow::filterCopy(QSharedPointer<Filter> f, bool audio)
 void TopWindow::editPaste()
 {
 	if ( timelineStackedWidget->currentIndex() == 0 )
-		timeline->editPaste(&clipboard);
+		timeline->editPaste(clipboard);
 }
 
 
@@ -231,7 +234,7 @@ void TopWindow::editPaste()
 void TopWindow::editCopy()
 {
 	if ( timelineStackedWidget->currentIndex() == 0 )
-		timeline->editCopy(&clipboard);
+		timeline->editCopy(clipboard);
 }
 
 
@@ -239,7 +242,7 @@ void TopWindow::editCopy()
 void TopWindow::editCut()
 {
 	if ( timelineStackedWidget->currentIndex() == 0 )
-		timeline->editCut(&clipboard);
+		timeline->editCut(clipboard);
 }
 
 
@@ -511,6 +514,7 @@ void TopWindow::newProject()
 	QTimer::singleShot( VIDEOCLEARDELAY, vw, SLOT(clear()) );
 	currentProjectFile = "";
 	UndoStack::getStack()->clear();
+	clipboard->reset();
 }
 
 

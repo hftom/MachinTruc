@@ -1,13 +1,19 @@
 #ifndef CLIPBOARD_H
 #define CLIPBOARD_H
 
+#include <QAction>
+
+#include "timeline/clipviewitem.h"
 #include "xmlizer.h"
 
 
 
-class ClipBoard
+class ClipBoard : public QObject
 {
+	Q_OBJECT
 public:
+	ClipBoard(QAction *copy, QAction *cut, QAction *paste);
+
 	QString getCopyType();
 	
 	void copyClips( QList< QList<Clip*>* > *list );
@@ -17,11 +23,17 @@ public:
 	
 	void copyFilter(QSharedPointer<Filter> f, bool audio);
 	QSharedPointer<Filter> getFilter();
+	
+public slots:
+	void clipSelected(ClipViewItem*);
+	void reset();
 
 private:
 	void readTrack( QDomElement &element, QList<Clip*> *track, QList<Source*> *sourcesList, Scene *scene );
 	
 	QDomDocument document;
+	
+	QAction *actionCopy, *actionCut, *actionPaste;
 };
 
 #endif // CLIPBOARD_H

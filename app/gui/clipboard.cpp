@@ -2,6 +2,39 @@
 
 
 
+ClipBoard::ClipBoard(QAction *copy, QAction *cut, QAction *paste)
+{
+	actionCopy = copy;
+	actionCut = cut;
+	actionPaste = paste;
+	
+	reset();
+}
+
+
+
+void ClipBoard::reset()
+{
+	actionCopy->setEnabled(false);
+	actionCut->setEnabled(false);
+	actionPaste->setEnabled(false);
+	
+	document = QDomDocument();
+}
+
+
+
+void ClipBoard::clipSelected(ClipViewItem *cv)
+{
+	bool en = cv != NULL;
+	
+	actionCopy->setEnabled(en);
+	actionCut->setEnabled(en);
+	actionPaste->setEnabled(en && getCopyType() != "");
+}
+
+
+
 void ClipBoard::copyFilter(QSharedPointer<Filter> f, bool audio)
 {
 	document = QDomDocument( "MachinTrucVideoEdit" );
@@ -17,6 +50,8 @@ void ClipBoard::copyFilter(QSharedPointer<Filter> f, bool audio)
 		QTextStream out( &data );
 		document.save( out, 2 );
 	}*/
+	
+	actionPaste->setEnabled(true);
 }
 
 
@@ -38,6 +73,8 @@ void ClipBoard::copyClips( QList< QList<Clip*>* > *list )
 
 	QDomNode proc = document.createProcessingInstruction( "xml","version=\"1.0\" encoding=\"UTF-8\"" );
 	document.insertBefore( proc, document.firstChild() );
+	
+	actionPaste->setEnabled(true);
 }
 
 

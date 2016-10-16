@@ -247,7 +247,7 @@ private:
 	AppConfig appConfig;
 	QTimer backupTimer;
 	
-	ClipBoard clipboard;
+	ClipBoard *clipboard;
 	
 signals:
 	void startOSDTimer( bool );

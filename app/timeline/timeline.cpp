@@ -1533,7 +1533,7 @@ void Timeline::dropEvent( QGraphicsSceneDragDropEvent *event )
 			clipThumbRequest( droppedCut.clipItem, true );
 			clipThumbRequest( droppedCut.clipItem, false );
 			emit updateFrame();
-			QTimer::singleShot( 1, this, SLOT(updateLength()) );
+			updateAfterEdit(false, true);
 			if ( empty ) {
 				emit clipAddedToTimeline(droppedCut.clip->getProfile());
 			}
