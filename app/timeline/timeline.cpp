@@ -1692,9 +1692,11 @@ void Timeline::commandMoveClip(Clip *clip, bool multi, int oldTrack, int newTrac
 			cv->setCuts( clip->position(), clip->length(), zoom );
 		}
 		clip->setTransition(trans ? new Transition(trans) : NULL);
-		Clip *next = scene->getTailClip(clip, newTrack);
-		if (next) {
-			next->setTransition(tail ? new Transition(tail) : NULL);
+		if (!multi) {
+			Clip *next = scene->getTailClip(clip, newTrack);
+			if (next) {
+				next->setTransition(tail ? new Transition(tail) : NULL);
+			}
 		}
 		updateTransitions( cv, false );
 		

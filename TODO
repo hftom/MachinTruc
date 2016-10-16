@@ -1,6 +1,7 @@
 TODO
 
 1.0
+- bug: cancel movemulti lost first tail transition
 - finish Undo (transition effect change, animation change, source filters)
 - finish animation editor
 - check stabilize finish before render
