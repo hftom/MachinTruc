@@ -6,7 +6,8 @@ TODO
 - check stabilize finish before render
 - copy several filters ?
 
-- Timeline edit workflow (insert, remove gap, ripple ..)
+1.1
+- Timeline edit workflow (insert, overwrite, ripple ..)
 - SourcesList multiselection ?
 - OVD crop
 

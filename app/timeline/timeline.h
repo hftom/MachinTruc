@@ -136,9 +136,10 @@ protected:
 	void dropEvent( QGraphicsSceneDragDropEvent *event );
 	
 private slots:
-	void updateAfterEdit(bool doFrame, bool doLength);
+	void slotUpdateAfterEdit();
 	
 private:
+	void updateAfterEdit(bool doFrame, bool doLength);
 	void updateLength();
 	ClipViewItem* getSelectedClip();
 	void updateStabilize(Clip *clip, Filter *f, bool stop);

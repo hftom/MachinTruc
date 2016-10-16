@@ -30,7 +30,14 @@ void ClipBoard::clipSelected(ClipViewItem *cv)
 	
 	actionCopy->setEnabled(en);
 	actionCut->setEnabled(en);
-	actionPaste->setEnabled(en && getCopyType() != "");
+	
+	QString copyType = getCopyType();
+	if ( copyType.startsWith("Track") ) {
+		actionPaste->setEnabled(true);
+	}
+	else {
+		actionPaste->setEnabled(en && getCopyType() != "");
+	}
 }
 
 

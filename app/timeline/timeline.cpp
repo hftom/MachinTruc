@@ -1012,6 +1012,13 @@ void Timeline::updateAfterEdit(bool doFrame, bool doLength)
 
 
 
+void Timeline::slotUpdateAfterEdit()
+{
+	updateAfterEdit(true, true);
+}
+
+
+
 void Timeline::updateLength()
 {
 	int i, j, maxlen=0;
@@ -1654,7 +1661,7 @@ void Timeline::commandRemoveClip(QList<Clip*> clips, QList<int> ltracks)
 		}
 	}
 	
-	QTimer::singleShot(500, this, SLOT(updateAfterEdit(true, true)));
+	QTimer::singleShot(500, this, SLOT(slotUpdateAfterEdit()));
 }
 
 
