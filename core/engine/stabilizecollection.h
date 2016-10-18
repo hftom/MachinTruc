@@ -94,6 +94,7 @@ public:
 	QList<StabilizeTransform>* getTransforms( Source *source, int &status, int &progress );
 	void releaseTransforms( QList<StabilizeTransform> *list );
 	bool hasTransforms( QString fileName );
+	bool hasRunningJobs() { return stabDetect.count() > 0; }
 	static bool cdStabilizeDir( QDir &dir );
 	static QString pathToFileName( QString path );
 	

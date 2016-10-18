@@ -3,11 +3,10 @@ TODO
 1.0
 - finish Undo (transition effect change, animation change, source filters)
 - finish animation editor
-- check stabilize finish before render
 - copy several filters ?
 
 1.1
-- Timeline edit workflow (insert, overwrite, ripple ..)
+- Trimming (insert, overwrite, roll, slice, ripple ..)
 - SourcesList multiselection ?
 - OVD crop
 

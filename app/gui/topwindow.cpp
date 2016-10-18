@@ -405,6 +405,14 @@ void TopWindow::renderDialog()
 		QMessageBox::warning( this, tr("Sorry"), tr("The timeline is empty.") );
 		return;
 	}
+	
+	if ( StabilizeCollection::getGlobalInstance()->hasRunningJobs() ) {
+		int ret = QMessageBox::question(this, tr("Running jobs"), tr("Some clips may not be stabilized yet. \nRender anyway?"),
+										QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+		if (ret == QMessageBox::No) {
+			return;
+		}
+	}
 
 	double playhead = 0;
 	Frame *f = sampler->getMetronom()->getLastFrame();
