@@ -20,6 +20,7 @@ FilterCollection::FilterCollection()
 	videoFilters.append( FilterEntry( "lens", "GLSharpen", QObject::tr("Sharpen"), &Maker<GLSharpen>::make ) );
 	videoFilters.append( FilterEntry( "lens", "GLDenoise", QObject::tr("Denoise"), &Maker<GLDenoise>::make ) );
 	videoFilters.append( FilterEntry( "lens", "GLDiffusion", QObject::tr("Diffusion"), &Maker<GLDiffusion>::make ) );
+	videoFilters.append( FilterEntry( "lens", "GLMirror", QObject::tr("Mirror"), &Maker<GLMirror>::make ) );
 	videoFilters.append( FilterEntry( "lens", "GLGlow", QObject::tr("Glow"), &Maker<GLGlow>::make ) );
 	videoFilters.append( FilterEntry( "size", "GLSize", QObject::tr("Size and position"), &Maker<GLSize>::make ) );
 	videoFilters.append( FilterEntry( "size", "GLCrop", QObject::tr("Crop"), &Maker<GLCrop>::make ) );

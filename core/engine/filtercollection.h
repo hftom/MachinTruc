@@ -23,6 +23,7 @@
 #include "vfx/glfiber.h"
 #include "vfx/glglow.h"
 #include "vfx/glliftgammagain.h"
+#include "vfx/glmirror.h"
 #include "vfx/glopacity.h"
 #include "vfx/glpixelize.h"
 #include "vfx/glsaturation.h"
