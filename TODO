@@ -2,8 +2,10 @@ TODO
 
 1.0
 - finish Undo (transition effect change, animation change, source filters)
-- finish animation editor
 - copy several filters ?
+- finish animation editor
+- source trimming
+- save as
 
 1.1
 - Trimming (insert, overwrite, roll, slice, ripple ..)

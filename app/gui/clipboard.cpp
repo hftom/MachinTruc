@@ -36,7 +36,7 @@ void ClipBoard::clipSelected(ClipViewItem *cv)
 		actionPaste->setEnabled(true);
 	}
 	else {
-		actionPaste->setEnabled(en && getCopyType() != "");
+		actionPaste->setEnabled(en && copyType != "");
 	}
 }
 

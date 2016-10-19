@@ -10,6 +10,7 @@
 #include "vfx/glbackgroundcolor.h"
 #include "vfx/glblur.h"
 #include "vfx/glborder.h"
+#include "vfx/glcontrast.h"
 #include "vfx/glcrop.h"
 #include "vfx/glcustom.h"
 #include "vfx/glcut.h"

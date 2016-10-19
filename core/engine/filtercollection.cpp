@@ -12,6 +12,7 @@ FilterCollection::FilterCollection()
 	// video filters
 	//videoFilters.append( FilterEntry( "lens", "GLTest", QObject::tr("Test"), &Maker<GLTest>::make ) );
 	videoFilters.append( FilterEntry( "colors", "GLSaturation", QObject::tr("Saturation"), &Maker<GLSaturation>::make ) );
+	videoFilters.append( FilterEntry( "colors", "GLContrast", QObject::tr("Contrast Brightness"), &Maker<GLContrast>::make ) );
 	videoFilters.append( FilterEntry( "colors", "GLWhiteBalance", QObject::tr("White balance"), &Maker<GLWhiteBalance>::make ) );
 	videoFilters.append( FilterEntry( "colors", "GLLiftGammaGain", QObject::tr("Color grading"), &Maker<GLLiftGammaGain>::make ) );
 	videoFilters.append( FilterEntry( "lens", "GLBlur", QObject::tr("Blur"), &Maker<GLBlur>::make ) );
