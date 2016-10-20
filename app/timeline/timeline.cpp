@@ -16,6 +16,7 @@
 #include "undoeffectresize.h"
 #include "undoeffectreorder.h"
 #include "undoeffectparam.h"
+#include "undotransitionchanged.h"
 
 #include "engine/filtercollection.h"
 #include "gui/mimetypes.h"
@@ -1962,5 +1963,62 @@ void Timeline::commandEffectParam(QSharedPointer<Filter> filter, Parameter *para
 		f->setCustomParams( value.toString() );
 	}
 	
+	updateAfterEdit(true, false);
+}
+
+
+
+void Timeline::transitionChanged(Clip *clip, QString filterName, bool isVideo)
+{
+	QSharedPointer<Filter> f;
+	if (isVideo) {
+		f = clip->getTransition()->getVideoFilter();
+	}
+	else {
+		f = clip->getTransition()->getAudioFilter();
+	}
+	UndoTransitionChanged *u = new UndoTransitionChanged(this, clip, f, filterName, isVideo);
+	UndoStack::getStack()->push(u);
+}
+
+
+
+void Timeline::commandTransitionChanged(Clip *clip, QSharedPointer<Filter> oldFilter, QString newFilter, bool isVideo, bool undo)
+{
+	FilterCollection *fc = FilterCollection::getGlobalInstance();
+	
+	if ( undo ) {
+		if (isVideo) {
+			clip->getTransition()->setVideoFilter( oldFilter.staticCast<GLFilter>() );
+		}
+		else {
+			clip->getTransition()->setAudioFilter( oldFilter.staticCast<AudioFilter>() );
+		}
+	}
+	else {
+		if (isVideo) {
+			for ( int i = 0; i < fc->videoTransitions.count(); ++i ) {
+				if ( fc->videoTransitions[ i ].name == newFilter ) {
+					QSharedPointer<Filter> f = fc->videoTransitions[ i ].create();
+					clip->getTransition()->setVideoFilter( f.staticCast<GLFilter>() );
+					break;
+				}
+			}
+		}
+		else {
+			for ( int i = 0; i < fc->audioTransitions.count(); ++i ) {
+				if ( fc->audioTransitions[ i ].name == newFilter ) {
+					QSharedPointer<Filter> f = fc->audioTransitions[ i ].create();
+					clip->getTransition()->setAudioFilter( f.staticCast<AudioFilter>() );
+					break;
+				}
+			}
+		}
+	}
+	
+	ClipViewItem *selected = getSelectedClip();
+	if ( selected ) {
+		emit clipSelected( selected );
+	}
 	updateAfterEdit(true, false);
 }

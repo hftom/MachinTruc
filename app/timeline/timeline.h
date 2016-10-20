@@ -104,6 +104,7 @@ public:
 	void commandEffectResize(Clip *c, bool resizeStart, double offset, double position, double length, bool video, int effectIndex);
 	void commandEffectReorder(Clip *c, int track, int oldIndex, int newIndex, bool isVideo);
 	void commandEffectParam(QSharedPointer<Filter> filter, Parameter *param, QVariant value);
+	void commandTransitionChanged(Clip *clip, QSharedPointer<Filter> oldFilter, QString newFilter, bool isVideo, bool undo);
 	
 public slots:
 	void nextEdge();
@@ -121,6 +122,8 @@ public slots:
 	void filterDeleted( Clip *c, QSharedPointer<Filter> f );
 	void filterReordered( Clip *c, bool video, int index, int newIndex );
 	void paramUndoCommand(QSharedPointer<Filter> f, Parameter *p, QVariant oldValue, QVariant newValue);
+	
+	void transitionChanged(Clip *clip, QString filterName, bool isVideo);
 	
 	void showEffect( bool isVideo, int index );
 	

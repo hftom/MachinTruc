@@ -106,17 +106,7 @@ void FxSettingsPage::videoFilterActivated( const QString& text )
 	if ( t->getVideoFilter()->getFilterName() == text )
 		return;
 	
-	FilterCollection *fc = FilterCollection::getGlobalInstance();
-	
-	for ( int i = 0; i < fc->videoTransitions.count(); ++i ) {
-		if ( fc->videoTransitions[ i ].name == text ) {
-			QSharedPointer<Filter> f = fc->videoTransitions[ i ].create();
-			t->setVideoFilter( f.staticCast<GLFilter>() );
-			clipSelected( currentClip );
-			emit updateFrame();
-			break;
-		}			
-	}
+	emit transitionChanged(currentClip->getClip(), text, true);
 }
 
 
@@ -132,15 +122,5 @@ void FxSettingsPage::audioFilterActivated( const QString& text )
 	if ( t->getAudioFilter()->getFilterName() == text )
 		return;
 	
-	FilterCollection *fc = FilterCollection::getGlobalInstance();
-	
-	for ( int i = 0; i < fc->audioTransitions.count(); ++i ) {
-		if ( fc->audioTransitions[ i ].name == text ) {
-			QSharedPointer<Filter> f = fc->audioTransitions[ i ].create();
-			t->setAudioFilter( f.staticCast<AudioFilter>() );
-			clipSelected( currentClip );
-			emit updateFrame();
-			break;
-		}			
-	}
+	emit transitionChanged(currentClip->getClip(), text, false);
 }

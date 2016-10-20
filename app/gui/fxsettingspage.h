@@ -34,5 +34,6 @@ private:
 	
 signals:
 	void updateFrame();
+	void transitionChanged(Clip *clip, QString newFilter, bool isVideo);
 };
 #endif // FXSETTINGSPAGE_H
