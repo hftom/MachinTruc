@@ -218,6 +218,7 @@ private slots:
 	void filterCopy(QSharedPointer<Filter>, bool audio);
 	
 private:
+	bool ignoreBackgroundJobsRunning();
 	bool loadProject(QString filename, QString &backupFilename);
 	void removeBackup();
 	void unsupportedDuplicateMessage();

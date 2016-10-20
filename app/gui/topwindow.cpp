@@ -329,9 +329,23 @@ void TopWindow::removeBackup()
 
 
 
+bool TopWindow::ignoreBackgroundJobsRunning()
+{
+	if ( StabilizeCollection::getGlobalInstance()->hasRunningJobs() ) {
+		int ret = QMessageBox::question(this, tr("Running jobs"), tr("Some clips may not be stabilized yet.\nContinue anyway?"),
+										QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+		if (ret == QMessageBox::No) {
+			return false;
+		}
+	}
+	return true;
+}
+
+
+
 void TopWindow::closeEvent( QCloseEvent *event )
 {
-	if (!saveAndContinue()) {
+	if (!ignoreBackgroundJobsRunning() || !saveAndContinue()) {
 		event->ignore();
 		return;
 	}
@@ -406,12 +420,8 @@ void TopWindow::renderDialog()
 		return;
 	}
 	
-	if ( StabilizeCollection::getGlobalInstance()->hasRunningJobs() ) {
-		int ret = QMessageBox::question(this, tr("Running jobs"), tr("Some clips may not be stabilized yet. \nRender anyway?"),
-										QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
-		if (ret == QMessageBox::No) {
-			return;
-		}
+	if ( !ignoreBackgroundJobsRunning() ) {
+		return;
 	}
 
 	double playhead = 0;
