@@ -189,9 +189,12 @@ void ProjectFile::readSource( QDomElement &element )
 	prof.setVideoFrameRate( fps );
 	if ( fps != 0 )
 		prof.setVideoFrameDuration( MICROSECOND / fps );
-	prof.setVideoWidth( width );
-	prof.setVideoHeight( height );
-	prof.setVideoSAR( sar );
+	if ( width )
+		prof.setVideoWidth( width );
+	if (height)
+		prof.setVideoHeight( height );
+	if (sar)
+		prof.setVideoSAR( sar );
 	prof.setVideoInterlaced( ilace );
 	prof.setVideoTopFieldFirst( tff );
 	prof.setStreamStartTime( startTime );

@@ -151,6 +151,10 @@ FBO::FBO( int w, int h, GLint iformat )
 
 bool FBO::init( int w, int h, GLint iformat )
 {
+	if (w < 1 || h < 1) {
+		return false;
+	}
+
 	iw = w;
 	ih = h;
 	internalFormat = iformat;
