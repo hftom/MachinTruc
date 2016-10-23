@@ -1,5 +1,6 @@
 #include <QPainter>
 
+#include "timeline.h"
 #include "typeitem.h"
 #include "rulerdock.h"
 
@@ -17,4 +18,14 @@ RulerDock::RulerDock()
 
 	setPen( QColor( "#606020" ) );
 	setBrush( QBrush(grad) );
+}
+
+
+
+void RulerDock::mousePressEvent( QGraphicsSceneMouseEvent * event )
+{
+	Timeline *t = (Timeline*)scene();
+	if ( event->button() == Qt::LeftButton ) {
+		t->trackPressed( event->scenePos() );
+	}
 }
