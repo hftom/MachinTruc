@@ -7,6 +7,7 @@
 #include "engine/scene.h"
 #include "clipviewitem.h"
 #include "cursorviewitem.h"
+#include "rulerdock.h"
 #include "rulerviewitem.h"
 #include "trackviewitem.h"
 #include "transitionviewitem.h"
@@ -158,6 +159,7 @@ private:
 	qreal getCurrentZoom();
 	void setCurrentZoom( qreal z );
 	
+	RulerDock *rulerDock;
 	CursorViewItem *cursor;
 	RulerViewItem *ruler;
 	double zoom, currentZoom;

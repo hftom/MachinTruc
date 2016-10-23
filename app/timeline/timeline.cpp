@@ -42,6 +42,9 @@ Timeline::Timeline( TopWindow *parent ) : QGraphicsScene(),
 {
 	setBackgroundBrush( QBrush( QColor(20,20,20) ) );
 	
+	rulerDock = new RulerDock();
+	addItem( rulerDock );
+	
 	cursor = new CursorViewItem();
 	addItem( cursor );
 	cursor->setZValue( ZCURSOR );
@@ -74,19 +77,13 @@ void Timeline::viewMouseMove( QPointF pos )
 	int tc = tracks.count();
 	double y;
 
-	if ( pos.y() < 0 )
-		t = tc -1;
+	if ( pos.y() < RULERDOCKHEIGHT )
+		t = tc - 1;
 
-	if ( tc < 2 )
+	if ( ruler->isDocked() || t == tc - 1)
 		y = 0;
-	else if ( t < tc - 1 ) {
-		if ( ruler->isDocked() )
-			y = 0;
-		else
-			y = (double)(tc - 2 - t) * (TRACKVIEWITEMHEIGHT + 1) + TRACKVIEWITEMHEIGHT + 1 - RULERHEIGHT;
-	}
 	else
-		y = (double)(tc - t) * (TRACKVIEWITEMHEIGHT + 1);
+		y = (double)(tc -1 - t) * (TRACKVIEWITEMHEIGHT + 1);
 
 	ruler->setPosition( qMax( 0.0, pos.x() - RULERWIDTH / 2 ), y );
 
@@ -1046,6 +1043,9 @@ void Timeline::updateLength()
 		tracks.at( i )->setRect( r );
 	}
 	
+	QRectF r = rulerDock->rect();
+	r.setWidth( maxlen );
+	rulerDock->setRect( r );
 	setSceneRect( 0, 0, maxlen, tracks.count() * TRACKVIEWITEMHEIGHT );
 }
 
@@ -1882,7 +1882,7 @@ void Timeline::commandTrackAddRemove(int index, bool remove, bool noparent)
 		removeItem( it );
 		delete it;
 		for ( int i = 0; i < tracks.count(); ++i )
-			tracks.at( tracks.count() - 1 - i )->setPos( 0, (TRACKVIEWITEMHEIGHT + 1) * i );
+			tracks.at( tracks.count() - 1 - i )->setPos( 0, ((TRACKVIEWITEMHEIGHT + 1) * i) + RULERDOCKHEIGHT );
 	}
 	else {
 		TrackViewItem *tv = new TrackViewItem();
@@ -1890,10 +1890,10 @@ void Timeline::commandTrackAddRemove(int index, bool remove, bool noparent)
 		addItem( tv );
 		int i;
 		for ( i = 0; i < tracks.count(); ++i )
-			tracks.at( tracks.count() - 1 - i )->setPos( 0, (TRACKVIEWITEMHEIGHT + 1) * i );
+			tracks.at( tracks.count() - 1 - i )->setPos( 0, ((TRACKVIEWITEMHEIGHT + 1) * i) + RULERDOCKHEIGHT );
 	}
 	
-	cursor->setHeight( tracks.count() * (TRACKVIEWITEMHEIGHT + 1) );
+	cursor->setHeight( (tracks.count() * (TRACKVIEWITEMHEIGHT + 1)) + RULERDOCKHEIGHT );
 	cursor->setActiveTrack(0);
 	updateAfterEdit(false, true);
 }

@@ -9,9 +9,6 @@
 #include <QPen>
 #include <QBrush>
 
-#define RULERWIDTH 400.0
-#define RULERHEIGHT 20.0
-
 
 
 class RulerViewItem : public QObject, public QGraphicsRectItem

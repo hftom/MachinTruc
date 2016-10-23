@@ -39,6 +39,7 @@ SOURCES = \
 	timeline/clipeffectviewitem.cpp \
 	timeline/cursorviewitem.cpp \
 	timeline/trackviewitem.cpp \
+	timeline/rulerdock.cpp \
 	timeline/rulerviewitem.cpp \
 	timeline/selectwindowitem.cpp \
 	\
@@ -89,6 +90,7 @@ HEADERS = \
 	timeline/clipeffectviewitem.h \
 	timeline/cursorviewitem.h \
 	timeline/trackviewitem.h \
+	timeline/rulerdock.h \
 	timeline/rulerviewitem.h \
 	timeline/selectwindowitem.h \
 	\

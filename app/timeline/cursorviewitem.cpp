@@ -57,7 +57,7 @@ void CursorViewItem::paint( QPainter *painter, const QStyleOptionGraphicsItem *o
 void CursorViewItem::mousePressEvent( QGraphicsSceneMouseEvent *event )
 {
 	if ( event->buttons() & Qt::RightButton ) {
-		setActiveTrack((rect().height() - event->pos().y() - 5) / TRACKVIEWITEMHEIGHT);
+		setActiveTrack((rect().height() - event->pos().y() - 5 - RULERDOCKHEIGHT) / TRACKVIEWITEMHEIGHT);
 		return;
 	}
 	startMoveOffset = event->scenePos().x() - mapToScene( rect().topLeft() ).x();
