@@ -43,9 +43,9 @@ void Composer::setSharedContext( QGLWidget *shared )
 	glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
 
 	QString movitPath;
-	if ( QFile("/usr/share/movit/header.frag").exists() )
+	if ( QFile("/usr/share/movit/dither_effect.frag").exists() )
 		movitPath = "/usr/share/movit";
-	else if ( QFile("/usr/local/share/movit/header.frag").exists() )
+	else if ( QFile("/usr/local/share/movit/dither_effect.frag").exists() )
 		movitPath = "/usr/local/share/movit";
 	else
 		assert(false);

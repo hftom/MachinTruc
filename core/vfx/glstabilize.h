@@ -2,7 +2,7 @@
 #define GLSTABILIZE_H
 
 extern "C" { 
-	#include <vid.stab/libvidstab.h>
+	#include "vidstab/vidstab.h"
 }
 
 #include <movit/effect_util.h>
