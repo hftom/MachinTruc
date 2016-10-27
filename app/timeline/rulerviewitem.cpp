@@ -34,8 +34,13 @@ RulerViewItem::RulerViewItem() : frameDuration(40000), lastY(0), docked(true)
 	anim->setDuration( 250 );
 	anim->setEasingCurve( QEasingCurve::InOutSine );
 	
-	font = QFont( "Arial", 8 );
+	int fontSize = 10;
+	font = QFont( "Arial", fontSize );
 	QFontMetrics fm( font );
+	while (fontSize > 0 && fm.boundingRect( "99:99:99" ).height() > 10) {
+		font = QFont( "Arial", --fontSize );
+		fm =  QFontMetrics( font );
+	}
 	currentTextLen = textShortLen = fm.boundingRect( "99:99:99" ).width();
 	textLongLen = fm.boundingRect( "99:99:99.99" ).width();
 }
