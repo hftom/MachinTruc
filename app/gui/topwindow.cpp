@@ -133,26 +133,27 @@ TopWindow::TopWindow()
 
 	connect( switchButton, SIGNAL(toggled(bool)), sampler, SLOT(switchMode(bool)) );
 
-	connect( actionNewProject, SIGNAL(triggered()), this, SLOT(newProject()) );
-	connect( actionSave, SIGNAL(triggered()), this, SLOT(saveProject()) );
-	connect( actionOpen, SIGNAL(triggered()), this, SLOT(openProject()) );
-	connect( actionPlayPause, SIGNAL(triggered()), this, SLOT(videoPlayPause()) );
-	connect( actionForward, SIGNAL(triggered()), this, SLOT(playForward()) );
-	connect( actionBackward, SIGNAL(triggered()), this, SLOT(playBackward()) );
-	connect( actionFaster, SIGNAL(triggered()), this, SLOT(playFaster()) );
-	connect( actionFrameByFrame, SIGNAL(triggered()), this, SLOT(seekNext()) );
-	connect( actionFrameByFrameBackward, SIGNAL(triggered()), this, SLOT(seekPrevious()) );
-	connect( actionNextEdge, SIGNAL(triggered()), timeline, SLOT(nextEdge()) );
-	connect( actionPreviousEdge, SIGNAL(triggered()), timeline, SLOT(previousEdge()) );
-	connect( actionSlower, SIGNAL(triggered()), this, SLOT(playSlower()) );
+	//HACK: add actions to this widget to get shortcuts working with ubuntu's appmenu-qt5
+	addAction( actionNewProject ); 				connect( actionNewProject, SIGNAL(triggered()), this, SLOT(newProject()) );
+	addAction( actionSave );					connect( actionSave, SIGNAL(triggered()), this, SLOT(saveProject()) );
+	addAction( actionOpen );					connect( actionOpen, SIGNAL(triggered()), this, SLOT(openProject()) );
+	addAction( actionPlayPause );				connect( actionPlayPause, SIGNAL(triggered()), this, SLOT(videoPlayPause()) );
+	addAction( actionForward );					connect( actionForward, SIGNAL(triggered()), this, SLOT(playForward()) );
+	addAction( actionBackward );				connect( actionBackward, SIGNAL(triggered()), this, SLOT(playBackward()) );
+	addAction( actionFrameByFrame );			connect( actionFrameByFrame, SIGNAL(triggered()), this, SLOT(seekNext()) );
+	addAction( actionFrameByFrameBackward );	connect( actionFrameByFrameBackward, SIGNAL(triggered()), this, SLOT(seekPrevious()) );
+	addAction( actionNextEdge );				connect( actionNextEdge, SIGNAL(triggered()), timeline, SLOT(nextEdge()) );
+	addAction( actionPreviousEdge );			connect( actionPreviousEdge, SIGNAL(triggered()), timeline, SLOT(previousEdge()) );
+	addAction( actionSlower );					connect( actionSlower, SIGNAL(triggered()), this, SLOT(playSlower()) );
+	addAction( actionZoomIn );					connect( actionZoomIn, SIGNAL(triggered()), this, SLOT(zoomIn()) );
+	addAction( actionZoomOut );					connect( actionZoomOut, SIGNAL(triggered()), this, SLOT(zoomOut()) );
+	addAction( actionCopy );					connect( actionCopy, SIGNAL(triggered()), this, SLOT(editCopy()) );
+	addAction( actionCut );						connect( actionCut, SIGNAL(triggered()), this, SLOT(editCut()) );
+	addAction( actionPaste );					connect( actionPaste, SIGNAL(triggered()), this, SLOT(editPaste()) );
+	addAction( actionSelectAll );				connect( actionSelectAll, SIGNAL(triggered()), this, SLOT(selectAll()) );
+	addAction( actionSplitCurrentClip );		connect( actionSplitCurrentClip, SIGNAL(triggered()), timeline, SLOT(splitCurrentClip()) );
+	
 	connect( actionProjectSettings, SIGNAL(triggered()), this, SLOT(menuProjectSettings()) );
-	connect( actionZoomIn, SIGNAL(triggered()), this, SLOT(zoomIn()) );
-	connect( actionZoomOut, SIGNAL(triggered()), this, SLOT(zoomOut()) );
-	connect( actionCopy, SIGNAL(triggered()), this, SLOT(editCopy()) );
-	connect( actionCut, SIGNAL(triggered()), this, SLOT(editCut()) );
-	connect( actionPaste, SIGNAL(triggered()), this, SLOT(editPaste()) );
-	connect( actionSelectAll, SIGNAL(triggered()), this, SLOT(selectAll()) );
-	connect( actionSplitCurrentClip, SIGNAL(triggered()), timeline, SLOT(splitCurrentClip()) );
 	connect( actionMoveMulti, SIGNAL(triggered()), this, SLOT(moveMulti()) );
 	connect( actionSaveImage, SIGNAL(triggered()), vw, SLOT(shot()) );
 	connect( actionRenderToFile, SIGNAL(triggered()), this, SLOT(renderDialog()) );
