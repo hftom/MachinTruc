@@ -682,10 +682,13 @@
   </action>
   <action name="actionCut">
    <property name="text">
-    <string>Cut</string>
+    <string>C&amp;ut</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+X</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::ApplicationShortcut</enum>
    </property>
   </action>
   <action name="actionSplitCurrentClip">
@@ -695,6 +698,9 @@
    <property name="shortcut">
     <string>Shift+R</string>
    </property>
+   <property name="shortcutContext">
+    <enum>Qt::ApplicationShortcut</enum>
+   </property>
   </action>
   <action name="actionSave">
    <property name="text">
@@ -703,6 +709,9 @@
    <property name="shortcut">
     <string>Ctrl+S</string>
    </property>
+   <property name="shortcutContext">
+    <enum>Qt::ApplicationShortcut</enum>
+   </property>
   </action>
   <action name="actionOpen">
    <property name="text">
@@ -710,6 +719,9 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+O</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::ApplicationShortcut</enum>
    </property>
   </action>
   <action name="actionProjectSettings">
@@ -734,6 +746,9 @@
    <property name="shortcut">
     <string>Ctrl+N</string>
    </property>
+   <property name="shortcutContext">
+    <enum>Qt::ApplicationShortcut</enum>
+   </property>
   </action>
   <action name="actionRenderToFile">
    <property name="text">
@@ -747,6 +762,9 @@
    <property name="shortcut">
     <string>K</string>
    </property>
+   <property name="shortcutContext">
+    <enum>Qt::ApplicationShortcut</enum>
+   </property>
   </action>
   <action name="actionForward">
    <property name="text">
@@ -755,6 +773,9 @@
    <property name="shortcut">
     <string>L</string>
    </property>
+   <property name="shortcutContext">
+    <enum>Qt::ApplicationShortcut</enum>
+   </property>
   </action>
   <action name="actionBackward">
    <property name="text">
@@ -762,6 +783,9 @@
    </property>
    <property name="shortcut">
     <string>J</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::ApplicationShortcut</enum>
    </property>
   </action>
   <action name="actionFaster">
@@ -779,6 +803,9 @@
    <property name="shortcut">
     <string>M</string>
    </property>
+   <property name="shortcutContext">
+    <enum>Qt::ApplicationShortcut</enum>
+   </property>
   </action>
   <action name="actionFrameByFrame">
    <property name="text">
@@ -786,6 +813,9 @@
    </property>
    <property name="shortcut">
     <string>Right</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::ApplicationShortcut</enum>
    </property>
   </action>
   <action name="actionFrameByFrameBackward">
@@ -795,6 +825,9 @@
    <property name="shortcut">
     <string>Left</string>
    </property>
+   <property name="shortcutContext">
+    <enum>Qt::ApplicationShortcut</enum>
+   </property>
   </action>
   <action name="actionZoomIn">
    <property name="text">
@@ -802,6 +835,9 @@
    </property>
    <property name="shortcut">
     <string>Ctrl++</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::ApplicationShortcut</enum>
    </property>
   </action>
   <action name="actionZoomOut">
@@ -811,50 +847,71 @@
    <property name="shortcut">
     <string>Ctrl+-</string>
    </property>
+   <property name="shortcutContext">
+    <enum>Qt::ApplicationShortcut</enum>
+   </property>
   </action>
   <action name="actionCopy">
    <property name="text">
-    <string>Copy</string>
+    <string>&amp;Copy</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+C</string>
    </property>
+   <property name="shortcutContext">
+    <enum>Qt::ApplicationShortcut</enum>
+   </property>
   </action>
   <action name="actionPaste">
    <property name="text">
-    <string>Paste</string>
+    <string>&amp;Paste</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+V</string>
    </property>
+   <property name="shortcutContext">
+    <enum>Qt::ApplicationShortcut</enum>
+   </property>
   </action>
   <action name="actionSelectAll">
    <property name="text">
-    <string>Select all clips</string>
+    <string>S&amp;elect all clips</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+A</string>
    </property>
+   <property name="shortcutContext">
+    <enum>Qt::ApplicationShortcut</enum>
+   </property>
   </action>
   <action name="actionMoveMulti">
    <property name="text">
-    <string>Move the clip's tail</string>
+    <string>&amp;Move the clip's tail</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::WindowShortcut</enum>
    </property>
   </action>
   <action name="actionNextEdge">
    <property name="text">
-    <string>Next edge</string>
+    <string>&amp;Next edge</string>
    </property>
    <property name="shortcut">
     <string>Alt+Right</string>
    </property>
+   <property name="shortcutContext">
+    <enum>Qt::ApplicationShortcut</enum>
+   </property>
   </action>
   <action name="actionPreviousEdge">
    <property name="text">
-    <string>Previous edge</string>
+    <string>Previous &amp;edge</string>
    </property>
    <property name="shortcut">
     <string>Alt+Left</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::ApplicationShortcut</enum>
    </property>
   </action>
  </widget>
