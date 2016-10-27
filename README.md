@@ -25,4 +25,5 @@ Run:
 
 
 MachinTruc is licensed under the GNU GPL v2.
+
 Author : Christophe Thommeret <hftom@free.fr>
