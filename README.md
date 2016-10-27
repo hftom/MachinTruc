@@ -1,12 +1,8 @@
-MachinTruc is licensed under the GNU GPL v2.
-Author : Christophe Thommeret <hftom@free.fr>
-
-MachinTruc is a GPU accelerated non linear video editor.
-
-![Screenshot](http://hftom.fr/machintruc-sshot.jpg)
-
+#### MachinTruc is a GPU accelerated non linear video editor.
 
 Detailed installation instructions can be found [here](http://machintruc.hftom.fr/forum/index.php)
+
+![Screenshot](http://hftom.fr/machintruc-sshot.jpg)
 
 
 
@@ -26,3 +22,7 @@ Compilation:
 
 Run:
 - ./machintruc
+
+
+MachinTruc is licensed under the GNU GPL v2.
+Author : Christophe Thommeret <hftom@free.fr>
