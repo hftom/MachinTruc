@@ -40,6 +40,7 @@ FilterCollection::FilterCollection()
 	videoFilters.append( FilterEntry( "deform", "GLDefish", QObject::tr("Defish"), &Maker<GLDefish>::make ) );
 	videoFilters.append( FilterEntry( "deform", "GLPixelize", QObject::tr("Pixelize"), &Maker<GLPixelize>::make ) );
 	videoFilters.append( FilterEntry( "deform", "GLWater", QObject::tr("Water"), &Maker<GLWater>::make ) );
+	videoFilters.append( FilterEntry( "deform", "GLKaleidoscope", QObject::tr("Kaleidoscope"), &Maker<GLKaleidoscope>::make ) );
 	//videoFilters.append( FilterEntry( "deform", "GLCustom", QObject::tr("Custom"), &Maker<GLCustom>::make ) );
 	
 	// source video filters, a subset of videoFilters

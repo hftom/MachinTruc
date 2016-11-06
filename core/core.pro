@@ -87,6 +87,7 @@ SOURCES = \
 	vfx/glzoomin.cpp \
 	vfx/glcontrast.cpp \
 	vfx/glmirror.cpp \
+	vfx/glkaleidoscope.cpp \
 	\
 	videoout/videowidget.cpp
 
@@ -173,6 +174,7 @@ HEADERS = \
 	vfx/glzoomin.h \
 	vfx/glcontrast.h \
 	vfx/glmirror.h \
+	vfx/glkaleidoscope.h \
 	\
 	videoout/videowidget.h
 
