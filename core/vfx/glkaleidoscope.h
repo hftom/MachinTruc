@@ -19,7 +19,7 @@ static const char *KaleidoscopeEffect_shader=
 "    uv.x = PREFIX(size) *a / 3.1416;\n"
 "    uv.y = -PREFIX(time) + sin(PREFIX(size) * r + PREFIX(time)) + 0.7 * cos(PREFIX(time) + PREFIX(size) * a);\n"
 "\n"
-"    float w = 0.5 + 0.5 *(sin(PREFIX(time) + PREFIX(size) * r) + 0.7 * cos(PREFIX(time) + PREFIX(size) * a));\n"
+"    float w = 0.5 + 0.5 * (sin(PREFIX(time) + PREFIX(size) * r) + 0.7 * cos(PREFIX(time) + PREFIX(size) * a));\n"
 "\n"
 "    vec4 col = INPUT(mod(uv, 1.0));\n"
 "\n"
