@@ -22,6 +22,7 @@
 #include "vfx/gledge.h"
 #include "vfx/glfiber.h"
 #include "vfx/glglow.h"
+#include "vfx/glhanddrawing.h"
 #include "vfx/glkaleidoscope.h"
 #include "vfx/glliftgammagain.h"
 #include "vfx/glmirror.h"
