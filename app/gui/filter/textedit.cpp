@@ -116,10 +116,38 @@ TextEdit::TextEdit( QWidget *parent, Parameter *p ) : ParameterWidget( parent, p
 	widgets.append( editor );
 	box->addWidget( editor );
 	
+	QBoxLayout *arrowLayout = new QBoxLayout( QBoxLayout::LeftToRight );
+	QLabel *arrowLabel = new QLabel(tr("Arrow:"));
+	widgets.append( arrowLabel );
+	arrowLayout->addWidget( arrowLabel );
+	
+	arrowTypeCombo = new QComboBox();
+	widgets.append( arrowTypeCombo );
+	arrowTypeCombo->addItem( tr("None") );
+	arrowTypeCombo->addItem( tr("Left") );
+	arrowTypeCombo->addItem( tr("Right") );
+	arrowTypeCombo->addItem( tr("Top") );
+	arrowTypeCombo->addItem( tr("Bottom") );
+	arrowLayout->addWidget( arrowTypeCombo );
+	
+	arrowSizeSpin = new QSpinBox();
+	widgets.append( arrowSizeSpin );
+	arrowSizeSpin->setRange( 1, 100 );
+	arrowSizeSpin->setValue(50);
+	arrowLayout->addWidget( arrowSizeSpin );
+	
+	arrowPosSlider = new QSlider(Qt::Horizontal);
+	widgets.append( arrowPosSlider );
+	arrowPosSlider->setRange(0, 100);
+	arrowPosSlider->setValue(50);
+	arrowLayout->addWidget( arrowPosSlider );
+	
+	box->addLayout( arrowLayout );
+	
 	QStringList sl = p->value.toString().split("\n");
 	if ( sl.count() ) {
 		QStringList desc = sl[0].split("|");
-		if ( desc.count() == 9 ) {
+		if ( desc.count() >= 9 ) {
 			QFont f;
 			f.fromString( desc[0] );
 			f.setPointSize( desc[1].toInt() );
@@ -160,6 +188,11 @@ TextEdit::TextEdit( QWidget *parent, Parameter *p ) : ParameterWidget( parent, p
 			sl.takeFirst();
 			editor->setPlainText( sl.join("\n") );
 		}
+		if ( desc.count() >= 12 ) {
+			arrowTypeCombo->setCurrentIndex(desc[9].toInt());
+			arrowSizeSpin->setValue( desc[10].toInt() );
+			arrowPosSlider->setValue( desc[11].toInt() );
+		}
 	}
 	
 	connect( hhBtn, SIGNAL(clicked()), this, SLOT(hhBtnClicked()) );
@@ -179,6 +212,31 @@ TextEdit::TextEdit( QWidget *parent, Parameter *p ) : ParameterWidget( parent, p
 	connect( outlineSizeSpin, SIGNAL(valueChanged(int)), this, SLOT(outlineSizeChanged(int)) );
 	connect( outlineColorBtn, SIGNAL(clicked()), this, SLOT(showOutlineColorDialog()) );
 	connect( editor, SIGNAL(textChanged()), this, SLOT(textChanged()) );
+	
+	connect( arrowTypeCombo, SIGNAL(activated(int)), this, SLOT(arrowTypeChanged(int)) );
+	connect( arrowSizeSpin, SIGNAL(valueChanged(int)), this, SLOT(arrowSizeChanged(int)) );
+	connect( arrowPosSlider, SIGNAL(valueChanged(int)), this, SLOT(arrowPosChanged(int)) );
+}
+
+
+
+void TextEdit::arrowTypeChanged( int index )
+{
+	textChanged();
+}
+
+
+
+void TextEdit::arrowSizeChanged( int val )
+{
+	textChanged();
+}
+
+
+
+void TextEdit::arrowPosChanged( int val )
+{
+	textChanged();
 }
 
 
@@ -300,7 +358,7 @@ void TextEdit::textChanged()
 	else if ( alignRightBtn->isChecked() )
 		align = 3;
 
-	QString s = QString( "%1|%2|%3|%4|%5|%6|%7|%8|%9\n" ).arg( fontCombo->currentFont().toString() )
+	QString s = QString( "%1|%2|%3|%4|%5|%6|%7|%8|%9|%10|%11|%12\n" ).arg( fontCombo->currentFont().toString() )
 												.arg( fontSizeSpin->value() )
 												.arg( boldBtn->isChecked() )
 												.arg( italicBtn->isChecked() )
@@ -308,7 +366,10 @@ void TextEdit::textChanged()
 												.arg( backgroundColor.name() + "." + QString::number( backgroundColor.alpha() ) )
 												.arg( align )
 												.arg( outlineSizeSpin->value() )
-												.arg( outlineColor.name() + "." + QString::number( outlineColor.alpha() ) );
+												.arg( outlineColor.name() + "." + QString::number( outlineColor.alpha() ) )
+												.arg( arrowTypeCombo->currentIndex() )
+												.arg( arrowSizeSpin->value() )
+												.arg( arrowPosSlider->value() );
 	s += editor->toPlainText();
 	emit valueChanged( param, QVariant( s ) );
 }

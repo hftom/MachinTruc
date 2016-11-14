@@ -8,7 +8,7 @@
 
 GLText::GLText( QString id, QString name ) : GLFilter( id, name )
 {
-	editor = addParameter( "editor", tr("Editor:"), Parameter::PSTRING, "Arial,12,-1,5,50,0,0,0,0,0|30|0|0|#ffffff.255|#000000.0|1|0|#000000.255\nText", "", "", false );
+	editor = addParameter( "editor", tr("Editor:"), Parameter::PSTRING, "Arial,12,-1,5,50,0,0,0,0,0|30|0|0|#ffffff.255|#000000.0|1|0|#000000.255|0|50|50\nText", "", "", false );
 	opacity = addParameter( "opacity", tr("Opacity:"), Parameter::PDOUBLE, 1.0, 0.0, 1.0, true );
 	xOffset = addParameter( "xOffset", tr("X:"), Parameter::PINPUTDOUBLE, 0.0, -10000.0, 10000.0, true );
 	yOffset = addParameter( "yOffset", tr("Y:"), Parameter::PINPUTDOUBLE, 0.0, -10000.0, 10000.0, true );
@@ -84,6 +84,8 @@ QImage* MyTextEffect::drawImage()
 	QColor backgroundColor(0,0,0,0);
 	int outline = 0;
 	int align = 1;
+	
+	int arrowType = 0, arrowSize = 0, arrowPos = 0;
 		
 	QStringList sl = currentText.split("\n");
 	while ( !sl.isEmpty() ) {
@@ -94,7 +96,7 @@ QImage* MyTextEffect::drawImage()
 	}
 	if ( sl.count() ) {
 		QStringList desc = sl[0].split("|");
-		if ( desc.count() == 9 ) {
+		if ( desc.count() >= 9 ) {
 			myFont.fromString( desc[0] );
 			myFont.setPointSize( desc[1].toInt() );
 			myFont.setBold( desc[2].toInt() );
@@ -130,6 +132,11 @@ QImage* MyTextEffect::drawImage()
 					myPen.setColor( col );
 				}
 			}
+		}
+		if ( desc.count() >= 12 ) {
+			arrowType = desc[9].toInt();
+			arrowSize = desc[10].toInt();
+			arrowPos = desc[11].toInt();
 		}
 		sl.takeFirst();
 	}	
@@ -167,35 +174,131 @@ QImage* MyTextEffect::drawImage()
 	if ( h > iheight ) {
 		y -= (h - iheight) / 2.0;
 		h = iheight;
-	}		
-		
+	}
+	
+	QPointF polygon[7];
+	arrowSize = h * arrowSize / 100.0;
+	int n = 0;
+	int leftOffset = 0, topOffset = 0;
+	int wMargin = 0, hMargin = 0;
+	if (arrowType) {
+		switch (arrowType) {
+			case 1: {
+				leftOffset = arrowSize;
+				wMargin = arrowSize;
+				polygon[n].setX(1 + arrowSize);
+				polygon[n++].setY(1);
+				
+				polygon[n].setY(qMax(1.0, qMin(h - 1.0, h * arrowPos / 100.0 - arrowSize / 2.0) ) );
+				polygon[n++].setX(1 + arrowSize);
+				polygon[n].setY(qMax(1.0, qMin(h - 1.0, h * arrowPos / 100.0) ) );
+				polygon[n++].setX(1);
+				polygon[n].setY(qMax(1.0, qMin(h - 1.0, h * arrowPos / 100.0 + arrowSize / 2.0) ) );
+				polygon[n++].setX(1 + arrowSize);
+				
+				polygon[n].setX(1 + arrowSize);
+				polygon[n++].setY(h - 1);
+				polygon[n].setX(w - 1 + arrowSize);
+				polygon[n++].setY(h - 1);
+				polygon[n].setX(w - 1 + arrowSize);
+				polygon[n++].setY(1);
+				break;
+			}
+			case 2: {
+				wMargin = arrowSize;
+				polygon[n].setX(1);
+				polygon[n++].setY(1);
+				polygon[n].setX(1);
+				polygon[n++].setY(h - 1);
+				polygon[n].setX(w - 1);
+				polygon[n++].setY(h - 1);
+				
+				polygon[n].setY(qMax(1.0, qMin(h - 1.0, h * arrowPos / 100.0 + arrowSize / 2.0) ) );
+				polygon[n++].setX(w - 1);
+				polygon[n].setY(qMax(1.0, qMin(h - 1.0, h * arrowPos / 100.0) ) );
+				polygon[n++].setX(w - 1 + arrowSize);
+				polygon[n].setY(qMax(1.0, qMin(h - 1.0, h * arrowPos / 100.0 - arrowSize / 2.0) ) );
+				polygon[n++].setX(w - 1);
+				
+				polygon[n].setX(w - 1);
+				polygon[n++].setY(1);
+				break;
+			}
+			case 3: {
+				topOffset = arrowSize;
+				hMargin = arrowSize;
+				polygon[n].setX(1);
+				polygon[n++].setY(1 + arrowSize);
+				polygon[n].setX(1);
+				polygon[n++].setY(h - 1 + arrowSize);
+				polygon[n].setX(w - 1);
+				polygon[n++].setY(h - 1 + arrowSize);
+				polygon[n].setX(w - 1);
+				polygon[n++].setY(1 + arrowSize);
+				
+				polygon[n].setX(qMax(1.0, qMin(w - 1.0, w * arrowPos / 100.0 + arrowSize / 2.0) ) );
+				polygon[n++].setY(1 + arrowSize);
+				polygon[n].setX(qMax(1.0, qMin(w - 1.0, w * arrowPos / 100.0) ) );
+				polygon[n++].setY(1);
+				polygon[n].setX(qMax(1.0, qMin(w - 1.0, w * arrowPos / 100.0 - arrowSize / 2.0) ) );
+				polygon[n++].setY(1 + arrowSize);
+				break;
+			}
+			case 4: {
+				hMargin = arrowSize;
+				polygon[n].setX(1);
+				polygon[n++].setY(1);
+				polygon[n].setX(1);
+				polygon[n++].setY(h - 1);
+				
+				polygon[n].setX(qMax(1.0, qMin(w - 1.0, w * arrowPos / 100.0 - arrowSize / 2.0) ) );
+				polygon[n++].setY(h - 1);
+				polygon[n].setX(qMax(1.0, qMin(w - 1.0, w * arrowPos / 100.0) ) );
+				polygon[n++].setY(h - 1 + arrowSize);
+				polygon[n].setX(qMax(1.0, qMin(w - 1.0, w * arrowPos / 100.0 + arrowSize / 2.0) ) );
+				polygon[n++].setY(h - 1);
+				
+				polygon[n].setX(w - 1);
+				polygon[n++].setY(h - 1);
+				polygon[n].setX(w - 1);
+				polygon[n++].setY(1);
+				break;
+			}
+		}		
+	}
+	
 	delete image;
-	image = new QImage( w, h, QImage::Format_ARGB32_Premultiplied );
+	image = new QImage( w + wMargin, h + hMargin, QImage::Format_ARGB32_Premultiplied );
 	image->fill( QColor(0,0,0,0) );
 	painter.begin( image );
 	painter.setRenderHints( QPainter::Antialiasing | QPainter::TextAntialiasing );
 	if ( backgroundColor.alpha() > 0 ) {
 		painter.setPen( QColor(0,0,0,0) );
 		painter.setBrush( backgroundColor );
-		painter.drawRect( 1, 1, w - 2, h - 2 );
+		if (arrowType) {
+			painter.drawPolygon( polygon, 7 );
+		}
+		else {
+			painter.drawRect( 1, 1, w - 2, h - 2 );
+		}
 	}	
 	painter.setPen( myPen );
 	painter.setBrush( myBrush );
 	painter.setFont( myFont );
 
 	for ( int i = 0; i < sl.count(); ++i ) {
-		QPointF point( 0, y + metrics.ascent() );
+		QPointF point( 0, y + topOffset + metrics.ascent() );
 		switch ( align ) {
 			case 2: {
-				point.setX( (double)w / 2.0 - br[i].width() / 2.0 );
+				point.setX( leftOffset + (double)w / 2.0 - br[i].width() / 2.0 );
 				break;
 			}
 			case 3: {
-				point.setX( w - x - br[i].width() );
+				point.setX( leftOffset + w - x - br[i].width() );
 				break;
 			}
 			default: {
-				point.setX( x );
+				point.setX( leftOffset + x );
 				break;
 			}
 		}

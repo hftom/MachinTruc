@@ -33,6 +33,10 @@ private slots:
 	void colorChanged( const QColor& );
 	void backgroundColorChanged( const QColor& );
 	
+	void arrowTypeChanged( int index );
+	void arrowSizeChanged( int val );
+	void arrowPosChanged( int val );
+	
 	void hhBtnClicked();
 	void mmBtnClicked();
 	void ssBtnClicked();
@@ -45,6 +49,9 @@ private:
 	QToolButton *boldBtn, *italicBtn, *colorBtn, *backgroundColorBtn, *outlineColorBtn;
 	QToolButton *alignLeftBtn, *alignCenterBtn, *alignRightBtn;
 	QToolButton *hhBtn, *mmBtn, *ssBtn, *iiBtn;
+	QComboBox *arrowTypeCombo;
+	QSpinBox *arrowSizeSpin;
+	QSlider *arrowPosSlider;
 	QBoxLayout *box;
 	
 	QColor fontColor, backgroundColor, outlineColor;
