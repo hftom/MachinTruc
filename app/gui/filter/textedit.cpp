@@ -136,7 +136,7 @@ TextEdit::TextEdit( QWidget *parent, Parameter *p ) : ParameterWidget( parent, p
 	arrowSizeSpin->setValue(50);
 	arrowLayout->addWidget( arrowSizeSpin );
 	
-	arrowPosSlider = new QSlider(Qt::Horizontal);
+	arrowPosSlider = new FSlider(NULL);
 	widgets.append( arrowPosSlider );
 	arrowPosSlider->setRange(0, 100);
 	arrowPosSlider->setValue(50);
@@ -213,28 +213,14 @@ TextEdit::TextEdit( QWidget *parent, Parameter *p ) : ParameterWidget( parent, p
 	connect( outlineColorBtn, SIGNAL(clicked()), this, SLOT(showOutlineColorDialog()) );
 	connect( editor, SIGNAL(textChanged()), this, SLOT(textChanged()) );
 	
-	connect( arrowTypeCombo, SIGNAL(activated(int)), this, SLOT(arrowTypeChanged(int)) );
-	connect( arrowSizeSpin, SIGNAL(valueChanged(int)), this, SLOT(arrowSizeChanged(int)) );
-	connect( arrowPosSlider, SIGNAL(valueChanged(int)), this, SLOT(arrowPosChanged(int)) );
+	connect( arrowTypeCombo, SIGNAL(activated(int)), this, SLOT(arrowChanged(int)) );
+	connect( arrowSizeSpin, SIGNAL(valueChanged(int)), this, SLOT(arrowChanged(int)) );
+	connect( arrowPosSlider, SIGNAL(valueChanged(int)), this, SLOT(arrowChanged(int)) );
 }
 
 
 
-void TextEdit::arrowTypeChanged( int index )
-{
-	textChanged();
-}
-
-
-
-void TextEdit::arrowSizeChanged( int val )
-{
-	textChanged();
-}
-
-
-
-void TextEdit::arrowPosChanged( int val )
+void TextEdit::arrowChanged( int val )
 {
 	textChanged();
 }
