@@ -1,7 +1,6 @@
 TODO
 
 1.0
-- do not paste stabilize on non video clip (also put it first in video filters list)
 - finish Undo (animation change, source filters)
 - source trimming in preview window
 - copy several filters ?
