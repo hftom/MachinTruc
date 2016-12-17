@@ -86,6 +86,7 @@ TopWindow::TopWindow()
 	connect( timeline, SIGNAL(clipSelected(ClipViewItem*)), fxSettingsPage, SLOT(clipSelected(ClipViewItem*)) );
 	connect( timeline, SIGNAL(showTransition()), fxSettingsToolButton, SLOT(click()) );
 	connect( fxSettingsPage, SIGNAL(updateFrame()), sampler, SLOT(updateFrame()) );
+	connect( fxSettingsPage, SIGNAL(paramUndoCommand(QSharedPointer<Filter>,Parameter*,QVariant,QVariant)), timeline, SLOT(paramUndoCommand(QSharedPointer<Filter>,Parameter*,QVariant,QVariant)) );
 	connect( fxSettingsPage, SIGNAL(transitionChanged(Clip*,QString,bool)), timeline, SLOT(transitionChanged(Clip*,QString,bool)) );
 	
 	stackedWidget->addWidget( sourcePage );

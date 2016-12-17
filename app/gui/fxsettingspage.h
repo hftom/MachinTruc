@@ -34,6 +34,7 @@ private:
 	
 signals:
 	void updateFrame();
+	void paramUndoCommand(QSharedPointer<Filter>, Parameter*, QVariant, QVariant);
 	void transitionChanged(Clip *clip, QString newFilter, bool isVideo);
 };
 #endif // FXSETTINGSPAGE_H
