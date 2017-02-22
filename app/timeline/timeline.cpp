@@ -1161,12 +1161,24 @@ void Timeline::editPaste(ClipBoard *clipboard)
 			UndoEffectAdd *u = new UndoEffectAdd(this);
 			for (int i = 0; i < selectedItems.count(); ++i) {
 				if (selectedItems.at(i)->data( DATAITEMTYPE ).toInt() == TYPECLIP) {
-					++n;
 					ClipViewItem *cv = (ClipViewItem*)selectedItems.at(i);
 					Clip *c = cv->getClip();
 					QSharedPointer<Filter> f = clipboard->getFilter();
-					u->append(c, getTrack(cv->sceneBoundingRect().topLeft()), f, -1, type == "VideoFilter");
-
+					int index = -1;
+					if ( (f->getIdentifier().startsWith("GL") && !c->getSource()->getProfile().hasVideo())
+						|| (!f->getIdentifier().startsWith("GL") && !c->getSource()->getProfile().hasAudio())
+					) {
+						continue;
+					}
+					if (f->getIdentifier() == "GLStabilize") {
+						if (c->getSource()->getType() != InputBase::FFMPEG) {
+							continue;
+						}
+						// put GLStabilize at top of effect list
+						index = 0;
+					}
+					++n;
+					u->append(c, getTrack(cv->sceneBoundingRect().topLeft()), f, index, type == "VideoFilter");
 					f->setPosition( c->position() );
 					if ( f->getLength() > c->length() )
 						f->setLength( c->length() );

@@ -322,6 +322,8 @@ void VideoWidget::mouseMoveEvent( QMouseEvent * event )
 						target = OVDINSIDE;
 					}
 				}
+				
+				break;
 			}
 		}
 	}
