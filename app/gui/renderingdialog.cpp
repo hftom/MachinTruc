@@ -30,6 +30,10 @@ RenderingDialog::RenderingDialog( QWidget *parent, Profile prof, double playhead
 	h264RadBtn->setChecked( true );
 	playheadRadBtn->setChecked( true );
 	cancelBtn->setFocus();
+	
+	FFmpegCommon::getGlobalInstance()->initFFmpeg();
+	hevcCodecCb->addItems(FFmpegCommon::getGlobalInstance()->getHevcCodecs());
+	h264CodecCb->addItems(FFmpegCommon::getGlobalInstance()->getH264Codecs());
 
 	videoCodecSelected(0);
 	
@@ -127,18 +131,21 @@ void RenderingDialog::startRender()
 	}
 	
 	int vcodec = OutputFF::VCODEC_H264;
+	QString vcodecName = h264CodecCb->currentText();
 	if (mpeg2RadBtn->isChecked()) {
 		vcodec = OutputFF::VCODEC_MPEG2;
+		vcodecName = "";
 	}
 	else if (hevcRadBtn->isChecked()) {
 		vcodec = OutputFF::VCODEC_HEVC;
+		vcodecName = hevcCodecCb->currentText();
 	}
 	
 	Profile p = profile;
 	p.setVideoWidth(widthSpin->value());
 	p.setVideoHeight(heightSpin->value());
 
-	if ( !out->init( s, p, videoRateSpin->value(), vcodec, endPts ) ) {
+	if ( !out->init( s, p, videoRateSpin->value(), vcodec, vcodecName, endPts ) ) {
 		QMessageBox::warning( this, tr("Error"), tr("Could not setup encoder.") );
 		return;
 	}
@@ -213,6 +220,8 @@ void RenderingDialog::enableUI( bool b )
 	videoRateSpin->setEnabled( b );
 	progressBar->setValue( 0 );
 	heightSpin->setEnabled( b );
+	hevcCodecCb->setEnabled( b );
+	h264CodecCb->setEnabled( b );
 }
 
 

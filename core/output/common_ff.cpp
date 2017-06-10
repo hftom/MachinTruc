@@ -60,6 +60,25 @@ bool FFmpegCommon::initFFmpeg()
 			qDebug() << format->name << avcodec_get_name( format->video_codec ) << avcodec_get_name( format->audio_codec );
 			format = av_oformat_next( format );
 		}*/
+		
+		h264CodecNames << "default";
+		hevcCodecNames << "default";
+		
+		AVCodec * codec = av_codec_next(NULL);
+		while (codec != NULL) {
+			if (av_codec_is_encoder(codec) && codec->type == AVMEDIA_TYPE_VIDEO) {
+				QString cn = codec->name;
+				if (cn.contains("264")) {
+					qDebug() << codec->name;
+					h264CodecNames << codec->name;
+				}
+				else if (cn.contains("hevc") || cn.contains("265")) {
+					qDebug() << codec->name;
+					hevcCodecNames << codec->name;
+				}
+			}
+			codec = av_codec_next(codec);
+		}
 	}
 
 	return initDone;

@@ -18,15 +18,15 @@ public:
 	OutputFF( MQueue<Frame*> *vf, MQueue<Frame*> *af );
 	~OutputFF();
 	
-	bool init( QString filename, Profile &prof, int vrate, int vcodec, double end );
+	bool init( QString filename, Profile &prof, int vrate, int vcodec, QString vcodecName, double end );
 	void startEncode( bool show = true );
 	bool cancel();
 	
 private:
 	void run();
 	void close();
-	bool openFormat( QString filename, Profile &prof, int vrate, int vcodec );
-	bool openVideo( Profile &prof, int vrate, int vcodec );
+	bool openFormat( QString filename, Profile &prof, int vrate, int vcodec, QString vcodecName );
+	bool openVideo( Profile &prof, int vrate, int vcodec, QString vcodecName );
 	bool openAudio( Profile &prof, int vcodec );
 	bool encodeVideo( Frame *f, int nFrame );
 	bool encodeAudio( Frame *f, int nFrame );

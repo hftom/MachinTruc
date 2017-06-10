@@ -25,7 +25,7 @@ extern "C" {
 #include <libavfilter/buffersrc.h>
 }
 
-#include <QString>
+#include <QStringList>
 
 
 
@@ -50,11 +50,20 @@ public:
 	bool initFFmpeg();
 	static FFmpegCommon* getGlobalInstance();
 	
+	QStringList getH264Codecs() {
+		return h264CodecNames;
+	}
+	QStringList getHevcCodecs() {
+		return hevcCodecNames;
+	}
+	
 	AVSampleFormat convertProfileSampleFormat( int f );
 	qint64 convertProfileAudioLayout( int layout );
 	
 private:
 	bool initDone;
+	QStringList hevcCodecNames;
+	QStringList h264CodecNames;
 };
 
 #endif // COMMONFF_H

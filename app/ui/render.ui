@@ -6,54 +6,71 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>422</width>
-    <height>413</height>
+    <width>490</width>
+    <height>437</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Rendering</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout_3">
+  <layout class="QGridLayout" name="gridLayout_4">
    <item row="0" column="0">
     <layout class="QVBoxLayout" name="verticalLayout">
      <item>
-      <widget class="QGroupBox" name="videoCodecGroupBox">
-       <property name="title">
-        <string/>
-       </property>
-       <layout class="QGridLayout" name="gridLayout_2">
-        <item row="0" column="1">
-         <widget class="QRadioButton" name="h264RadBtn">
-          <property name="text">
-           <string>MP4 (&amp;h264/aac)</string>
-          </property>
-          <attribute name="buttonGroup">
-           <string notr="true">buttonGroup</string>
-          </attribute>
-         </widget>
-        </item>
-        <item row="0" column="2">
-         <widget class="QRadioButton" name="mpeg2RadBtn">
-          <property name="text">
-           <string>&amp;MPG (mpeg2/mp2)</string>
-          </property>
-          <attribute name="buttonGroup">
-           <string notr="true">buttonGroup</string>
-          </attribute>
-         </widget>
-        </item>
-        <item row="0" column="0">
-         <widget class="QRadioButton" name="hevcRadBtn">
-          <property name="text">
-           <string>M&amp;KV (hevc/aac)</string>
-          </property>
-          <attribute name="buttonGroup">
-           <string notr="true">buttonGroup</string>
-          </attribute>
-         </widget>
-        </item>
-       </layout>
-      </widget>
+      <layout class="QGridLayout" name="gridLayout_3">
+       <item row="0" column="0" colspan="3">
+        <widget class="QGroupBox" name="videoCodecGroupBox">
+         <property name="title">
+          <string/>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_2">
+          <item row="0" column="2">
+           <widget class="QRadioButton" name="mpeg2RadBtn">
+            <property name="text">
+             <string>&amp;MPG (mpeg2/mp2)</string>
+            </property>
+            <attribute name="buttonGroup">
+             <string notr="true">buttonGroup</string>
+            </attribute>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QRadioButton" name="hevcRadBtn">
+            <property name="text">
+             <string>M&amp;KV (hevc/aac)</string>
+            </property>
+            <attribute name="buttonGroup">
+             <string notr="true">buttonGroup</string>
+            </attribute>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QRadioButton" name="h264RadBtn">
+            <property name="text">
+             <string>MP4 (&amp;h264/aac)</string>
+            </property>
+            <attribute name="buttonGroup">
+             <string notr="true">buttonGroup</string>
+            </attribute>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QComboBox" name="hevcCodecCb"/>
+       </item>
+       <item row="1" column="1">
+        <widget class="QComboBox" name="h264CodecCb"/>
+       </item>
+       <item row="1" column="2">
+        <widget class="QComboBox" name="mpegCodecCb">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_5">
