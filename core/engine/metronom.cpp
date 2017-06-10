@@ -15,6 +15,8 @@
 // less than 2 would freeze the app.
 #define NUMOUTPUTFRAMES 4
 
+#define BUFFER_OFFSET(i) ((uint8_t*)NULL + (i))
+
 
 static const int NSPS = 5;
 static const int slowPlaybackSpeed[NSPS][2] = {
@@ -263,16 +265,15 @@ void Metronom::run()
 void Metronom::runRender()
 {
 	Frame *f;
-	uint8_t *rgbData = NULL;
 	QGLFramebufferObject *fb = NULL;
 	struct SwsContext *swsCtx;
+	GLuint pbo = 0;
 
 	while ( running ) {
 		if ( (f = videoFrames.dequeue()) ) {
 			int w = f->profile.getVideoWidth();
 			int h = f->profile.getVideoHeight();
-			if ( !rgbData ) {
-				rgbData = (uint8_t*)malloc( w * h * 3 + 32 );
+			if ( !pbo ) {
 				swsCtx = sws_getContext( w, h, AV_PIX_FMT_RGB24,
 										w, h, AV_PIX_FMT_YUV420P,
 										0, NULL, NULL, NULL );
@@ -290,6 +291,10 @@ void Metronom::runRender()
 				glMatrixMode( GL_MODELVIEW );
 				glEnable( GL_TEXTURE_2D );
 				glActiveTexture( GL_TEXTURE0 );
+
+				glGenBuffers(1, &pbo);
+				glBindBuffer(GL_PIXEL_PACK_BUFFER_ARB, pbo);
+				glBufferData(GL_PIXEL_PACK_BUFFER_ARB, w * h * 3 + 32, NULL, GL_STREAM_READ);
 			}
 
 			if ( f->fence() )
@@ -304,8 +309,10 @@ void Metronom::runRender()
 				glTexCoord2f( 1, 1 ); glVertex3f( w, 0, 0.);
 			glEnd();
 			glPixelStorei( GL_PACK_ALIGNMENT, 1 );
-			glReadPixels( 0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, rgbData );
-			fb->release();
+
+			glBindBuffer(GL_PIXEL_PACK_BUFFER_ARB, pbo);
+			glReadPixels( 0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, BUFFER_OFFSET(0) );
+			uint8_t *rgbData = (uint8_t*)glMapBuffer(GL_PIXEL_PACK_BUFFER_ARB, GL_READ_ONLY);
 
 			f->setVideoFrame( Frame::YUV420P, w, h, f->profile.getVideoSAR(),
 							  f->profile.getVideoInterlaced(),
@@ -320,16 +327,20 @@ void Metronom::runRender()
 
 			sws_scale( swsCtx, src, srcStride, 0, h, dst, dstStride );
 
+			glUnmapBuffer(GL_PIXEL_PACK_BUFFER_ARB);
+			glBindBuffer(GL_PIXEL_PACK_BUFFER_ARB, 0);
+			fb->release();
+
 			encodeVideoFrames.enqueue( f );
 		}
 		else
 			usleep( 1000 );
 	}
 
+	if (pbo)
+		glDeleteBuffers( 1, &pbo );
 	if ( fb )
 		delete fb;
-	if ( rgbData )
-		free( rgbData );
 	if ( swsCtx )
 		sws_freeContext( swsCtx );
 }
