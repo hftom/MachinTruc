@@ -88,6 +88,7 @@ SOURCES = \
 	vfx/glcontrast.cpp \
 	vfx/glmirror.cpp \
 	vfx/glkaleidoscope.cpp \
+	vfx/gldistort.cpp \
 	\
 	videoout/videowidget.cpp
 
@@ -175,6 +176,7 @@ HEADERS = \
 	vfx/glcontrast.h \
 	vfx/glmirror.h \
 	vfx/glkaleidoscope.h \
+	vfx/gldistort.h \
 	\
 	videoout/videowidget.h
 
