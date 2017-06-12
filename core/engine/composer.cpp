@@ -41,16 +41,8 @@ void Composer::setSharedContext( QGLWidget *shared )
 	hiddenContext->makeCurrent();
 	
 	glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
-
-	QString movitPath;
-	if ( QFile("/usr/local/share/movit/dither_effect.frag").exists() )
-		movitPath = "/usr/local/share/movit";
-	else if ( QFile("/usr/share/movit/dither_effect.frag").exists() )
-		movitPath = "/usr/share/movit";
-	else
-		assert(false);
 	
-	assert( init_movit( movitPath.toLocal8Bit().data(), MOVIT_DEBUG_ON ) );
+	assert( init_movit( MOVIT_SHADERDIR, MOVIT_DEBUG_ON ) );
 	movitPool = new ResourcePool( 100, 300 << 20, 100 );
 
 	hiddenContext->doneCurrent();
@@ -693,6 +685,7 @@ void Composer::movitRender( Frame *dst, bool update )
 		output_format.color_space = COLORSPACE_sRGB;
 		output_format.gamma_curve = GAMMA_REC_709;
 		movitChain.chain->add_output( output_format, OUTPUT_ALPHA_FORMAT_POSTMULTIPLIED );
+		//movitChain.chain->set_intermediate_format( GL_SRGB8_ALPHA8 );
 		movitChain.chain->finalize();
 	}
 

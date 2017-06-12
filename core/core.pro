@@ -89,6 +89,7 @@ SOURCES = \
 	vfx/glmirror.cpp \
 	vfx/glkaleidoscope.cpp \
 	vfx/gldistort.cpp \
+	vfx/glhanddrawing.cpp \
 	\
 	videoout/videowidget.cpp
 
@@ -177,6 +178,7 @@ HEADERS = \
 	vfx/glmirror.h \
 	vfx/glkaleidoscope.h \
 	vfx/gldistort.h \
+	vfx/glhanddrawing.h \
 	\
 	videoout/videowidget.h
 
@@ -197,6 +199,8 @@ unix {
 	QMAKE_CFLAGS += -fopenmp -O3
 	QMAKE_LFLAGS += -fopenmp
 }
+
+DEFINES += MOVIT_SHADERDIR=\\\"$$system(pkg-config --variable=shaderdir movit)\\\"
 
 # ffmpeg
 DEFINES += __STDC_CONSTANT_MACROS

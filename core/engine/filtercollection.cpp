@@ -33,6 +33,7 @@ FilterCollection::FilterCollection()
 	videoFilters.append( FilterEntry( "draw", "GLBackgroundColor", QObject::tr("Background color"), &Maker<GLBackgroundColor>::make ) );
 	videoFilters.append( FilterEntry( "draw", "GLFiber", QObject::tr("Optical fiber"), &Maker<GLFiber>::make ) );
 	videoFilters.append( FilterEntry( "draw", "GLEdge", QObject::tr("Edge"), &Maker<GLEdge>::make ) );
+	videoFilters.append( FilterEntry( "draw", "GLHandDrawing", QObject::tr("Hand drawing"), &Maker<GLHandDrawing>::make ) );
 	videoFilters.append( FilterEntry( "alpha", "GLSoftBorder", QObject::tr("Soft border"), &Maker<GLSoftBorder>::make ) );
 	videoFilters.append( FilterEntry( "alpha", "GLOpacity", QObject::tr("Opacity"), &Maker<GLOpacity>::make ) );
 	videoFilters.append( FilterEntry( "alpha", "GLFadeIn", QObject::tr("Fade in"), &Maker<GLFadeIn>::make ) );
