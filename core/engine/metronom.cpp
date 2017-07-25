@@ -282,8 +282,7 @@ void Metronom::run()
 void Metronom::runRender()
 {
 	Frame *f;
-	QGLFramebufferObject
-	*fb = NULL;
+	QGLFramebufferObject *fb = NULL;
 	struct SwsContext *swsCtx;
 	QOpenGLShaderProgram shader;
 	GLuint vao = 0;
