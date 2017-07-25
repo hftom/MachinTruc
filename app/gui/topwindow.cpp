@@ -20,8 +20,11 @@ TopWindow::TopWindow()
 	thumbnailer( new Thumbnailer() )
 {
 	setupUi( this );
-	
+
 	qRegisterMetaType<OVDUpdateMessage>();
+
+	undoStack = new QUndoStack();
+	undoStack->setUndoLimit(100);
 
 	seekSlider = new SeekSlider( baseVideoWidget );
 	seekSlider->setObjectName(QString::fromUtf8("seekSlider"));
@@ -34,9 +37,9 @@ TopWindow::TopWindow()
 	seekSlider->setTickPosition( QSlider::NoTicks );
 	seekSlider->setTickInterval( 0 );
 	horizontalLayout_2->insertWidget( 9, seekSlider );
-	
+
 	sampler = new Sampler();
-	timeline = new Timeline( this );
+	timeline = new Timeline( this, undoStack );
 
 	timelineView = new TimelineGraphicsView( 0 );
 	timelineView->setFocusPolicy( Qt::NoFocus );
@@ -44,7 +47,7 @@ TopWindow::TopWindow()
 	timelineView->setScene( timeline );
 	timelineView->setAcceptDrops( true );
 	timelineStackedWidget->addWidget( timelineView );
-	
+
 	connect( this, SIGNAL(setCursorPos(double,bool)), timeline, SLOT(setCursorPos(double,bool)) );
 	connect( timeline, SIGNAL(seekTo(double)), this, SLOT(timelineSeek(double)) );
 	connect( timeline, SIGNAL(ensureVisible(const QGraphicsItem*)), this, SLOT(ensureVisible(const QGraphicsItem*)) );
@@ -55,17 +58,17 @@ TopWindow::TopWindow()
 	connect( timelineView, SIGNAL(sizeChanged(const QSize&)), timeline, SLOT(viewSizeChanged(const QSize&)) );
 	connect( timelineView, SIGNAL(viewMouseMove(QPointF)), timeline, SLOT(viewMouseMove(QPointF)) );
 	connect( timelineView, SIGNAL(viewMouseLeave()), timeline, SLOT(viewMouseLeave()) );
-	
+
 	animEditor = new AnimEditor( 0 );
 	connect( animEditor, SIGNAL(quitEditor()), this, SLOT(quitEditor()) );
 	connect( animEditor, SIGNAL(updateFrame()), sampler, SLOT(updateFrame()) );
 	timelineStackedWidget->addWidget( animEditor );
-	
+
 	sourcePage = new ProjectSourcesPage( sampler );
 	connect( sourcePage, SIGNAL(sourceActivated()), this, SLOT(sourceActivated()) );
 	connect( sourcePage, SIGNAL(openSourcesBtnClicked()), this, SLOT(openSources()) );
 	connect( sourcePage, SIGNAL(openBlankBtnClicked()), this, SLOT(openBlank()) );
-	
+
 	fxPage = new FxPage();
 	connect( animEditor, SIGNAL(ovdValueChanged(ParameterWidget*)), fxPage, SIGNAL(ovdValueChanged(ParameterWidget*)) );
 	connect( timeline, SIGNAL(clipSelected(ClipViewItem*)), fxPage, SLOT(clipSelected(ClipViewItem*)) );
@@ -81,14 +84,14 @@ TopWindow::TopWindow()
 	connect( fxPage, SIGNAL(currentFilterChanged(int)), this, SLOT(hideAnimEditor(int)) );
 	connect( fxPage, SIGNAL(compileShaderRequest(ThumbRequest)), this, SLOT(clipThumbRequest(ThumbRequest)) );
 	connect( fxPage, SIGNAL(filterCopy(QSharedPointer<Filter>,bool)), this, SLOT(filterCopy(QSharedPointer<Filter>,bool)) );
-	
+
 	fxSettingsPage = new FxSettingsPage();
 	connect( timeline, SIGNAL(clipSelected(ClipViewItem*)), fxSettingsPage, SLOT(clipSelected(ClipViewItem*)) );
 	connect( timeline, SIGNAL(showTransition()), fxSettingsToolButton, SLOT(click()) );
 	connect( fxSettingsPage, SIGNAL(updateFrame()), sampler, SLOT(updateFrame()) );
 	connect( fxSettingsPage, SIGNAL(paramUndoCommand(QSharedPointer<Filter>,Parameter*,QVariant,QVariant)), timeline, SLOT(paramUndoCommand(QSharedPointer<Filter>,Parameter*,QVariant,QVariant)) );
 	connect( fxSettingsPage, SIGNAL(transitionChanged(Clip*,QString,bool)), timeline, SLOT(transitionChanged(Clip*,QString,bool)) );
-	
+
 	stackedWidget->addWidget( sourcePage );
 	stackedWidget->addWidget( fxPage );
 	stackedWidget->addWidget( fxSettingsPage );
@@ -103,16 +106,18 @@ TopWindow::TopWindow()
 	connect( vw, SIGNAL(ovdUpdateSignal(QList<OVDUpdateMessage>)), animEditor, SLOT(ovdUpdate(QList<OVDUpdateMessage>)) );
 	connect( vw, SIGNAL(playPause()), this, SLOT(videoPlayPause()) );
 	connect( vw, SIGNAL(wheelSeek(int)), sampler, SLOT(wheelSeek(int)) );
-	connect( vw, SIGNAL(newSharedContext(QGLWidget*)), sampler, SLOT(setSharedContext(QGLWidget*)) );
-	connect( vw, SIGNAL(newFencesContext(QGLWidget*)), sampler, SLOT(setFencesContext(QGLWidget*)) );
-	connect( vw, SIGNAL(newThumbContext(QGLWidget*)), this, SLOT(setThumbContext(QGLWidget*)) );
+
+	connect( vw, SIGNAL(newSharedContext(GLSharedContext*)), sampler, SLOT(setSharedContext(GLSharedContext*)) );
+	connect( vw, SIGNAL(newFencesContext(GLSharedContext*)), sampler, SLOT(setFencesContext(GLSharedContext*)) );
+	connect( vw, SIGNAL(newThumbContext(GLSharedContext*)), this, SLOT(setThumbContext(GLSharedContext*)) );
+
 	connect( sampler->getMetronom(), SIGNAL(newFrame(Frame*)), vw, SLOT(showFrame(Frame*)) );
 	connect( sampler->getMetronom(), SIGNAL(currentFramePts(double)), this, SLOT(currentFramePts(double)) );
 	connect( vw, SIGNAL(frameShown(Frame*)), sampler->getMetronom(), SLOT(setLastFrame(Frame*)) );
 	connect( sampler, SIGNAL(newFrame(Frame*)), vw, SLOT(showFrame(Frame*)) );
 	connect( sampler, SIGNAL(paused(bool)), this, SLOT(composerPaused(bool)) );
 	connect( sampler, SIGNAL(modeSwitched()), this, SLOT(modeSwitched()) );
-	
+
 	connect( sampler->getMetronom(), SIGNAL(osdMessage(const QString&,int)), vw, SLOT(showOSDMessage(const QString&,int)) );
 	connect( sampler->getMetronom(), SIGNAL(osdTimer(bool)), vw, SLOT(showOSDTimer(bool)) );
 	connect( this, SIGNAL(startOSDTimer(bool)), vw, SLOT(showOSDTimer(bool)) );
@@ -153,30 +158,30 @@ TopWindow::TopWindow()
 	addAction( actionPaste );					connect( actionPaste, SIGNAL(triggered()), this, SLOT(editPaste()) );
 	addAction( actionSelectAll );				connect( actionSelectAll, SIGNAL(triggered()), this, SLOT(selectAll()) );
 	addAction( actionSplitCurrentClip );		connect( actionSplitCurrentClip, SIGNAL(triggered()), timeline, SLOT(splitCurrentClip()) );
-	
+
 	connect( actionProjectSettings, SIGNAL(triggered()), this, SLOT(menuProjectSettings()) );
 	connect( actionMoveMulti, SIGNAL(triggered()), this, SLOT(moveMulti()) );
 	connect( actionSaveImage, SIGNAL(triggered()), vw, SLOT(shot()) );
 	connect( actionRenderToFile, SIGNAL(triggered()), this, SLOT(renderDialog()) );
-	
+
 	clipboard = new ClipBoard(actionCopy, actionCut, actionPaste);
 	connect( timeline, SIGNAL(clipSelected(ClipViewItem*)), clipboard, SLOT(clipSelected(ClipViewItem*)) );
-	
-	QAction *act = UndoStack::getStack()->createUndoAction(this);
+
+	QAction *act = undoStack->createUndoAction(this);
 	act->setIcon( QIcon(":/toolbar/icons/edit-undo.png") );
 	act->setShortcut(QKeySequence(QKeySequence::Undo));
 	undoToolButton->setDefaultAction( act );
 	menuTimeline->insertAction( actionCopy, act );
-	act = UndoStack::getStack()->createRedoAction(this);
+	act = undoStack->createRedoAction(this);
 	act->setIcon( QIcon(":/toolbar/icons/edit-redo.png") );
 	act->setShortcut(QKeySequence(QKeySequence::Redo));
 	redoToolButton->setDefaultAction( act );
 	menuTimeline->insertAction( actionCopy, act );
 	menuTimeline->insertSeparator( actionCopy );
-	
+
 	new QShortcut( QKeySequence( "Ctrl+M" ), this, SLOT(showMemoryInfo()) );
 	new QShortcut( QKeySequence( "Space" ), this, SLOT(videoPlayPause()) );
-	
+
 	timeline->setScene( sampler->getCurrentScene() );
 
 	appConfig.beginGroup("MainWindowGeometry");
@@ -193,7 +198,7 @@ TopWindow::TopWindow()
 	openSourcesCurrentDir = appConfig.value("openSourcesCurrentDir").toString();
 	openProjectCurrentDir = appConfig.value("openProjectCurrentDir").toString();
 	appConfig.endGroup();
-	
+
 	QDir dir = QDir::home();
 	dir.cd(MACHINTRUC_DIR);
 	QString backup = dir.filePath(AUTORECOVERY);
@@ -258,7 +263,7 @@ void TopWindow::moveMulti()
 
 
 bool TopWindow::saveAndContinue() {
-	if (!UndoStack::getStack()->isClean()) {
+	if (!undoStack->isClean()) {
 		int ret = QMessageBox::question(this, tr("Unsaved changes"), tr("This project has been modified.\nDo you want to save your changes?"),
 										QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel, QMessageBox::Yes);
 		if (ret == QMessageBox::Yes) {
@@ -286,7 +291,7 @@ void TopWindow::loadBackup()
 			openProjectCurrentDir = fi.absolutePath();
 			currentProjectFile = fi.absoluteFilePath();
 		}
-		
+
 		QMessageBox msgBox;
 		msgBox.setText( tr("Auto Recovery found and loaded.") );
 		msgBox.exec();
@@ -367,7 +372,7 @@ void TopWindow::closeEvent( QCloseEvent *event )
 	appConfig.setValue("openSourcesCurrentDir", openSourcesCurrentDir);
 	appConfig.setValue("openProjectCurrentDir", openProjectCurrentDir);
 	appConfig.endGroup();
-	
+
 	removeBackup();
 }
 
@@ -422,7 +427,7 @@ void TopWindow::renderDialog()
 		QMessageBox::warning( this, tr("Sorry"), tr("The timeline is empty.") );
 		return;
 	}
-	
+
 	if ( !ignoreBackgroundJobsRunning() ) {
 		return;
 	}
@@ -521,7 +526,7 @@ void TopWindow::newProject()
 		msgBox.exec();
 		return;
 	}
-	
+
 	if (!saveAndContinue()) {
 		return;
 	}
@@ -534,7 +539,7 @@ void TopWindow::newProject()
 	timelineSeek( 0 );
 	QTimer::singleShot( VIDEOCLEARDELAY, vw, SLOT(clear()) );
 	currentProjectFile = "";
-	UndoStack::getStack()->clear();
+	undoStack->clear();
 	clipboard->reset();
 }
 
@@ -560,13 +565,13 @@ void TopWindow::projectSettings( int warn )
 			if (!saveAndContinue()) {
 				return;
 			}
-			UndoStack::getStack()->clear();
+			undoStack->clear();
 		}
-		
+
 		if ( !sampler->setProfile( dlg.getCurrentProfile() ) )
 			QMessageBox::warning( this, tr("Error"), tr("Somme errors occured while changing profile.\nCheck clips alignment.") );
 		timeline->setScene( sampler->getCurrentScene() );
-		
+
 	}
 }
 
@@ -697,9 +702,9 @@ void TopWindow::currentFramePts( double d )
 		sourcePage->activeSourceSetCurrentPts( d );
 	}
 	else {
-		emit setCursorPos( d, sampler->getMetronom()->isPlaying() ); 
+		emit setCursorPos( d, sampler->getMetronom()->isPlaying() );
 	}
-	
+
 	if ( !seekSlider->isButtonDown() ) {
 		d *= seekSlider->maximum() / sampler->currentSceneDuration();
 		seekSlider->blockSignals( true );
@@ -808,13 +813,13 @@ void TopWindow:: timelineSeek( double pts )
 {
 	if ( !switchButton->isChecked() )
 		switchButton->toggle();
-	
+
 	sampler->slideSeek( pts );
 }
 
 
 
-void TopWindow::setThumbContext( QGLWidget *context )
+void TopWindow::setThumbContext( GLSharedContext *context )
 {
 	thumbnailer->setSharedContext( context );
 	connect( thumbnailer, SIGNAL(resultReady()), thumbnailer, SLOT(gotResult()) );
@@ -852,7 +857,7 @@ void TopWindow::openSources()
 
 	if ( !list.isEmpty() ) {
 		openSourcesCurrentDir = QFileInfo( list[0] ).absolutePath();
-		
+
 		for ( int i = 0; i < list.count(); ++i ) {
 			if ( sourcePage->exists( list[i] ) )
 				duplicateOpenSources.append( QFileInfo( list[i] ).fileName() );
@@ -874,12 +879,12 @@ void TopWindow::unsupportedDuplicateMessage()
 	msgBox.setText( tr("Some files are unsupported or already part of the project.") );
 	msgBox.setDetailedText( unsupportedOpenSources.join( "\n" ) + "\n" + duplicateOpenSources.join( "\n" ) );
 	msgBox.exec();
-	
+
 	unsupportedOpenSources.clear();
 	duplicateOpenSources.clear();
 }
 
-		
+
 
 void TopWindow::thumbResultReady( ThumbRequest result )
 {
@@ -887,7 +892,7 @@ void TopWindow::thumbResultReady( ThumbRequest result )
 		timeline->thumbResultReady( result );
 		return;
 	}
-	
+
 	if ( result.typeOfRequest == ThumbRequest::SHADER ) {
 		ShaderEdit *edit = (ShaderEdit*)result.caller;
 		if ( edit )
@@ -903,10 +908,10 @@ void TopWindow::thumbResultReady( ThumbRequest result )
 				break;
 			}
 		}
-		
+
 		if ( !source ) // what happens???
 			return;
-		
+
 		if ( !result.thumb.isNull() ) {
 			if ( !source->getType() )
 				source->setAfter( (InputBase::InputType)result.inputType, result.profile );
@@ -929,14 +934,14 @@ void TopWindow::thumbResultReady( ThumbRequest result )
 			unsupportedOpenSources.append( source->getFileName() );
 			delete source;
 		}
-		
+
 		if ( !projectLoader->sourcesList.count() ) {
 			setEnabled( true );
 			sampler->setSceneList( projectLoader->sceneList );
 			timeline->setScene( sampler->getCurrentScene() );
 			timelineSeek( 0 );
 			emit startOSDTimer( false );
-			
+
 			if ( projectLoader->readError ) {
 				QMessageBox msgBox;
 				msgBox.setText( tr("Some errors occured while reading the project file.\nCheck the timeline.") );
@@ -959,7 +964,7 @@ void TopWindow::thumbResultReady( ThumbRequest result )
 		}
 		else
 			unsupportedOpenSources.append( QFileInfo( result.filePath ).fileName() );
-		
+
 		if ( --openSourcesCounter == 0 ) {
 			if ( unsupportedOpenSources.count() || duplicateOpenSources.count() )
 				unsupportedDuplicateMessage();
@@ -984,7 +989,7 @@ void TopWindow::saveProject()
 	ProjectFile xml;
 	xml.saveProject( sourcePage->getAllSources(), sampler, currentProjectFile );
 	vw->showOSDMessage( QString( tr("Saved: %1") ).arg(currentProjectFile), 3 );
-	UndoStack::getStack()->setClean();
+	undoStack->setClean();
 
 	removeBackup();
 }
@@ -999,11 +1004,11 @@ void TopWindow::openProject()
 		msgBox.exec();
 		return;
 	}
-	
+
 	if (!saveAndContinue()) {
 		return;
 	}
-	
+
 	QString file = QFileDialog::getOpenFileName( this, tr("Open project"),
 						openProjectCurrentDir, "MachinTruc(*.mct)" );
 
@@ -1014,11 +1019,11 @@ void TopWindow::openProject()
 	sampler->clearAll();
 	timeline->setScene( sampler->getCurrentScene() );
 	sourcePage->clearAllSources();
-	UndoStack::getStack()->clear();
+	undoStack->clear();
 	QTimer::singleShot( VIDEOCLEARDELAY, vw, SLOT(clear()) );
 
 	QString backup; // unused here
-	
+
 	if (loadProject( file, backup )) {
 		QFileInfo fi( file );
 		openProjectCurrentDir = fi.absolutePath();
@@ -1041,7 +1046,7 @@ bool TopWindow::loadProject(QString filename, QString &backupFilename)
 	sampler->clearAll();
 	timeline->setScene( sampler->getCurrentScene() );
 	sourcePage->clearAllSources();
-	UndoStack::getStack()->clear();
+	undoStack->clear();
 	QTimer::singleShot( VIDEOCLEARDELAY, vw, SLOT(clear()) );
 
 	projectLoader = new ProjectFile();
@@ -1061,13 +1066,13 @@ bool TopWindow::loadProject(QString filename, QString &backupFilename)
 	else {
 		while ( projectLoader->sourcesList.count() )
 			delete projectLoader->sourcesList.takeFirst();
-		
+
 		while ( projectLoader->sceneList.count() )
 			delete projectLoader->sceneList.takeFirst();
 
 		delete projectLoader;
 		projectLoader = NULL;
 	}
-	
+
 	return ret;
 }

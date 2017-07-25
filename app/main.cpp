@@ -4,21 +4,18 @@
 
 
 
-extern "C" int XInitThreads();
-
-
-
 int main(int argc, char **argv)
 {
-	XInitThreads();
+#if !defined(Q_OS_MAC)
+	QCoreApplication::setAttribute( Qt::AA_X11InitThreads );
+#else
+	QSurfaceFormat format;
+	format.setVersion(3, 3);
+	format.setProfile( QSurfaceFormat::CoreProfile );
+	QSurfaceFormat::setDefaultFormat( format );
+#endif
 
 	QApplication app(argc, argv);
-
-	/*QGLFormat glf = QGLFormat::defaultFormat();
-	glf.setAlpha( true );
-	glf.setSampleBuffers( true );
-	glf.setSamples( 4 );
-	QGLFormat::setDefaultFormat( glf );*/
 
 	TopWindow *tw = new TopWindow();
 	tw->show();

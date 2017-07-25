@@ -24,11 +24,14 @@ unix {
 	PKGCONFIG += movit
 	PKGCONFIG += libavformat libavcodec libavutil libswresample libswscale libavfilter
 	PKGCONFIG += sdl2
-	PKGCONFIG += x11
-	
-	QMAKE_CXXFLAGS += -fopenmp
-	QMAKE_CFLAGS += -fopenmp
-	QMAKE_LFLAGS += -fopenmp
+
+	!macx {
+		PKGCONFIG += x11
+
+		QMAKE_CXXFLAGS += -fopenmp
+		QMAKE_CFLAGS += -fopenmp
+		QMAKE_LFLAGS += -fopenmp
+	}
 }
 
 # ffmpeg

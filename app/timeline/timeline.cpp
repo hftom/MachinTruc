@@ -30,7 +30,7 @@
 
 
 
-Timeline::Timeline( TopWindow *parent ) : QGraphicsScene(),
+Timeline::Timeline( TopWindow *parent, QUndoStack *stack ) : QGraphicsScene(),
 	zoom( DEFAULTZOOM ),
 	currentZoom( DEFAULTZOOM ),
 	viewWidth( 0 ),
@@ -38,28 +38,29 @@ Timeline::Timeline( TopWindow *parent ) : QGraphicsScene(),
 	scene( NULL ),
 	topParent( parent ),
 	selectWindowItem( NULL ),
-	forceEnsureVisible( false )
+	forceEnsureVisible( false ),
+	undoStack(stack)
 {
 	setBackgroundBrush( QBrush( QColor(20,20,20) ) );
-	
+
 	rulerDock = new RulerDock();
 	addItem( rulerDock );
-	
+
 	cursor = new CursorViewItem();
 	addItem( cursor );
 	cursor->setZValue( ZCURSOR );
 	cursor->setPos( 0, 0 );
-	
+
 	ruler = new RulerViewItem();
 	addItem( ruler );
 	ruler->setZValue( ZRULER );
 	ruler->setPos( 0, 0 );
 	ruler->setTimeScale( MICROSECOND / zoom );
-	
+
 	zoomAnim = new QPropertyAnimation( this, "animZoom" );
 	zoomAnim->setDuration( 250 );
 	zoomAnim->setEasingCurve( QEasingCurve::InOutSine );
-	
+
 	mouseScenePosition = QPointF( -1, -1 );
 }
 
@@ -108,7 +109,7 @@ void Timeline::dockRuler()
 
 void Timeline::viewMouseLeave() {
 	ruler->setPosition( ruler->pos().x(), 0 );
-	
+
 	mouseScenePosition = QPointF( -1, -1 );
 }
 
@@ -243,9 +244,9 @@ void Timeline::itemSelected( AbstractViewItem *it, bool extend, bool moreToCome 
 			}
 		}
 	}
-	
+
 	if (!moreToCome) {
-		emit clipSelected( selectedItems.count() 
+		emit clipSelected( selectedItems.count()
 			? selectedItems.first()->data( DATAITEMTYPE ).toInt() == TYPECLIP ? (ClipViewItem*)selectedItems.first() : NULL
 			: NULL
 		);
@@ -262,7 +263,7 @@ ClipViewItem* Timeline::getSelectedClip()
 			it = (ClipViewItem*)selectedItems.first();
 		}
 	}
-	
+
 	return it;
 }
 
@@ -285,7 +286,7 @@ void Timeline::trackSelectWindow( QPointF p )
 		delete selectWindowItem;
 		selectWindowItem = NULL;
 	}
-	
+
 	selectWindowItem = new SelectWindowItem( p );
 	addItem( selectWindowItem );
 }
@@ -306,7 +307,7 @@ void Timeline::trackSelectWindowRelease(bool extend)
 	if ( !selectWindowItem ) {
 		return;
 	}
-	
+
 	QList<QGraphicsItem *> list = selectWindowItem->collidingItems();
 	int n = 0;
 	for (int i = 0; i < list.count(); ++i) {
@@ -324,7 +325,7 @@ void Timeline::trackSelectWindowRelease(bool extend)
 			itemSelected( (ClipViewItem*)it, extend || i > 0, i < n - 1 );
 		}
 	}
-	
+
 	removeItem( selectWindowItem );
 	delete selectWindowItem;
 	selectWindowItem = NULL;
@@ -346,17 +347,17 @@ void Timeline::nextEdge()
 {
 	double pts = cursor->x() * zoom;
 	double spts = scene->nextEdge(pts);
-	
+
 	if (effectItem) {
 		QSharedPointer<Filter> f;
 		if ( effectItem->isVideoEffect() )
 			f = effectItem->getClip()->videoFilters.at( effectItem->getIndex() );
 		else
 			f = effectItem->getClip()->audioFilters.at(  effectItem->getIndex() );
-		
+
 		double margin = scene->getProfile().getVideoFrameDuration() / 4.0;
 		double edge = f->getPosition() + f->getPositionOffset() - margin;
-		
+
 		if (edge > pts && edge < spts) {
 			spts = edge + margin;
 		}
@@ -367,7 +368,7 @@ void Timeline::nextEdge()
 			}
 		}
 	}
-	
+
 	forceEnsureVisible = true;
 	emit seekTo( spts );
 }
@@ -378,17 +379,17 @@ void Timeline::previousEdge()
 {
 	double pts = cursor->x() * zoom;
 	double spts = scene->previousEdge(pts);
-	
+
 	if (effectItem) {
 		QSharedPointer<Filter> f;
 		if ( effectItem->isVideoEffect() )
 			f = effectItem->getClip()->videoFilters.at( effectItem->getIndex() );
 		else
 			f = effectItem->getClip()->audioFilters.at(  effectItem->getIndex() );
-		
+
 		double margin = scene->getProfile().getVideoFrameDuration() / 4.0;
 		double edge = f->getPosition() + f->getPositionOffset() + f->getLength() + margin;
-		
+
 		if (edge < pts && edge > spts) {
 			spts = edge;
 		}
@@ -399,7 +400,7 @@ void Timeline::previousEdge()
 			}
 		}
 	}
-	
+
 	forceEnsureVisible = true;
 	emit seekTo( spts );
 }
@@ -418,10 +419,10 @@ void Timeline::trackPressedRightBtn( TrackViewItem *t, QPoint p )
 	action = menu.addAction( tr("Delete track") );
 	action->setData( RMTRACK );
 	action = menu.exec( p );
-	
+
 	if ( !action )
 		return;
-	
+
 	for ( int i = 0; i < tracks.count(); ++i ) {
 		if ( tracks[i] == t ) {
 			int what = action->data().toInt();
@@ -444,7 +445,7 @@ void Timeline::trackPressedRightBtn( TrackViewItem *t, QPoint p )
 void Timeline::trackRemoved( int index )
 {
 	UndoTrackAdd *u = new UndoTrackAdd(this, index, true);
-	UndoStack::getStack()->push(u);
+	undoStack->push(u);
 }
 
 
@@ -460,12 +461,12 @@ void Timeline::addTrack( int index, bool noUndo )
 {
 	if (noUndo) {
 		// we are called from setScene to add a track view for the already existing track model
-		// so we call the above with true as last param to not create the track model again 
+		// so we call the above with true as last param to not create the track model again
 		commandTrackAddRemove(index, false, true);
 	}
 	else {
 		UndoTrackAdd *u = new UndoTrackAdd(this, index, false);
-		UndoStack::getStack()->push(u);
+		undoStack->push(u);
 	}
 }
 
@@ -487,7 +488,7 @@ void Timeline::showEffect( bool isVideo, int index )
 	}
 	if ( index == -1 )
 		return;
-	
+
 	ClipViewItem *cv = (ClipViewItem*)selectedItems.first();
 	QSharedPointer<Filter> f;
 	if ( isVideo )
@@ -554,7 +555,7 @@ void Timeline::clipRightClick( ClipViewItem *cv )
 			// force scene update
 			scene->update = true;
 			UndoClipSpeed *u = new UndoClipSpeed(this, c, track, oldSpeed, speed, oldLength, c->length(), oldTail, scene->getTailTransition(c, track), true);
-			UndoStack::getStack()->push(u);
+			undoStack->push(u);
 			QTimer::singleShot ( 1, this, SIGNAL(updateFrame()) );
 			QTimer::singleShot ( 1, this, SLOT(updateLength()) );
 		}
@@ -570,7 +571,7 @@ void Timeline::clipRightClick( ClipViewItem *cv )
 void Timeline::effectCanMove( QPointF mouse, double clipStartPos, QPointF clipStartMouse, bool unsnap )
 {
 	double newPos = ( mouse.x() * zoom ) - ( (clipStartMouse.x() * zoom) - clipStartPos );
-		
+
 	if ( !unsnap )
 		snapMove( effectItem, newPos, mouse.x(), ( clipStartMouse.x() - (clipStartPos / zoom) ), false );
 
@@ -591,11 +592,11 @@ void Timeline::effectMoved( QPointF clipMouseStart )
 
 	double oldPosOffset = f->getPositionOffset();
 	scene->effectMove( effectItem->getClip(), effectItem->getPosition(), effectItem->isVideoEffect(), effectItem->getIndex() );
-	
+
 	if (oldPosOffset != f->getPositionOffset()) {
 		UndoEffectMove *u = new UndoEffectMove(this, effectItem->getClip(), f->getPosition() + oldPosOffset,
 											   f->getPosition() + f->getPositionOffset(), effectItem->isVideoEffect(), effectItem->getIndex(), true);
-		UndoStack::getStack()->push(u);
+		undoStack->push(u);
 	}
 
 	updateAfterEdit(true, false);
@@ -643,10 +644,10 @@ void Timeline::effectResized( int way )
 		scene->effectResize( effectItem->getClip(), effectItem->getLength(), effectItem->isVideoEffect(), effectItem->getIndex() );
 	else
 		scene->effectResizeStart( effectItem->getClip(), effectItem->getPosition(), effectItem->getLength(), effectItem->isVideoEffect(), effectItem->getIndex() );
-	
+
 	UndoEffectResize *u = new UndoEffectResize(this, effectItem->getClip(), way != 2, oldOffset, f->getPositionOffset(), f->getPosition(),
 											   oldLen, f->getLength(), effectItem->isVideoEffect(), effectItem->getIndex(), true);
-	UndoStack::getStack()->push(u);
+	undoStack->push(u);
 
 	updateAfterEdit(true, false);
 }
@@ -690,10 +691,10 @@ void Timeline::updateTransitions( ClipViewItem *clip, bool remove )
 void Timeline::clipItemCanMove( ClipViewItem *clip, QPointF mouse, double clipStartPos, QPointF clipStartMouse, bool unsnap, bool multiMove )
 {
 	double newPos = ( mouse.x() * zoom ) - ( (clipStartMouse.x() * zoom) - clipStartPos );
-		
+
 	if ( !unsnap )
 		snapMove( clip, newPos, mouse.x(), ( clipStartMouse.x() - (clipStartPos / zoom) ), multiMove );
-		
+
 	int itemTrack = getTrack( clip->sceneBoundingRect().topLeft() );
 	if ( newPos < 0 )
 		newPos = 0;
@@ -745,19 +746,19 @@ void Timeline::clipItemMoved( ClipViewItem *clip, QPointF clipStartMouse, bool m
 	else {
 		scene->move( c, oldTrack, clip->getPosition(), newTrack );
 	}
-	
+
 	if (oldPos == c->position()) {
 		if (oldTrans) delete oldTrans;
 		if (oldTail) delete oldTail;
 		return;
 	}
-	
+
 	UndoClipMove *u = new UndoClipMove(this, c, multiMove, oldTrack, newTrack, oldPos, c->position(), oldTrans, c->getTransition(),
 									   oldTail, multiMove ? NULL : scene->getTailTransition(c, newTrack), true);
-	UndoStack::getStack()->push(u);
+	undoStack->push(u);
 	if (oldTrans) delete oldTrans;
 	if (oldTail) delete oldTail;
-	
+
 	updateAfterEdit(true, true);
 }
 
@@ -766,7 +767,7 @@ void Timeline::clipItemMoved( ClipViewItem *clip, QPointF clipStartMouse, bool m
 void Timeline::clipItemCanResize( ClipViewItem *clip, int way, QPointF mouse, double clipStartPos, double clipStartLen, QPointF clipStartMouse, bool unsnap )
 {
 	int track = getTrack( clip->sceneBoundingRect().topLeft() );
-	
+
 	if ( way == 2 ) {
 		double newLength = clipStartLen + ( mouse.x() * zoom ) - ( clipStartMouse.x() * zoom);
 		if ( !unsnap )
@@ -813,17 +814,17 @@ void Timeline::clipItemResized( ClipViewItem *clip, int way )
 		scene->resizeStart( c, clip->getPosition(), clip->getLength(), track );
 		newTrans = c->getTransition();
 	}
-	
+
 	if (oldLen == c->length()) {
 		if (oldTrans) delete oldTrans;
 		return;
 	}
-	
+
 	clipThumbRequest( clip, way != 2 );
 	UndoClipResize *u = new UndoClipResize(this, c,  way != 2, track, oldPos, c->position(), oldLen, c->length(), oldTrans, newTrans, true);
-	UndoStack::getStack()->push(u);
+	undoStack->push(u);
 	if (oldTrans) delete oldTrans;
-	
+
 	updateAfterEdit(true, true);
 }
 
@@ -851,7 +852,7 @@ void Timeline::snapResize( AbstractViewItem *item, int way, double &poslen, doub
 					else if ( (dst.right() > src.right() - SNAPWIDTH) && (dst.right() < src.right() + SNAPWIDTH) ) {
 						poslen = cv->getPosition() + cv->getLength() - item->getPosition() + (scene->getProfile().getVideoFrameDuration() / 4.0);
 						return;
-					}				
+					}
 				}
 				else {
 					if ( (dst.left() > src.left() - SNAPWIDTH) && (dst.left() < src.left() + SNAPWIDTH) ) {
@@ -871,7 +872,7 @@ void Timeline::snapResize( AbstractViewItem *item, int way, double &poslen, doub
 				if ( (dst.left() > src.right() - SNAPWIDTH) && (dst.left() < src.right() + SNAPWIDTH) ) {
 					poslen = (dst.left() * zoom) - item->getPosition() + (scene->getProfile().getVideoFrameDuration() / 4.0);
 					return;
-				}				
+				}
 			}
 			else {
 				if ( (dst.left() > src.left() - SNAPWIDTH) && (dst.left() < src.left() + SNAPWIDTH) ) {
@@ -917,7 +918,7 @@ void Timeline::snapMove( AbstractViewItem *item, double &pos, double mouseX, dou
 				else if ( (dst.right() > src.right() - SNAPWIDTH) && (dst.right() < src.right() + SNAPWIDTH) ) {
 					pos = cv->getPosition() + cv->getLength() - item->getLength() + (scene->getProfile().getVideoFrameDuration() / 4.0);
 					return;
-				}				
+				}
 			}
 		}
 		else if ( it->data( DATAITEMTYPE ).toInt() == TYPECURSOR ) {
@@ -942,7 +943,7 @@ int Timeline::getTrack( const QPointF &p )
 		if ( tracks.at( i )->sceneBoundingRect().contains( QPointF( 0, p.y() ) ) )
 			return i;
 	}
-	
+
 	return -1;
 }
 
@@ -1020,7 +1021,7 @@ void Timeline::slotUpdateAfterEdit()
 void Timeline::updateLength()
 {
 	int i, j, maxlen=0;
-	
+
 	for ( i = 0; i < tracks.count(); ++i ) {
 		TrackViewItem *tv = tracks.at( i );
 		QList<QGraphicsItem*> list = tv->childItems();
@@ -1030,9 +1031,9 @@ void Timeline::updateLength()
 				maxlen = it->pos().x() + it->rect().width();
 		}
 	}
-	
+
 	maxlen += MINTRACKLENGTH;
-	
+
 	if ( maxlen < viewWidth )
 		maxlen = viewWidth;
 
@@ -1042,7 +1043,7 @@ void Timeline::updateLength()
 		r.setWidth( maxlen );
 		tracks.at( i )->setRect( r );
 	}
-	
+
 	QRectF r = rulerDock->rect();
 	r.setWidth( maxlen );
 	rulerDock->setRect( r );
@@ -1073,12 +1074,12 @@ void Timeline::setScene( Scene *s )
 			it->setParentItem( tracks.at( i ) );
 			Transition *trans = c->getTransition();
 			if ( trans )
-				it->updateTransition( trans->length() );	
+				it->updateTransition( trans->length() );
 			clipThumbRequest( it, true );
 			clipThumbRequest( it, false );
 		}
 	}
-	
+
 	setCursorPos( 0, true );
 	ruler->setFrameDuration( scene->getProfile().getVideoFrameDuration() );
 
@@ -1092,13 +1093,13 @@ void Timeline::editCopy(ClipBoard *clipboard)
 	if (!selectedItems.count()) {
 		return;
 	}
-	
+
 	QList< QList<Clip*>* > *list = new QList< QList<Clip*>* >();
-	
+
 	for (int i = 0; i < tracks.count(); ++i) {
 		list->append(new QList<Clip*>());
 	}
-	
+
 	for (int i = 0; i < selectedItems.count(); ++i) {
 		if (selectedItems.at(i)->data( DATAITEMTYPE ).toInt() == TYPECLIP) {
 			ClipViewItem *cv = (ClipViewItem*)selectedItems.at(i);
@@ -1107,16 +1108,16 @@ void Timeline::editCopy(ClipBoard *clipboard)
 			list->at(t)->append(c);
 		}
 	}
-	
+
 	while (!list->isEmpty() && list->first()->isEmpty()) {
 		delete list->takeFirst();
 	}
 	while (!list->isEmpty() && list->last()->isEmpty()) {
 		delete list->takeLast();
 	}
-	
+
 	clipboard->copyClips(list);
-	
+
 	while (!list->isEmpty())
 		delete list->takeFirst();
 	delete list;
@@ -1141,7 +1142,7 @@ void Timeline::editCut(ClipBoard *clipboard)
 			}
 		}
 		if (n) {
-			UndoStack::getStack()->push(u);
+			undoStack->push(u);
 		}
 		else {
 			delete u;
@@ -1191,7 +1192,7 @@ void Timeline::editPaste(ClipBoard *clipboard)
 				}
 			}
 			if (n) {
-				UndoStack::getStack()->push(u);
+				undoStack->push(u);
 			}
 			else {
 				delete u;
@@ -1200,7 +1201,7 @@ void Timeline::editPaste(ClipBoard *clipboard)
 	}
 	else if (type.startsWith("Track")) {
 		QList< QList<Clip*>* > *list = clipboard->getClips( topParent->getAllSources(), scene );
-		
+
 		int activeTrack = cursor->getActiveTrack();
 		if (mouseScenePosition.y() >= 0 && mouseScenePosition.x() >= 0) {
 			activeTrack = mouseScenePosition.y();
@@ -1209,7 +1210,7 @@ void Timeline::editPaste(ClipBoard *clipboard)
 			clipboard->deleteClips(list);
 			return;
 		}
-		
+
 		double oldPos = -1;
 		for (int i = 0; i < list->count(); ++i) {
 			if (list->at(i)->count()) {
@@ -1219,7 +1220,7 @@ void Timeline::editPaste(ClipBoard *clipboard)
 				}
 			}
 		}
-		
+
 		int trackBase = activeTrack - list->count() + 1;
 		double cursorPos = 0;
 		if (mouseScenePosition.y() >= 0 && mouseScenePosition.x() >= 0) {
@@ -1250,7 +1251,7 @@ void Timeline::editPaste(ClipBoard *clipboard)
 				}
 			}
 		}
-		
+
 		int n = 0;
 		for (int i = 0; i < list->count(); ++i) {
 			QList<Clip*> *track = list->at(i);
@@ -1264,7 +1265,7 @@ void Timeline::editPaste(ClipBoard *clipboard)
 				updateTransitions( cv, false );
 				clipThumbRequest( cv, true );
 				clipThumbRequest( cv, false );
-				
+
 				itemSelected( cv, n > 0, n < added.count() - 1 );
 				++n;
 			}
@@ -1278,7 +1279,7 @@ void Timeline::editPaste(ClipBoard *clipboard)
 				u->append( c, trackBase + i, scene->getTailTransition(c, trackBase + i));
 			}
 		}
-		UndoStack::getStack()->push(u);
+		undoStack->push(u);
 
 		updateAfterEdit(true, true);
 	}
@@ -1316,7 +1317,7 @@ void Timeline::splitCurrentClip()
 		}
 		Clip *c = scene->sceneSplitClip( dup, t, cursor_pts );
 		UndoClipSplit *u = new UndoClipSplit(this, current_clip, dup, c, t, startTrans, tail, true);
-		UndoStack::getStack()->push(u);
+		undoStack->push(u);
 		if (tail) {
 			delete tail;
 		}
@@ -1334,7 +1335,7 @@ void Timeline::splitCurrentClip()
 		clipThumbRequest( cv1, false );
 		clipThumbRequest( cv2, true );
 		clipThumbRequest( cv2, false );
-		
+
 		updateAfterEdit(true, false);
 	}
 }
@@ -1370,10 +1371,10 @@ void Timeline::addFilter( ClipViewItem *clip, QString fx, int index )
 			}
 		}
 	}
-	
+
 	if ( f.isNull() )
 		return;
-	
+
 	f->setPosition( c->position() );
 	if ( f->getLength() > c->length() )
 		f->setLength( c->length() );
@@ -1383,10 +1384,10 @@ void Timeline::addFilter( ClipViewItem *clip, QString fx, int index )
 		f->setPositionOffset( 0 );
 	else
 		f->setLength( c->length() );
-	
+
 	UndoEffectAdd *u = new UndoEffectAdd(this);
 	u->append( c, getTrack(clip->sceneBoundingRect().topLeft()), f, index, isVideo );
-	UndoStack::getStack()->push(u);
+	undoStack->push(u);
 }
 
 
@@ -1396,7 +1397,7 @@ void Timeline::filterDeleted( Clip *c, QSharedPointer<Filter> f )
 	bool isVideo = true;
 	ClipViewItem *cv = getClipViewItem(c, -1);
 	int index = -1;
-	
+
 	for ( int i = 0; i < c->videoFilters.count(); ++i ) {
 		if ( c->videoFilters.at( i ).data() == f.data() ) {
 			index = i;
@@ -1412,13 +1413,13 @@ void Timeline::filterDeleted( Clip *c, QSharedPointer<Filter> f )
 			}
 		}
 	}
-	
+
 	if (index == -1)
 		return;
 
 	UndoEffectRemove *u = new UndoEffectRemove(this);
 	u->append(c, getTrack(cv->sceneBoundingRect().topLeft()), f, index, isVideo);
-	UndoStack::getStack()->push(u);
+	undoStack->push(u);
 }
 
 
@@ -1432,7 +1433,7 @@ void Timeline::filterReordered( Clip *c, bool video, int index, int newIndex )
 		}
 		if (cv) {
 			UndoEffectReorder *u = new UndoEffectReorder(this, c, getTrack( cv->sceneBoundingRect().topLeft() ), index, newIndex, video);
-			UndoStack::getStack()->push(u);
+			undoStack->push(u);
 		}
 	}
 }
@@ -1458,7 +1459,7 @@ void Timeline::dragEnterEvent( QGraphicsSceneDragDropEvent *event )
 					double newPos = event->scenePos().x() * zoom;
 					if ( newPos < 0 )
 						newPos = 0;
-					
+
 					droppedCut.clip = scene->createClip( source, newPos, start, len );
 					droppedCut.clipItem = new ClipViewItem( droppedCut.clip, zoom );
 					droppedCut.enterPos = event->scenePos().x() - ( droppedCut.clipItem->getPosition() / zoom );
@@ -1492,9 +1493,9 @@ void Timeline::dragMoveEvent( QGraphicsSceneDragDropEvent *event )
 {
 	if ( droppedCut.clip ) {
 		double newPos = event->scenePos().x() * zoom;
-		
+
 		snapMove( droppedCut.clipItem, newPos, event->scenePos().x(), droppedCut.enterPos );
-		
+
 		if ( newPos < 0 )
 			newPos = 0;
 
@@ -1549,7 +1550,7 @@ void Timeline::dropEvent( QGraphicsSceneDragDropEvent *event )
 			scene->addClip( droppedCut.clip, t );
 			UndoClipAdd *u = new UndoClipAdd(this, true);
 			u->append(droppedCut.clip, t, scene->getTailTransition(droppedCut.clip, t));
-			UndoStack::getStack()->push(u);
+			undoStack->push(u);
 			clipThumbRequest( droppedCut.clipItem, true );
 			clipThumbRequest( droppedCut.clipItem, false );
 			emit updateFrame();
@@ -1624,7 +1625,7 @@ void Timeline::commandAddClip(QList<Clip*> clips, QList<int> ltracks, QList<Tran
 	for (int i = 0; i < clips.count(); ++i) {
 		int track = ltracks.at(i);
 		Clip *clip = clips.at(i);
-		
+
 		ClipViewItem *cv = new ClipViewItem( clip, zoom );
 		cvs.append(cv);
 		cv->setParentItem( tracks.at( track ) );
@@ -1650,7 +1651,7 @@ void Timeline::commandAddClip(QList<Clip*> clips, QList<int> ltracks, QList<Tran
 	for (int i = 0; i < cvs.count(); ++i) {
 		itemSelected( cvs.at(i), i > 0, i < cvs.count() - 1 );
 	}
-	
+
 	updateAfterEdit(true, true);
 }
 
@@ -1662,7 +1663,7 @@ void Timeline::commandRemoveClip(QList<Clip*> clips, QList<int> ltracks)
 	for (int i = 0; i < clips.count(); ++i) {
 		int track = ltracks.at(i);
 		Clip *clip = clips.at(i);
-		
+
 		ClipViewItem *cv = getClipViewItem(clip, track);
 		if (cv) {
 			updateStabilize(clip, NULL, true);
@@ -1673,7 +1674,7 @@ void Timeline::commandRemoveClip(QList<Clip*> clips, QList<int> ltracks)
 			}
 		}
 	}
-	
+
 	QTimer::singleShot(500, this, SLOT(slotUpdateAfterEdit()));
 }
 
@@ -1712,7 +1713,7 @@ void Timeline::commandMoveClip(Clip *clip, bool multi, int oldTrack, int newTrac
 			}
 		}
 		updateTransitions( cv, false );
-		
+
 		updateAfterEdit(true, true);
 	}
 }
@@ -1741,7 +1742,7 @@ void Timeline::commandResizeClip(Clip *clip, bool resizeStart, int track, double
 			updateTransitions( cv, false );
 		}
 		clipThumbRequest( cv, resizeStart );
-		
+
 		updateAfterEdit(true, true);
 	}
 }
@@ -1845,7 +1846,7 @@ void Timeline::commandEffectAddRemove(QList<Clip*> clips, QList<int> ltracks, QL
 		for (int i = 0; i < clips.count(); ++i) {
 			Clip *c = clips.at(i);
 			QSharedPointer<Filter> f = filters.at(i);
-			
+
 			updateStabilize(c, f.data(), true);
 			if (isVideo) {
 				c->videoFilters.remove( f.staticCast<GLFilter>() );
@@ -1859,7 +1860,7 @@ void Timeline::commandEffectAddRemove(QList<Clip*> clips, QList<int> ltracks, QL
 			Clip *c = clips.at(i);
 			QSharedPointer<Filter> f = filters.at(i);
 			int index = indexes.at(i);
-		
+
 			if (isVideo) {
 				if ( index == -1 )
 					c->videoFilters.append( f.staticCast<GLFilter>() );
@@ -1904,7 +1905,7 @@ void Timeline::commandTrackAddRemove(int index, bool remove, bool noparent)
 		for ( i = 0; i < tracks.count(); ++i )
 			tracks.at( tracks.count() - 1 - i )->setPos( 0, ((TRACKVIEWITEMHEIGHT + 1) * i) + RULERDOCKHEIGHT );
 	}
-	
+
 	cursor->setHeight( (tracks.count() * (TRACKVIEWITEMHEIGHT + 1)) + RULERDOCKHEIGHT );
 	cursor->setActiveTrack(0);
 	updateAfterEdit(false, true);
@@ -1951,7 +1952,7 @@ void Timeline::commandEffectReorder(Clip *c, int track, int oldIndex, int newInd
 	else {
 		c->audioFilters.move(oldIndex, newIndex);
 	}
-	
+
 	itemSelected(cv);
 	updateAfterEdit(true, false);
 }
@@ -1961,7 +1962,7 @@ void Timeline::commandEffectReorder(Clip *c, int track, int oldIndex, int newInd
 void Timeline::paramUndoCommand(QSharedPointer<Filter> f, Parameter *p, QVariant oldValue, QVariant newValue)
 {
 	UndoEffectParam *u = new UndoEffectParam(this, f, p, oldValue, newValue);
-	UndoStack::getStack()->push(u);
+	undoStack->push(u);
 }
 
 
@@ -1974,7 +1975,7 @@ void Timeline::commandEffectParam(QSharedPointer<Filter> filter, Parameter *para
 		GLCustom *f = (GLCustom*) filter.data();
 		f->setCustomParams( value.toString() );
 	}
-	
+
 	updateAfterEdit(true, false);
 }
 
@@ -1990,7 +1991,7 @@ void Timeline::transitionChanged(Clip *clip, QString filterName, bool isVideo)
 		f = clip->getTransition()->getAudioFilter();
 	}
 	UndoTransitionChanged *u = new UndoTransitionChanged(this, clip, f, filterName, isVideo);
-	UndoStack::getStack()->push(u);
+	undoStack->push(u);
 }
 
 
@@ -1998,7 +1999,7 @@ void Timeline::transitionChanged(Clip *clip, QString filterName, bool isVideo)
 void Timeline::commandTransitionChanged(Clip *clip, QSharedPointer<Filter> oldFilter, QString newFilter, bool isVideo, bool undo)
 {
 	FilterCollection *fc = FilterCollection::getGlobalInstance();
-	
+
 	if ( undo ) {
 		if (isVideo) {
 			clip->getTransition()->setVideoFilter( oldFilter.staticCast<GLFilter>() );
@@ -2027,7 +2028,7 @@ void Timeline::commandTransitionChanged(Clip *clip, QSharedPointer<Filter> oldFi
 			}
 		}
 	}
-	
+
 	ClipViewItem *selected = getSelectedClip();
 	if ( selected ) {
 		emit clipSelected( selected );

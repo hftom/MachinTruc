@@ -7,9 +7,10 @@
 #include "vfx/movitflip.h"
 #include "vfx/movitbackground.h"
 
-#include <QGLShaderProgram>
-#include <QGLFramebufferObject>
+#include <QOpenGLShaderProgram>
+#include <QOpenGLFramebufferObject>
 #include <QCryptographicHash>
+#include <QPainter>
 
 #include "input/input_ff.h"
 #include "input/input_image.h"
@@ -17,6 +18,7 @@
 #include "engine/source.h"
 #include "util.h"
 #include "thumbnailer.h"
+#include "videoout/glsharedcontext.h"
 
 #define THUMB_DIR "thumb"
 #define THUMB_EXTENSION ".png"
@@ -64,7 +66,7 @@ bool Thumbnailer::cdThumbDir( QDir &dir )
 
 
 
-void Thumbnailer::setSharedContext( QGLWidget *sharedContext )
+void Thumbnailer::setSharedContext( GLSharedContext *sharedContext )
 {
 	glContext = sharedContext;
 }
@@ -82,15 +84,13 @@ bool Thumbnailer::pushRequest( ThumbRequest req )
 	else
 		requestList.append( req );
 	requestMutex.unlock();
-	
+
 	if ( !isRunning() ) {
-#if QT_VERSION >= 0x050000
-		glContext->context()->moveToThread( this );
-#endif
+		glContext->moveToThread( this );
 		running = true;
 		start();
 	}
-	
+
 	return true;
 }
 
@@ -114,7 +114,7 @@ void Thumbnailer::gotResult()
 void Thumbnailer::run()
 {
 	glContext->makeCurrent();
-	
+
 	while ( running ) {
 		requestMutex.lock();
 		if ( !requestList.count() ) {
@@ -124,7 +124,7 @@ void Thumbnailer::run()
 		else {
 			ThumbRequest request = requestList.takeFirst();
 			requestMutex.unlock();
-		
+
 			if ( request.typeOfRequest == ThumbRequest::PROBE ) {
 				probe( request );
 			}
@@ -134,18 +134,16 @@ void Thumbnailer::run()
 			else {
 				makeThumb( request );
 			}
-		
+
 			resultMutex.lock();
 			resultList.append( request );
 			resultMutex.unlock();
 			emit resultReady();
 		}
 	}
-	
+
 	glContext->doneCurrent();
-#if QT_VERSION >= 0x050000
-	glContext->context()->moveToThread( qApp->thread() );
-#endif
+	glContext->moveToThread( qApp->thread() );
 }
 
 
@@ -195,7 +193,7 @@ void Thumbnailer::probe( ThumbRequest &request )
 			request.thumb.fill( QColor(0,0,0,0) );
 			QPainter p(&request.thumb);
 			p.drawImage( 2, 2, QImage(":/images/icons/sound.png") );
-		}			
+		}
 		request.inputType = input->getType();
 	}
 
@@ -224,12 +222,12 @@ void Thumbnailer::makeThumb( ThumbRequest &request )
 		input = new InputBlank();
 	else if ( request.inputType == InputBase::IMAGE )
 		input = new InputImage();
-	else 
+	else
 		input = new InputFF();
-	
+
 	input->setProfile( request.profile, request.profile );
 	input->open( request.filePath );
-	
+
 	if ( request.profile.hasVideo() ) {
 		input->seekTo( request.thumbPTS );
 		Frame *f = input->getVideoFrame();
@@ -250,8 +248,8 @@ void Thumbnailer::makeThumb( ThumbRequest &request )
 		request.thumb.fill( QColor(0,0,0,0) );
 		QPainter p(&request.thumb);
 		p.drawImage( 0, 0, QImage(":/images/icons/sound.png") );
-	}			
-	
+	}
+
 	delete input;
 }
 
@@ -274,7 +272,7 @@ void Thumbnailer::compileShader( ThumbRequest &request )
 		else if ( p.type == Parameter::PRGBACOLOR )
 			request.filePath.prepend( QString( "uniform vec4 PREFIX(%1);\n" ).arg( p.id ) );
 	}
-	
+
 	QString shader = read_version_dependent_file( "header", "frag" ).c_str();
 	shader += "uniform sampler2D tex;\n";
 	shader += "vec4 in0( vec2 tc ) {\n";
@@ -301,10 +299,10 @@ void Thumbnailer::compileShader( ThumbRequest &request )
 	shader += s.replace( QRegExp("PREFIX\\(([^\\)]*)\\)"), "eff2_\\1" );
 	shader += "\n";
 	shader += read_file( "footer.frag" ).c_str();
-	
-	QGLShaderProgram prog;
-	bool ok = prog.addShaderFromSourceCode( QGLShader::Fragment, shader )
-		&& prog.addShaderFromSourceCode( QGLShader::Vertex, read_version_dependent_file("vs", "vert").c_str());
+
+	QOpenGLShaderProgram prog;
+	bool ok = prog.addShaderFromSourceCode( QOpenGLShader::Fragment, shader )
+			&& prog.addShaderFromSourceCode( QOpenGLShader::Vertex, read_version_dependent_file("vs", "vert").c_str());
 	if ( ok )
 		ok = prog.link();
 	if ( ok ) {
@@ -315,6 +313,7 @@ void Thumbnailer::compileShader( ThumbRequest &request )
 			request.filePath = "ok";
 	}
 	else {
+		qDebug() << shader;
 		request.filePath = "nok" + prog.log();
 	}
 }
@@ -352,30 +351,30 @@ QImage Thumbnailer::getSourceThumb( Frame *f, bool border )
 		delete e;
 	// vertical flip
 	movitChain->chain->add_effect( new MyFlipEffect() );
-	movitChain->chain->add_effect( new MovitBackgroundEffect() );	
-	
+	movitChain->chain->add_effect( new MovitBackgroundEffect() );
+
 	movitChain->chain->set_dither_bits( 8 );
 	ImageFormat output_format;
 	output_format.color_space = COLORSPACE_sRGB;
 	output_format.gamma_curve = GAMMA_REC_709;
 	movitChain->chain->add_output( output_format, OUTPUT_ALPHA_FORMAT_POSTMULTIPLIED );
 	movitChain->chain->finalize();
-	
+
 	// render
-	QGLFramebufferObject *fbo = new QGLFramebufferObject( iw, ih );
+	QOpenGLFramebufferObject *fbo = new QOpenGLFramebufferObject( iw, ih );
 	movitChain->chain->render_to_fbo( fbo->handle(), iw, ih );
-	
+
 	uint8_t data[iw*ih*4];
 	fbo->bind();
 	glReadPixels(0, 0, iw, ih, GL_BGRA, GL_UNSIGNED_BYTE, data);
 	fbo->release();
-	
+
 	if ( f->type() == Frame::GLSL ) {
 		QImage trans(":/images/icons/transparency.png");
 		for ( int i = 0; i < ih; ++i )
 			memcpy( data + iw * 4 * i, trans.constScanLine( i ), iw * 4 );
 	}
-	
+
 	QImage img;
 	if ( border ) {
 		img = QImage( ICONSIZEWIDTH + 4, ICONSIZEHEIGHT + 4, QImage::Format_ARGB32 );
@@ -393,6 +392,6 @@ QImage Thumbnailer::getSourceThumb( Frame *f, bool border )
 	delete f;
 	delete movitChain;
 	delete fbo;
-	
+
 	return img;
 }

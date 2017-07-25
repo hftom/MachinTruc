@@ -22,6 +22,8 @@
 #include "projectfile.h"
 #include "clipboard.h"
 
+#include "undo.h"
+
 
 
 class MemoryFrame : public QFrame
@@ -48,9 +50,9 @@ public:
 			else
 				p.setPen( QColor("black") );
 			p.drawLine( i, 0, i, h );
-		}	
+		}
 	}
-	
+
 	MemChunk *chunk;
 };
 
@@ -64,18 +66,18 @@ public:
 		box = new QBoxLayout( QBoxLayout::TopToBottom );
 		check();
 		setLayout( box );
-		
+
 		connect( &timer, SIGNAL(timeout()), this, SLOT(refresh()) );
 		timer.start( 300 );
 	}
-	
+
 private slots:
 	void refresh() {
 		check();
 		for ( int i = 0; i < memFrames.count(); ++i )
 			memFrames[i]->update();
 	}
-	
+
 private:
 	void check() {
 		while( !memFrames.isEmpty() )
@@ -90,7 +92,7 @@ private:
 			}
 		}
 	}
-	
+
 	QBoxLayout* box;
 	QTimer timer;
 	QList<MemoryFrame*> memFrames;
@@ -115,12 +117,12 @@ private:
 			event->buttons() ^ event->button() ^ button, event->modifiers());
 		QSlider::mousePressEvent(&modifiedEvent);
 	}
-	
+
 	void mouseReleaseEvent(QMouseEvent *event) {
 		buttonDown = false;
 		QSlider::mouseReleaseEvent( event );
 	}
-	
+
 	bool buttonDown;
 };
 
@@ -135,7 +137,7 @@ class TopWindow : public QMainWindow, protected Ui::MainWindow
 	Q_OBJECT
 public:
 	TopWindow();
-	
+
 	Source* getDroppedCut( int index, QString mime, QString filename, double &start, double &len );
 	Sampler* getSampler() { return sampler; };
 	void timelineTrackAddRemove( int index, bool remove );
@@ -143,7 +145,7 @@ public:
 
 public slots:
 	void clipThumbRequest( ThumbRequest request );
-	
+
 protected:
 	void closeEvent( QCloseEvent *event );
 	void keyPressEvent( QKeyEvent *event );
@@ -151,19 +153,19 @@ protected:
 
 private slots:
 	void showMemoryInfo();
-	
+
 	bool saveAndContinue();
 	void doBackup();
 	void loadBackup();
-	
+
 	void renderDialog();
 	void renderStart( double startPts, QSize out );
 	void renderFinished( double pts );
-	
+
 	void openSources();
 	void openBlank();
 	void thumbResultReady( ThumbRequest result );
-	
+
 	void trackRequest( bool rm, int index );
 	void clipAddedToTimeline( Profile );
 	void projectSettings( int warn = 0 );
@@ -172,14 +174,14 @@ private slots:
 	void newProject();
 	void saveProject();
 	void openProject();
-	
+
 	void ensureVisible( const QGraphicsItem *it );
 	void centerOn( const QGraphicsItem *it );
 	void showProjectClipsPage();
 	void showFxPage();
 	void showFxSettingsPage();
 
-	void setThumbContext( QGLWidget* );
+	void setThumbContext( GLSharedContext* );
 	void sourceActivated();
 	void currentFramePts( double d );
 	void modeSwitched();
@@ -200,11 +202,11 @@ private slots:
 	void seekForward();
 	void seek( int v );
 	void timelineSeek( double pts );
-	
+
 	void editAnimation( FilterWidget *f, ParameterWidget *pw, Parameter *p );
 	void quitEditor();
 	void hideAnimEditor(int);
-	
+
 	void selectAll();
 	void moveMulti();
 
@@ -214,42 +216,44 @@ private slots:
 
 	void zoomIn();
 	void zoomOut();
-	
+
 	void filterCopy(QSharedPointer<Filter>, bool audio);
-	
+
 private:
 	bool ignoreBackgroundJobsRunning();
 	bool loadProject(QString filename, QString &backupFilename);
 	void removeBackup();
 	void unsupportedDuplicateMessage();
-	
+
 	ProjectSourcesPage *sourcePage;
 	FxPage *fxPage;
 	FxSettingsPage *fxSettingsPage;
-	
+
 	TimelineGraphicsView *timelineView;
 	Timeline *timeline;
 	AnimEditor *animEditor;
-	
+
 	VideoWidget *vw;
 	Sampler *sampler;
 
-	SeekSlider *seekSlider;	
-	
+	SeekSlider *seekSlider;
+
 	QString openSourcesCurrentDir, openProjectCurrentDir, currentProjectFile;
 	QStringList unsupportedOpenSources;
 	QStringList duplicateOpenSources;
 	int openSourcesCounter;
-	
+
 	ProjectFile *projectLoader;
 	Thumbnailer *thumbnailer;
-	
+
 	Profile tempProfile;
 	AppConfig appConfig;
 	QTimer backupTimer;
-	
+
 	ClipBoard *clipboard;
-	
+
+	QUndoStack *undoStack;
+
 signals:
 	void startOSDTimer( bool );
 	void timelineReadyForEncode();

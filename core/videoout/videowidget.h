@@ -5,11 +5,15 @@
 
 #include "engine/frame.h"
 
-#include <QGLFramebufferObject>
+#include <QOpenGLFramebufferObject>
+#include <QOpenGLShaderProgram>
 
-#include <QGLWidget>
+#include <QOpenGLWidget>
 #include <QWheelEvent>
 #include <QTimer>
+#include <QPainter>
+
+#include "glsharedcontext.h"
 
 
 
@@ -25,15 +29,15 @@ public:
 		timerBackgroundPen.setWidth( 8 );
 		timerPen = QPen( QColor( 255, 255, 255, 128 ) );
 		timerPen.setWidth( 8 );
-		
+
 		connect( &timer, SIGNAL(timeout()), this, SLOT(timeOut()) );
 	}
-	
+
 	void start() {
 		drawTime.start();
 		timer.start( 40 );
 	}
-	
+
 	void stop() {
 		if ( timer.isActive() ) {
 			timer.stop();
@@ -41,21 +45,21 @@ public:
 			emit update();
 		}
 	}
-	
+
 	void disable() {
 		if ( !timer.isActive() )
 			return;
 		show = false;
 		drawTime.restart();
 	}
-	
+
 	void draw( QPainter *p, int screenWidth, int screenHeight ) {
 		if ( !show )
 			return;
 		p->setPen( backgroundPen );
 		p->setBrush( backgroundBrush );
 		p->drawRoundedRect( QRectF( screenWidth / 2.0 - 50.0, screenHeight / 2.0 - 50.0, 100.0, 100.0 ), 15, 15, Qt::RelativeSize );
-	
+
 		p->setPen( timerBackgroundPen );
 		p->setBrush( transparentBrush );
 		QRectF r( screenWidth / 2.0 - 30.0, screenHeight / 2.0 - 30.0, 60.0, 60.0 );
@@ -63,7 +67,7 @@ public:
 		p->setPen( timerPen );
 		p->drawArc( r, startAngle * 16, arcAngle * 16 );
 	}
-	
+
 private slots:
 	void timeOut() {
 		if ( drawTime.elapsed() < 300 )
@@ -77,7 +81,7 @@ private slots:
 		show = true;
 		emit update();
 	}
-	
+
 private:
 	QBrush backgroundBrush;
 	QBrush transparentBrush;
@@ -87,10 +91,10 @@ private:
 	QTimer timer;
 	QTime drawTime;
 	bool show;
-	
+
 	int startAngle, arcAngle;
 	int arcInc;
-	
+
 signals:
 	void update();
 };
@@ -106,7 +110,7 @@ public:
 		backgroundPen = QPen( QColor( 0, 0, 0, 168 ) );
 		foregroundPen = QPen( QColor( "white" ) );
 		font = QFont("Arial", 18);
-		
+
 		timer.setSingleShot( true );
 		connect( &timer, SIGNAL(timeout()), this, SLOT(timeOut()) );
 	}
@@ -118,7 +122,7 @@ public:
 			timer.start( duration * 1000 );
 		emit update();
 	}
-	
+
 	void draw( QPainter *p, int screenWidth, int screenHeight ) {
 		if ( message.isEmpty() )
 			return;
@@ -132,50 +136,50 @@ public:
 		p->setPen( foregroundPen );
 		p->drawText( r, Qt::AlignLeft, message );
 	}
-	
+
 private slots:
 	void timeOut() {
 		message = "";
 		emit update();
 	}
-	
+
 private:
 	QString message;
 	int messageDuration;
-	
+
 	QBrush backgroundBrush;
 	QPen backgroundPen;
 	QPen foregroundPen;
 	QFont font;
 	QTimer timer;
-	
+
 signals:
 	void update();
 };
 
 
 
-class VideoWidget : public QGLWidget
+class VideoWidget : public QOpenGLWidget
 {
 	Q_OBJECT
 public:
-	VideoWidget( QWidget *parent=0 );
+	VideoWidget( QWidget *parent );
 	~VideoWidget();
-	
+
 	void controlKeyPressed( bool down );
 
 public slots:
 	void showFrame( Frame *frame );
 	void shot();
 	void clear();
-	
+
 	void showOSDMessage( const QString &text, int duration );
 	void showOSDTimer( bool b );
 
 protected :
 	void initializeGL();
 	void resizeGL( int, int );
-	void paintEvent( QPaintEvent *event );
+	void paintGL();
 
 	void wheelEvent( QWheelEvent * event );
 	void mousePressEvent( QMouseEvent * event );
@@ -183,11 +187,14 @@ protected :
 	void mouseReleaseEvent( QMouseEvent * event );
 
 private:
-	void openglDraw();
 	void drawOVD( QPainter *painter, bool nonSquare );
 	bool cursorInside( QPointF cursorPos );
 	void ovdUpdate( FrameSample *frameSample, QPointF cursorPos );
 	QImage lastImage();
+
+	QOpenGLShaderProgram shader;
+	int factorLocation;
+	GLfloat fx, fy;
 
 	double lastFrameRatio;
 	Frame *lastFrame;
@@ -197,9 +204,7 @@ private:
 	bool leftButtonPressed;
 	QPointF mousePressedPoint;
 	int ovdTarget;
-	
-	GLfloat left, right, top, bottom;
-	
+
 	OSDMessage osdMessage;
 	OSDTimer osdTimer;
 	bool playing;
@@ -208,15 +213,15 @@ signals:
 	void playPause();
 	void wheelSeek( int );
 	void move( int, int );
-	void newSharedContext(QGLWidget*);
-	void newThumbContext(QGLWidget*);
-	void newFencesContext(QGLWidget*);
+	void newSharedContext(GLSharedContext*);
+	void newThumbContext(GLSharedContext*);
+	void newFencesContext(GLSharedContext*);
 	void frameShown( Frame* );
 
 	void toggleFullscreen();
 
 	void valueChanged( int );
-	
+
 	void ovdUpdateSignal( QList<OVDUpdateMessage> );
 };
 #endif // VIDEOWIDGET_H

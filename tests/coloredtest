@@ -2,13 +2,14 @@
 
 green=$(tput setaf 2)
 red=$(tput setaf 1)
+blue=$(tput setaf 4)
 normal=$(tput sgr0)
 printer="echo"
 format=""
 sep="-----------------------------------------------------------------"
 
-old_IFS=$IFS	# sauvegarde du séparateur de champ  
-IFS=$'\n'		# nouveau séparateur de champ, le caractère fin de ligne  
+old_IFS=$IFS	# sauvegarde du séparateur de champ
+IFS=$'\n'		# nouveau séparateur de champ, le caractère fin de ligne
 
 while read line; do
 	if [[ "$line" == *PASS* ]]; then
@@ -17,6 +18,10 @@ while read line; do
 		$printer $format "$sep${normal}";
 	elif [[ "$line" == *FAIL* ]]; then
 		$printer $format "${red}$sep";
+		$printer $format "$line";
+		$printer $format "$sep${normal}";
+	elif [[ "$line" == *Totals:* ]]; then
+		$printer $format "${blue}$sep";
 		$printer $format "$line";
 		$printer $format "$sep${normal}";
 	else

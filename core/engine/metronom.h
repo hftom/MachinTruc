@@ -6,10 +6,11 @@
 #include "audioout/ao_sdl.h"
 #include "engine/playbackbuffer.h"
 
-#include <QGLWidget>
 #include <QThread>
 #include <QMutex>
+#include <QGLFramebufferObject>
 
+#include "videoout/glsharedcontext.h"
 
 
 
@@ -30,7 +31,7 @@ public:
 
 	static void readData( Frame **data, double time, void *userdata );
 
-	void setSharedContext( QGLWidget *shared );
+	void setSharedContext( GLSharedContext *shared );
 
 	MQueue<Frame*> videoFrames;
 	MQueue<Frame*> encodeVideoFrames;
@@ -54,7 +55,7 @@ private:
 	AudioOutSDL ao;
 
 	PlaybackBuffer *playbackBuffer;
-	QGLWidget *fencesContext;
+	GLSharedContext *fencesContext;
 
 	bool renderMode;
 	Frame *lastFrame;

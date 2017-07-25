@@ -7,7 +7,7 @@ extern "C" {
 #include <libavformat/avformat.h>
 
 #include <libswresample/swresample.h>
-	
+
 #include <libavutil/imgutils.h>
 #include <libavutil/dict.h>
 #include <libavutil/opt.h>
@@ -18,9 +18,9 @@ extern "C" {
 //#include <libavutil/parseutils.h>
 
 #include <libswscale/swscale.h>
-	
+
 #include <libavfilter/avfiltergraph.h>
-#include <libavfilter/avcodec.h>
+
 #include <libavfilter/buffersink.h>
 #include <libavfilter/buffersrc.h>
 }
@@ -49,17 +49,17 @@ public:
 	FFmpegCommon();
 	bool initFFmpeg();
 	static FFmpegCommon* getGlobalInstance();
-	
+
 	QStringList getH264Codecs() {
 		return h264CodecNames;
 	}
 	QStringList getHevcCodecs() {
 		return hevcCodecNames;
 	}
-	
+
 	AVSampleFormat convertProfileSampleFormat( int f );
 	qint64 convertProfileAudioLayout( int layout );
-	
+
 private:
 	bool initDone;
 	QStringList hevcCodecNames;

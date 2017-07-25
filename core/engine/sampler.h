@@ -32,15 +32,15 @@ public:
 	void shiftCurrentPTS();
 	void shiftCurrentPTSAudio();
 	void rewardPTS();
-	
+
 	void setOutputResize( QSize size );
-	
+
 	void newProject( Profile p );
 	bool setProfile( Profile p );
 	Profile getProfile();
 	Metronom* getMetronom() { return metronom; }
 	bool play( bool b, bool backward = false );
-	
+
 	bool trackRequest( bool rm, int index );
 	void clearAll();
 	bool isProjectEmpty();
@@ -48,7 +48,7 @@ public:
 	Scene* getCurrentScene() { return timelineScene; }
 	void setSceneList( QList<Scene*> list );
 	bool previewMode() { return currentScene == preview; }
-	
+
 	// called from composer thread
 	void fromComposerSeekTo( double p, bool backward = false, bool seek = true );
 	double fromComposerSetPlaybackBuffer( bool backward );
@@ -56,8 +56,8 @@ public:
 	void fromComposerReleaseVideoFrame( Frame *f );
 
 public slots:
-	void setSharedContext( QGLWidget *shared );
-	void setFencesContext( QGLWidget *shared );
+	void setSharedContext( GLSharedContext *shared );
+	void setFencesContext( GLSharedContext *shared );
 	void switchMode( bool down );
 	void setSource( Source *source, double pts );
 	void wheelSeek( int a );
@@ -84,7 +84,7 @@ private:
 	bool playBackward;
 	PlaybackBuffer playbackBuffer;
 	double bufferedPlaybackPts;
-	
+
 	Metronom *metronom;
 	Composer *composer;
 

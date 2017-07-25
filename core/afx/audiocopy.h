@@ -14,7 +14,7 @@ public:
 	bool process( Frame *first, Buffer *scr, Buffer *dst, Profile *p ) {
 		Q_UNUSED( p );
 		int bps = first->profile.getAudioChannels() * Profile::bytesPerChannel( &first->profile );
-		mempcpy( dst->data(), scr->data(), first->audioSamples() * bps );
+		memcpy( dst->data(), scr->data(), first->audioSamples() * bps );
 		return true;
 	}
 };

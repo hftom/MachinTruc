@@ -91,6 +91,7 @@ SOURCES = \
 	vfx/gldistort.cpp \
 	vfx/glhanddrawing.cpp \
 	\
+	videoout/glsharedcontext.cpp \
 	videoout/videowidget.cpp
 
 HEADERS = \
@@ -193,11 +194,16 @@ unix {
 	PKGCONFIG += movit
 	PKGCONFIG += libavformat libavcodec libavutil libswresample libswscale libavfilter
 	PKGCONFIG += sdl2
-	PKGCONFIG += x11
-	
-	QMAKE_CXXFLAGS += -fopenmp
-	QMAKE_CFLAGS += -fopenmp -O3
-	QMAKE_LFLAGS += -fopenmp
+
+	!macx {
+		PKGCONFIG += x11
+
+		QMAKE_CXXFLAGS += -fopenmp
+		QMAKE_CFLAGS += -fopenmp -O3
+		QMAKE_LFLAGS += -fopenmp
+
+		DEFINES += NOT_MACOSX
+	}
 }
 
 DEFINES += MOVIT_SHADERDIR=\\\"$$system(pkg-config --variable=shaderdir movit)\\\"

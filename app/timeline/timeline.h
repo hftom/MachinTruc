@@ -16,6 +16,8 @@
 
 #include "gui/clipboard.h"
 
+#include "undo.h"
+
 
 
 class TopWindow;
@@ -38,7 +40,7 @@ public:
 		clip = NULL;
 		shown = false;
 	}
-	
+
 	ClipViewItem *clipItem;
 	Clip* clip;
 	bool shown;
@@ -52,47 +54,47 @@ class Timeline : public QGraphicsScene
 	Q_OBJECT
 	Q_PROPERTY( qreal animZoom READ getCurrentZoom WRITE setCurrentZoom )
 public:
-	Timeline( TopWindow *parent );
+	Timeline( TopWindow *parent, QUndoStack *stack );
 	~Timeline();
-	
+
 	void clipItemCanMove( ClipViewItem *clip, QPointF mouse, double clipStartPos, QPointF clipStartMouse, bool unsnap, bool multiMove );
 	void clipItemMoved( ClipViewItem *clip, QPointF clipMouseStart, bool multiMove );
 	void clipItemCanResize( ClipViewItem *clip, int way, QPointF mouse, double clipStartPos, double clipStartLen, QPointF clipStartMouse, bool unsnap );
 	void clipItemResized( ClipViewItem *clip, int way );
-	
+
 	void effectCanMove( QPointF mouse, double clipStartPos, QPointF clipStartMouse, bool unsnap );
 	void effectMoved( QPointF clipMouseStart );
 	void effectCanResize( int way, QPointF mouse, double clipStartPos, double clipStartLen, QPointF clipStartMouse, bool unsnap );
 	void effectResized( int way );
-	
+
 	void transitionSelected( TransitionViewItem *it );
 	void clipDoubleClicked();
 	void clipRightClick( ClipViewItem *cv );
-	
+
 	void undockRuler();
 	void dockRuler();
-	
+
 	void trackPressed( QPointF p );
 	void trackPressedRightBtn( TrackViewItem *t, QPoint p );
 	void trackSelectWindow( QPointF p );
 	void trackSelectWindowMove( QPointF p );
 	void trackSelectWindowRelease(bool extend);
 	void itemSelected( AbstractViewItem *it, bool extend = false, bool moreToCome = false );
-	
+
 	void playheadMoved( double p );
-	
+
 	void trackRemoved( int index );
 	void trackAdded( int index );
 	void addTrack( int index, bool noUndo = false );
-	
+
 	void thumbResultReady( ThumbRequest result );
-	
+
 	void zoomInOut( bool in );
 	void selectAll();
 	void editCopy(ClipBoard *clipboard);
 	void editCut(ClipBoard *clipboard);
 	void editPaste(ClipBoard *clipboard);
-	
+
 	void commandAddClip(QList<Clip*> clips, QList<int> ltracks, QList<Transition*> tails);
 	void commandRemoveClip(QList<Clip*> clips, QList<int> ltracks);
 	void commandMoveClip(Clip *clip, bool multi, int oldTrack, int newTrack, double pos, Transition *trans, Transition *tail);
@@ -106,7 +108,7 @@ public:
 	void commandEffectReorder(Clip *c, int track, int oldIndex, int newIndex, bool isVideo);
 	void commandEffectParam(QSharedPointer<Filter> filter, Parameter *param, QVariant value);
 	void commandTransitionChanged(Clip *clip, QSharedPointer<Filter> oldFilter, QString newFilter, bool isVideo, bool undo);
-	
+
 public slots:
 	void nextEdge();
 	void previousEdge();
@@ -115,33 +117,33 @@ public slots:
 	void viewMouseLeave();
 	void viewSizeChanged( const QSize &size );
 	void setCursorPos( double pts, bool isPlaying );
-	
+
 	void setScene( Scene *s );
 	void addFilter( ClipViewItem *clip, QString fx, int index = -1 );
 	void splitCurrentClip();
-	
+
 	void filterDeleted( Clip *c, QSharedPointer<Filter> f );
 	void filterReordered( Clip *c, bool video, int index, int newIndex );
 	void paramUndoCommand(QSharedPointer<Filter> f, Parameter *p, QVariant oldValue, QVariant newValue);
-	
+
 	void transitionChanged(Clip *clip, QString filterName, bool isVideo);
-	
+
 	void showEffect( bool isVideo, int index );
-	
+
 protected:
 	/*void mousePressEvent ( QGraphicsSceneMouseEvent *e );
 	void mouseMoveEvent( QGraphicsSceneMouseEvent *e );
 	void mouseReleaseEvent( QGraphicsSceneMouseEvent *e );*/
 	void wheelEvent( QGraphicsSceneWheelEvent *e );
-	
+
 	void dragEnterEvent( QGraphicsSceneDragDropEvent *event );
 	void dragLeaveEvent( QGraphicsSceneDragDropEvent *event );
 	void dragMoveEvent( QGraphicsSceneDragDropEvent *event );
 	void dropEvent( QGraphicsSceneDragDropEvent *event );
-	
+
 private slots:
 	void slotUpdateAfterEdit();
-	
+
 private:
 	void updateAfterEdit(bool doFrame, bool doLength);
 	void updateLength();
@@ -153,35 +155,37 @@ private:
 	void snapResize( AbstractViewItem *item, int way, double &len, double mouseX, double itemScenePos );
 
 	void updateTransitions( ClipViewItem *clip, bool remove );
-	
+
 	void clipThumbRequest( ClipViewItem *it, bool start );
-	
+
 	qreal getCurrentZoom();
 	void setCurrentZoom( qreal z );
-	
+
 	RulerDock *rulerDock;
 	CursorViewItem *cursor;
 	RulerViewItem *ruler;
 	double zoom, currentZoom;
 	int viewWidth;
-	
+
 	QList<TrackViewItem*> tracks;
-	
+
 	QList<AbstractViewItem*> selectedItems;
 	ClipEffectViewItem *effectItem;
-	
+
 	Scene *scene;
 	TopWindow *topParent;
-	
+
 	DroppedCut droppedCut;
 	SelectWindowItem *selectWindowItem;
-	
+
 	QPropertyAnimation *zoomAnim;
-	
+
 	QPointF mouseScenePosition;
-	
+
 	bool forceEnsureVisible;
-	
+
+	QUndoStack *undoStack;
+
 signals:
 	void ensureVisible( const QGraphicsItem* );
 	void centerOn( const QGraphicsItem* );

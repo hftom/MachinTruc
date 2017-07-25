@@ -6,7 +6,26 @@
 
 #include "engine/metronom.h"
 
-#include <QGLFramebufferObject>
+#include <QOpenGLShaderProgram>
+
+static const char* vertexShader =
+"#version 330\n"
+"const vec2 quadVertices[4] = vec2[4]( vec2( -1.0, -1.0), vec2( 1.0, -1.0), vec2( -1.0, 1.0), vec2( 1.0, 1.0));\n"
+"const vec2 coords[4] = vec2[4]( vec2( 0.0, 1.0), vec2( 1.0, 1.0), vec2( 0.0, 0.0), vec2( 1.0, 0.0));\n"
+"out vec2 uv;\n"
+"void main( void ) {\n"
+"      gl_Position = vec4(quadVertices[gl_VertexID], 0.0, 1.0);"
+"      uv = coords[gl_VertexID];\n"
+"}\n";
+
+static const char* fragmentShader =
+"#version 330\n"
+"in vec2 uv;\n"
+"out vec4 fragColor;\n"
+"uniform sampler2D sampler;\n"
+"void main( void ) {\n"
+"      fragColor = texture(sampler, uv);\n"
+"}\n";
 
 // 1 frame in composer
 // 1 in opengl
@@ -72,12 +91,10 @@ Metronom::~Metronom()
 
 
 
-void Metronom::setSharedContext( QGLWidget *shared )
+void Metronom::setSharedContext( GLSharedContext *shared )
 {
 	fencesContext = shared;
-#if QT_VERSION >= 0x050000
-	fencesContext->context()->moveToThread( this );
-#endif
+	fencesContext->moveToThread( this );
 }
 
 
@@ -265,8 +282,11 @@ void Metronom::run()
 void Metronom::runRender()
 {
 	Frame *f;
-	QGLFramebufferObject *fb = NULL;
+	QGLFramebufferObject
+	*fb = NULL;
 	struct SwsContext *swsCtx;
+	QOpenGLShaderProgram shader;
+	GLuint vao = 0;
 	GLuint pbo = 0;
 
 	while ( running ) {
@@ -283,12 +303,24 @@ void Metronom::runRender()
 				else
 					coefs = sws_getCoefficients( SWS_CS_ITU601 );
 				sws_setColorspaceDetails( swsCtx, coefs, 1, coefs, 0, 0, 0, 0 );
+
+				glGenVertexArrays(1, &vao);
+				glBindVertexArray(vao);
+
 				fb = new QGLFramebufferObject( w, h );
 				glViewport( 0, 0, w, h );
-				glMatrixMode( GL_PROJECTION );
-				glLoadIdentity();
-				glOrtho( 0.0, w, 0.0, h, -1.0, 1.0 );
-				glMatrixMode( GL_MODELVIEW );
+				bool result = shader.addShaderFromSourceCode( QOpenGLShader::Vertex, vertexShader );
+				if ( !result ) {
+					qWarning() << shader.log();
+				}
+				result = shader.addShaderFromSourceCode( QOpenGLShader::Fragment, fragmentShader );
+				if ( !result ) {
+					qWarning() << shader.log();
+				}
+				result = shader.link();
+				if ( !result ) {
+					qWarning() << "Could not link shader program:" << shader.log();
+				}
 				glEnable( GL_TEXTURE_2D );
 				glActiveTexture( GL_TEXTURE0 );
 
@@ -302,12 +334,9 @@ void Metronom::runRender()
 
 			fb->bind();
 			glBindTexture( GL_TEXTURE_2D, f->fbo()->texture() );
-			glBegin( GL_QUADS );
-				glTexCoord2f( 0, 1 ); glVertex3f( 0, 0, 0.);
-				glTexCoord2f( 0, 0 ); glVertex3f( 0, h, 0.);
-				glTexCoord2f( 1, 0 ); glVertex3f( w, h, 0.);
-				glTexCoord2f( 1, 1 ); glVertex3f( w, 0, 0.);
-			glEnd();
+			shader.bind();
+			glDrawArrays( GL_TRIANGLE_STRIP, 0, 4 );
+			shader.release();
 			glPixelStorei( GL_PACK_ALIGNMENT, 1 );
 
 			glBindBuffer(GL_PIXEL_PACK_BUFFER_ARB, pbo);
@@ -337,12 +366,20 @@ void Metronom::runRender()
 			usleep( 1000 );
 	}
 
-	if (pbo)
+	if (pbo) {
 		glDeleteBuffers( 1, &pbo );
-	if ( fb )
+	}
+	if ( vao ) {
+		glBindVertexArray(0);
+		glDeleteVertexArrays(1, &vao);
+	}
+	if ( fb ) {
 		delete fb;
-	if ( swsCtx )
+	}
+	if ( swsCtx ) {
 		sws_freeContext( swsCtx );
+	}
+	glDisable( GL_TEXTURE_2D );
 }
 
 

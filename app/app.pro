@@ -5,7 +5,6 @@ QT += xml
 
 SOURCES = \
 	main.cpp \
-	undo.cpp \
 	gui/appconfig.cpp \
 	gui/shadercollection.cpp \
 	gui/renderingdialog.cpp \
@@ -47,7 +46,7 @@ SOURCES = \
 	animation/animscene.cpp \
 	animation/animitem.cpp \
 	animation/keyitem.cpp
-	
+
 HEADERS = \
 	undo.h \
 	gui/appconfig.h \
@@ -98,7 +97,7 @@ HEADERS = \
 	animation/animscene.h \
 	animation/animitem.h \
 	animation/keyitem.h
-	
+
 FORMS = \
 	ui/mainwindow.ui \
 	ui/projectprofile.ui \
@@ -125,11 +124,14 @@ unix {
 	PKGCONFIG += movit
 	PKGCONFIG += libavformat libavcodec libavutil libswresample libswscale libavfilter
 	PKGCONFIG += sdl2
-	PKGCONFIG += x11
-	
-	QMAKE_CXXFLAGS += -fopenmp
-	QMAKE_CFLAGS += -fopenmp
-	QMAKE_LFLAGS += -fopenmp
+
+	!macx {
+		PKGCONFIG += x11
+
+		QMAKE_CXXFLAGS += -fopenmp
+		QMAKE_CFLAGS += -fopenmp
+		QMAKE_LFLAGS += -fopenmp
+	}
 }
 
 # ffmpeg

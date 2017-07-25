@@ -5,7 +5,7 @@
 #include "vfx/movitbackground.h"
 #include "filtercollection.h"
 
-#include <QGLWidget>
+#include "videoout/glsharedcontext.h"
 #include <QThread>
 
 #include "engine/sampler.h"
@@ -28,7 +28,7 @@ public:
 		: msgType( type ), step( s ) {}
 	ItcMsg( int type, bool bw )
 		: msgType( type ), backward( bw ) {}
-		
+
 	int msgType;
 	double pts;
 	bool backward, seek;
@@ -52,17 +52,17 @@ public:
 	void skipBy( int step );
 	void updateFrame();
 	bool isPlaying();
-	
+
 	void setOutputResize( QSize size ) { outputResize = size; }
 
 public slots:
-	void setSharedContext( QGLWidget *shared );
+	void setSharedContext( GLSharedContext *shared );
 	void discardFrame( int );
 
 private:
 	void run();
 	void runOneShot( Frame *f );
-	
+
 	int process( Frame **frame );
 	Frame* getNextFrame( Frame *dst, int &track );
 	void waitFence();
@@ -83,8 +83,8 @@ private:
 	QMutex itcMutex;
 
 	GLuint mask_texture;
-	
-	QGLWidget *hiddenContext;
+
+	GLSharedContext *hiddenContext;
 	GLResource gl;
 	FENCE *composerFence;
 	GLResize resizeFilter;
@@ -97,7 +97,7 @@ private:
 	Sampler *sampler;
 	PlaybackBuffer *playbackBuffer;
 	double audioSampleDelta;
-	
+
 	QSize outputResize;
 
 signals:
