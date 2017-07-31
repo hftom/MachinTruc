@@ -62,7 +62,6 @@ SOURCES = \
 	vfx/glresize.cpp \
 	vfx/glpadding.cpp \
 	vfx/glcrop.cpp \
-	vfx/glblurmask.cpp \
 	vfx/glcut.cpp \
 	vfx/gledge.cpp \
 	vfx/glopacity.cpp \
@@ -90,6 +89,7 @@ SOURCES = \
 	vfx/glkaleidoscope.cpp \
 	vfx/gldistort.cpp \
 	vfx/glhanddrawing.cpp \
+	vfx/glmask.cpp \
 	\
 	videoout/glsharedcontext.cpp \
 	videoout/videowidget.cpp
@@ -152,7 +152,6 @@ HEADERS = \
 	vfx/glresize.h \
 	vfx/glpadding.h \
 	vfx/glcrop.h \
-	vfx/glblurmask.h \
 	vfx/glcut.h \
 	vfx/gledge.h \
 	vfx/glopacity.h \
@@ -180,6 +179,7 @@ HEADERS = \
 	vfx/glkaleidoscope.h \
 	vfx/gldistort.h \
 	vfx/glhanddrawing.h \
+	vfx/glmask.h \
 	\
 	videoout/videowidget.h
 

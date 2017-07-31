@@ -5,7 +5,7 @@
 Clip* XMLizer::readClip( QDomElement &element, QList<Source*> *sourcesList, Scene *scene, bool &readError )
 {
 	QDomNodeList nodes = element.childNodes();
-	
+
 	QString name;
 	double posInTrack = 0;
 	double startTime = 0;
@@ -13,16 +13,16 @@ Clip* XMLizer::readClip( QDomElement &element, QList<Source*> *sourcesList, Scen
 	double speed = 1;
 	bool okName = false, okPos = false, okStart = false, okLen = false;
 	Clip *clip = NULL;
-	
+
 	speed = element.attribute( "speed" ).toDouble();
 	if ( speed == 0.0 )
 		speed = 1.0;
-	
+
 	for ( int i = 0; i < nodes.count(); ++i ) {
 		QDomElement e = nodes.at( i ).toElement();
 		if ( e.isNull() )
 			continue;
-		
+
 		if ( e.tagName() == "Name" ) {
 			name = e.text();
 			okName = true;
@@ -40,12 +40,12 @@ Clip* XMLizer::readClip( QDomElement &element, QList<Source*> *sourcesList, Scen
 			okLen = true;
 		}
 	}
-	
+
 	if ( !( okName && okPos && okStart && okLen ) ) {
 		readError = true;
 		return clip;
 	}
-	
+
 	// check if source exists and create clip
 	for ( int i = 0; i < sourcesList->count(); ++i ) {
 		if ( sourcesList->at(i)->getFileName() == name ) {
@@ -53,19 +53,19 @@ Clip* XMLizer::readClip( QDomElement &element, QList<Source*> *sourcesList, Scen
 			break;
 		}
 	}
-	
+
 	if ( !clip ) {
 		readError = true;
 		return clip;
 	}
-	
+
 	clip->setSpeed( speed );
-	
+
 	for ( int i = 0; i < nodes.count(); ++i ) {
 		QDomElement e = nodes.at( i ).toElement();
 		if ( e.isNull() )
 			continue;
-		
+
 		if ( e.tagName() == "VideoFilter" ) {
 			QSharedPointer<Filter> f = readFilter( e, false, readError );
 			if ( !f.isNull() ) {
@@ -85,7 +85,7 @@ Clip* XMLizer::readClip( QDomElement &element, QList<Source*> *sourcesList, Scen
 			readTransition( e, clip, readError );
 		}
 	}
-	
+
 	return clip;
 }
 
@@ -94,10 +94,10 @@ Clip* XMLizer::readClip( QDomElement &element, QList<Source*> *sourcesList, Scen
 void XMLizer::readTransition( QDomElement &element, Clip *clip, bool &readError )
 {
 	QDomNodeList nodes = element.childNodes();
-	
+
 	double length = 0;
 	bool okLen = false;
-	
+
 	for ( int i = 0; i < nodes.count(); ++i ) {
 		QDomElement e = nodes.at( i ).toElement();
 		if ( e.isNull() )
@@ -108,19 +108,19 @@ void XMLizer::readTransition( QDomElement &element, Clip *clip, bool &readError 
 			okLen = true;
 		}
 	}
-	
+
 	if ( !okLen ) {
 		readError = true;
 		return;
 	}
-	
+
 	clip->setTransition( length );
-		
+
 	for ( int i = 0; i < nodes.count(); ++i ) {
 		QDomElement e = nodes.at( i ).toElement();
 		if ( e.isNull() )
 			continue;
-		
+
 		if ( e.tagName() == "VideoFilter" ) {
 			QSharedPointer<Filter> f = readFilter( e, false, readError, true );
 			if ( !f.isNull() )
@@ -140,28 +140,28 @@ void XMLizer::readTransition( QDomElement &element, Clip *clip, bool &readError 
 QSharedPointer<Filter> XMLizer::readFilter( QDomElement &element, bool audio, bool &readError, bool transition )
 {
 	QDomNodeList nodes = element.childNodes();
-	
+
 	QString name;
 	bool okName = false;
 	QSharedPointer<Filter> filter;
-	
+
 	for ( int i = 0; i < nodes.count(); ++i ) {
 		QDomElement e = nodes.at( i ).toElement();
 		if ( e.isNull() )
 			continue;
-		
+
 		if ( e.tagName() == "Name" ) {
 			name = e.text();
 			okName = true;
 			break;
 		}
 	}
-	
+
 	if ( !okName ) {
 		readError = true;
 		return filter;
 	}
-	
+
 	FilterCollection *fc = FilterCollection::getGlobalInstance();
 	if ( transition ) {
 		if ( audio ) {
@@ -188,7 +188,7 @@ QSharedPointer<Filter> XMLizer::readFilter( QDomElement &element, bool audio, bo
 					filter = fc->audioFilters[ i ].create();
 					break;
 				}
-			}	
+			}
 		}
 		else {
 			for ( int i = 0; i < fc->videoFilters.count(); ++i ) {
@@ -199,7 +199,7 @@ QSharedPointer<Filter> XMLizer::readFilter( QDomElement &element, bool audio, bo
 			}
 		}
 	}
-	
+
 	if ( filter.isNull() ) {
 		readError = true;
 		return filter;
@@ -215,7 +215,7 @@ QSharedPointer<Filter> XMLizer::readFilter( QDomElement &element, bool audio, bo
 				readParameter( e, filter );
 			}
 		}
-		
+
 		QString shaderName = "";
 		QList<Parameter*> params = filter->getParameters();
 		Parameter *editor = NULL;
@@ -227,7 +227,7 @@ QSharedPointer<Filter> XMLizer::readFilter( QDomElement &element, bool audio, bo
 				break;
 			}
 		}
-		
+
 		// get the shader
 		shader = ShaderCollection::getGlobalInstance()->getLocalShader( shaderName );
 		if ( editor && !shader.isEmpty() ) {
@@ -235,14 +235,14 @@ QSharedPointer<Filter> XMLizer::readFilter( QDomElement &element, bool audio, bo
 			// set the shader so that parameters are constructed
 			// and will be reparsed in the following loop
 			f->setCustomParams( shader );
-		}	
+		}
 	}
-	
+
 	for ( int i = 0; i < nodes.count(); ++i ) {
 		QDomElement e = nodes.at( i ).toElement();
 		if ( e.isNull() )
 			continue;
-		
+
 		if ( e.tagName() == "PosInTrack" ) {
 			filter->setPosition( e.text().toDouble() );
 		}
@@ -259,7 +259,7 @@ QSharedPointer<Filter> XMLizer::readFilter( QDomElement &element, bool audio, bo
 			readParameter( e, filter );
 		}
 	}
-	
+
 	if ( filter->getIdentifier() == "GLCustom" ) {
 		// restore the shader that has been overwritten
 		// by the preceding loop
@@ -288,17 +288,17 @@ void XMLizer::readParameter( QDomElement &element, QSharedPointer<Filter> f )
 	QString value = element.attribute( "value" );
 	QString hue;
 	QString saturation;
-	
+
 	if ( type.isEmpty() || name.isEmpty() || value.isEmpty() )
 		return;
-	
+
 	if ( type == "colorwheel" ) {
 		hue = element.attribute( "hue" );
 		saturation = element.attribute( "saturation" );
 		if ( hue.isEmpty() || saturation.isEmpty() )
 			return;
 	}
-	
+
 	Parameter *p = NULL;
 	QList<Parameter*> params = f->getParameters();
 	for ( int i = 0; i < params.count(); ++i ) {
@@ -307,10 +307,10 @@ void XMLizer::readParameter( QDomElement &element, QSharedPointer<Filter> f )
 			break;
 		}
 	}
-	
+
 	if ( !p )
 		return;
-	
+
 	if ( type == "double" ) {
 		if ( p->type != Parameter::PDOUBLE )
 			return;
@@ -366,36 +366,41 @@ void XMLizer::readParameter( QDomElement &element, QSharedPointer<Filter> f )
 			return;
 		p->value = value;
 	}
-	
+	else if ( type == "groupcombo" ) {
+		if ( p->type != Parameter::PGROUPCOMBO )
+			return;
+		p->value = value.toInt();
+	}
+
 	p->graph.keys.clear();
-		
+
 	QDomNodeList nodes = element.childNodes();
 	for ( int i = 0; i < nodes.count(); ++i ) {
 		QDomElement e = nodes.at( i ).toElement();
 		if ( e.isNull() )
 			continue;
-		
+
 		if ( e.tagName() == "Key" ) {
 			QString ktype = e.attribute( "type" );
 			QString kposition = e.attribute( "position" );
 			QString kvalue = e.attribute( "value" );
-			
+
 			if ( ktype.isEmpty() || kposition.isEmpty() || kvalue.isEmpty() )
 				continue;
-			
+
 			int animType = AnimationKey::LINEAR;
 			if ( ktype == "constant" )
 				animType = AnimationKey::CONSTANT;
 			if ( ktype == "curve" )
 				animType = AnimationKey::CURVE;
-			
+
 			double x = kposition.toDouble();
 			if ( x > 1 || x < 0 )
 				continue;
 			double y = kvalue.toDouble();
 			if ( y > p->max.toDouble() || y < p->min.toDouble() )
 				continue;
-			
+
 			int j;
 			for ( j = 0; j < p->graph.keys.count(); ++j ) {
 				if ( x < p->graph.keys[ j ].x )
@@ -419,18 +424,18 @@ void XMLizer::writeClip( QDomDocument &document, QDomNode &parent, Clip *clip )
 	XMLizer::createDouble( document, n1, "PosInTrack", clip->position() );
 	XMLizer::createDouble( document, n1, "StartTime", clip->start() );
 	XMLizer::createDouble( document, n1, "Length", clip->length() );
-	
+
 	for ( int i = 0; i < clip->videoFilters.count(); ++i )
 		XMLizer::writeFilter( document, n1, false, clip->videoFilters.at( i ) );
-	
+
 	for ( int i = 0; i < clip->audioFilters.count(); ++i )
 		XMLizer::writeFilter( document, n1, true, clip->audioFilters.at( i ) );
-	
+
 	Transition *trans = clip->getTransition();
 	if ( trans ) {
 		QDomElement t = document.createElement( "Transition" );
 		n1.appendChild( t );
-		
+
 		XMLizer::createDouble( document, t, "PosInTrack", trans->position() );
 		XMLizer::createDouble( document, t, "Length", trans->length() );
 		if ( !trans->getVideoFilter().isNull() )
@@ -454,7 +459,7 @@ void XMLizer::writeFilter( QDomDocument &document, QDomNode &parent, bool audio,
 		createDouble( document, n1, "PosOffset", f->getPositionOffset() );
 	createDouble( document, n1, "Length", f->getLength() );
 	createInt( document, n1, "SnapMode", f->getSnap() );
-	
+
 	QList<Parameter*> params = f->getParameters();
 	for ( int i = 0; i < params.count(); ++i ) {
 		Parameter *p = params[i];
@@ -516,8 +521,13 @@ void XMLizer::writeFilter( QDomDocument &document, QDomNode &parent, bool audio,
 				pel.setAttribute( "value", "" );
 				break;
 			}
+			case Parameter::PGROUPCOMBO: {
+				pel.setAttribute( "type", "groupcombo" );
+				pel.setAttribute( "value", QString::number( p->value.toInt() ) );
+				break;
+			}
 		}
-		
+
 		for ( int i = 0; i < p->graph.keys.count(); ++i ) {
 			QDomElement ke = document.createElement( "Key" );
 			pel.appendChild( ke );

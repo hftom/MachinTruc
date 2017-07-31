@@ -10,9 +10,9 @@ class AnimationKey
 {
 public:
 	enum type{ CONSTANT, LINEAR, CURVE };
-	
+
 	AnimationKey( int typeKey, double position, double value );
-	
+
 	double x, y;
 	int keyType;
 };
@@ -43,7 +43,7 @@ public:
 		row = r;
 		column = c;
 	}
-	
+
 	int row, column, rowSpan, columnSpan;
 };
 
@@ -52,11 +52,11 @@ public:
 class Parameter
 {
 public:
-	enum ParameterType{ PDOUBLE, PINT, PBOOL, PRGBCOLOR, PRGBACOLOR, PCOLORWHEEL, PSTRING, PINPUTDOUBLE, PSHADEREDIT, PSTATUS };
-	
-	double getUnnormalizedKeyValue( int keyIndex );	
+	enum ParameterType{ PDOUBLE, PINT, PBOOL, PRGBCOLOR, PRGBACOLOR, PCOLORWHEEL, PSTRING, PINPUTDOUBLE, PSHADEREDIT, PSTATUS, PGROUPCOMBO, PGROUPITEM };
+
+	double getUnnormalizedKeyValue( int keyIndex );
 	double getNormalizedKeyValue( double val );
-	
+
 	static QList<Parameter> parseShaderParams( QString shader, int &faultyLine );
 	static QString getShaderName( QString shader );
 
@@ -71,10 +71,10 @@ public:
 	bool keyframeable;
 	bool hidden; // only an UI flag
 	QString suffix;
-	
+
 	QVariant value;
 	AnimationGraph graph;
-	
+
 	ParamLayout layout;
 };
 

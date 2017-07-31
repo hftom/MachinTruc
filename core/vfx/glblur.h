@@ -3,6 +3,8 @@
 
 #include "vfx/glfilter.h"
 
+#include <movit/blur_effect.h>
+
 
 
 class GLBlur : public GLFilter

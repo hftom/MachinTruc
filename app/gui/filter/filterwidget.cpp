@@ -10,19 +10,23 @@
 #include "colorwheel.h"
 #include "textedit.h"
 #include "statustext.h"
+#include "combobox.h"
 
 
 
 FilterWidget::FilterWidget( QWidget *parent, Clip *c, QSharedPointer<Filter> f ) : QWidget( parent ),
 	clip( c ),
 	filter( f )
-{	
+{
 	QList<Parameter*> parameters = filter->getParameters();
-	
+
+	QVBoxLayout *vBoxLayout = new QVBoxLayout(this);
 	QGridLayout* grid = new QGridLayout();
+	QGroupBox *groupBox = NULL;
+	ComboBox *combo = NULL;
 	grid->setContentsMargins( 0, 0, 0, 0 );
 	int row = 0;
-	
+
 	int i;
 	for ( i = 0; i < parameters.count(); ++i ) {
 		Parameter *p = parameters[i];
@@ -30,6 +34,28 @@ FilterWidget::FilterWidget( QWidget *parent, Clip *c, QSharedPointer<Filter> f )
 			continue;
 		ParameterWidget *pw = NULL;
 		switch ( p->type ) {
+			case Parameter::PGROUPCOMBO: {
+				if (combo) {
+					combo->initialize();
+				}
+				pw = combo = new ComboBox(this, p);
+				break;
+			}
+			case Parameter::PGROUPITEM: {
+				if (groupBox) {
+					groupBox->setLayout(grid);
+					vBoxLayout->addWidget(groupBox);
+				}
+				else {
+					vBoxLayout->addLayout(grid);
+				}
+				groupBox = new QGroupBox();
+				if (combo) {
+					combo->addItem(p->name, groupBox);
+				}
+				grid = new QGridLayout();
+				break;
+			}
 			case Parameter::PDOUBLE: {
 				pw = new SliderDouble( this, p, clip != 0 );
 				break;
@@ -79,14 +105,23 @@ FilterWidget::FilterWidget( QWidget *parent, Clip *c, QSharedPointer<Filter> f )
 			connect( pw, SIGNAL(showAnimation(ParameterWidget*,Parameter*)), this, SLOT(showAnimation(ParameterWidget*,Parameter*)) );
 			if ( p->layout.row != -1 )
 				grid->addLayout( pw->getLayout(), p->layout.row, p->layout.column, p->layout.rowSpan, p->layout.columnSpan );
-			else 
+			else
 				grid->addLayout( pw->getLayout(), row++, 0 );
 		}
 		++row;
 	}
-	
-	setLayout( grid );
-	
+
+	if (combo) {
+		combo->initialize();
+	}
+	if (groupBox) {
+		groupBox->setLayout(grid);
+		vBoxLayout->addWidget(groupBox);
+	}
+	else {
+		vBoxLayout->addLayout(grid);
+	}
+
 	filter->enableOVD( true );
 }
 
@@ -165,9 +200,9 @@ void FilterWidget::valueChanged( Parameter *p, QVariant val )
 			break;
 		}
 	}
-	
+
 	emit paramUndoCommand(filter, p, old, p->value);
-	
+
 	if ( p->type == Parameter::PSHADEREDIT ) {
 		GLCustom *f = (GLCustom*) filter.data();
 		f->setCustomParams( val.toString() );

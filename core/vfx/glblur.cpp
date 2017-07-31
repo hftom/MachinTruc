@@ -1,4 +1,3 @@
-#include <movit/blur_effect.h>
 #include "vfx/glblur.h"
 
 
@@ -19,7 +18,8 @@ GLBlur::~GLBlur()
 bool GLBlur::process( const QList<Effect*> &el, double pts, Frame *src, Profile *p )
 {
 	Q_UNUSED( p );
-	return el.at(0)->set_float( "radius", src->glWidth * getParamValue( amount, pts ).toDouble() / 100.0 );
+	bool ok = el.at(0)->set_float( "radius", src->glWidth * getParamValue( amount, pts ).toDouble() / 100.0 );
+	return ok;
 }
 
 

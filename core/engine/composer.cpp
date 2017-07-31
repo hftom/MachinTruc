@@ -45,7 +45,7 @@ void Composer::setSharedContext( GLSharedContext *shared )
 	qDebug() << "Context valid: " << hiddenContext->isValid();
 	qDebug() << "Really used OpenGl: " << hiddenContext->format().majorVersion() << "." << hiddenContext->format().minorVersion();
 	qDebug() << "OpenGl information: VENDOR: " << (const char*)glGetString(GL_VENDOR);
-	qDebug() << " RENDERDER: " << (const char*)glGetString(GL_RENDERER);
+	qDebug() << " RENDERER: " << (const char*)glGetString(GL_RENDERER);
 	qDebug() << " VERSION: " << (const char*)glGetString(GL_VERSION);
 	qDebug() << " GLSL VERSION: " << (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION);
 

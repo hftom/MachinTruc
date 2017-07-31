@@ -16,7 +16,6 @@ public:
 
 	float f[4];
 };
-	
 
 
 
@@ -26,7 +25,7 @@ public:
 	MCustomEffect( QString shader ) : time( 0 ), texelSize( 1, 1 ) {
 		register_float( "time", &time );
 		register_vec2( "texelSize", (float*)&texelSize );
-		
+
 		int faulty;
 		QList<Parameter> list = Parameter::parseShaderParams( shader, faulty );
 		for ( int i = 0; i < list.count(); ++i ) {
@@ -48,7 +47,7 @@ public:
 	}
 	std::string effect_type_id() const { return "MCustomEffect"; }
 	std::string output_fragment_shader() { return shaderText.toLatin1().data(); }
-	
+
 private:
 	float time;
 	Point2D texelSize;
@@ -69,17 +68,17 @@ public:
 	virtual QString getFilterName();
 
 	virtual QList<Effect*> getMovitEffects();
-	
+
 	void setCustomParams( QString shader );
 	static QString getDefaultShader();
-	
+
 private:
 	Parameter *editor;
 	QList<Parameter*> shaderParams;
 	QString currentShader;
 	unsigned char version;
 	QString shaderName;
-	
+
 	QMutex mutex;
 };
 

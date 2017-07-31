@@ -14,7 +14,7 @@ public:
 	bool process( const QList<Effect*> &el, double pts, Frame *src, Profile *p );
 
 	QList<Effect*> getMovitEffects();
-	
+
 protected:
 	Parameter *factor;
 };
@@ -24,7 +24,7 @@ protected:
 class GLFadeIn : public GLOpacity
 {
 public:
-	GLFadeIn( QString id, QString name ) : GLOpacity( id, name ) { 
+	GLFadeIn( QString id, QString name ) : GLOpacity( id, name ) {
 		setSnap( SNAPSTART );
 		setLength( MICROSECOND * 2 );
 		factor->graph.keys.append( AnimationKey( AnimationKey::CURVE, 0, 0 ) );
@@ -38,7 +38,7 @@ public:
 class GLFadeOut : public GLOpacity
 {
 public:
-	GLFadeOut( QString id, QString name ) : GLOpacity( id, name ) { 
+	GLFadeOut( QString id, QString name ) : GLOpacity( id, name ) {
 		setSnap( SNAPEND );
 		setLength( MICROSECOND * 2 );
 		factor->graph.keys.append( AnimationKey( AnimationKey::CURVE, 0, 1 ) );
