@@ -2,24 +2,23 @@
 
 
 
-GLCut::GLCut( QString id, QString name ) : GLFilter( id, name )
+GLCut::GLCut( QString id, QString name ) : GLMask( id, name )
 {
-	opacity = addParameter( "opacity", tr("Opacity:"), Parameter::PDOUBLE, 1.0, 0.0, 1.0, true );
+	GLMask::setParameters();
 }
 
 
 
-GLCut::~GLCut()
+QString GLCut::getDescriptor( double pts, Frame *src, Profile *p  )
 {
+	return QString("%1 %2").arg( getIdentifier() ).arg( GLMask::getMaskDescriptor(pts, src, p) );
 }
 
 
 
 bool GLCut::process( const QList<Effect*> &el, double pts, Frame *src, Profile *p )
 {
-	Q_UNUSED( src );
-	Q_UNUSED( p );
-	return el[0]->set_float( "opacity", getParamValue( opacity, pts ).toFloat() );
+	return GLMask::processMask(pts, src, p);;
 }
 
 
@@ -27,13 +26,6 @@ bool GLCut::process( const QList<Effect*> &el, double pts, Frame *src, Profile *
 QList<Effect*> GLCut::getMovitEffects()
 {
 	QList<Effect*> list;
-	list.append( new MyCutEffect() );
+	list.append( new PseudoEffect(this, new MyCutEffect) );
 	return list;
 }
-
-
-
-
-
-
-

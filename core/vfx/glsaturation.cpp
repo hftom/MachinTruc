@@ -24,9 +24,6 @@ GLSaturation::~GLSaturation()
 
 QString GLSaturation::getDescriptor( double pts, Frame *src, Profile *p  )
 {
-	Q_UNUSED( pts );
-	Q_UNUSED( src );
-	Q_UNUSED( p );
 	return QString("%1 %2").arg( getIdentifier() ).arg( GLMask::getMaskDescriptor(pts, src, p) );
 }
 
@@ -34,8 +31,6 @@ QString GLSaturation::getDescriptor( double pts, Frame *src, Profile *p  )
 
 bool GLSaturation::process( const QList<Effect*> &el, double pts, Frame *src, Profile *p )
 {
-	Q_UNUSED( src );
-	Q_UNUSED( p );
 	bool ok = el.at(0)->set_float( "saturation", getParamValue( saturation, pts ).toFloat() );
 	ok |= GLMask::processMask(pts, src, p);
 

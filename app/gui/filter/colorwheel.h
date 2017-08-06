@@ -16,11 +16,7 @@
 #define WHEELSIZE 112
 #define SELECTORRADIUS 5
 #define SELECTORSIZE SELECTORRADIUS * 2
-// A linear function makes the wheel quite useless
-// for setting the Saturation since interesting values
-// are too close to the center.
-// A pow function is more suited.
-#define POWEROF 2.5
+
 
 class ColorWheelWidget : public QFrame
 {
@@ -32,17 +28,24 @@ public:
 		setFixedSize( QSize( WHEELSIZE + SELECTORSIZE, WHEELSIZE + SELECTORSIZE ) );
 		setValue( 0, 0 );
 		wheel = QPixmap(":/images/icons/color-wheel.png");
+		// A linear function makes the wheel quite useless
+		// for setting the Saturation since interesting values
+		// are too close to the center.
+		// A pow function is more suited.
+		powerOf = 2.5;
 	}
-	
+
 public slots:
 	void setValue( double angle, double radius ) {
-		radius = pow( radius, 1.0 / POWEROF );
+		radius = pow( radius, 1.0 / powerOf );
 		x = cos( angle ) * radius * wheelRadius + width() / 2;
 		y = -sin( angle ) * radius * wheelRadius + height() / 2;
 		update();
 	}
-	
+
 protected:
+	double powerOf;
+
 	virtual void paintEvent( QPaintEvent* ) {
 		QPainter p(this);
 		p.drawPixmap( wheelRect, wheel );
@@ -51,19 +54,19 @@ protected:
 		p.setPen( "white" );
 		p.drawEllipse( x - SELECTORRADIUS + 1, y - SELECTORRADIUS + 1, SELECTORSIZE - 2, SELECTORSIZE - 2 );
 	}
-	
+
 	virtual void mouseDoubleClickEvent( QMouseEvent* ) {
 		move( QPoint( width() / 2, width() / 2 ) );
 	}
-	
+
 	virtual void mousePressEvent( QMouseEvent *event ) {
 		move( event->pos() );
 	}
-	
+
 	virtual void mouseMoveEvent( QMouseEvent *event ) {
 		move( event->pos() );
 	}
-	
+
 	void move( QPoint p ) {
 		double x1 = p.x() - width() / 2;
 		double y1 = p.y() - height() / 2;
@@ -74,14 +77,14 @@ protected:
 		x = cos( a ) * len * wheelRadius + width() / 2;
 		y = -sin( a ) * len * wheelRadius + height() / 2;
 		update();
-		emit valueChanged( a, pow( len, POWEROF ) );
+		emit valueChanged( a, pow( len, powerOf ) );
 	}
-	
+
 private:
 	QPixmap wheel, cursor;
 	QRect wheelRect;
 	qreal x, y, wheelRadius;
-	
+
 signals:
 	void valueChanged( double angle, double radius );
 };
@@ -108,7 +111,7 @@ public:
 		gradient.setColorAt( 1, QColor("white") );
 		barBrush = QBrush( gradient );
 	}
-	
+
 public slots:
 	void setColor( const QColor &col ) {
 		gradient.setColorAt( 1, col );
@@ -120,7 +123,7 @@ public slots:
 		value = qMax( qMin( 1.0, val ), 0.0 );
 		update();
 	}
-	
+
 protected:
 	virtual void paintEvent( QPaintEvent* ) {
 		QPainter p(this);
@@ -130,33 +133,33 @@ protected:
 		p.drawRect( barRect );
 		p.drawPixmap( 0, height() - CURSORHEIGHT - (value * (height() - CURSORMID * 2)), cursor );
 	}
-	
+
 	/*virtual void mouseDoubleClickEvent( QMouseEvent* ) {
 		move( QPoint( width() / 2, width() / 2 ) );
 	}*/
-	
+
 	virtual void mousePressEvent( QMouseEvent *event ) {
 		move( event->pos() );
 	}
-	
+
 	virtual void mouseMoveEvent( QMouseEvent *event ) {
 		move( event->pos() );
 	}
-	
+
 	void move( QPoint p ) {
 		double y = p.y() - CURSORMID;
 		y /= height() - CURSORMID * 2;
 		setValue( 1.0 - y );
 		emit valueChanged( value );
 	}
-	
+
 private:
 	QPixmap cursor;
 	QLinearGradient gradient;
 	QBrush barBrush;
 	QRect barRect;
 	qreal value;
-	
+
 signals:
 	void valueChanged( double val );
 };
@@ -169,19 +172,19 @@ class ColorWheel : public ParameterWidget
 public:
 	ColorWheel( QWidget *parent, Parameter *p, bool keyframeable );
 	QLayout *getLayout() { return grid; }
-	
+
 	void animValueChanged( double val );
-	
+
 private slots:
 	void colorChanged( double angle, double radius );
 	void hsvValueChanged( double val );
 	void hueValueChanged( int v );
 	void saturationValueChanged( double v );
 	void valueValueChanged( double v );
-	
+
 private:
 	void newValues();
-	
+
 	ColorWheelWidget *wheel;
 	ColorValueWidget *valueBar;
 	QSpinBox *hueSpin;

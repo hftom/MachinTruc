@@ -26,7 +26,6 @@ FilterCollection::FilterCollection()
 	videoFilters.append( FilterEntry( "size", "GLDistort", QObject::tr("Distort"), &Maker<GLDistort>::make ) );
 	videoFilters.append( FilterEntry( "size", "GLCrop", QObject::tr("Crop"), &Maker<GLCrop>::make ) );
 	videoFilters.append( FilterEntry( "size", "GLStabilize", QObject::tr("Stabilize"), &Maker<GLStabilize>::make ) );
-	//videoFilters.append( FilterEntry( "size", "GLCut", QObject::tr("Cut"), &Maker<GLCut>::make ) );
 	videoFilters.append( FilterEntry( "size", "GLVignette", QObject::tr("Vignette"), &Maker<GLVignette>::make ) );
 	videoFilters.append( FilterEntry( "draw", "GLText", QObject::tr("Text"), &Maker<GLText>::make ) );
 	videoFilters.append( FilterEntry( "draw", "GLBorder", QObject::tr("Border color"), &Maker<GLBorder>::make ) );
@@ -36,6 +35,7 @@ FilterCollection::FilterCollection()
 	videoFilters.append( FilterEntry( "draw", "GLHandDrawing", QObject::tr("Hand drawing"), &Maker<GLHandDrawing>::make ) );
 	videoFilters.append( FilterEntry( "alpha", "GLSoftBorder", QObject::tr("Soft border"), &Maker<GLSoftBorder>::make ) );
 	videoFilters.append( FilterEntry( "alpha", "GLOpacity", QObject::tr("Opacity"), &Maker<GLOpacity>::make ) );
+	videoFilters.append( FilterEntry( "alpha", "GLCut", QObject::tr("Erase"), &Maker<GLCut>::make ) );
 	videoFilters.append( FilterEntry( "alpha", "GLFadeIn", QObject::tr("Fade in"), &Maker<GLFadeIn>::make ) );
 	videoFilters.append( FilterEntry( "alpha", "GLFadeOut", QObject::tr("Fade out"), &Maker<GLFadeOut>::make ) );
 	videoFilters.append( FilterEntry( "alpha", "GLDropShadow", QObject::tr("Drop shadow"), &Maker<GLDropShadow>::make ) );
@@ -44,7 +44,7 @@ FilterCollection::FilterCollection()
 	videoFilters.append( FilterEntry( "deform", "GLWater", QObject::tr("Water"), &Maker<GLWater>::make ) );
 	videoFilters.append( FilterEntry( "deform", "GLKaleidoscope", QObject::tr("Kaleidoscope"), &Maker<GLKaleidoscope>::make ) );
 	//videoFilters.append( FilterEntry( "deform", "GLCustom", QObject::tr("Custom"), &Maker<GLCustom>::make ) );
-	
+
 	// source video filters, a subset of videoFilters
 	sourceVideoFilters.append( FilterEntry( "colors", "GLSaturation", QObject::tr("Saturation"), &Maker<GLSaturation>::make ) );
 	sourceVideoFilters.append( FilterEntry( "colors", "GLWhiteBalance", QObject::tr("White balance"), &Maker<GLWhiteBalance>::make ) );
@@ -54,7 +54,7 @@ FilterCollection::FilterCollection()
 	sourceVideoFilters.append( FilterEntry( "size", "GLCrop", QObject::tr("Crop"), &Maker<GLCrop>::make ) );
 	sourceVideoFilters.append( FilterEntry( "size", "GLStabilize", QObject::tr("Stabilize"), &Maker<GLStabilize>::make ) );
 	sourceVideoFilters.append( FilterEntry( "deform", "GLDefish", QObject::tr("Defish"), &Maker<GLDefish>::make ) );
-	
+
 	// video transitions
 	videoTransitions.append( FilterEntry( "colors", "GLMix", QObject::tr("Crossfade"), &Maker<GLMix>::make ) );
 	videoTransitions.append( FilterEntry( "colors", "GLPush", QObject::tr("Push"), &Maker<GLPush>::make ) );
@@ -68,10 +68,10 @@ FilterCollection::FilterCollection()
 	audioFilters.append( FilterEntry( "sound", "AudioFadeIn", QObject::tr("Fade in"), &Maker<AudioFadeIn>::make ) );
 	audioFilters.append( FilterEntry( "sound", "AudioFadeOut", QObject::tr("Fade out"), &Maker<AudioFadeOut>::make ) );
 	audioFilters.append( FilterEntry( "sound", "AudioVolume", QObject::tr("Volume"), &Maker<AudioVolume>::make ) );
-	
+
 	// source audio filters, a subset of audioFilters
 	sourceAudioFilters.append( FilterEntry( "sound", "AudioVolume", QObject::tr("Volume"), &Maker<AudioVolume>::make ) );
-	
+
 	// audio transitions
 	audioTransitions.append( FilterEntry( "sound", "AudioCrossFade", QObject::tr("Crossfade"), &Maker<AudioCrossFade>::make ) );
 	audioTransitions.append( FilterEntry( "sound", "AudioHardCut", QObject::tr("Hard cut"), &Maker<AudioHardCut>::make ) );
