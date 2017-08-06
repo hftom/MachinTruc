@@ -39,15 +39,15 @@ void Composer::setSharedContext( QGLWidget *shared )
 {
 	hiddenContext = shared;
 	hiddenContext->makeCurrent();
-	
+
 	glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
-	
+
 	assert( init_movit( MOVIT_SHADERDIR, MOVIT_DEBUG_ON ) );
 	movitPool = new ResourcePool( 100, 300 << 20, 100 );
 
 	hiddenContext->doneCurrent();
 
-#if QT_VERSION >= 0x050000	
+#if QT_VERSION >= 0x050000
 	hiddenContext->context()->moveToThread( this );
 #endif
 	running = true;
@@ -180,7 +180,7 @@ void Composer::run()
 {
 	int ret;
 	Frame *f = NULL;
-	ItcMsg lastMsg( ItcMsg::RENDERSTOP );
+	lastMsg = ItcMsg( ItcMsg::RENDERSTOP );
 
 	hiddenContext->makeCurrent();
 
@@ -189,7 +189,7 @@ void Composer::run()
 		if ( !itcMsgList.isEmpty() )
 			lastMsg = itcMsgList.takeFirst();
 		itcMutex.unlock();
-		
+
 		switch ( lastMsg.msgType ) {
 			case ItcMsg::RENDERPLAY: {
 				ret = process( &f );
@@ -303,7 +303,7 @@ void Composer::run()
 	hiddenContext->doneCurrent();
 #if QT_VERSION >= 0x050000
 	hiddenContext->context()->moveToThread( qApp->thread() );
-#endif	
+#endif
 }
 
 
@@ -327,7 +327,7 @@ int Composer::process( Frame **frame )
 	Frame *dst, *dsta;
 	bool video = false;
 	int ret = PROCESSWAITINPUT;
-	
+
 	Profile projectProfile = sampler->getProfile();
 
 	if ( sampler->sceneEndReached() )
@@ -376,7 +376,7 @@ int Composer::process( Frame **frame )
 	if ( video ) {
 		sampler->shiftCurrentPTS();
 	}
-	
+
 	if ( !oneShot && ret == PROCESSCONTINUE )
 		sampler->prepareInputs();
 
@@ -418,7 +418,7 @@ bool Composer::renderVideoFrame( Frame *dst )
 			w = outputResize.width();
 			h = outputResize.height();
 		}
-		
+
 		if ( skipFrame > 0 ) {
 			//qDebug() << "skipFrame" << sampler->currentPTS();
 			--skipFrame;
@@ -426,7 +426,7 @@ bool Composer::renderVideoFrame( Frame *dst )
 								false, false, sampler->currentPTS(), projectProfile.getVideoFrameDuration() );
 			return true;
 		}
-		
+
 		// make black
 		dst->setVideoFrame( Frame::GLTEXTURE, w, h, projectProfile.getVideoSAR(),
 							false, false, sampler->currentPTS(), projectProfile.getVideoFrameDuration() );
@@ -441,7 +441,7 @@ bool Composer::renderVideoFrame( Frame *dst )
 		glFlush();
 		return true;
 	}
-	
+
 	if ( skipFrame > 0 ) {
 		Frame *f;
 		bool skip = true;
@@ -483,14 +483,14 @@ void Composer::movitFrameDescriptor( QString prefix, Frame *f, QList< QSharedPoi
 	f->glWidth = f->profile.getVideoWidth();
 	f->glHeight = f->profile.getVideoHeight();
 	f->glSAR = f->profile.getVideoSAR();
-		
+
 	desc.append( prefix + MovitInput::getDescriptor( f ) );
-	
+
 	// correct orientation
 	if ( f->orientation() ) {
 		desc.append( prefix + GLOrientation().getDescriptor( pts, f, projectProfile ) );
 	}
-		
+
 	for ( int k = 0; k < filters->count(); ++k ) {
 		desc.append( prefix + filters->at(k)->getDescriptor( pts, f, projectProfile ) );
 	}
@@ -502,7 +502,7 @@ void Composer::movitFrameDescriptor( QString prefix, Frame *f, QList< QSharedPoi
 			|| f->glHeight > projectProfile->getVideoHeight()
 			|| ( f->glWidth != projectProfile->getVideoWidth() &&
 			f->glHeight != projectProfile->getVideoHeight() ) )
-		{		
+		{
 			desc.append( prefix + resizeFilter.getDescriptor( pts, f, projectProfile ) );
 			f->resizeAuto = true;
 		}
@@ -538,7 +538,7 @@ Effect* Composer::movitFrameBuild( Frame *f, QList< QSharedPointer<GLFilter> > *
 		for ( int l = 0; l < el.count(); ++l )
 			current = movitChain.chain->add_effect( el.at( l ) );
 	}
-	
+
 	// apply filters
 	for ( int k = 0; k < filters->count(); ++k ) {
 		QList<Effect*> el = filters->at(k)->getMovitEffects();
@@ -546,7 +546,7 @@ Effect* Composer::movitFrameBuild( Frame *f, QList< QSharedPointer<GLFilter> > *
 		for ( int l = 0; l < el.count(); ++l )
 			current = movitChain.chain->add_effect( el.at( l ) );
 	}
-	
+
 	// auto resize to match destination aspect ratio
 	if ( f->resizeAuto ) {
 		GLResize *resize = new GLResize();
@@ -564,7 +564,7 @@ Effect* Composer::movitFrameBuild( Frame *f, QList< QSharedPointer<GLFilter> > *
 		for ( int l = 0; l < el.count(); ++l )
 			current = movitChain.chain->add_effect( el.at( l ) );
 	}
-	
+
 	return current;
 }
 
@@ -576,7 +576,7 @@ void Composer::movitRender( Frame *dst, bool update )
 	Frame *f;
 	//QTime time;
 	//time.start();
-	
+
 	Profile projectProfile = sampler->getProfile();
 
 	// find the lowest frame to process
@@ -633,7 +633,7 @@ void Composer::movitRender( Frame *dst, bool update )
 
 		i = start;
 		Effect *last, *current = NULL;
-		
+
 		while ( (f = getNextFrame( dst, i )) ) {
 			last = current;
 			// input and filters
@@ -643,19 +643,19 @@ void Composer::movitRender( Frame *dst, bool update )
 			// transition
 			if ( sample->transitionFrame.frame && !sample->transitionFrame.videoTransitionFilter.isNull() ) {
 				QList<Effect*> el = sample->transitionFrame.videoTransitionFilter->getMovitEffects();
-				
+
 				// filters applied on first transition frame, if any
 				QList<Effect*> first = sample->transitionFrame.videoTransitionFilter->getMovitEffectsFirst();
 				for ( int l = 0; l < first.count(); ++l )
 					current = movitChain.chain->add_effect( first.at( l ) );
-				
+
 				MovitBranch *branchTrans;
 				Effect *currentTrans = movitFrameBuild( sample->transitionFrame.frame, &sample->transitionFrame.videoFilters, &branchTrans );
 				// filters applied on second transition frame, if any
 				QList<Effect*> second = sample->transitionFrame.videoTransitionFilter->getMovitEffectsSecond();
 				for ( int l = 0; l < second.count(); ++l )
 					currentTrans = movitChain.chain->add_effect( second.at( l ) );
-				
+
 				branchTrans->filters.append( new MovitFilter( el ) );
 				for ( int l = 0; l < el.count(); ++l )
 					current = movitChain.chain->add_effect( el.at( l ), current, currentTrans );
@@ -699,13 +699,13 @@ void Composer::movitRender( Frame *dst, bool update )
 		f->glSAR = f->profile.getVideoSAR();
 		f->glOVD = 0;
 		f->glOVDTransformList.clear();
-		
+
 		// input and filters
 		MovitBranch *branch = movitChain.branches[ j++ ];
 		branch->input->process( f, &gl );
 		int vf = 0;
 		FrameSample *sample = dst->sample->frames[i - 1];
-		for ( int k = 0; k < branch->filters.count(); ++k ) { 
+		for ( int k = 0; k < branch->filters.count(); ++k ) {
 			if ( !branch->filters[k]->filter )
 				sample->videoFilters[vf++]->process( branch->filters[k]->effects, pts, f, &projectProfile );
 			else
@@ -720,7 +720,7 @@ void Composer::movitRender( Frame *dst, bool update )
 			branchTrans->input->process( sample->transitionFrame.frame, &gl );
 			int tvf = 0;
 			int k;
-			for ( k = 0; k < branchTrans->filters.count() - 1; ++k ) { 
+			for ( k = 0; k < branchTrans->filters.count() - 1; ++k ) {
 				if ( !branchTrans->filters[k]->filter )
 					sample->transitionFrame.videoFilters[tvf++]->process( branchTrans->filters[k]->effects, pts, sample->transitionFrame.frame, &projectProfile );
 				else
@@ -731,7 +731,7 @@ void Composer::movitRender( Frame *dst, bool update )
 		// overlay
 		if ( branch->overlay && branch->overlay->filter )
 			branch->overlay->filter->process( branch->overlay->effects, pts, f, f, &projectProfile );
-		
+
 		w = f->glWidth;
 		h = f->glHeight;
 	}
@@ -745,7 +745,7 @@ void Composer::movitRender( Frame *dst, bool update )
 	}
 	FBO *fbo = gl.getFBO( w, h, GL_RGBA );
 	movitChain.chain->render_to_fbo( fbo->fbo(), w, h );
-	
+
 	dst->glWidth = w;
 	dst->glHeight = h;
 	dst->glSAR = projectProfile.getVideoSAR();
@@ -758,7 +758,7 @@ void Composer::movitRender( Frame *dst, bool update )
 	dst->setFence( gl.getFence() );
 	composerFence = gl.getFence();
 	glFlush();
-	
+
 	//qDebug() << "elapsed" << time.elapsed();
 }
 
@@ -792,9 +792,9 @@ Buffer* Composer::processAudioFrame( FrameSample *sample, int nsamples, int bits
 			return buf2;
 		}
 		else
-			return buf1;			
+			return buf1;
 	}
-	
+
 	return buf1;
 }
 
@@ -805,7 +805,7 @@ bool Composer::renderAudioFrame( Frame *dst, int nSamples )
 	int i = 0;
 	Frame *f;
 	FrameSample *sample;
-	
+
 	Profile profile = sampler->getProfile();
 	int bps = profile.getAudioChannels() * profile.bytesPerChannel( &profile );
 
@@ -816,7 +816,7 @@ bool Composer::renderAudioFrame( Frame *dst, int nSamples )
 		memset( dst->data(), 0, nSamples * bps );
 		return true;
 	}
-	
+
 	// process first frame
 	sample = dst->sample->frames[i - 1];
 	// copy in dst

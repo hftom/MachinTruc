@@ -17,7 +17,7 @@ AnimItem::AnimItem() : QGraphicsRectItem(),
 	setRect( 0, 0, 10, 10 );
 	setPen( QPen( QColor("silver") ) );
 	setBrush( QBrush( QColor(255,255,200) ) );
-	
+
 	reset();
 }
 
@@ -30,11 +30,18 @@ void AnimItem::reset()
 
 	if ( currentParamWidget )
 		disconnect( currentParamWidget, SIGNAL(keyValueChanged(Parameter*,QVariant)), this, SLOT(keyValueChanged(Parameter*,QVariant)) );
-	
+
 	currentParam = NULL;
 	currentParamWidget = NULL;
 	currentFilterWidget = NULL;
 	currentKeyIndex = 0;
+}
+
+
+
+void AnimItem::setCursorPos( double pts, bool isPlaying )
+{
+	// TODO
 }
 
 
@@ -46,8 +53,9 @@ void AnimItem::removeGraph()
 			currentParam->graph.keys.takeFirst();
 		while ( !keys.isEmpty() )
 			delete keys.takeFirst();
-		
-		sendValue( (currentParam->value.toDouble() - currentParam->min.toDouble()) / (currentParam->max.toDouble() - currentParam->min.toDouble()) );
+
+		sendValue( (currentParam->value.toDouble() - currentParam->min.toDouble())
+				   / (currentParam->max.toDouble() - currentParam->min.toDouble()) );
 		reset();
 	}
 }
@@ -66,16 +74,16 @@ void AnimItem::sendValue( double val )
 
 
 void AnimItem::ovdUpdate( QList<OVDUpdateMessage> msg )
-{	
+{
 	if ( !msg.count() )
 		return;
 
-	int i;	
+	int i;
 	for ( i = 0; i < msg.count(); ++i ) {
 		OVDUpdateMessage m = msg[i];
 		m.filter->ovdUpdate( m.messageType, m.values );
 	}
-	
+
 	bool updated = false;
 	double updatedValue;
 	if ( currentParam && currentParamWidget && currentFilterWidget && currentFilterWidget->getFilter() == msg[0].filter ) {
@@ -100,7 +108,7 @@ void AnimItem::ovdUpdate( QList<OVDUpdateMessage> msg )
 			}
 		}
 	}
-	
+
 	emit ovdValueChanged( currentParamWidget );
 	if ( updated ) {
 		keyValueChanged( currentParam, updatedValue * 100.0 );
@@ -114,10 +122,10 @@ void AnimItem::ovdUpdate( QList<OVDUpdateMessage> msg )
 void AnimItem::keyValueChanged( Parameter *p, QVariant val )
 {
 	double value;
-	
+
 	switch ( p->type ) {
-		case Parameter::PDOUBLE: 
-		case Parameter::PINPUTDOUBLE: 
+		case Parameter::PDOUBLE:
+		case Parameter::PINPUTDOUBLE:
 			value = val.toInt() / 100.0;
 			break;
 		case Parameter::PINT:
@@ -126,11 +134,12 @@ void AnimItem::keyValueChanged( Parameter *p, QVariant val )
 		default:
 			return;
 	}
-	
+
 	QRectF r = rect();
 	double w = r.width();
 	double h = r.height();
-	currentParam->graph.keys[currentKeyIndex].y = (value - currentParam->min.toDouble()) / (currentParam->max.toDouble() - currentParam->min.toDouble());
+	currentParam->graph.keys[currentKeyIndex].y = (value - currentParam->min.toDouble())
+			/ (currentParam->max.toDouble() - currentParam->min.toDouble());
 	double x = currentParam->graph.keys[currentKeyIndex].x * w - HALFKEYSIZE;
 	double y = h - currentParam->graph.keys[currentKeyIndex].y * h - HALFKEYSIZE + BORDER;
 	keys[currentKeyIndex]->setPos( x, y );
@@ -144,10 +153,10 @@ void AnimItem::keyValueChanged( Parameter *p, QVariant val )
 void AnimItem::setCurrentParam( FilterWidget *f, ParameterWidget *pw, Parameter *p )
 {
 	reset();
-	
+
 	while ( !keys.isEmpty() )
 		delete keys.takeFirst();
-	
+
 	if ( !p || !pw || !f ) {
 		update();
 		return;
@@ -156,17 +165,18 @@ void AnimItem::setCurrentParam( FilterWidget *f, ParameterWidget *pw, Parameter 
 	currentParam = p;
 	currentParamWidget = pw;
 	currentFilterWidget = f;
-	
+
 	QRectF r = rect();
 	double w = r.width();
 	double h = r.height();
-		
+
 	if ( !currentParam->graph.keys.count() ) {
-		double val = (currentParam->value.toDouble() - currentParam->min.toDouble()) / (currentParam->max.toDouble() - currentParam->min.toDouble());
+		double val = (currentParam->value.toDouble() - currentParam->min.toDouble())
+				/ (currentParam->max.toDouble() - currentParam->min.toDouble());
 		currentParam->graph.keys.append( AnimationKey( AnimationKey::LINEAR, 0, val ) );
 		currentParam->graph.keys.append( AnimationKey( AnimationKey::LINEAR, 1, val ) );
 	}
-		
+
 	for ( int i = 0; i < currentParam->graph.keys.count(); ++i ) {
 		KeyItem *k = new KeyItem( this );
 		double x = currentParam->graph.keys[i].x * w - HALFKEYSIZE;
@@ -174,7 +184,7 @@ void AnimItem::setCurrentParam( FilterWidget *f, ParameterWidget *pw, Parameter 
 		k->setPos( x, y );
 		keys.append( k );
 	}
-		
+
 	currentFilterWidget->setAnimActive( currentParam );
 	itemSelected( keys.first() );
 	connect( currentParamWidget, SIGNAL(keyValueChanged(Parameter*,QVariant)), this, SLOT(keyValueChanged(Parameter*,QVariant)) );
@@ -187,7 +197,7 @@ void AnimItem::setCurrentParam( FilterWidget *f, ParameterWidget *pw, Parameter 
 bool AnimItem::filterDeleted( Clip *c, QSharedPointer<Filter> f )
 {
 	Q_UNUSED( c );
-	
+
 	if ( currentFilterWidget && currentFilterWidget->getFilter() == f ) {
 		setCurrentParam( NULL, NULL, NULL );
 		return true;
@@ -207,7 +217,7 @@ void AnimItem::quitEditor()
 void AnimItem::setSize( const QSize &size )
 {
 	int i;
-	
+
 	double w = size.width();
 	double h = size.height() - 2 * BORDER;
 	setRect( 0, BORDER, w, h );
@@ -225,7 +235,7 @@ void AnimItem::setSize( const QSize &size )
 void AnimItem::itemSelected( KeyItem *it )
 {
 	int i;
-	
+
 	for ( i = 0; i < keys.count(); ++i ) {
 		if ( keys[i] == it ) {
 			sendValue( currentParam->graph.keys[i].y );
@@ -242,25 +252,26 @@ void AnimItem::itemSelected( KeyItem *it )
 void AnimItem::itemMove( KeyItem *it, QPointF mouse, QPointF startPos, QPointF startMouse )
 {
 	int index = keys.indexOf( it );
-	
+
 	QPointF newPos = startPos + mouse - startMouse;
 	QPointF center = newPos + QPointF( HALFKEYSIZE, HALFKEYSIZE );
 	QRectF r = rect();
 	r.setBottomRight( r.bottomRight() - QPointF( 1, 1 ) );
-	
+
 	center.ry() = qBound( r.y(), center.y(), r.height() + BORDER );
-	
+
 	if ( index == 0 )
 		center.rx() = 0;
 	else if ( index == keys.count() - 1 )
 		center.rx() = r.width();
-	else 
-		center.rx() = qBound( keys[index-1]->scenePos().x() + HALFKEYSIZE + 1.5, center.x(), keys[index+1]->scenePos().x() + HALFKEYSIZE - 1.5 );
-	
+	else
+		center.rx() = qBound( keys[index-1]->scenePos().x() + HALFKEYSIZE + 1.5,
+				center.x(), keys[index+1]->scenePos().x() + HALFKEYSIZE - 1.5 );
+
 	currentParam->graph.keys[index].x = center.x() / r.width();
 	currentParam->graph.keys[index].y = 1.0 - (center.y() - BORDER) / r.height();
 	it->setPos( center - QPointF( HALFKEYSIZE, HALFKEYSIZE ) );
-	
+
 	propagateConstant( index );
 	sendValue( currentParam->graph.keys[index].y );
 	update();
@@ -271,10 +282,10 @@ void AnimItem::itemMove( KeyItem *it, QPointF mouse, QPointF startPos, QPointF s
 void AnimItem::mouseDoubleClickEvent( QGraphicsSceneMouseEvent *event )
 {
 	int i;
-	
+
 	if ( !currentParam )
 		return;
-	
+
 	QRectF r = rect();
 	r.setBottomRight( r.bottomRight() - QPointF( 1, 1 ) );
 	double x = event->scenePos().x() / r.width();
@@ -290,7 +301,7 @@ void AnimItem::mouseDoubleClickEvent( QGraphicsSceneMouseEvent *event )
 			break;
 		}
 	}
-	
+
 	emit updateFrame();
 }
 
@@ -299,7 +310,7 @@ void AnimItem::mouseDoubleClickEvent( QGraphicsSceneMouseEvent *event )
 void AnimItem::keyDoubleClicked( KeyItem *it )
 {
 	int index = keys.indexOf( it );
-	
+
 	if ( currentParam->graph.keys[index].keyType == AnimationKey::CONSTANT )
 		currentParam->graph.keys[index].keyType = AnimationKey::LINEAR;
 	else if ( currentParam->graph.keys[index].keyType == AnimationKey::LINEAR )
@@ -336,7 +347,7 @@ void AnimItem::propagateConstant( int index )
 void AnimItem::paint( QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget )
 {
 	QGraphicsRectItem::paint( painter, option, widget );
-	
+
 	if ( !currentParam )
 		return;
 
@@ -349,7 +360,7 @@ void AnimItem::paint( QPainter *painter, const QStyleOptionGraphicsItem *option,
 		int x2 = currentParam->graph.keys[i+1].x * w;
 		double y1 = currentParam->graph.keys[i].y;
 		double y2 = currentParam->graph.keys[i+1].y;
-		
+
 		double ipol;
 		if ( currentParam->graph.keys[i].keyType == AnimationKey::LINEAR ) {
 			pen.setColor( QColor("green") );

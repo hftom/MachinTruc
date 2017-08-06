@@ -13,12 +13,13 @@ class AnimEditor : public QWidget, private Ui::EditorAnim
 	Q_OBJECT
 public:
 	AnimEditor( QWidget *parent );
-	
+
 	void setCurrentParam( FilterWidget *f, ParameterWidget *pw, Parameter *p );
-	
+
 public slots:
 	void filterDeleted( Clip *c, QSharedPointer<Filter> f );
 	void ovdUpdate( QList<OVDUpdateMessage> msg );
+	void setCursorPos( double pts, bool isPlaying );
 
 private slots:
 	void removeGraph();
@@ -27,10 +28,10 @@ private slots:
 private:
 	AnimScene *animScene;
 	AnimItem *animItem;
-	
+
 signals:
 	void ovdValueChanged(ParameterWidget*);
-	void quitEditor();	
+	void quitEditor();
 	void updateFrame();
 };
 

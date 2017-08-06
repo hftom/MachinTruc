@@ -8,7 +8,7 @@
 Sampler::Sampler()
 	: playBackward( false ),
 	bufferedPlaybackPts( -1 )
-{	
+{
 	metronom = new Metronom( &playbackBuffer );
 	composer = new Composer( this, &playbackBuffer );
 	connect( composer, SIGNAL(newFrame(Frame*)), this, SIGNAL(newFrame(Frame*)) );
@@ -20,7 +20,7 @@ Sampler::Sampler()
 	preview = new Scene( prof );
 	preview->tracks.append( new Track() );
 	currentScene = preview;
-	
+
 	newProject( prof );
 }
 
@@ -49,13 +49,13 @@ bool Sampler::isProjectEmpty()
 bool Sampler::trackRequest( bool rm, int index )
 {
 	stopComposer();
-		
+
 	bool ok;
 	if ( rm )
 		ok = timelineScene->removeTrack( index );
 	else
 		ok = timelineScene->addTrack( index );
-	
+
 	if ( ok )
 		updateFrame();
 	return ok;
@@ -65,14 +65,14 @@ bool Sampler::trackRequest( bool rm, int index )
 void Sampler::newProject( Profile p )
 {
 	drainScenes();
-	
+
 	QList<Scene*> list;
 	Scene *s = new Scene( p );
 	s->tracks.append( new Track() );
 	s->tracks.append( new Track() );
 	s->tracks.append( new Track() );
 	list.append( s );
-	
+
 	setSceneList( list );
 }
 
@@ -117,7 +117,7 @@ void Sampler::setSceneList( QList<Scene*> list )
 bool Sampler::setProfile( Profile p )
 {
 	bool ok = true;
-	
+
 	stopComposer();
 
 	for ( int i = 0; i < sceneList.count(); ++i ) {
@@ -154,7 +154,7 @@ void Sampler::switchMode( bool down )
 	else {
 		currentScene = preview;
 		emit modeSwitched();
-	}	
+	}
 }
 
 
@@ -200,14 +200,14 @@ Profile Sampler::getProfile()
 
 
 void Sampler::setSharedContext( QGLWidget *shared )
-{	
+{
 	composer->setSharedContext( shared );
 }
 
 
 
 void Sampler::setFencesContext( QGLWidget *shared )
-{	
+{
 	metronom->setSharedContext( shared );
 }
 
@@ -245,7 +245,7 @@ void Sampler::wheelSeek( int a )
 {
 	stopComposer();
 	metronom->flush();
-	
+
 	if ( a == 1 || a == -1 ) {
 		bool backward = a < 0;
 		if ( playBackward != backward ) {
@@ -331,9 +331,9 @@ void Sampler::fromComposerSeekTo( double p, bool backward, bool seek )
 	}
 	currentScene->currentPTS = p;
 	currentScene->currentPTSAudio = p;
-	
+
 	playBackward = backward;
-	
+
 	if ( seek ) {
 		double skipPts = -1;
 		if ( metronom->getLastFrame() )
@@ -370,7 +370,7 @@ double Sampler::sceneDuration( Scene *s )
 		if ( d > duration )
 			duration = d;
 	}
-	
+
 	return duration;
 }
 
@@ -442,10 +442,10 @@ InputBase* Sampler::getInput( QString fn, InputBase::InputType type )
 				candidate = in;
 		}
 	}
-	
+
 	if ( candidate )
 		return candidate;
-	
+
 	switch ( type ) {
 		case InputBase::FFMPEG:
 			in = new InputFF();
@@ -484,7 +484,7 @@ InputBase* Sampler::getClipInput( Clip *c, double pts )
 		p.setVideoFrameDuration( cur.getVideoFrameDuration() );
 		p.setAudioSampleRate( cur.getAudioSampleRate() );
 	}
-	
+
 	double pos;
 	if ( playBackward ) {
 		if ( speed < 0 ) {
@@ -513,7 +513,7 @@ InputBase* Sampler::getClipInput( Clip *c, double pts )
 		}
 	}
 	printf("%f %s cpos:%f, cstart:%f, seek:%f\n", pts, c->sourcePath().toLatin1().data(), c->position(), c->start(), pos);
-	
+
 	in->setSpeed( c->getSpeed() );
 	if (in->getType() == InputBase::GLSL) {
 		p.setVideoWidth(cur.getVideoWidth());
@@ -532,7 +532,7 @@ InputBase* Sampler::getClipInput( Clip *c, double pts )
 Clip* Sampler::searchCurrentClip( int &i, Track *t, int clipIndex, double pts, double margin )
 {
 	Clip *c = NULL;
-	
+
 	if ( playBackward ) {
 		for ( i = qMin( t->clipCount() - 1, clipIndex + 1 ); i >= 0; --i ) {
 			c = t->clipAt( i );
@@ -567,7 +567,7 @@ Clip* Sampler::searchCurrentClip( int &i, Track *t, int clipIndex, double pts, d
 			}
 		}
 	}
-	
+
 	return c;
 }
 
@@ -590,11 +590,11 @@ void Sampler::getVideoTracks( Frame *dst )
 	}
 
 	QMutexLocker ml( &currentScene->mutex );
-	
+
 	if ( dst->sample )
 		delete dst->sample;
 	dst->sample = new ProjectSample();
-	
+
 	for ( j = 0; j < currentScene->tracks.count(); ++j ) {
 		c = NULL;
 		Track *t = currentScene->tracks[j];
@@ -661,18 +661,18 @@ int Sampler::updateVideoFrame( Frame *dst )
 	Clip *c = NULL;
 	int nframes = 0;
 	double margin = currentScene->getProfile().getVideoFrameDuration() / 4.0;
-	
+
 	if ( !dst->sample )
 		return 0;
 
 	QMutexLocker ml( &currentScene->mutex );
-	
+
 	for ( j = 0; j < currentScene->tracks.count(); ++j ) {
 		c = NULL;
 		Track *t = currentScene->tracks[j];
 		if ( currentScene->update )
 			return 0;
-		
+
 		// find the clip at dst->pts
 		c = searchCurrentClip( i, t, t->currentClipIndex(), dst->pts(), margin );
 		if ( dst->sample->frames.count() - 1 < j ) {
@@ -728,7 +728,7 @@ void Sampler::getAudioTracks( Frame *dst, int nSamples )
 	Clip *c = NULL;
 	InputBase *in = NULL;
 	double margin = currentScene->getProfile().getVideoFrameDuration() / 4.0;
-	
+
 	ProjectSample *ps = playbackBuffer.getAudioSample( currentScene->currentPTSAudio );
 	if ( ps ) {
 		dst->sample = ps;
@@ -738,11 +738,11 @@ void Sampler::getAudioTracks( Frame *dst, int nSamples )
 	}
 
 	QMutexLocker ml( &currentScene->mutex );
-	
+
 	if ( dst->sample )
 		delete dst->sample;
 	dst->sample = new ProjectSample();
-	
+
 	for ( j = 0; j < currentScene->tracks.count(); ++j ) {
 		c = NULL;
 		Track *t = currentScene->tracks[j];
@@ -793,7 +793,7 @@ void Sampler::getAudioTracks( Frame *dst, int nSamples )
 			}
 		}
 	}
-	
+
 	currentScene->update = false;
 }
 
@@ -804,12 +804,12 @@ void Sampler::updateAudioFrame( Frame *dst )
 	int i, j;
 	Clip *c = NULL;
 	double margin = currentScene->getProfile().getVideoFrameDuration() / 4.0;
-	
+
 	if ( !dst->sample )
 		return;
 
 	QMutexLocker ml( &currentScene->mutex );
-	
+
 	for ( j = 0; j < currentScene->tracks.count(); ++j ) {
 		c = NULL;
 		Track *t = currentScene->tracks[j];
@@ -859,7 +859,7 @@ void Sampler::prepareInputs()
 		prepareInputsBackward();
 		return;
 	}
-	
+
 	int i, j;
 	Clip *c = NULL;
 	InputBase *in = NULL;
@@ -876,7 +876,7 @@ void Sampler::prepareInputs()
 		minPTS = currentScene->currentPTSAudio;
 		maxPTS = currentScene->currentPTS;
 	}
-	
+
 	QMutexLocker ml( &currentScene->mutex );
 
 	for ( j = 0; j < currentScene->tracks.count(); ++j ) {
@@ -906,7 +906,7 @@ void Sampler::prepareInputs()
 				break;
 		}
 	}
-	
+
 	bufferedPlaybackPts = -1;
 	currentScene->update = false;
 	//printf("******************************************** inputs=%d\n", inputs.count() );
@@ -921,7 +921,7 @@ void Sampler::prepareInputsBackward()
 	InputBase *in = NULL;
 	double minPTS, maxPTS;
 	double margin = currentScene->getProfile().getVideoFrameDuration() / 4.0;
-	
+
 	if ( bufferedPlaybackPts != -1 )
 		minPTS = maxPTS = bufferedPlaybackPts;
 	else if ( currentScene->currentPTS < currentScene->currentPTSAudio ) {
@@ -932,7 +932,7 @@ void Sampler::prepareInputsBackward()
 		minPTS = currentScene->currentPTSAudio;
 		maxPTS = currentScene->currentPTS;
 	}
-	
+
 	QMutexLocker ml( &currentScene->mutex );
 
 	for ( j = 0; j < currentScene->tracks.count(); ++j ) {
@@ -962,7 +962,7 @@ void Sampler::prepareInputsBackward()
 				break;
 		}
 	}
-	
+
 	bufferedPlaybackPts = -1;
 	currentScene->update = false;
 	//printf("******************************************** inputs=%d\n", inputs.count() );
