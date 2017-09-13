@@ -3,7 +3,7 @@
 
 #include <movit/effect_util.h>
 
-#include "vfx/glfilter.h"
+#include "vfx/glmask.h"
 
 
 
@@ -33,11 +33,13 @@ private:
 
 
 
-class GLContrast : public GLFilter
+class GLContrast : public GLMask
 {
 public:
 	GLContrast( QString id, QString name );
 	bool process( const QList<Effect*> &el, double pts, Frame *src, Profile *p );
+	QString getDescriptor( double pts, Frame *src, Profile *p  );
+	
 	QList<Effect*> getMovitEffects();
 
 private:

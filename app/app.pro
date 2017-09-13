@@ -31,6 +31,7 @@ SOURCES = \
 	gui/filter/textedit.cpp \
 	gui/filter/shaderedit.cpp \
 	gui/filter/statustext.cpp \
+	gui/filter/combobox.cpp \
 	\
 	timeline/timeline.cpp \
 	timeline/abstractviewitem.cpp \
@@ -80,6 +81,7 @@ HEADERS = \
 	gui/filter/textedit.h \
 	gui/filter/shaderedit.h \
 	gui/filter/statustext.h \
+	gui/filter/combobox.h \
 	\
 	timeline/timelinegraphicsview.h \
 	timeline/timeline.h \

@@ -36,6 +36,7 @@ FilterCollection::FilterCollection()
 	videoFilters.append( FilterEntry( "draw", "GLHandDrawing", QObject::tr("Hand drawing"), &Maker<GLHandDrawing>::make ) );
 	videoFilters.append( FilterEntry( "alpha", "GLSoftBorder", QObject::tr("Soft border"), &Maker<GLSoftBorder>::make ) );
 	videoFilters.append( FilterEntry( "alpha", "GLOpacity", QObject::tr("Opacity"), &Maker<GLOpacity>::make ) );
+	videoFilters.append( FilterEntry( "alpha", "GLCut", QObject::tr("Erase"), &Maker<GLCut>::make ) );
 	videoFilters.append( FilterEntry( "alpha", "GLFadeIn", QObject::tr("Fade in"), &Maker<GLFadeIn>::make ) );
 	videoFilters.append( FilterEntry( "alpha", "GLFadeOut", QObject::tr("Fade out"), &Maker<GLFadeOut>::make ) );
 	videoFilters.append( FilterEntry( "alpha", "GLDropShadow", QObject::tr("Drop shadow"), &Maker<GLDropShadow>::make ) );

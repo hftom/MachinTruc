@@ -4,13 +4,9 @@
 
 
 
-extern "C" int XInitThreads();
-
-
-
 int main(int argc, char **argv)
 {
-	XInitThreads();
+	QCoreApplication::setAttribute( Qt::AA_X11InitThreads );
 
 	QApplication app(argc, argv);
 

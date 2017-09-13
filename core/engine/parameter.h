@@ -52,7 +52,7 @@ public:
 class Parameter
 {
 public:
-	enum ParameterType{ PDOUBLE, PINT, PBOOL, PRGBCOLOR, PRGBACOLOR, PCOLORWHEEL, PSTRING, PINPUTDOUBLE, PSHADEREDIT, PSTATUS };
+	enum ParameterType{ PDOUBLE, PINT, PBOOL, PRGBCOLOR, PRGBACOLOR, PCOLORWHEEL, PSTRING, PINPUTDOUBLE, PSHADEREDIT, PSTATUS, PGROUPCOMBO, PGROUPITEM };
 	
 	double getUnnormalizedKeyValue( int keyIndex );	
 	double getNormalizedKeyValue( double val );

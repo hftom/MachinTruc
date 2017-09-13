@@ -4,6 +4,7 @@
 #define GL_GLEXT_PROTOTYPES
 
 #include <movit/effect.h>
+#include <movit/effect_util.h>
 
 #include "engine/filter.h"
 #include "engine/frame.h"

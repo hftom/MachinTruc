@@ -5,7 +5,7 @@
 #include <movit/effect_chain.h>
 #include <movit/util.h>
 
-#include "vfx/glfilter.h"
+#include "vfx/glmask.h"
 
 
 
@@ -45,13 +45,14 @@ private:
 
 
 
-class GLPixelize : public GLFilter
+class GLPixelize : public glmask
 {
 public:
 	GLPixelize( QString id, QString name );
 	~GLPixelize();
 	
 	bool process( const QList<Effect*> &el, double pts, Frame *src, Profile *p );
+	QString getDescriptor( double pts, Frame *src, Profile *p  );
 
 	QList<Effect*> getMovitEffects();
 	

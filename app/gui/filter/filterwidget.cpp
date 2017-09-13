@@ -10,6 +10,7 @@
 #include "colorwheel.h"
 #include "textedit.h"
 #include "statustext.h"
+#include "combobox.h"
 
 
 
@@ -19,7 +20,10 @@ FilterWidget::FilterWidget( QWidget *parent, Clip *c, QSharedPointer<Filter> f )
 {	
 	QList<Parameter*> parameters = filter->getParameters();
 	
+	QVBoxLayout *vBoxLayout = new QVBoxLayout(this);
 	QGridLayout* grid = new QGridLayout();
+	QGroupBox *groupBox = NULL;
+	ComboBox *combo = NULL;
 	grid->setContentsMargins( 0, 0, 0, 0 );
 	int row = 0;
 	
@@ -30,6 +34,28 @@ FilterWidget::FilterWidget( QWidget *parent, Clip *c, QSharedPointer<Filter> f )
 			continue;
 		ParameterWidget *pw = NULL;
 		switch ( p->type ) {
+			case Parameter::PGROUPCOMBO: {
+				if (combo) {
+					combo->initialize();
+				}
+				pw = combo = new ComboBox(this, p);
+				break;
+			}
+			case Parameter::PGROUPITEM: {
+				if (groupBox) {
+					groupBox->setLayout(grid);
+					vBoxLayout->addWidget(groupBox);
+				}
+				else {
+					vBoxLayout->addLayout(grid);
+				}
+				groupBox = new QGroupBox();
+				if (combo) {
+					combo->addItem(p->name, groupBox);
+				}
+				grid = new QGridLayout();
+				break;
+			}
 			case Parameter::PDOUBLE: {
 				pw = new SliderDouble( this, p, clip != 0 );
 				break;
@@ -85,7 +111,16 @@ FilterWidget::FilterWidget( QWidget *parent, Clip *c, QSharedPointer<Filter> f )
 		++row;
 	}
 	
-	setLayout( grid );
+	if (combo) {
+		combo->initialize();
+	}
+	if (groupBox) {
+		groupBox->setLayout(grid);
+		vBoxLayout->addWidget(groupBox);
+	}
+	else {
+		vBoxLayout->addLayout(grid);
+	}
 	
 	filter->enableOVD( true );
 }

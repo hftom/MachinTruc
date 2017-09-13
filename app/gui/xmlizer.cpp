@@ -366,6 +366,11 @@ void XMLizer::readParameter( QDomElement &element, QSharedPointer<Filter> f )
 			return;
 		p->value = value;
 	}
+	else if ( type == "groupcombo" ) {
+		if ( p->type != Parameter::PGROUPCOMBO )
+			return;
+		p->value = value.toInt();
+	}
 	
 	p->graph.keys.clear();
 		
@@ -514,6 +519,11 @@ void XMLizer::writeFilter( QDomDocument &document, QDomNode &parent, bool audio,
 			case Parameter::PSTATUS: {
 				pel.setAttribute( "type", "status" );
 				pel.setAttribute( "value", "" );
+				break;
+			}
+			case Parameter::PGROUPCOMBO: {
+				pel.setAttribute( "type", "groupcombo" );
+				pel.setAttribute( "value", QString::number( p->value.toInt() ) );
 				break;
 			}
 		}

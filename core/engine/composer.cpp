@@ -46,10 +46,8 @@ void Composer::setSharedContext( QGLWidget *shared )
 	movitPool = new ResourcePool( 100, 300 << 20, 100 );
 
 	hiddenContext->doneCurrent();
-
-#if QT_VERSION >= 0x050000
 	hiddenContext->context()->moveToThread( this );
-#endif
+	
 	running = true;
 	start();
 }
@@ -180,7 +178,7 @@ void Composer::run()
 {
 	int ret;
 	Frame *f = NULL;
-	lastMsg = ItcMsg( ItcMsg::RENDERSTOP );
+	ItcMsg lastMsg( ItcMsg::RENDERSTOP );
 
 	hiddenContext->makeCurrent();
 
@@ -301,9 +299,7 @@ void Composer::run()
 	}
 
 	hiddenContext->doneCurrent();
-#if QT_VERSION >= 0x050000
 	hiddenContext->context()->moveToThread( qApp->thread() );
-#endif
 }
 
 

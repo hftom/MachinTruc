@@ -90,6 +90,7 @@ SOURCES = \
 	vfx/glkaleidoscope.cpp \
 	vfx/gldistort.cpp \
 	vfx/glhanddrawing.cpp \
+	vfx/glmask.cpp \
 	\
 	videoout/videowidget.cpp
 
@@ -179,6 +180,7 @@ HEADERS = \
 	vfx/glkaleidoscope.h \
 	vfx/gldistort.h \
 	vfx/glhanddrawing.h \
+	vfx/glmask.h \
 	\
 	videoout/videowidget.h
 

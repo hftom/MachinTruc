@@ -1,17 +1,18 @@
 #ifndef GLLIFTGAMMAGAIN_H
 #define GLLIFTGAMMAGAIN_H
 
-#include "vfx/glfilter.h"
+#include "vfx/glmask.h"
 
 
 
-class GLLiftGammaGain : public GLFilter
+class GLLiftGammaGain : public GLMask
 {
 public:
 	GLLiftGammaGain( QString id, QString name );
 	~GLLiftGammaGain();
 
 	bool process( const QList<Effect*> &el, double pts, Frame *src, Profile *p );
+	QString getDescriptor( double pts, Frame *src, Profile *p  );
 
 	QList<Effect*> getMovitEffects();
 
