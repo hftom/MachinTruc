@@ -2,6 +2,7 @@
 
 green=$(tput setaf 2)
 red=$(tput setaf 1)
+blue=$(tput setaf 4)
 normal=$(tput sgr0)
 printer="echo"
 format=""
@@ -17,6 +18,10 @@ while read line; do
 		$printer $format "$sep${normal}";
 	elif [[ "$line" == *FAIL* ]]; then
 		$printer $format "${red}$sep";
+		$printer $format "$line";
+		$printer $format "$sep${normal}";
+	elif [[ "$line" == *Totals:* ]]; then
+		$printer $format "${blue}$sep";
 		$printer $format "$line";
 		$printer $format "$sep${normal}";
 	else
