@@ -4,8 +4,8 @@
 
 GLContrast::GLContrast( QString id, QString name ) : GLMask( id, name )
 {
-	contrast = addParameter( "contrast", tr("Contrast:"), Parameter::PDOUBLE, 0.0, -10.0, 10.0, true );
-	brightness = addParameter( "brightness", tr("Brightness:"), Parameter::PDOUBLE, 0.0, -10.0, 10.0, true );
+	contrast = addParameter( "contrast", tr("Contrast:"), Parameter::PDOUBLE, 0.0, -1.0, 1.0, true );
+	brightness = addParameter( "brightness", tr("Brightness:"), Parameter::PDOUBLE, 1.0, 0.0, 5.0, true );
 
 	GLMask::setParameters();
 }

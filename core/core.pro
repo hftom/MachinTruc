@@ -44,6 +44,7 @@ SOURCES = \
 	\
 	audioout/ao_sdl.cpp \
 	\
+	vfx/glfilter.cpp \
 	vfx/movitbackground.cpp \
 	vfx/gltest.cpp \
 	vfx/glmix.cpp \

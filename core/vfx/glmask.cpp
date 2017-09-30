@@ -24,12 +24,14 @@ void GLMask::setParameters()
 	varianceS->layout.setLayout( 101, 1);
 	varianceV = addParameter( "varianceV", tr("V variance:"), Parameter::PDOUBLE, 0.4, 0.0, 0.5, false );
 	varianceV->layout.setLayout( 102, 1 );
+	gain = addParameter( "gain", tr("Gain:"), Parameter::PDOUBLE, 1.0, 1.0, 20.0, false );
+	gain->layout.setLayout( 103, 0, 1, 2 );
 	smoothColor = addParameter("smoothColor", tr("Smooth selection"), Parameter::PDOUBLE, 0.0, 0.0, 1.0, false );
-	smoothColor->layout.setLayout( 103, 0, 1, 2 );
+	smoothColor->layout.setLayout( 104, 0, 1, 2 );
 	invertColor = addBooleanParameter( "invert", tr("Invert selection"), 0 );
-	invertColor->layout.setLayout( 104, 0, 1, 2);
+	invertColor->layout.setLayout( 105, 0, 1, 2);
 	showColor = addBooleanParameter( "showColor", tr("Show selection"), 0 );
-	showColor->layout.setLayout( 105, 0, 1, 2 );
+	showColor->layout.setLayout( 106, 0, 1, 2 );
 }
 
 
@@ -64,7 +66,8 @@ bool GLMask::processMask( double pts, Frame *src, Profile *p )
 			return mask->set_vec3( "hsvColor", (float*)&col )
 				&& mask->set_float("varianceH", qMax(getParamValue( varianceH ).toDouble(), 0.0001))
 				&& mask->set_float("varianceS", qMax(getParamValue( varianceS ).toDouble(), 0.0001))
-				&& mask->set_float("varianceV", qMax(getParamValue( varianceV ).toDouble(), 0.0001));
+				&& mask->set_float("varianceV", qMax(getParamValue( varianceV ).toDouble(), 0.0001))
+				&& mask->set_float("gain", getParamValue( gain ).toDouble());
 		}
 		default: return true;
 	}
@@ -82,22 +85,17 @@ void GLMask::setGraph(EffectChain *graph, Node *input, Node *receiverSender, Nod
 			mix->set_int("invert", getParamValue(invertColor).toInt());
 			mix->set_int("show", getParamValue(showColor).toInt());
 
+			Node *mask_node = graph->add_node(mask);
+			Node *mix_node = graph->add_node(mix);
 			if (getParamValue(smoothColor).toDouble() > 0) {
 				blur = new BlurEffect;
 				blur->set_int( "num_taps", 6 );
-			}
-			else {
-				blur = NULL;
-			}
-
-			Node *mask_node = graph->add_node(mask);
-			Node *mix_node = graph->add_node(mix);
-			if (blur) {
 				Node *blur_node = graph->add_node(blur);
 				graph->replace_receiver(receiverSender, blur_node);
 				graph->connect_nodes(blur_node, mask_node);
 			}
 			else {
+				blur = NULL;
 				graph->replace_receiver(receiverSender, mask_node);
 			}
 
@@ -121,36 +119,8 @@ void GLMask::setGraph(EffectChain *graph, Node *input, Node *receiverSender, Nod
 
 
 static const char* mask_shader =
-"vec3 PREFIX(rgb2hsv)(vec3 rgb) {\n"
-"	vec3 hsv;\n"
-"	float min = rgb.r < rgb.g ? rgb.r : rgb.g;\n"
-"	min = min < rgb.b ? min : rgb.b;\n"
-"	float max = rgb.r > rgb.g ? rgb.r : rgb.g;\n"
-"	max = max > rgb.b ? max : rgb.b;\n"
-"	hsv.z = max;\n"
-"	float delta = max - min;\n"
-"	if (delta <= 0.0 || max <= 0.0) {\n"
-"		hsv.y = 0.0;\n"
-"		hsv.x = PREFIX(hsvColor).x;\n"
-"		return hsv;\n"
-"	}\n"
-"	hsv.y = (delta / max);\n"
-"	if ( rgb.r == max )\n"
-"		hsv.x = ( rgb.g - rgb.b ) / delta;\n"
-"	else if ( rgb.g >= max )\n"
-"		hsv.x = 2.0 + ( rgb.b - rgb.r ) / delta;\n"
-"	else\n"
-"		hsv.x = 4.0 + ( rgb.r - rgb.g ) / delta;\n"
-"\n"
-"	hsv.x *= 60.0;\n"
-"	if ( hsv.x < 0.0 )\n"
-"		hsv.x += 360.0;\n"
-"\n"
-"	return hsv;\n"
-"}\n"
-"\n"
 "vec4 FUNCNAME(vec2 tc) {\n"
-"	vec3 hsv = PREFIX(rgb2hsv)(INPUT(tc).rgb);\n"
+"	vec3 hsv = PREFIX(rgb2hsv)(INPUT(tc).rgb, PREFIX(hsvColor).x + 180.0);\n"
 "	float offset = 180.0 - PREFIX(hsvColor).x;\n"
 "	hsv.x = mod(hsv.x + offset, 360.0);\n"
 "	float hx = PREFIX(hsvColor).x + offset;\n"
@@ -159,6 +129,12 @@ static const char* mask_shader =
 "	d += distance(hsv.y, PREFIX(hsvColor).y) / PREFIX(varianceS);\n"
 "	d += distance(hsv.z, PREFIX(hsvColor).z) / PREFIX(varianceV);\n"
 "	d = min(d / 3.0, 1.0);\n"
+"	if (d <= 0.5) {\n"
+"		d = pow(2 * d, PREFIX(gain)) / 2.0;\n"
+"	}\n"
+"	else {\n"
+"		d = -(pow(2 * (1.0 - d), PREFIX(gain)) / 2.0) + 1.0;\n"
+"	}\n"
 "	return vec4(1.0 - d);\n"
 "}\n";
 
@@ -167,12 +143,14 @@ static const char* mask_shader =
 MaskEffect::MaskEffect() : hsvColor(0.0f, 0.0f, 0.5f),
 	varianceH(0),
 	varianceS(0),
-	varianceV(0)
+	varianceV(0),
+	gain(0)
 {
 	register_vec3("hsvColor", (float*)&hsvColor);
 	register_float("varianceH", &varianceH);
 	register_float("varianceS", &varianceS);
 	register_float("varianceV", &varianceV);
+	register_float("gain", &gain);
 }
 
 
@@ -186,7 +164,9 @@ std::string MaskEffect::effect_type_id() const
 
 std::string MaskEffect::output_fragment_shader()
 {
-	return mask_shader;
+	QString s = GLFilter::getShaderRGBTOHSV();
+	s.append(mask_shader);
+	return s.toLatin1().data();
 }
 
 

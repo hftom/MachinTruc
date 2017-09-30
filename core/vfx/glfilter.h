@@ -31,6 +31,9 @@ public:
 	virtual QString getDescriptor( double, Frame*, Profile* ) { return getIdentifier(); }
 	virtual QString getDescriptorFirst( double, Frame*, Profile* ) { return ""; }
 	virtual QString getDescriptorSecond( double, Frame*, Profile* ) { return ""; }
+
+
+	static QString getShaderRGBTOHSV();
 };
 
 #endif //GLFILTER_H
