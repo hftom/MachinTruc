@@ -46,6 +46,7 @@ SOURCES = \
 	\
 	vfx/movitbackground.cpp \
 	vfx/gltest.cpp \
+	vfx/glfilter.cpp \
 	vfx/glmix.cpp \
 	vfx/glpush.cpp \
 	vfx/glcover.cpp \

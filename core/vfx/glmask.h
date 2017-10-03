@@ -15,7 +15,7 @@ public:
 
 private:
 	RGBTriplet hsvColor;
-	float varianceH, varianceS, varianceV, smoothSelect;
+	float varianceH, varianceS, varianceV, gain;
 };
 
 
@@ -46,9 +46,9 @@ public:
 	bool processMask( double pts, Frame *src, Profile *p );
 
 private:
-	Effect *mask, *mix;
+	Effect *mask, *mix, *blur;
 	Parameter *selectionMode;
-	Parameter *hsvColor, *varianceH, *varianceS, *varianceV, *invertColor, *showColor, *smoothSelect;
+	Parameter *hsvColor, *varianceH, *varianceS, *varianceV, *gain, *invertColor, *showColor, *smoothColor;
 };
 
 
