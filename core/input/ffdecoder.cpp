@@ -296,6 +296,7 @@ bool FFDecoder::ffOpen( QString fn )
 					if ( (tag = av_dict_get( st->metadata, "rotate", tag, AV_DICT_IGNORE_SUFFIX )) )
 						orientation = QString( tag->value ).toInt();
 					haveVideo = true;
+					videoCodecCtx->thread_count = 0;
 				}
 			}
 		}

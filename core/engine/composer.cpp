@@ -484,7 +484,7 @@ void Composer::movitFrameDescriptor( QString prefix, Frame *f, QList< QSharedPoi
 
 	// correct orientation
 	if ( f->orientation() ) {
-		desc.append( prefix + GLOrientation().getDescriptor( pts, f, projectProfile ) );
+		desc.append( prefix + orientationFilter.getDescriptor( pts, f, projectProfile ) );
 	}
 
 	for ( int k = 0; k < filters->count(); ++k ) {
@@ -499,7 +499,7 @@ void Composer::movitFrameDescriptor( QString prefix, Frame *f, QList< QSharedPoi
 			|| ( f->glWidth != projectProfile->getVideoWidth() &&
 			f->glHeight != projectProfile->getVideoHeight() ) )
 		{
-			desc.append( prefix + resizeFilter.getDescriptor( pts, f, projectProfile ) );
+			desc.append( prefix + resampleFilter.getDescriptor( pts, f, projectProfile ) );
 			f->resizeAuto = true;
 		}
 	}
@@ -545,9 +545,9 @@ Effect* Composer::movitFrameBuild( Frame *f, QList< QSharedPointer<GLFilter> > *
 
 	// auto resize to match destination aspect ratio
 	if ( f->resizeAuto ) {
-		GLResize *resize = new GLResize();
-		QList<Effect*> el = resize->getMovitEffects();
-		branch->filters.append( new MovitFilter( el, resize ) );
+		GLResample *resample = new GLResample();
+		QList<Effect*> el = resample->getMovitEffects();
+		branch->filters.append( new MovitFilter( el, resample ) );
 		for ( int l = 0; l < el.count(); ++l )
 			current = movitChain.chain->add_effect( el.at( l ) );
 	}

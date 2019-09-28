@@ -84,3 +84,63 @@ FilterCollection* FilterCollection::getGlobalInstance()
 {
 	return &globalInstance;
 }
+
+
+
+QSharedPointer<Filter> FilterCollection::createVideoFilter(QString filterName)
+{
+	QSharedPointer<Filter> f;
+	for ( int i = 0; i < videoFilters.count(); ++i ) {
+		if ( videoFilters.at(i).identifier == filterName ) {
+			f = videoFilters[i].create();
+			break;
+		}
+	}
+	
+	return f;
+}
+
+
+
+QSharedPointer<Filter> FilterCollection::createAudioFilter(QString filterName)
+{
+	QSharedPointer<Filter> f;
+	for ( int i = 0; i < audioFilters.count(); ++i ) {
+		if ( audioFilters.at(i).identifier == filterName ) {
+			f = audioFilters[i].create();
+			break;
+		}
+	}
+	
+	return f;
+}
+
+
+
+QSharedPointer<Filter> FilterCollection::createVideoTransitionFilter(QString filterName)
+{
+	QSharedPointer<Filter> f;
+	for ( int i = 0; i < videoTransitions.count(); ++i ) {
+		if ( videoTransitions.at(i).identifier == filterName ) {
+			f = videoTransitions[i].create();
+			break;
+		}
+	}
+	
+	return f;
+}
+
+
+
+QSharedPointer<Filter> FilterCollection::createAudioTransitionFilter(QString filterName)
+{
+	QSharedPointer<Filter> f;
+	for ( int i = 0; i < audioTransitions.count(); ++i ) {
+		if ( audioTransitions.at(i).identifier == filterName ) {
+			f = audioTransitions[i].create();
+			break;
+		}
+	}
+	
+	return f;
+}

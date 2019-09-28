@@ -18,6 +18,7 @@ INCLUDEPATH += ../core
 DEPENDPATH += ../core
 PRE_TARGETDEPS += ../build/core/libcore.a
 
+CONFIG += c++11
 CONFIG += debug
 unix {
 	CONFIG += link_pkgconfig

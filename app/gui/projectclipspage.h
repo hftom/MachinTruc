@@ -68,6 +68,7 @@ public:
 	void clearAllSources();
 	QList<Source*> getAllSources();
 	Source* getSource( int index, const QString &filename );
+	QList<Source*> getSelectedSources();
 	void addSource( QPixmap pix, Source *src );
 	
 	bool hasActiveSource() { return activeSource != NULL; }
@@ -87,6 +88,7 @@ signals:
 	void sourceActivated();
 	void openSourcesBtnClicked();
 	void openBlankBtnClicked();
+	void addSelectionToTimeline();
 
 private:
 	Sampler *sampler;

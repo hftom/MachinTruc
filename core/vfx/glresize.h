@@ -9,14 +9,14 @@ class GLResize : public GLFilter
 {
 public:
 	GLResize( QString id = "ResizeAuto", QString name = "ResizeAuto" );
-	~GLResize();
+	virtual ~GLResize();
 
-	QString getDescriptor( double pts, Frame *src, Profile *p );
-	bool process( const QList<Effect*> &el, double pts, Frame *src, Profile *p );
+	virtual QString getDescriptor( double pts, Frame *src, Profile *p );
+	virtual bool process( const QList<Effect*> &el, double pts, Frame *src, Profile *p );
 
-	QList<Effect*> getMovitEffects();
+	virtual QList<Effect*> getMovitEffects();
 	
-private:
+protected:
 	void preProcess( Frame *src, Profile *p );
 };
 

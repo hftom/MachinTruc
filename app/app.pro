@@ -5,7 +5,6 @@ QT += xml
 
 SOURCES = \
 	main.cpp \
-	undo.cpp \
 	gui/appconfig.cpp \
 	gui/shadercollection.cpp \
 	gui/renderingdialog.cpp \
@@ -20,6 +19,7 @@ SOURCES = \
 	gui/filtersdialog.cpp \
 	gui/graph.cpp \
 	gui/grapheffectitem.cpp \
+	gui/addclipsdialog.cpp \
 	\
 	gui/filter/inputdouble.cpp \
 	gui/filter/sliderdouble.cpp \
@@ -69,6 +69,7 @@ HEADERS = \
 	gui/effectlistview.h \
 	gui/graph.h \
 	gui/grapheffectitem.h \
+	gui/addclipsdialog.h \
 	\
 	gui/filter/parameterwidget.h \
 	gui/filter/inputdouble.h \
@@ -110,7 +111,8 @@ FORMS = \
 	ui/profile.ui \
 	ui/filters.ui \
 	ui/animeditor.ui \
-	ui/render.ui
+	ui/render.ui \
+	ui/addclips.ui
 
 TARGET = ../machintruc
 
@@ -121,6 +123,7 @@ PRE_TARGETDEPS += ../core/libcore.a
 
 RESOURCES = resources.qrc
 
+CONFIG += c++11
 CONFIG += debug
 unix {
 	CONFIG += link_pkgconfig

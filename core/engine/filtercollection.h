@@ -4,6 +4,7 @@
 // auto filters
 #include "vfx/glpadding.h"
 #include "vfx/glresize.h"
+#include "vfx/glresample.h"
 #include "vfx/glorientation.h"
 
 // video filters
@@ -96,6 +97,11 @@ class FilterCollection
 {
 public:
 	static FilterCollection* getGlobalInstance();
+	
+	QSharedPointer<Filter> createVideoFilter(QString filterName);
+	QSharedPointer<Filter> createAudioFilter(QString filterName);
+	QSharedPointer<Filter> createVideoTransitionFilter(QString filterName);
+	QSharedPointer<Filter> createAudioTransitionFilter(QString filterName);
 	
 	QList<FilterEntry> videoFilters;
 	QList<FilterEntry> sourceVideoFilters;

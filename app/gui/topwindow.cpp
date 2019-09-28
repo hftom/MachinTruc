@@ -7,8 +7,6 @@
 #include "renderingdialog.h"
 #include "projectprofiledialog.h"
 
-#include "undo.h"
-
 #define VIDEOCLEARDELAY 200
 #define AUTORECOVERY "autorecovery.mct"
 
@@ -36,7 +34,8 @@ TopWindow::TopWindow()
 	horizontalLayout_2->insertWidget( 9, seekSlider );
 
 	sampler = new Sampler();
-	timeline = new Timeline( this );
+	undoStack.setUndoLimit(100);
+	timeline = new Timeline( this, &undoStack );
 
 	timelineView = new TimelineGraphicsView( 0 );
 	timelineView->setFocusPolicy( Qt::NoFocus );
@@ -66,6 +65,7 @@ TopWindow::TopWindow()
 	connect( sourcePage, SIGNAL(sourceActivated()), this, SLOT(sourceActivated()) );
 	connect( sourcePage, SIGNAL(openSourcesBtnClicked()), this, SLOT(openSources()) );
 	connect( sourcePage, SIGNAL(openBlankBtnClicked()), this, SLOT(openBlank()) );
+	connect( sourcePage, SIGNAL(addSelectionToTimeline()), timeline, SLOT(addSelectionToTimeline()) );
 
 	fxPage = new FxPage();
 	connect( animEditor, SIGNAL(ovdValueChanged(ParameterWidget*)), fxPage, SIGNAL(ovdValueChanged(ParameterWidget*)) );
@@ -168,12 +168,12 @@ TopWindow::TopWindow()
 	clipboard = new ClipBoard(actionCopy, actionCut, actionPaste);
 	connect( timeline, SIGNAL(clipSelected(ClipViewItem*)), clipboard, SLOT(clipSelected(ClipViewItem*)) );
 
-	QAction *act = UndoStack::getStack()->createUndoAction(this);
+	QAction *act = undoStack.createUndoAction(this);
 	act->setIcon( QIcon(":/toolbar/icons/edit-undo.png") );
 	act->setShortcut(QKeySequence(QKeySequence::Undo));
 	undoToolButton->setDefaultAction( act );
 	menuTimeline->insertAction( actionCopy, act );
-	act = UndoStack::getStack()->createRedoAction(this);
+	act = undoStack.createRedoAction(this);
 	act->setIcon( QIcon(":/toolbar/icons/edit-redo.png") );
 	act->setShortcut(QKeySequence(QKeySequence::Redo));
 	redoToolButton->setDefaultAction( act );
@@ -265,7 +265,7 @@ void TopWindow::moveMulti()
 
 
 bool TopWindow::saveAndContinue() {
-	if (!UndoStack::getStack()->isClean()) {
+	if (!undoStack.isClean()) {
 		int ret = QMessageBox::question(this, tr("Unsaved changes"),
 										tr("This project has been modified.\nDo you want to save your changes?"),
 										QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel, QMessageBox::Yes);
@@ -543,7 +543,7 @@ void TopWindow::newProject()
 	timelineSeek( 0 );
 	QTimer::singleShot( VIDEOCLEARDELAY, vw, SLOT(clear()) );
 	currentProjectFile = "";
-	UndoStack::getStack()->clear();
+	undoStack.clear();
 	clipboard->reset();
 }
 
@@ -569,7 +569,7 @@ void TopWindow::projectSettings( int warn )
 			if (!saveAndContinue()) {
 				return;
 			}
-			UndoStack::getStack()->clear();
+			undoStack.clear();
 		}
 
 		if ( !sampler->setProfile( dlg.getCurrentProfile() ) )
@@ -651,6 +651,13 @@ Source* TopWindow::getDroppedCut( int index, QString mime, QString filename, dou
 		return source;
 	}
 	return NULL;
+}
+
+
+
+QList<Source*> TopWindow:: getSelectedSources()
+{
+	return sourcePage->getSelectedSources();
 }
 
 
@@ -993,7 +1000,7 @@ void TopWindow::saveProject()
 	ProjectFile xml;
 	xml.saveProject( sourcePage->getAllSources(), sampler, currentProjectFile );
 	vw->showOSDMessage( QString( tr("Saved: %1") ).arg(currentProjectFile), 3 );
-	UndoStack::getStack()->setClean();
+	undoStack.setClean();
 
 	removeBackup();
 }
@@ -1023,7 +1030,7 @@ void TopWindow::openProject()
 	sampler->clearAll();
 	timeline->setScene( sampler->getCurrentScene() );
 	sourcePage->clearAllSources();
-	UndoStack::getStack()->clear();
+	undoStack.clear();
 	QTimer::singleShot( VIDEOCLEARDELAY, vw, SLOT(clear()) );
 
 	QString backup; // unused here
@@ -1050,7 +1057,7 @@ bool TopWindow::loadProject(QString filename, QString &backupFilename)
 	sampler->clearAll();
 	timeline->setScene( sampler->getCurrentScene() );
 	sourcePage->clearAllSources();
-	UndoStack::getStack()->clear();
+	undoStack.clear();
 	QTimer::singleShot( VIDEOCLEARDELAY, vw, SLOT(clear()) );
 
 	projectLoader = new ProjectFile();

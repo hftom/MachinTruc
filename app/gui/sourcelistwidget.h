@@ -4,6 +4,7 @@
 #include <QListWidget>
 #include <QMouseEvent>
 #include <QDrag>
+#include <QDebug>
 
 #include "mimetypes.h"
 
@@ -13,7 +14,9 @@ class SourceListWidget : public QListWidget
 {
 	Q_OBJECT
 public:
-	SourceListWidget( QWidget *parent ) : QListWidget( parent ) {}
+	SourceListWidget( QWidget *parent ) : QListWidget( parent ) {
+		setSelectionMode(QAbstractItemView::ExtendedSelection);
+	}
 	
 protected:
 	void mousePressEvent( QMouseEvent *event ) {

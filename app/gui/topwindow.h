@@ -140,6 +140,7 @@ public:
 	Sampler* getSampler() { return sampler; };
 	void timelineTrackAddRemove( int index, bool remove );
 	QList<Source*> getAllSources();
+	QList<Source*> getSelectedSources();
 
 public slots:
 	void clipThumbRequest( ThumbRequest request );
@@ -249,6 +250,8 @@ private:
 	QTimer backupTimer;
 	
 	ClipBoard *clipboard;
+	
+	QUndoStack undoStack;
 	
 signals:
 	void startOSDTimer( bool );

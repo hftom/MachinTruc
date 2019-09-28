@@ -3,6 +3,7 @@
 
 #include <QGraphicsScene>
 #include <QPropertyAnimation>
+#include <QUndoStack>
 
 #include "engine/scene.h"
 #include "clipviewitem.h"
@@ -52,7 +53,7 @@ class Timeline : public QGraphicsScene
 	Q_OBJECT
 	Q_PROPERTY( qreal animZoom READ getCurrentZoom WRITE setCurrentZoom )
 public:
-	Timeline( TopWindow *parent );
+	Timeline( TopWindow *parent, QUndoStack *stack );
 	~Timeline();
 	
 	void clipItemCanMove( ClipViewItem *clip, QPointF mouse, double clipStartPos, QPointF clipStartMouse, bool unsnap, bool multiMove );
@@ -128,6 +129,8 @@ public slots:
 	
 	void showEffect( bool isVideo, int index );
 	
+	void addSelectionToTimeline();
+	
 protected:
 	/*void mousePressEvent ( QGraphicsSceneMouseEvent *e );
 	void mouseMoveEvent( QGraphicsSceneMouseEvent *e );
@@ -181,6 +184,8 @@ private:
 	QPointF mouseScenePosition;
 	
 	bool forceEnsureVisible;
+	
+	QUndoStack *undoStack;
 	
 signals:
 	void ensureVisible( const QGraphicsItem* );

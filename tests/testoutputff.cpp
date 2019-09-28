@@ -29,7 +29,7 @@ void TestOutputFF::encode()
 	OutputFF *out = new OutputFF( &encodeVideoFrames, &encodeAudioFrames );
 	double end = prof.getStreamStartTime() + prof.getStreamDuration();
 	end -= prof.getVideoFrameDuration() * 3.0 / 2.0;
-	bool ok = out->init( "encode.mkv", prof, 1, true, end );
+	bool ok = out->init( "encode.mkv", prof, 1, OutputFF::VCODEC_HEVC, "", end );
 	
 	int bps = prof.getAudioChannels() * prof.bytesPerChannel( &prof );
 	int nSamples = prof.getAudioSampleRate() / prof.getVideoFrameRate();

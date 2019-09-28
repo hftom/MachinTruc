@@ -85,6 +85,18 @@ Source* ProjectSourcesPage::getSource( int index, const QString &filename )
 
 
 
+QList<Source*> ProjectSourcesPage::getSelectedSources()
+{
+	QList<QListWidgetItem*> list = sourceListWidget->selectedItems();
+	QList<Source*> res;
+	for (int i = 0; i < list.count(); ++i) {
+		SourceListItem *it = (SourceListItem*)list.at(i);
+		res.append(it->getSource());
+	}
+	return res;
+}
+
+
 void ProjectSourcesPage::sourceItemActivated( QListWidgetItem *item, QListWidgetItem *prev )
 {
 	Q_UNUSED( prev );
@@ -105,6 +117,9 @@ void ProjectSourcesPage::sourceItemMenu( const QPoint &pos )
 		return;
 	
 	QMenu menu;
+	if (sourceListWidget->selectedItems().count() > 1) {
+		menu.addAction( tr("Add selection to track..."), this, SIGNAL(addSelectionToTimeline()) );
+	}
 	menu.addAction( tr("Source properties"), this, SLOT(showSourceProperties()) );
 	menu.addAction( tr("Filters..."), this, SLOT(showSourceFilters()) );
 	menu.exec( QCursor::pos() );

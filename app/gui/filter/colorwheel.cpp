@@ -48,6 +48,10 @@ ColorWheel::ColorWheel( QWidget *parent, Parameter *p, bool keyframeable ) : Par
 	widgets.append( valueBar );
 	grid->addWidget( valueBar, 1, 2, 4, 1 );
 	
+	ColorBarWidget *colorBar = new ColorBarWidget();
+	widgets.append( colorBar );
+	grid->addWidget( colorBar, 1, 3, 4, 1 );
+	
 	float r, g, b;
 	movit::hsv2rgb(  M_PI * 2 * hAngle, sRadius, 1.0f, &r, &g, &b );
 	init.setRgbF( r, g, b );
