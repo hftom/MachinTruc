@@ -605,7 +605,7 @@ void Composer::movitRender( Frame *dst, bool update )
 		}
 		// overlay
 		if ( (i - 1) > start )
-			currentDescriptor.append( GLOverlay().getDescriptor( pts, f, &projectProfile ) );
+			currentDescriptor.append( overlayFilter.getDescriptor( pts, f, &projectProfile ) );
 		ow = f->glWidth;
 		oh = f->glHeight;
 	}
