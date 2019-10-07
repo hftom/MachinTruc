@@ -1,4 +1,5 @@
 #include <movit/resize_effect.h>
+#include <movit/resample_effect.h>
 #include "vfx/glresize.h"
 
 
@@ -63,6 +64,6 @@ bool GLResize::process( const QList<Effect*> &el, double pts, Frame *src, Profil
 QList<Effect*> GLResize::getMovitEffects()
 {
 	QList<Effect*> list;
-	list.append( new ResizeEffect() );
+	list.append( new ResampleEffect() );
 	return list;
 }

@@ -17,7 +17,7 @@ public:
 	virtual QList<Effect*> getMovitEffects();
 	
 protected:
-	void preProcess( Frame *src, Profile *p );
+	virtual void preProcess( Frame *src, Profile *p );
 };
 
 #endif //GLRESIZE_H

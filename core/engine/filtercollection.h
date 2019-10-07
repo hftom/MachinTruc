@@ -4,7 +4,7 @@
 // auto filters
 #include "vfx/glpadding.h"
 #include "vfx/glresize.h"
-#include "vfx/glresample.h"
+#include "vfx/glnormalizesar.h"
 #include "vfx/glorientation.h"
 #include "vfx/gloverlay.h"
 

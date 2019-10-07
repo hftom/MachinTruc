@@ -1312,7 +1312,10 @@ void Timeline::addSelectionToTimeline()
 	int sh = scene->getProfile().getVideoHeight();
 	
 	QList<Clip*> added;
+	
+	srand((unsigned)time(0)); 
 	for (int j = 0; j < list.count(); ++j) {
+		int animType = rand() % 2; 
 		Source *source = list.at(j);
 		double len = (source->getType() == InputBase::IMAGE ? (double)settings.imageDuration * MICROSECOND : source->getProfile().getStreamDuration());
 		Clip *c = scene->createClip( source, clipPos, source->getProfile().getStreamStartTime(), len );
@@ -1327,29 +1330,45 @@ void Timeline::addSelectionToTimeline()
 				f->setLength( c->length() );
 				c->videoFilters.append( f.staticCast<GLFilter>() );
 				QList<Parameter*> list = f->getParameters();
+				
+				int w = source->getProfile().getVideoWidth();
+				int h = source->getProfile().getVideoHeight();
+				double percent = 100;
+				if (w < sw) {
+					percent = (double)sw / w * 100.0;
+				}
+				if ((double)h * percent / 100.0 < sh) {
+					percent = (double)sh / h * 100.0;
+				}
+				
 				for (int i = 0; i < list.count(); ++i) {
 					Parameter *p = list[i];
 					if (p->id == "sizePercent") {
-						int w = source->getProfile().getVideoWidth();
-						int h = source->getProfile().getVideoHeight();
-						double percent = 100;
-						if (w < sw) {
-							percent = (double)sw / w * 100.0;
-						}
-						if ((double)h * percent / 100.0 < sh) {
-							percent = (double)sh / h * 100.0;
-						}
-						
-						if (j % 2) {
-							p->graph.keys.append( AnimationKey( AnimationKey::LINEAR, 0, percent / p->max.toDouble() ) );
-							p->graph.keys.append( AnimationKey( AnimationKey::LINEAR, 1, (percent + 10.0) / p->max.toDouble() ) );
+						if (animType == 0) {
+							if (j % 2) {
+								p->graph.keys.append( AnimationKey( AnimationKey::LINEAR, 0, percent / p->max.toDouble() ) );
+								p->graph.keys.append( AnimationKey( AnimationKey::LINEAR, 1, (percent + 10.0) / p->max.toDouble() ) );
+							}
+							else {
+								p->graph.keys.append( AnimationKey( AnimationKey::LINEAR, 0, (percent + 10.0) / p->max.toDouble() ) );
+								p->graph.keys.append( AnimationKey( AnimationKey::LINEAR, 1, percent / p->max.toDouble() ) );
+							}
 						}
 						else {
-							p->graph.keys.append( AnimationKey( AnimationKey::LINEAR, 0, (percent + 10.0) / p->max.toDouble() ) );
-							p->graph.keys.append( AnimationKey( AnimationKey::LINEAR, 1, percent / p->max.toDouble() ) );
+							p->value = percent + 10.0;
 						}
-						
-						break;
+					}
+					else if (animType == 1 && p->id == "xOffset") {
+						double pos = (sh / 10.0) / 2.0;
+						double direction = rand() % 2 ? -1.0 : 1.0;
+						p->graph.keys.append( AnimationKey( AnimationKey::LINEAR, 0, p->getNormalizedKeyValue(direction * pos) ) );
+						p->graph.keys.append( AnimationKey( AnimationKey::LINEAR, 1, p->getNormalizedKeyValue(-direction * pos) ) );
+					}
+					else if (animType == 1 && p->id == "yOffset") {
+						int pos = (sh / 10) / 2;
+						double direction = rand() % 2 ? -1.0 : 1.0;
+						p->graph.keys.append( AnimationKey( AnimationKey::LINEAR, 0, p->getNormalizedKeyValue(direction * pos) ) );
+						p->graph.keys.append( AnimationKey( AnimationKey::LINEAR, 1, p->getNormalizedKeyValue(-direction * pos) ) );
 					}
 				}
 			}

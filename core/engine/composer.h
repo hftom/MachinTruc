@@ -90,7 +90,7 @@ private:
 	
 	GLOverlay overlayFilter;
 	GLOrientation orientationFilter;
-	GLResample resampleFilter;
+	GLResize resizeFilter;
 	GLPadding paddingFilter;
 
 	MovitBackground movitBackground;

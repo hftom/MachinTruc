@@ -113,7 +113,7 @@ public:
 	int glOVD;
 	QRectF glOVDRect;
 	QList<FilterTransform> glOVDTransformList;
-	bool paddingAuto, resizeAuto;
+	bool paddingAuto, resizeAuto, sarAuto;
 
 private:
 	int pType;

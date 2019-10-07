@@ -475,7 +475,7 @@ bool Composer::renderVideoFrame( Frame *dst )
 void Composer::movitFrameDescriptor( QString prefix, Frame *f, QList< QSharedPointer<GLFilter> > *filters, QStringList &desc, Profile *projectProfile )
 {
 	double pts = sampler->currentPTS();
-	f->paddingAuto = f->resizeAuto = false;
+	f->paddingAuto = f->resizeAuto = f->sarAuto = false;
 	f->glWidth = f->profile.getVideoWidth();
 	f->glHeight = f->profile.getVideoHeight();
 	f->glSAR = f->profile.getVideoSAR();
@@ -485,6 +485,14 @@ void Composer::movitFrameDescriptor( QString prefix, Frame *f, QList< QSharedPoi
 	// correct orientation
 	if ( f->orientation() ) {
 		desc.append( prefix + orientationFilter.getDescriptor( pts, f, projectProfile ) );
+	}
+	
+	// normalize SAR
+	if ( !sampler->previewMode() ) {
+		if ( fabs( 1.0 - f->glSAR ) > 1e-3 ) {
+			desc.append( prefix + GLNormalizeSAR().getDescriptor( pts, f, projectProfile ) );
+			f->sarAuto = true;
+		}
 	}
 
 	for ( int k = 0; k < filters->count(); ++k ) {
@@ -499,7 +507,7 @@ void Composer::movitFrameDescriptor( QString prefix, Frame *f, QList< QSharedPoi
 			|| ( f->glWidth != projectProfile->getVideoWidth() &&
 			f->glHeight != projectProfile->getVideoHeight() ) )
 		{
-			desc.append( prefix + resampleFilter.getDescriptor( pts, f, projectProfile ) );
+			desc.append( prefix + resizeFilter.getDescriptor( pts, f, projectProfile ) );
 			f->resizeAuto = true;
 		}
 	}
@@ -534,6 +542,15 @@ Effect* Composer::movitFrameBuild( Frame *f, QList< QSharedPointer<GLFilter> > *
 		for ( int l = 0; l < el.count(); ++l )
 			current = movitChain.chain->add_effect( el.at( l ) );
 	}
+	
+	// normalize SAR
+	if ( f->sarAuto ) {
+		GLNormalizeSAR *norm = new GLNormalizeSAR();
+		QList<Effect*> el = norm->getMovitEffects();
+		branch->filters.append( new MovitFilter( el, norm ) );
+		for ( int l = 0; l < el.count(); ++l )
+			current = movitChain.chain->add_effect( el.at( l ) );
+	}
 
 	// apply filters
 	for ( int k = 0; k < filters->count(); ++k ) {
@@ -545,9 +562,9 @@ Effect* Composer::movitFrameBuild( Frame *f, QList< QSharedPointer<GLFilter> > *
 
 	// auto resize to match destination aspect ratio
 	if ( f->resizeAuto ) {
-		GLResample *resample = new GLResample();
-		QList<Effect*> el = resample->getMovitEffects();
-		branch->filters.append( new MovitFilter( el, resample ) );
+		GLResize *resize = new GLResize();
+		QList<Effect*> el = resize->getMovitEffects();
+		branch->filters.append( new MovitFilter( el, resize ) );
 		for ( int l = 0; l < el.count(); ++l )
 			current = movitChain.chain->add_effect( el.at( l ) );
 	}

@@ -61,7 +61,7 @@ SOURCES = \
 	vfx/glwater.cpp \
 	vfx/glliftgammagain.cpp \
 	vfx/glresize.cpp \
-	vfx/glresample.cpp \
+	vfx/glnormalizesar.cpp \
 	vfx/glpadding.cpp \
 	vfx/glcrop.cpp \
 	vfx/glcut.cpp \
@@ -151,7 +151,7 @@ HEADERS = \
 	vfx/glwater.h \
 	vfx/glliftgammagain.h \
 	vfx/glresize.h \
-	vfx/glresample.h \
+	vfx/glnormalizesar.h \
 	vfx/glpadding.h \
 	vfx/glcrop.h \
 	vfx/glcut.h \
