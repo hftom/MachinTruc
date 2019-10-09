@@ -5,8 +5,8 @@
 
 GLGlow::GLGlow( QString id, QString name ) : GLMask( id, name )
 {
-	radius = addParameter( "radius", tr("Radius:"), Parameter::PDOUBLE, 20.0, 0.0, 100.0, false );
-	glow = addParameter( "glow", tr("Glow:"), Parameter::PDOUBLE, 1.0, 0.0, 10.0, true );
+	blur = addParameter( "blur", tr("Blur:"), Parameter::PDOUBLE, 1.0, 0.0, 5.0, false, "%" );
+	glow = addParameter( "glow", tr("Glow:"), Parameter::PDOUBLE, 1.3, 0.0, 10.0, true );
 	highlight = addParameter( "highlight", tr("Highlight:"), Parameter::PDOUBLE, 0.2, 0.0, 1.0, false );
 	
 	GLMask::setParameters();
@@ -30,7 +30,7 @@ QString GLGlow::getDescriptor( double pts, Frame *src, Profile *p  )
 bool GLGlow::process( const QList<Effect*> &el, double pts, Frame *src, Profile *p )
 {
 	Effect *e = el[0];
-	bool ok = e->set_float( "radius", getParamValue( radius, pts ).toFloat() )
+	bool ok = e->set_float( "radius", src->glWidth * getParamValue( blur, pts ).toFloat() / 100.0 )
  		&& e->set_float( "blurred_mix_amount", getParamValue( glow, pts ).toFloat() )
  		&& e->set_float( "highlight_cutoff", getParamValue( highlight, pts ).toFloat() );
 	ok |= GLMask::processMask(pts, src, p);

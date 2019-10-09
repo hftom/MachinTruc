@@ -115,6 +115,7 @@ protected:
 	double centerOffsetX, centerOffsetY;
 	
 	Parameter *xOffset, *yOffset;
+	QVariant ovdOffset, ovdScale;
 };
 
 #endif //GLSIZE_H

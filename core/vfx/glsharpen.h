@@ -16,7 +16,7 @@ public:
 	QList<Effect*> getMovitEffects();
 
 private:
-	Parameter *amount, *radius;
+	Parameter *amount, *blur;
 };
 
 #endif //GLSHARPEN_H

@@ -22,8 +22,8 @@ GLSize::GLSize( QString id, QString name ) : GLFilter( id, name ),
 	centerOffsetY(0)
 {
 	sizePercent = addParameter( "sizePercent", tr("Size:"), Parameter::PINPUTDOUBLE, 100.0, 0.0, 10000.0, true, "%" );
-	xOffset = addParameter( "xOffset", tr("X:"), Parameter::PINPUTDOUBLE, 0.0, -10000.0, 10000.0, true );
-	yOffset = addParameter( "yOffset", tr("Y:"), Parameter::PINPUTDOUBLE, 0.0, -10000.0, 10000.0, true );
+	xOffset = addParameter( "xOffset", tr("X offset:"), Parameter::PINPUTDOUBLE, 0.0, -110.0, 110.0, true, "%" );
+	yOffset = addParameter( "yOffset", tr("Y offset:"), Parameter::PINPUTDOUBLE, 0.0, -110.0, 110.0, true, "%" );
 	rotateAngle = addParameter( "rotateAngle", tr("Rotation angle:"), Parameter::PDOUBLE, 0.0, -360.0, 360.0, true );
 	softBorder = addParameter( "softBorder", tr("Soft border:"), Parameter::PINT, 2, 1, 10, false );
 }
@@ -42,7 +42,8 @@ QString GLSize::getDescriptor( double pts, Frame *src, Profile *p )
 	QString s;
 	bool samesar = qAbs( p->getVideoSAR() - src->glSAR ) < 1e-3;
 
-	if ( samesar && !sizePercent->graph.keys.count() && getParamValue( sizePercent ).toDouble() == 100.0 ) {
+	double zoom = p->getVideoWidth() / (double)src->glWidth * getParamValue( sizePercent ).toDouble() / 100.0;
+	if ( samesar && !sizePercent->graph.keys.count() && zoom == 1.0 ) {
 		resizeActive = false;
 	}
 	else {
@@ -70,16 +71,10 @@ QString GLSize::getDescriptor( double pts, Frame *src, Profile *p )
 void GLSize::ovdUpdate( QString type, QVariant val )
 {
 	if ( type == "translate" ) {
-		QPointF pos = val.toPointF();
-		if ( !xOffset->graph.keys.count() )
-			xOffset->value = pos.x();
-		if ( !yOffset->graph.keys.count() )
-			yOffset->value = pos.y();
+		ovdOffset = val;
 	}
 	else if ( type == "scale" ) {
-		QPointF pos = val.toPointF();
-		if ( !sizePercent->graph.keys.count() )
-			sizePercent->value = pos.x();
+		ovdScale = val;
 	}
 }
 
@@ -90,14 +85,37 @@ bool GLSize::process( const QList<Effect*> &el, double pts, Frame *src, Profile 
 	bool ok = true;
 	int index = 0;
 
-	double rad = getParamValue( rotateAngle, pts ).toDouble() * M_PI / 180.0;
-	double zoom = getParamValue( sizePercent, pts ).toDouble() / 100.0;
-	double left = getParamValue( xOffset, pts ).toDouble();
-	double top = getParamValue( yOffset, pts ).toDouble();
 	// screen size (project)
 	double pw = p->getVideoWidth();
 	double ph = p->getVideoHeight();
 	double psar = p->getVideoSAR();
+	
+	if (!ovdScale.isNull()) {
+		QPointF pos = ovdScale.toPointF();
+		if ( !sizePercent->graph.keys.count() ) {
+			sizePercent->value = pos.x() / (pw / (double)src->glWidth);
+		}
+		
+		ovdScale = QVariant();
+	}
+	
+	double rad = getParamValue( rotateAngle, pts ).toDouble() * M_PI / 180.0;
+	double zoom = pw / (double)src->glWidth * getParamValue( sizePercent, pts ).toDouble() / 100.0;
+	
+	if (!ovdOffset.isNull()) {
+		QPointF pos = ovdOffset.toPointF();
+		if ( !xOffset->graph.keys.count() ) {
+			xOffset->value = pos.x() * 100.0 / pw;
+		}
+		if ( !yOffset->graph.keys.count() ) {
+			yOffset->value = pos.y() * 100.0 / ph;
+		}
+		
+		ovdOffset = QVariant();
+	}
+	
+	double left = pw * getParamValue( xOffset, pts ).toDouble() / 100.0;
+	double top = ph * getParamValue( yOffset, pts ).toDouble() / 100.0;
 	// scaled centered image
 	double sw = qMax( (double)src->glWidth * src->glSAR  / psar * zoom, 1.0 );
 	double sh = qMax( (double)src->glHeight * zoom, 1.0 );
@@ -110,8 +128,9 @@ bool GLSize::process( const QList<Effect*> &el, double pts, Frame *src, Profile 
 		src->glOVDRect = QRectF( -imageWidth / 2.0, -imageHeight / 2.0, imageWidth, imageHeight );
 	}
 	if ( src->glOVD ) {
-		if ( qAbs( src->glSAR - psar ) > 1e-3 )
+		if ( qAbs( src->glSAR - psar ) > 1e-3 ) {
 			src->glOVDTransformList.append( FilterTransform( FilterTransform::NERATIO, src->glSAR / psar, 1.0 ) );
+		}
 		src->glOVDTransformList.append( FilterTransform( FilterTransform::SCALE, qMax(1e-6, zoom), qMax(1e-6, zoom) ) );
 		src->glOVDTransformList.append( FilterTransform( FilterTransform::ROTATE, rad ) );
 		src->glOVDTransformList.append( FilterTransform( FilterTransform::TRANSLATE, left, top ) );

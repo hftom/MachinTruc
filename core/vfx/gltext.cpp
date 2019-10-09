@@ -10,8 +10,8 @@ GLText::GLText( QString id, QString name ) : GLFilter( id, name )
 {
 	editor = addParameter( "editor", tr("Editor:"), Parameter::PSTRING, "Arial,12,-1,5,50,0,0,0,0,0|30|0|0|#ffffff.255|#000000.0|1|0|#000000.255|0|50|50\nText", "", "", false );
 	opacity = addParameter( "opacity", tr("Opacity:"), Parameter::PDOUBLE, 1.0, 0.0, 1.0, true );
-	xOffset = addParameter( "xOffset", tr("X:"), Parameter::PINPUTDOUBLE, 0.0, -10000.0, 10000.0, true );
-	yOffset = addParameter( "yOffset", tr("Y:"), Parameter::PINPUTDOUBLE, 0.0, -10000.0, 10000.0, true );
+	xOffset = addParameter( "xOffset", tr("X offset:"), Parameter::PINPUTDOUBLE, 0.0, -110.0, 110.0, true, "%" );
+	yOffset = addParameter( "yOffset", tr("Y offset:"), Parameter::PINPUTDOUBLE, 0.0, -110.0, 110.0, true, "%" );
 }
 
 
@@ -19,21 +19,30 @@ GLText::GLText( QString id, QString name ) : GLFilter( id, name )
 void GLText::ovdUpdate( QString type, QVariant val )
 {
 	if ( type == "translate" ) {
-		QPointF pos = val.toPointF();
-		if ( !xOffset->graph.keys.count() )
-			xOffset->value = pos.x();
-		if ( !yOffset->graph.keys.count() )
-			yOffset->value = pos.y();
+		ovdOffset = val;
 	}
 }
 
 
 
 bool GLText::process( const QList<Effect*> &el, double pts, Frame *src, Profile *p )
-{	
+{
+	if (!ovdOffset.isNull()) {
+		QPointF pos = ovdOffset.toPointF();
+		if ( !xOffset->graph.keys.count() )
+			xOffset->value = pos.x() * 100.0 / src->glWidth;
+		if ( !yOffset->graph.keys.count() )
+			yOffset->value = pos.y() * 100.0 / src->glHeight;
+		
+		ovdOffset = QVariant();
+	}
+	
+	double xof = src->glWidth * getParamValue( xOffset, pts ).toDouble() / 100.0;
+	double yof = src->glHeight * getParamValue( yOffset, pts ).toDouble() / 100.0;
+
 	MyTextEffect *e = (MyTextEffect*)el[0];
-	bool ok = e->set_float( "left", getParamValue( xOffset, pts ).toDouble() )
-		&& e->set_float( "top", getParamValue( yOffset, pts ).toDouble() )
+	bool ok = e->set_float( "left", xof )
+		&& e->set_float( "top", yof )
 		&& e->set_float( "opacity", getParamValue( opacity, pts ).toDouble() );
 		
 	QString text = getParamValue( editor ).toString();
@@ -58,7 +67,7 @@ bool GLText::process( const QList<Effect*> &el, double pts, Frame *src, Profile 
 		src->glOVD = FilterTransform::TRANSLATE;
 		double w = e->getImageWidth(), h = e->getImageHeight();
 		src->glOVDRect = QRectF( -w / 2.0, -h / 2.0, w, h );
-		src->glOVDTransformList.append( FilterTransform( FilterTransform::TRANSLATE, getParamValue( xOffset, pts ).toDouble(), getParamValue( yOffset, pts ).toDouble() ) );
+		src->glOVDTransformList.append( FilterTransform( FilterTransform::TRANSLATE, xof, yof ) );
 	}
 	
 	return ok;
@@ -86,7 +95,7 @@ QImage* MyTextEffect::drawImage()
 	int align = 1;
 	
 	int arrowType = 0, arrowSize = 0, arrowPos = 0;
-		
+
 	QStringList sl = currentText.split("\n");
 	while ( !sl.isEmpty() ) {
 		if ( sl.last().trimmed().isEmpty() )
@@ -141,9 +150,9 @@ QImage* MyTextEffect::drawImage()
 		sl.takeFirst();
 	}	
 	
-	QImage *image = new QImage( 10, 10, QImage::Format_ARGB32_Premultiplied );
+	QImage image( 10, 10, QImage::Format_ARGB32_Premultiplied );
 	QPainter painter;
-	painter.begin( image );
+	painter.begin( &image );
 	painter.setPen( myPen );
 	painter.setBrush( myBrush );
 	painter.setFont( myFont );
@@ -167,13 +176,13 @@ QImage* MyTextEffect::drawImage()
 	double y = x;
 	w += 2 * x;
 	h += 2 * y;
-	if ( w > iwidth ) {
-		x -= (w - iwidth) / 2.0;
-		w = iwidth;
+	if ( w > 1920 ) {
+		x -= (w - 1920) / 2.0;
+		w = 1920;
 	}
-	if ( h > iheight ) {
-		y -= (h - iheight) / 2.0;
-		h = iheight;
+	if ( h > 1080 ) {
+		y -= (h - 1080) / 2.0;
+		h = 1080;
 	}
 	
 	QPointF polygon[7];
@@ -267,10 +276,9 @@ QImage* MyTextEffect::drawImage()
 		}		
 	}
 	
-	delete image;
-	image = new QImage( w + wMargin, h + hMargin, QImage::Format_ARGB32_Premultiplied );
-	image->fill( QColor(0,0,0,0) );
-	painter.begin( image );
+	image = QImage( w + wMargin, h + hMargin, QImage::Format_ARGB32_Premultiplied );
+	image.fill( QColor(0,0,0,0) );
+	painter.begin( &image );
 	painter.setRenderHints( QPainter::Antialiasing | QPainter::TextAntialiasing );
 	if ( backgroundColor.alpha() > 0 ) {
 		painter.setPen( QColor(0,0,0,0) );
@@ -313,5 +321,8 @@ QImage* MyTextEffect::drawImage()
 	}
 	painter.end();
 	
-	return image;
+	double sw = image.width() * iwidth / 1920.0;
+	double sh = image.height() * iheight / 1080.0;
+	
+	return new QImage(image.scaled( sw, sh, Qt::KeepAspectRatio, Qt::SmoothTransformation ));
 }

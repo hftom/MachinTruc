@@ -70,6 +70,16 @@ void CursorViewItem::mouseMoveEvent( QGraphicsSceneMouseEvent *event )
 	if ( event->buttons() & Qt::RightButton ) {
 		return;
 	}
+	isMoving = true;
+	Timeline *t = (Timeline*)scene();
+	t->playheadMoved( event->scenePos().x() - startMoveOffset );
+}
+
+
+
+void CursorViewItem::mouseReleaseEvent( QGraphicsSceneMouseEvent *event )
+{
+	isMoving = false;
 	Timeline *t = (Timeline*)scene();
 	t->playheadMoved( event->scenePos().x() - startMoveOffset );
 }

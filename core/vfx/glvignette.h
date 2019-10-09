@@ -19,6 +19,7 @@ public:
 private:
 	Parameter *softness, *radius;
 	Parameter *xOffset, *yOffset;
+	QVariant ovdOffset;
 };
 
 #endif //GLVIGNETTE_H

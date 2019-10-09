@@ -34,10 +34,10 @@ RulerViewItem::RulerViewItem() : frameDuration(40000), lastY(0), docked(true)
 	anim->setDuration( 250 );
 	anim->setEasingCurve( QEasingCurve::InOutSine );
 	
-	int fontSize = 10;
+	int fontSize = 12;
 	font = QFont( "Arial", fontSize );
 	QFontMetrics fm( font );
-	while (fontSize > 0 && fm.boundingRect( "99:99:99" ).height() > 10) {
+	while (fontSize > 0 && fm.boundingRect( "99:99:99" ).height() > 14) {
 		font = QFont( "Arial", --fontSize );
 		fm =  QFontMetrics( font );
 	}
@@ -160,11 +160,11 @@ void RulerViewItem::paint( QPainter *painter, const QStyleOptionGraphicsItem *op
 		start += tickdistance;
 	}
 	
-	painter->setPen( "blue" );
+	/*painter->setPen( "blue" );
 	if ( currentTextLen == textShortLen )
 		painter->drawText( 60, rh - 2, QString("%1s").arg( ticklen ) );
 	else
-		painter->drawText( 60, rh - 2, QString("%1i").arg( ticklen ) );
+		painter->drawText( 60, rh - 2, QString("%1i").arg( ticklen ) );*/
 }
 
 

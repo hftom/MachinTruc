@@ -17,7 +17,7 @@ public:
 	QList<Effect*> getMovitEffects();
 
 private:
-	Parameter *radius, *glow, *highlight;
+	Parameter *blur, *glow, *highlight;
 };
 
 #endif //GLGLOW_H

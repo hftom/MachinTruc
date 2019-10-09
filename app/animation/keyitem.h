@@ -5,7 +5,7 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QPainter>
 
-#define SNAPWIDTH 8
+#define SNAPWIDTH 12
 #define HALFKEYSIZE 5
 
 

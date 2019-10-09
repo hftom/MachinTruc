@@ -6,7 +6,7 @@
 GLSharpen::GLSharpen( QString id, QString name ) : GLFilter( id, name )
 {
 	amount = addParameter( "amount", tr("Amount:"), Parameter::PDOUBLE, 0.5, 0.0, 2.0, true );
-	radius = addParameter( "radius", tr("Blur radius:"), Parameter::PDOUBLE, 3.0, 0.0, 10.0, true );
+	blur = addParameter( "blur", tr("Blur:"), Parameter::PDOUBLE, 0.15, 0.0, 0.5, true, "%" );
 }
 
 
@@ -22,7 +22,7 @@ bool GLSharpen::process( const QList<Effect*> &el, double pts, Frame *src, Profi
 	Q_UNLIKELY( src );
 	Q_UNUSED( p );
 	return el.at(0)->set_float( "amount", getParamValue( amount, pts ).toFloat() )
-		&& el.at(0)->set_float( "radius", getParamValue( radius, pts ).toFloat() );
+	&& el.at(0)->set_float( "radius", src->glWidth * getParamValue( blur, pts ).toDouble() / 100.0 );
 }
 
 

@@ -18,7 +18,7 @@ FilterCollection::FilterCollection()
 	videoFilters.append( FilterEntry( "lens", "GLBlur", QObject::tr("Blur"), &Maker<GLBlur>::make ) );
 	//videoFilters.append( FilterEntry( "lens", "GLDeconvolutionSharpen", QObject::tr("Sharpen (deconvolution)"), &Maker<GLDeconvolutionSharpen>::make ) );
 	videoFilters.append( FilterEntry( "lens", "GLSharpen", QObject::tr("Sharpen"), &Maker<GLSharpen>::make ) );
-	videoFilters.append( FilterEntry( "lens", "GLDenoise", QObject::tr("Denoise"), &Maker<GLDenoise>::make ) );
+	//videoFilters.append( FilterEntry( "lens", "GLDenoise", QObject::tr("Denoise"), &Maker<GLDenoise>::make ) );
 	videoFilters.append( FilterEntry( "lens", "GLDiffusion", QObject::tr("Diffusion"), &Maker<GLDiffusion>::make ) );
 	videoFilters.append( FilterEntry( "lens", "GLMirror", QObject::tr("Mirror"), &Maker<GLMirror>::make ) );
 	videoFilters.append( FilterEntry( "lens", "GLGlow", QObject::tr("Glow"), &Maker<GLGlow>::make ) );
@@ -26,13 +26,12 @@ FilterCollection::FilterCollection()
 	videoFilters.append( FilterEntry( "size", "GLDistort", QObject::tr("Distort"), &Maker<GLDistort>::make ) );
 	videoFilters.append( FilterEntry( "size", "GLCrop", QObject::tr("Crop"), &Maker<GLCrop>::make ) );
 	videoFilters.append( FilterEntry( "size", "GLStabilize", QObject::tr("Stabilize"), &Maker<GLStabilize>::make ) );
-	//videoFilters.append( FilterEntry( "size", "GLCut", QObject::tr("Cut"), &Maker<GLCut>::make ) );
 	videoFilters.append( FilterEntry( "size", "GLVignette", QObject::tr("Vignette"), &Maker<GLVignette>::make ) );
 	videoFilters.append( FilterEntry( "draw", "GLText", QObject::tr("Text"), &Maker<GLText>::make ) );
 	videoFilters.append( FilterEntry( "draw", "GLBorder", QObject::tr("Border color"), &Maker<GLBorder>::make ) );
 	videoFilters.append( FilterEntry( "draw", "GLBackgroundColor", QObject::tr("Background color"), &Maker<GLBackgroundColor>::make ) );
 	videoFilters.append( FilterEntry( "draw", "GLFiber", QObject::tr("Optical fiber"), &Maker<GLFiber>::make ) );
-	videoFilters.append( FilterEntry( "draw", "GLEdge", QObject::tr("Edge"), &Maker<GLEdge>::make ) );
+	//videoFilters.append( FilterEntry( "draw", "GLEdge", QObject::tr("Edge"), &Maker<GLEdge>::make ) );
 	videoFilters.append( FilterEntry( "draw", "GLHandDrawing", QObject::tr("Hand drawing"), &Maker<GLHandDrawing>::make ) );
 	videoFilters.append( FilterEntry( "alpha", "GLSoftBorder", QObject::tr("Soft border"), &Maker<GLSoftBorder>::make ) );
 	videoFilters.append( FilterEntry( "alpha", "GLOpacity", QObject::tr("Opacity"), &Maker<GLOpacity>::make ) );
@@ -50,7 +49,7 @@ FilterCollection::FilterCollection()
 	sourceVideoFilters.append( FilterEntry( "colors", "GLSaturation", QObject::tr("Saturation"), &Maker<GLSaturation>::make ) );
 	sourceVideoFilters.append( FilterEntry( "colors", "GLWhiteBalance", QObject::tr("White balance"), &Maker<GLWhiteBalance>::make ) );
 	sourceVideoFilters.append( FilterEntry( "colors", "GLLiftGammaGain", QObject::tr("Lift Gamma Gain"), &Maker<GLLiftGammaGain>::make ) );
-	sourceVideoFilters.append( FilterEntry( "lens", "GLDeconvolutionSharpen", QObject::tr("Sharpen"), &Maker<GLDeconvolutionSharpen>::make ) );
+	//sourceVideoFilters.append( FilterEntry( "lens", "GLDeconvolutionSharpen", QObject::tr("Sharpen"), &Maker<GLDeconvolutionSharpen>::make ) );
 	sourceVideoFilters.append( FilterEntry( "lens", "GLSharpen", QObject::tr("Sharpen (fast)"), &Maker<GLSharpen>::make ) );
 	sourceVideoFilters.append( FilterEntry( "size", "GLCrop", QObject::tr("Crop"), &Maker<GLCrop>::make ) );
 	sourceVideoFilters.append( FilterEntry( "size", "GLStabilize", QObject::tr("Stabilize"), &Maker<GLStabilize>::make ) );

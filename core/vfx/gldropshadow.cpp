@@ -8,10 +8,10 @@
 GLDropShadow::GLDropShadow( QString id, QString name ) : GLFilter( id, name )
 {
 	color = addParameter( "color", tr("Shadow color:"), Parameter::PRGBCOLOR, QColor::fromRgbF( 0, 0, 0 ), QColor::fromRgbF( 0, 0, 0 ), QColor::fromRgbF( 1, 1, 1 ), false );
-	xOffset = addParameter( "xOffset", tr("X offset:"), Parameter::PINPUTDOUBLE, 10.0, -10000.0, 10000.0, true );
-	yOffset = addParameter( "yOffset", tr("Y offset:"), Parameter::PINPUTDOUBLE, 10.0, -10000.0, 10000.0, true );
+	xOffset = addParameter( "xOffset", tr("X offset:"), Parameter::PINPUTDOUBLE, 0.5, -110.0, 110.0, true, "%" );
+	yOffset = addParameter( "yOffset", tr("Y offset:"), Parameter::PINPUTDOUBLE, 0.5, -110.0, 110.0, true, "%" );
 	opacity = addParameter( "opacity", tr("Opacity:"), Parameter::PDOUBLE, 0.8, 0.0, 1.0, true );
-	radius = addParameter( "radius", tr("Blur radius:"), Parameter::PDOUBLE, 4.0, 0.0, 50.0, true );
+	blur = addParameter( "blur", tr("Blur:"), Parameter::PDOUBLE, 0.2, 0.0, 5.0, true, "%" );
 }
 
 
@@ -25,11 +25,7 @@ GLDropShadow::~GLDropShadow()
 void GLDropShadow::ovdUpdate( QString type, QVariant val )
 {
 	if ( type == "translate" ) {
-		QPointF pos = val.toPointF();
-		if ( !xOffset->graph.keys.count() )
-			xOffset->value = pos.x();
-		if ( !yOffset->graph.keys.count() )
-			yOffset->value = pos.y();
+		ovdOffset = val;
 	}
 }
 
@@ -43,17 +39,30 @@ bool GLDropShadow::process( const QList<Effect*> &el, double pts, Frame *src, Pr
 	sRgbColorToLinear( c );
 	RGBTriplet col = RGBTriplet( c.redF(), c.greenF(), c.blueF() );
 	
+	if (!ovdOffset.isNull()) {
+		QPointF pos = ovdOffset.toPointF();
+		if ( !xOffset->graph.keys.count() )
+			xOffset->value = pos.x() * 100.0 / src->glWidth;
+		if ( !yOffset->graph.keys.count() )
+			yOffset->value = pos.y() * 100.0 / src->glHeight;
+		
+		ovdOffset = QVariant();
+	}
+	
+	double xof = src->glWidth * getParamValue( xOffset, pts ).toDouble() / 100.0;
+	double yof = src->glHeight * getParamValue( yOffset, pts ).toDouble() / 100.0;
+	
 	if ( ovdEnabled() ) {
 		src->glOVD = FilterTransform::TRANSLATE;
 		src->glOVDRect = QRectF( -(double)src->glWidth / 2.0, -(double)src->glHeight / 2.0, src->glWidth, src->glHeight );
-		src->glOVDTransformList.append( FilterTransform( FilterTransform::TRANSLATE, getParamValue( xOffset, pts ).toDouble(), getParamValue( yOffset, pts ).toDouble() ) );
+		src->glOVDTransformList.append( FilterTransform( FilterTransform::TRANSLATE, xof, yof ) );
 	}
 	
 	Effect *e = el[0];
-	return e->set_float( "xoffset", getParamValue( xOffset, pts ).toFloat() )
-		&& e->set_float( "yoffset", getParamValue( yOffset, pts ).toFloat() )
+	return e->set_float( "xoffset", xof )
+	&& e->set_float( "yoffset", yof )
 		&& e->set_float( "opacity", getParamValue( opacity, pts ).toFloat() )
-		&& e->set_float( "radius", getParamValue( radius, pts ).toFloat() )
+		&& e->set_float( "radius", src->glWidth * getParamValue( blur, pts ).toDouble() / 100.0 )
 		&& e->set_vec3( "color", (float*)&col );
 }
 

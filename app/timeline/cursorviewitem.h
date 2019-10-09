@@ -15,10 +15,12 @@ public:
 	void setActiveTrack( int t );
 	int getActiveTrack() { return activeTrack; }
 	void setHeight( double h );
+	bool cursorIsMoving() { return isMoving;}
 	
 protected:
 	void mousePressEvent( QGraphicsSceneMouseEvent *event );
 	void mouseMoveEvent( QGraphicsSceneMouseEvent *event );
+	void mouseReleaseEvent( QGraphicsSceneMouseEvent *event );
 	void hoverMoveEvent( QGraphicsSceneHoverEvent *event );
 	
 private:
@@ -26,6 +28,7 @@ private:
 	QPixmap trackMarker;
 	int activeTrack;
 	double markerYPos;
+	bool isMoving;
 };
 
 #endif // CURSORVIEWITEM_H

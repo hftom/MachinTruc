@@ -81,8 +81,9 @@ public:
 	virtual QList<Effect*> getMovitEffects();
 	
 private:
-	Parameter *radius, *opacity, *xOffset, *yOffset;
+	Parameter *blur, *opacity, *xOffset, *yOffset;
 	Parameter *color;
+	QVariant ovdOffset;
 };
 
 #endif // GLDROPSHADOW_H

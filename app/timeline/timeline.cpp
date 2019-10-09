@@ -337,10 +337,34 @@ void Timeline::trackSelectWindowRelease(bool extend)
 void Timeline::playheadMoved( double p )
 {
 	double pts = p * zoom;
-	qint64 i = pts / scene->getProfile().getVideoFrameDuration();
+	double d = scene->getProfile().getVideoFrameDuration();
+	qint64 i = pts / d;
 	pts = i;
-	emit seekTo( pts * scene->getProfile().getVideoFrameDuration() );
+	pts *= d;
+	emit seekTo( pts );
+	
+	i = ( pts + ( d / 2.0 ) ) / d;
+	pts = i * d;
+	cursor->setX( pts / zoom );
+	
 }
+
+
+
+void Timeline::setCursorPos( double pts, bool isPlaying )
+{
+	double d = scene->getProfile().getVideoFrameDuration();
+	qint64 i = ( pts + ( d / 2.0 ) ) / d;
+	pts = i * d;
+	if (!cursor->cursorIsMoving()) {
+		cursor->setX( pts / zoom );
+	}
+	if (isPlaying || forceEnsureVisible) {
+		emit ensureVisible( cursor );
+		forceEnsureVisible = false;
+	}
+}
+
 
 
 
@@ -982,20 +1006,6 @@ ClipViewItem* Timeline::getClipViewItem(Clip *clip, int track)
 	//QMessageBox::warning( topParent, tr("Warning"), QString("no clipviewitem found for clip %1 on track %2, position %3")
 	//	.arg(clip->sourcePath()).arg(track).arg(clip->position()/MICROSECOND));
 	return NULL;
-}
-
-
-
-void Timeline::setCursorPos( double pts, bool isPlaying )
-{
-	double d = scene->getProfile().getVideoFrameDuration();
-	qint64 i = ( pts + ( d / 2.0 ) ) / d;
-	pts = i * d;
-	cursor->setX( pts / zoom );
-	if (isPlaying || forceEnsureVisible) {
-		emit ensureVisible( cursor );
-		forceEnsureVisible = false;
-	}
 }
 
 
