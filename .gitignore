@@ -6,3 +6,5 @@ tests/*.o
 tests/Makefile
 tests/tests
 tests/encode.*
+tests/.qmake.stash
+.vscode
