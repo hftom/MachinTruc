@@ -62,7 +62,7 @@ private:
 class Frame
 {
 public:
-	enum DataType{ NONE, YUV420P, YUV422P, RGBA, RGB, GLSL, GLTEXTURE, LAST };
+	enum DataType{ NONE, YUV420P, YUV422P, YUV420P10LE, YUV422P10LE, YUV420P12LE, YUV422P12LE, RGBA, RGB, GLSL, GLTEXTURE, LAST };
 
 	Frame( MQueue<Frame*> *origin = NULL );
 	~Frame();
@@ -71,7 +71,7 @@ public:
 	// Push the frame back in origin MQueue, release the texture and release tracks.
 	void release();
 
-	void setVideoFrame( DataType t, int w, int h, double sar, bool il, bool tff, double p, double d, int rot = 0 );
+	void setVideoFrame( DataType t, int w, int h, double sar, bool il, bool tff, double p, double d, int rot = 0, int size = 0 );
 	void setVideoFrame( Frame *src );
 	void setFBO( FBO *f );
 	FBO* fbo() { return fb; }

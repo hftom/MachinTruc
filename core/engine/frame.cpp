@@ -88,7 +88,7 @@ void Frame::setSharedBuffer( Buffer *b )
 
 
 
-void Frame::setVideoFrame( DataType t, int w, int h, double sar, bool il, bool tff, double p, double d, int rot )
+void Frame::setVideoFrame( DataType t, int w, int h, double sar, bool il, bool tff, double p, double d, int rot, int size )
 {
 	pType = t;
 	profile.setVideoWidth( w );
@@ -100,17 +100,21 @@ void Frame::setVideoFrame( DataType t, int w, int h, double sar, bool il, bool t
 	pPTS = p;
 	pOrientation = rot;
 
-	int s = w * h;
-	switch ( pType ) {
-		case YUV420P : s = s * 3 / 2; break;
-		case YUV422P : s = s * 2; break;
-		case RGBA : s = s * 4; break;
-		case RGB : s = s * 3; break;
-		default : s = 0;
+	if (!size) {
+		size = w * h;
+		switch ( pType ) {
+			case YUV420P : size *= 3 / 2; break;
+			case YUV422P : size *= 2; break;
+			case YUV420P10LE: size *= 3; break;
+			case YUV422P10LE: size *= 4; break;
+			case RGBA : size *= 4; break;
+			case RGB : size *= 3; break;
+			default : size = 0;
+		}
 	}
 
-	if ( s > 0 && !buffer )
-		buffer = BufferPool::globalInstance()->getBuffer( s );
+	if ( size > 0 && !buffer )
+		buffer = BufferPool::globalInstance()->getBuffer( size );
 }
 
 

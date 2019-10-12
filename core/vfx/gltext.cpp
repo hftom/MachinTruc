@@ -321,8 +321,17 @@ QImage* MyTextEffect::drawImage()
 	}
 	painter.end();
 	
-	double sw = image.width() * iwidth / 1920.0;
-	double sh = image.height() * iheight / 1080.0;
+	double ra = 1920.0 / 1080.0;
+	double ar = (double)iwidth / (double)iheight;
+	double sw, sh;
+	if (ar < ra) {
+		sh = image.height() * iheight / 1080.0;
+		sw = image.width() * sh * ar;
+	}
+	else {
+		sw = image.width() * iwidth / 1920.0;
+		sh = image.height() * sw / ar;
+	}
 	
 	return new QImage(image.scaled( sw, sh, Qt::KeepAspectRatio, Qt::SmoothTransformation ));
 }

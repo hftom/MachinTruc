@@ -116,8 +116,8 @@ FBO* GLResource::getFBO( int width, int height, GLint iformat )
 		return NULL;
 	}
 
-	fboList.append( f );
 	f->setFree( false );
+	fboList.append( f );
 	return f;
 }
 

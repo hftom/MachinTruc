@@ -604,10 +604,6 @@ bool FFDecoder::makeFrame( Frame *f, AVFrame *avFrame, double ratio, double pts,
 {
 	f->profile.setVideoColorFullRange( videoCodecCtx->color_range == AVCOL_RANGE_JPEG );
 
-	int height = videoCodecCtx->height;
-	if ( height == 1088 )
-		height = 1080;
-
 	switch ( videoCodecCtx->colorspace ) {
 		case AVCOL_SPC_SMPTE240M:
 		case AVCOL_SPC_BT709:
@@ -620,7 +616,7 @@ bool FFDecoder::makeFrame( Frame *f, AVFrame *avFrame, double ratio, double pts,
 			f->profile.setVideoColorSpace( Profile::SPC_601_525 );
 			break;
 		default:
-			f->profile.setVideoColorSpace( (videoCodecCtx->width * height > 1280 * 576) ? Profile::SPC_709 : Profile::SPC_601_625 );
+			f->profile.setVideoColorSpace( (videoCodecCtx->width * videoCodecCtx->height > 1280 * 576) ? Profile::SPC_709 : Profile::SPC_601_625 );
 	}
 
 	switch ( videoCodecCtx->color_primaries ) {
@@ -659,45 +655,43 @@ bool FFDecoder::makeFrame( Frame *f, AVFrame *avFrame, double ratio, double pts,
 			f->profile.setVideoChromaLocation( Profile::LOC_LEFT );
 	}
 
+	Frame::DataType formatType;
+	int stride[3] = {
+		avFrame->linesize[0] * videoCodecCtx->height,
+		avFrame->linesize[1] * videoCodecCtx->height,
+		avFrame->linesize[2] * videoCodecCtx->height
+	};
 	switch ( avFrame->format ) {
 		case AV_PIX_FMT_YUVJ420P:
 		case AV_PIX_FMT_YUV420P: {
-			f->setVideoFrame( Frame::YUV420P, videoCodecCtx->width, height,
-				ratio, avFrame->interlaced_frame, avFrame->top_field_first, pts, dur, orientation );
-			int i;
-			uint8_t *buf = f->data();
-			for ( i = 0; i < height; i++ ) {
-				memcpy( buf, avFrame->data[0] + (avFrame->linesize[0] * i), videoCodecCtx->width );
-				buf += videoCodecCtx->width;
-			}
-			for ( i = 0; i < height / 2; i++ ) {
-				memcpy( buf, avFrame->data[1] + (avFrame->linesize[1] * i), videoCodecCtx->width / 2 );
-				buf += videoCodecCtx->width / 2;
-			}
-			for ( i = 0; i < height / 2; i++ ) {
-				memcpy( buf, avFrame->data[2] + (avFrame->linesize[2] * i), videoCodecCtx->width / 2 );
-				buf += videoCodecCtx->width / 2;
-			}
+			formatType = Frame::YUV420P;
+			stride[1] /= 2;
+			stride[2] /= 2;
 			break;
 		}
 		case AV_PIX_FMT_YUVJ422P:
 		case AV_PIX_FMT_YUV422P: {
-			f->setVideoFrame( Frame::YUV422P, videoCodecCtx->width, height,
-				ratio, avFrame->interlaced_frame, avFrame->top_field_first, pts, dur, orientation );
-			int i;
-			uint8_t *buf = f->data();
-			for ( i = 0; i < height; i++ ) {
-				memcpy( buf, avFrame->data[0] + (avFrame->linesize[0] * i), videoCodecCtx->width );
-				buf += videoCodecCtx->width;
-			}
-			for ( i = 0; i < height; i++ ) {
-				memcpy( buf, avFrame->data[1] + (avFrame->linesize[1] * i), videoCodecCtx->width / 2 );
-				buf += videoCodecCtx->width / 2;
-			}
-			for ( i = 0; i < height; i++ ) {
-				memcpy( buf, avFrame->data[2] + (avFrame->linesize[2] * i), videoCodecCtx->width / 2 );
-				buf += videoCodecCtx->width / 2;
-			}
+			formatType = Frame::YUV422P;
+			break;
+		}
+		case AV_PIX_FMT_YUV420P12LE: {
+			formatType = Frame::YUV420P12LE;
+			stride[1] /= 2;
+			stride[2] /= 2;
+			break;
+		}
+		case AV_PIX_FMT_YUV420P10LE: {
+			formatType = Frame::YUV420P10LE;
+			stride[1] /= 2;
+			stride[2] /= 2;
+			break;
+		}
+		case AV_PIX_FMT_YUV422P12LE: {
+			formatType = Frame::YUV422P12LE;
+			break;
+		}
+		case AV_PIX_FMT_YUV422P10LE: {
+			formatType = Frame::YUV422P10LE;
 			break;
 		}
 		default: {
@@ -705,6 +699,14 @@ bool FFDecoder::makeFrame( Frame *f, AVFrame *avFrame, double ratio, double pts,
 			return false;
 		}
 	}
+
+	f->setVideoFrame( formatType, videoCodecCtx->width, videoCodecCtx->height,
+					  ratio, avFrame->interlaced_frame, avFrame->top_field_first, pts, dur, orientation,  stride[0] + stride[1] + stride[2]);
+	uint8_t *buf = f->data();
+
+	memcpy( buf, avFrame->data[0], stride[0] );
+	memcpy( buf + stride[0], avFrame->data[1], stride[1] );
+	memcpy( buf + stride[0] + stride[1], avFrame->data[2], stride[2] );
 
 	return true;
 }

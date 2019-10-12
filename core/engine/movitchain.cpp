@@ -3,7 +3,7 @@
 
 #include "engine/movitchain.h"
 
-#define BUFFER_OFFSET(i) ((uint8_t*)NULL + (i))
+#define OFFSET_BUFFER(i) ((uint8_t*)NULL + (i))
 
 
 
@@ -38,6 +38,48 @@ bool MovitInput::setBuffer( PBO *p, Frame *src, int size )
 
 
 
+void MovitInput::setPixelData8(Frame *src, int size, int stride[], GLResource *gl )
+{
+	YCbCrInput *ycbcr = (YCbCrInput*)input;
+	PBO *p = NULL;
+	if ( gl )
+		p = gl->getPBO( size );
+	if ( p && setBuffer( p, src, size ) ) {
+		ycbcr->set_pixel_data( 0, OFFSET_BUFFER( stride[0] ), p->pbo() );
+		ycbcr->set_pixel_data( 1, OFFSET_BUFFER( stride[1] ), p->pbo());
+		ycbcr->set_pixel_data( 2, OFFSET_BUFFER( stride[2] ), p->pbo() );
+	}
+	else {
+		uint8_t *data = src->data();
+		ycbcr->set_pixel_data( 0, &data[stride[0]] );
+		ycbcr->set_pixel_data( 1, &data[stride[1]]);
+		ycbcr->set_pixel_data( 2, &data[stride[2]] );
+	}
+}
+
+
+
+void MovitInput::setPixelData16(Frame *src, int size, int stride[], GLResource *gl )
+{
+	YCbCrInput *ycbcr = (YCbCrInput*)input;
+	PBO *p = NULL;
+	if ( gl )
+		p = gl->getPBO( size );
+	if ( p && setBuffer( p, src, size ) ) {
+		ycbcr->set_pixel_data( 0, reinterpret_cast<const uint16_t*>(OFFSET_BUFFER( stride[0] )), p->pbo() );
+		ycbcr->set_pixel_data( 1, reinterpret_cast<const uint16_t*>(OFFSET_BUFFER( stride[1] )), p->pbo());
+		ycbcr->set_pixel_data( 2, reinterpret_cast<const uint16_t*>(OFFSET_BUFFER( stride[2] )), p->pbo() );
+	}
+	else {
+		uint8_t *data = src->data();
+		ycbcr->set_pixel_data( 0, reinterpret_cast<const uint16_t*>(&data[stride[0]]) );
+		ycbcr->set_pixel_data( 1, reinterpret_cast<const uint16_t*>(&data[stride[1]]));
+		ycbcr->set_pixel_data( 2, reinterpret_cast<const uint16_t*>(&data[stride[2]]) );
+	}
+}
+
+
+
 bool MovitInput::process( Frame *src, GLResource *gl )
 {
 	if ( src->mmiProvider != mmiProvider )
@@ -49,55 +91,44 @@ bool MovitInput::process( Frame *src, GLResource *gl )
 	
 	int w = src->profile.getVideoWidth();
 	int h = src->profile.getVideoHeight();
-	uint8_t *data = src->data();
-	int size;
 
 	switch ( src->type() ) {
 		case Frame::YUV420P: {
-			YCbCrInput *ycbcr = (YCbCrInput*)input;
-			size = w * h * 3 / 2;
-			PBO *p = NULL;
-			if ( gl )
-				p = gl->getPBO( size );
-			if ( p && setBuffer( p, src, size ) ) {
-				ycbcr->set_pixel_data( 0, BUFFER_OFFSET( 0 ), p->pbo() );
-				ycbcr->set_pixel_data( 1, BUFFER_OFFSET( w * h ), p->pbo());
-				ycbcr->set_pixel_data( 2, BUFFER_OFFSET( w * h + (w / 2 * h / 2) ), p->pbo() );
-			}
-			else {
-				ycbcr->set_pixel_data( 0, data );
-				ycbcr->set_pixel_data( 1, &data[w * h]);
-				ycbcr->set_pixel_data( 2, &data[w * h + (w / 2 * h / 2)] );
-			}
+			int size = w * h * 3 / 2;
+			int stride[3] = {0, w *h, w * h + (w / 2 * h / 2)};
+			setPixelData8(src, size, stride, gl);
 			return true;
 		}
 		case Frame::YUV422P: {
-			YCbCrInput *ycbcr = (YCbCrInput*)input;
-			size = w * h * 2;
-			PBO *p = NULL;
-			if ( gl )
-				p = gl->getPBO( size );
-			if ( p  && setBuffer( p, src, size ) ) {
-				ycbcr->set_pixel_data( 0, BUFFER_OFFSET( 0 ), p->pbo() );
-				ycbcr->set_pixel_data( 1, BUFFER_OFFSET( w * h ), p->pbo());
-				ycbcr->set_pixel_data( 2, BUFFER_OFFSET( w * h + (w / 2 * h) ), p->pbo() );
-			}
-			else {
-				ycbcr->set_pixel_data( 0, data );
-				ycbcr->set_pixel_data( 1, &data[w * h]);
-				ycbcr->set_pixel_data( 2, &data[w * h + (w / 2 * h)] );
-			}
+			int size = w * h * 2;
+			int stride[3] = {0, w *h, w * h + (w / 2 * h)};
+			setPixelData8(src, size, stride, gl);
+			return true;
+		}
+		case Frame::YUV420P12LE:
+		case Frame::YUV420P10LE: {
+			int size = w * h * 3;
+			int stride[3] = {0, w * h * 2, (w * h + (w / 2 * h / 2)) * 2};
+			setPixelData16(src, size, stride, gl);
+			return true;
+		}
+		case Frame::YUV422P12LE:
+		case Frame::YUV422P10LE: {
+			int size = w * h * 4;
+			int stride[3] = {0, w * h * 2, (w * h + (w / 2 * h)) * 2};
+			setPixelData16(src, size, stride, gl);
 			return true;
 		}
 		case Frame::RGB:
 		case Frame::RGBA: {
+			uint8_t *data = src->data();
 			FlatInput *flat = (FlatInput*)input;
-			size = src->type() == Frame::RGB ? w * h * 3 : w * h * 4;
+			int size = src->type() == Frame::RGB ? w * h * 3 : w * h * 4;
 			PBO *p = NULL;
 			if ( gl )
 				p = gl->getPBO( size );
 			if ( p && setBuffer( p, src, size ) ) {
-				flat->set_pixel_data( BUFFER_OFFSET( 0 ), p->pbo() );
+				flat->set_pixel_data( OFFSET_BUFFER( 0 ), p->pbo() );
 			}
 			else
 				flat->set_pixel_data( data );
@@ -176,13 +207,41 @@ Input* MovitInput::getMovitInput( Frame *src )
 	switch ( src->type() ) {
 		case Frame::YUV420P: {
 			ycbcr_format.chroma_subsampling_x = ycbcr_format.chroma_subsampling_y = 2;
+			ycbcr_format.num_levels = 256;
 			input = new YCbCrInput( input_format, ycbcr_format, src->profile.getVideoWidth(), src->profile.getVideoHeight() );
 			return input;
 		}
 		case Frame::YUV422P: {
 			ycbcr_format.chroma_subsampling_x = 2;
 			ycbcr_format.chroma_subsampling_y = 1;
+			ycbcr_format.num_levels = 256;
 			input = new YCbCrInput( input_format, ycbcr_format, src->profile.getVideoWidth(), src->profile.getVideoHeight() );
+			return input;
+		}
+		case Frame::YUV420P10LE: {
+			ycbcr_format.chroma_subsampling_x = ycbcr_format.chroma_subsampling_y = 2;
+			ycbcr_format.num_levels = 1024;
+			input = new YCbCrInput( input_format, ycbcr_format, src->profile.getVideoWidth(), src->profile.getVideoHeight(), YCBCR_INPUT_PLANAR, GL_UNSIGNED_SHORT );
+			return input;
+		}
+		case Frame::YUV422P10LE: {
+			ycbcr_format.chroma_subsampling_x = 2;
+			ycbcr_format.chroma_subsampling_y = 1;
+			ycbcr_format.num_levels = 1024;
+			input = new YCbCrInput( input_format, ycbcr_format, src->profile.getVideoWidth(), src->profile.getVideoHeight(), YCBCR_INPUT_PLANAR, GL_UNSIGNED_SHORT );
+			return input;
+		}
+		case Frame::YUV420P12LE: {
+			ycbcr_format.chroma_subsampling_x = ycbcr_format.chroma_subsampling_y = 2;
+			ycbcr_format.num_levels = 4096;
+			input = new YCbCrInput( input_format, ycbcr_format, src->profile.getVideoWidth(), src->profile.getVideoHeight(), YCBCR_INPUT_PLANAR, GL_UNSIGNED_SHORT );
+			return input;
+		}
+		case Frame::YUV422P12LE: {
+			ycbcr_format.chroma_subsampling_x = 2;
+			ycbcr_format.chroma_subsampling_y = 1;
+			ycbcr_format.num_levels = 4096;
+			input = new YCbCrInput( input_format, ycbcr_format, src->profile.getVideoWidth(), src->profile.getVideoHeight(), YCBCR_INPUT_PLANAR, GL_UNSIGNED_SHORT );
 			return input;
 		}
 		case Frame::RGBA: {
@@ -212,6 +271,22 @@ QString MovitInput::getDescriptor( Frame *src )
 			.arg( src->profile.getVideoChromaLocation() ).arg( src->profile.getVideoGammaCurve() );
 		case Frame::YUV422P:
 			return QString("YCBCRINPUT %1 %2 %3 %4 %5 %6 %7 %8").arg( src->profile.getVideoWidth() ).arg( src->profile.getVideoHeight() ).arg( "yuv422p" )
+			.arg( src->profile.getVideoColorSpace() ).arg( src->profile.getVideoColorPrimaries() ).arg( src->profile.getVideoColorFullRange() )
+			.arg( src->profile.getVideoChromaLocation() ).arg( src->profile.getVideoGammaCurve() );
+		case Frame::YUV420P10LE:
+			return QString("YCBCRINPUT %1 %2 %3 %4 %5 %6 %7 %8").arg( src->profile.getVideoWidth() ).arg( src->profile.getVideoHeight() ).arg( "yuv420p10le" )
+			.arg( src->profile.getVideoColorSpace() ).arg( src->profile.getVideoColorPrimaries() ).arg( src->profile.getVideoColorFullRange() )
+			.arg( src->profile.getVideoChromaLocation() ).arg( src->profile.getVideoGammaCurve() );
+		case Frame::YUV422P10LE:
+			return QString("YCBCRINPUT %1 %2 %3 %4 %5 %6 %7 %8").arg( src->profile.getVideoWidth() ).arg( src->profile.getVideoHeight() ).arg( "yuv422p10le" )
+			.arg( src->profile.getVideoColorSpace() ).arg( src->profile.getVideoColorPrimaries() ).arg( src->profile.getVideoColorFullRange() )
+			.arg( src->profile.getVideoChromaLocation() ).arg( src->profile.getVideoGammaCurve() );
+		case Frame::YUV420P12LE:
+			return QString("YCBCRINPUT %1 %2 %3 %4 %5 %6 %7 %8").arg( src->profile.getVideoWidth() ).arg( src->profile.getVideoHeight() ).arg( "yuv420p12le" )
+			.arg( src->profile.getVideoColorSpace() ).arg( src->profile.getVideoColorPrimaries() ).arg( src->profile.getVideoColorFullRange() )
+			.arg( src->profile.getVideoChromaLocation() ).arg( src->profile.getVideoGammaCurve() );
+		case Frame::YUV422P12LE:
+			return QString("YCBCRINPUT %1 %2 %3 %4 %5 %6 %7 %8").arg( src->profile.getVideoWidth() ).arg( src->profile.getVideoHeight() ).arg( "yuv422p12le" )
 			.arg( src->profile.getVideoColorSpace() ).arg( src->profile.getVideoColorPrimaries() ).arg( src->profile.getVideoColorFullRange() )
 			.arg( src->profile.getVideoChromaLocation() ).arg( src->profile.getVideoGammaCurve() );
 		case Frame::RGB:

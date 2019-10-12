@@ -63,7 +63,7 @@ ProjectProfileDialog::ProjectProfileDialog( QWidget *parent, Profile &p, int war
 	
 	QString info = "<p>";
 	info += tr("Select a profile for your project.");
-	info += "<br>";
+	/*info += "<br>";
 	if ( warn == WARNCHANGE ) {
 		info += "<br><b>";
 		info += tr("It's not recommended to change the video settings when you have already put some clips in the timeline.");
@@ -77,7 +77,7 @@ ProjectProfileDialog::ProjectProfileDialog( QWidget *parent, Profile &p, int war
 		info += "<br><b><i>";
 		info += tr("If you don't know what to choose, just click ok and play the timeline; if you are not satisfied, remove the clip and drop a new one.");
 		info += "</i></b>";
-	}
+	}*/
 	info += "</p>";
 	
 	infoLab->setText( info );

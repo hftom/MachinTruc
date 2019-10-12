@@ -60,6 +60,8 @@ public:
 
 private:
 	bool setBuffer( PBO *p, Frame *src, int size );
+	void setPixelData8(Frame *src, int size, int stride[], GLResource *gl );
+	void setPixelData16(Frame *src, int size,int stride[],  GLResource *gl );
 	Input *input;
 	qint64 mmi;
 	QString mmiProvider;
