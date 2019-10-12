@@ -345,7 +345,7 @@ void Timeline::playheadMoved( double p )
 	
 	i = ( pts + ( d / 2.0 ) ) / d;
 	pts = i * d;
-	cursor->setX( pts / zoom );
+	cursor->setX( qBound(0.0, pts / zoom, scene->getDuration() / zoom) );
 	
 }
 

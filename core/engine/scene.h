@@ -50,6 +50,8 @@ public:
 	
 	double nextEdge(double pts);
 	double previousEdge(double pts);
+	
+	double getDuration();
 
 	bool update;
 	QList<Track*> tracks;

@@ -54,6 +54,25 @@ bool Scene::setProfile( Profile &p )
 	
 	return ok;
 }
+
+
+
+double Scene::getDuration()
+{
+	double duration = 0;
+	int count = tracks.count();
+	for ( int i = 0; i < count; ++i ) {
+		Track *t = tracks.at(i);
+		if ( !t->clipCount() )
+			continue;
+		Clip *c = t->clipAt( t->clipCount() - 1 );
+		double d = c->position() + c->length();
+		if ( d > duration )
+			duration = d;
+	}
+	
+	return duration;
+}
 	
 
 	

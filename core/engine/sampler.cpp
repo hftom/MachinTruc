@@ -346,32 +346,14 @@ void Sampler::fromComposerSeekTo( double p, bool backward, bool seek )
 
 double Sampler::currentSceneDuration()
 {
-	return sceneDuration( currentScene );
+	return currentScene->getDuration();
 }
 
 
 
 double Sampler::currentTimelineSceneDuration()
 {
-	return sceneDuration( timelineScene );
-}
-
-
-
-double Sampler::sceneDuration( Scene *s )
-{
-	int i;
-	double duration = 0;
-	for ( i = 0; i < s->tracks.count(); ++i ) {
-		if ( !s->tracks[ i ]->clipCount() )
-			continue;
-		Clip *c = s->tracks[ i ]->clipAt( s->tracks[ i ]->clipCount() - 1 );
-		double d = c->position() + c->length();
-		if ( d > duration )
-			duration = d;
-	}
-
-	return duration;
+	return timelineScene->getDuration();
 }
 
 
