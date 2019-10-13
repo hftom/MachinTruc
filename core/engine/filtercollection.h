@@ -6,7 +6,7 @@
 #include "vfx/glresize.h"
 #include "vfx/glnormalizesar.h"
 #include "vfx/glorientation.h"
-#include "vfx/gloverlay.h"
+#include "vfx/glpanzoom.h"
 
 // video filters
 #include "vfx/glbackgroundcolor.h"

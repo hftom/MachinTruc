@@ -15,6 +15,8 @@ int main(int argc, char **argv)
 	glf.setSampleBuffers( true );
 	glf.setSamples( 4 );
 	QGLFormat::setDefaultFormat( glf );*/
+	
+	srand((unsigned)time(0));
 
 	TopWindow *tw = new TopWindow();
 	tw->show();

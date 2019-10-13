@@ -165,19 +165,16 @@ void Thumbnailer::probe( ThumbRequest &request )
 
 	InputBase *input = new InputBlank();
 	bool probed = false;
-	if ( input->probe( request.filePath, &request.profile ) )
-		probed = true;
-	else {
+	probed = input->probe( request.filePath, &request.profile );
+	if (!probed) {
 		delete input;
 		input = new InputImage();
-		if ( input->probe( request.filePath, &request.profile ) )
-			probed = true;
+		probed = input->probe( request.filePath, &request.profile );
 	}
 	if ( !probed ) {
 		delete input;
 		input = new InputFF();
-		if ( input->probe( request.filePath, &request.profile ) )
-			probed = true;
+		probed = input->probe( request.filePath, &request.profile );
 	}
 	if ( probed ) {
 		if ( request.profile.hasVideo() ) {

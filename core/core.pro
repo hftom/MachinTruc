@@ -92,6 +92,7 @@ SOURCES = \
 	vfx/gldistort.cpp \
 	vfx/glhanddrawing.cpp \
 	vfx/glmask.cpp \
+	vfx/glpanzoom.cpp \
 	\
 	videoout/videowidget.cpp
 
@@ -182,6 +183,7 @@ HEADERS = \
 	vfx/gldistort.h \
 	vfx/glhanddrawing.h \
 	vfx/glmask.h \
+	vfx/glpanzoom.h \
 	\
 	videoout/videowidget.h
 

@@ -82,6 +82,8 @@ void GLSize::ovdUpdate( QString type, QVariant val )
 
 bool GLSize::process( const QList<Effect*> &el, double pts, Frame *src, Profile *p )
 {
+	preProcess(pts, src, p);
+
 	bool ok = true;
 	int index = 0;
 
@@ -89,18 +91,30 @@ bool GLSize::process( const QList<Effect*> &el, double pts, Frame *src, Profile 
 	double pw = p->getVideoWidth();
 	double ph = p->getVideoHeight();
 	double psar = p->getVideoSAR();
+	bool vertical = (double)src->glWidth / (double)src->glHeight < pw / ph;
 	
 	if (!ovdScale.isNull()) {
 		QPointF pos = ovdScale.toPointF();
 		if ( !sizePercent->graph.keys.count() ) {
-			sizePercent->value = pos.x() / (pw / (double)src->glWidth);
+			if (vertical) {
+				sizePercent->value = pos.x() / (ph / (double)src->glHeight);
+			}
+			else {
+				sizePercent->value = pos.x() / (pw / (double)src->glWidth);
+			}
 		}
 		
 		ovdScale = QVariant();
 	}
 	
 	double rad = getParamValue( rotateAngle, pts ).toDouble() * M_PI / 180.0;
-	double zoom = pw / (double)src->glWidth * getParamValue( sizePercent, pts ).toDouble() / 100.0;
+	double zoom = 1.0;
+	if (vertical) {
+		zoom = ph / (double)src->glHeight * getParamValue( sizePercent, pts ).toDouble() / 100.0;
+	}
+	else {
+		zoom = pw / (double)src->glWidth * getParamValue( sizePercent, pts ).toDouble() / 100.0;
+	}
 	
 	if (!ovdOffset.isNull()) {
 		QPointF pos = ovdOffset.toPointF();
