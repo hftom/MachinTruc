@@ -88,9 +88,10 @@ void Frame::setSharedBuffer( Buffer *b )
 
 
 
-void Frame::setVideoFrame( DataType t, int w, int h, double sar, bool il, bool tff, double p, double d, int rot, int size )
+void Frame::setVideoFrame( DataType t, int w, int h, double sar, bool il, bool tff, double p, double d, int rot, int size, int bits )
 {
 	pType = t;
+	bitDepth = bits;
 	profile.setVideoWidth( w );
 	profile.setVideoHeight( h );
 	profile.setVideoSAR( sar );
@@ -102,11 +103,11 @@ void Frame::setVideoFrame( DataType t, int w, int h, double sar, bool il, bool t
 
 	if (!size) {
 		size = w * h;
+		int bytes = bitDepth > 8 ? 2 : 1;
 		switch ( pType ) {
-			case YUV420P : size *= 3 / 2; break;
-			case YUV422P : size *= 2; break;
-			case YUV420P10LE: size *= 3; break;
-			case YUV422P10LE: size *= 4; break;
+			case YUV420P : size *= 3 / 2 * bytes; break;
+			case YUV422P : size *= 2 * bytes; break;
+			case YUV444P : size *= 3 * bytes; break;
 			case RGBA : size *= 4; break;
 			case RGB : size *= 3; break;
 			default : size = 0;
@@ -124,6 +125,7 @@ void Frame::setVideoFrame( Frame *src )
 	profile = src->profile;
 	pPTS = src->pts();
 	pOrientation = src->orientation();
+	bitDepth = src->bitDepth;
 }
 
 

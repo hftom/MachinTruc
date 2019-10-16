@@ -111,7 +111,7 @@ protected:
 	double resizeLeft, resizeTop;
 	double resizeZoomCenterX, resizeZoomCenterY;
 	
-	Parameter *rotateAngle, *softBorder;
+	Parameter *rotateAngle;//, *softBorder;
 	bool rotateActive;
 	double centerOffsetX, centerOffsetY;
 	

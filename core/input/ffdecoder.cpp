@@ -661,6 +661,7 @@ bool FFDecoder::makeFrame( Frame *f, AVFrame *avFrame, double ratio, double pts,
 		avFrame->linesize[1] * videoCodecCtx->height,
 		avFrame->linesize[2] * videoCodecCtx->height
 	};
+	int bitDepth = 8;
 	switch ( avFrame->format ) {
 		case AV_PIX_FMT_YUVJ420P:
 		case AV_PIX_FMT_YUV420P: {
@@ -674,24 +675,43 @@ bool FFDecoder::makeFrame( Frame *f, AVFrame *avFrame, double ratio, double pts,
 			formatType = Frame::YUV422P;
 			break;
 		}
-		case AV_PIX_FMT_YUV420P12LE: {
-			formatType = Frame::YUV420P12LE;
-			stride[1] /= 2;
-			stride[2] /= 2;
+		case AV_PIX_FMT_YUVJ444P:
+		case AV_PIX_FMT_YUV444P: {
+			formatType = Frame::YUV444P;
 			break;
 		}
 		case AV_PIX_FMT_YUV420P10LE: {
-			formatType = Frame::YUV420P10LE;
+			formatType = Frame::YUV420P;
 			stride[1] /= 2;
 			stride[2] /= 2;
-			break;
-		}
-		case AV_PIX_FMT_YUV422P12LE: {
-			formatType = Frame::YUV422P12LE;
+			bitDepth = 10;
 			break;
 		}
 		case AV_PIX_FMT_YUV422P10LE: {
-			formatType = Frame::YUV422P10LE;
+			formatType = Frame::YUV422P;
+			bitDepth = 10;
+			break;
+		}
+		case AV_PIX_FMT_YUV444P10LE: {
+			formatType = Frame::YUV444P;
+			bitDepth = 10;
+			break;
+		}
+		case AV_PIX_FMT_YUV420P12LE: {
+			formatType = Frame::YUV420P;
+			stride[1] /= 2;
+			stride[2] /= 2;
+			bitDepth = 12;
+			break;
+		}
+		case AV_PIX_FMT_YUV422P12LE: {
+			formatType = Frame::YUV422P;
+			bitDepth = 12;
+			break;
+		}
+		case AV_PIX_FMT_YUV444P12LE: {
+			formatType = Frame::YUV444P;
+			bitDepth = 12;
 			break;
 		}
 		default: {
@@ -701,7 +721,7 @@ bool FFDecoder::makeFrame( Frame *f, AVFrame *avFrame, double ratio, double pts,
 	}
 
 	f->setVideoFrame( formatType, videoCodecCtx->width, videoCodecCtx->height,
-					  ratio, avFrame->interlaced_frame, avFrame->top_field_first, pts, dur, orientation,  stride[0] + stride[1] + stride[2]);
+					  ratio, avFrame->interlaced_frame, avFrame->top_field_first, pts, dur, orientation,  stride[0] + stride[1] + stride[2], bitDepth);
 	uint8_t *buf = f->data();
 
 	memcpy( buf, avFrame->data[0], stride[0] );

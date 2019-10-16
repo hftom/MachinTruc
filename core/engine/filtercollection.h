@@ -103,7 +103,7 @@ public:
 	QSharedPointer<Filter> createAudioFilter(QString filterName);
 	QSharedPointer<Filter> createVideoTransitionFilter(QString filterName);
 	QSharedPointer<Filter> createAudioTransitionFilter(QString filterName);
-	
+
 	QList<FilterEntry> videoFilters;
 	QList<FilterEntry> sourceVideoFilters;
 	QList<FilterEntry> videoTransitions;

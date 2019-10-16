@@ -8,7 +8,7 @@
 class GLPanZoom : public GLSize
 {
 public:
-	GLPanZoom( QString id = "PanZoomAuto", QString name = "PanZoomAuto" );
+	GLPanZoom( QString id, QString name );
 	virtual void preProcess(double pts, Frame *src, Profile *p );
 	
 private:

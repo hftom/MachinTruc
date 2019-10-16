@@ -25,7 +25,7 @@ GLSize::GLSize( QString id, QString name ) : GLFilter( id, name ),
 	xOffset = addParameter( "xOffset", tr("X offset:"), Parameter::PINPUTDOUBLE, 0.0, -110.0, 110.0, true, "%" );
 	yOffset = addParameter( "yOffset", tr("Y offset:"), Parameter::PINPUTDOUBLE, 0.0, -110.0, 110.0, true, "%" );
 	rotateAngle = addParameter( "rotateAngle", tr("Rotation angle:"), Parameter::PDOUBLE, 0.0, -360.0, 360.0, true );
-	softBorder = addParameter( "softBorder", tr("Soft border:"), Parameter::PINT, 2, 1, 10, false );
+	//softBorder = addParameter( "softBorder", tr("Soft border:"), Parameter::PINT, 2, 1, 10, false );
 }
 
 
@@ -240,7 +240,7 @@ bool GLSize::process( const QList<Effect*> &el, double pts, Frame *src, Profile 
 	}
 	
 	if ( rotateActive ) {
-		ok |= el[index]->set_float( "borderSize", getParamValue( softBorder ).toInt() );
+		//ok |= el[index]->set_float( "borderSize", getParamValue( softBorder ).toInt() );
 		++index;
 		
 		Effect *e = el[index];

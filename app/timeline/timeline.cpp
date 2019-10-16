@@ -32,7 +32,7 @@
 
 
 Timeline::Timeline( TopWindow *parent, QUndoStack *stack ) : QGraphicsScene(),
-	zoom( DEFAULTZOOM ),
+	zoom( DEFAULTZOOM / 4.0 ),
 	currentZoom( DEFAULTZOOM ),
 	viewWidth( 0 ),
 	effectItem( NULL ),
@@ -1335,7 +1335,7 @@ void Timeline::addSelectionToTimeline()
 			qDebug() << clipPos;
 			scene->addClip(c, activeTrack);
 			if (settings.panAndZoom) {
-				QSharedPointer<Filter> f = QSharedPointer<Filter>( new GLPanZoom() );
+				QSharedPointer<Filter> f = fc->createVideoFilter( "GLPanZoom" );
 				f->setPosition( c->position() );
 				f->setLength( c->length() );
 				c->videoFilters.append( f.staticCast<GLFilter>() );

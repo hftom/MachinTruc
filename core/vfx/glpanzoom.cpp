@@ -8,7 +8,7 @@ GLPanZoom::GLPanZoom( QString id, QString name ) : GLSize( id, name ), pw(0), ph
 	xOffset->hidden = true;
 	yOffset->hidden = true;
 	rotateAngle->hidden = true;
-	softBorder->hidden = true;
+	//softBorder->hidden = true;
 	
 	animType = rand() % 2;
 	xDirection = rand() % 2 ? -1.0 : 1.0;
@@ -56,11 +56,9 @@ void GLPanZoom::preProcess(double pts, Frame *src, Profile *p )
 	else {
 		sizePercent->value = percent + 10.0;
 		
-		double pos = 5.0 * 1.0 / zoom;
+		double pos = 5.0 / zoom;
 		xOffset->graph.keys.append( AnimationKey( AnimationKey::LINEAR, 0, xOffset->getNormalizedKeyValue(xDirection * pos) ) );
 		xOffset->graph.keys.append( AnimationKey( AnimationKey::LINEAR, 1, xOffset->getNormalizedKeyValue(-xDirection * pos) ) );
-		
-		pos = 5.0 * 1.0 / zoom;
 		yOffset->graph.keys.append( AnimationKey( AnimationKey::LINEAR, 0, yOffset->getNormalizedKeyValue(yDirection * pos) ) );
 		yOffset->graph.keys.append( AnimationKey( AnimationKey::LINEAR, 1, yOffset->getNormalizedKeyValue(-yDirection * pos) ) );
 	}

@@ -138,6 +138,7 @@ public:
 			BufferPool::globalInstance()->useBuffer( buffer );
 			profile = f->profile;
 			type = f->type();
+			bitDepth = f->bitDepth;
 			pts = f->pts();
 			orientation = f->orientation();
 		}
@@ -151,7 +152,7 @@ public:
 		else
 			pts += profile.getVideoFrameDuration();*/
 		f->setVideoFrame( (Frame::DataType)type, profile.getVideoWidth(), profile.getVideoHeight(), profile.getVideoSAR(),
-						  profile.getVideoInterlaced(), profile.getVideoTopFieldFirst(), pts, profile.getVideoFrameDuration(), orientation );
+						  profile.getVideoInterlaced(), profile.getVideoTopFieldFirst(), pts, profile.getVideoFrameDuration(), orientation, 0, bitDepth );
 		f->profile = profile;
 	}
 	bool valid() { return buffer != NULL; }
@@ -161,6 +162,7 @@ private:
 	int type;
 	double pts;
 	Profile profile;
+	int bitDepth;
 	int orientation;
 };
 
