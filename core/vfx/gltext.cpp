@@ -89,6 +89,8 @@ QImage* MyTextEffect::drawImage()
 	QFont myFont;
 	QPen myPen;
 	myPen.setJoinStyle( Qt::RoundJoin );
+	QPen myOutlinePen;
+	myOutlinePen.setJoinStyle( Qt::RoundJoin );
 	QBrush myBrush( QColor(0,0,0,0) );
 	QColor backgroundColor(0,0,0,0);
 	int outline = 0;
@@ -133,12 +135,12 @@ QImage* MyTextEffect::drawImage()
 				QStringList oc = desc[8].split( "." );
 				if ( oc.count() == 2 ) {
 					outline = osize;
-					myPen.setWidth( osize );
+					myOutlinePen.setWidth( osize );
 					myFont.setStyleStrategy( QFont::ForceOutline );
 					QColor col;
 					col.setNamedColor( oc[ 0 ] );
 					col.setAlpha( oc[ 1 ].toInt() );
-					myPen.setColor( col );
+					myOutlinePen.setColor( col );
 				}
 			}
 		}
@@ -312,11 +314,13 @@ QImage* MyTextEffect::drawImage()
 		}
 		if ( outline ) {
 			QPainterPath myPath;
+			painter.setPen( myOutlinePen );
 			myPath.addText( point, myFont, sl[i] );
 			painter.drawPath( myPath );
 		}
-		else
-			painter.drawText( point, sl[i] );
+		painter.setPen( myPen );
+		painter.drawText( point, sl[i] );
+
 		y += metrics.lineSpacing();
 	}
 	painter.end();
