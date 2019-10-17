@@ -32,7 +32,7 @@ public:
 		register_float( "left", &left );
 		register_float( "opacity", &opacity );
 		glGenTextures( 1, &texnum );
-		setText( ".", 1, 1 );
+		//setText( ".", 1, 1 );
 	}
 	
 	~MyTextEffect() {

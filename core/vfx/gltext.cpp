@@ -83,6 +83,8 @@ QList<Effect*> GLText::getMovitEffects()
 }
 
 
+#define MAXW 1920.0
+#define MAXH 1080.0
 
 QImage* MyTextEffect::drawImage()
 {
@@ -178,13 +180,13 @@ QImage* MyTextEffect::drawImage()
 	double y = x;
 	w += 2 * x;
 	h += 2 * y;
-	if ( w > 1920 ) {
-		x -= (w - 1920) / 2.0;
-		w = 1920;
+	if ( w > MAXW ) {
+		x -= (w - MAXW) / 2.0;
+		w = MAXW;
 	}
-	if ( h > 1080 ) {
-		y -= (h - 1080) / 2.0;
-		h = 1080;
+	if ( h > MAXH ) {
+		y -= (h - MAXH) / 2.0;
+		h = MAXH;
 	}
 	
 	QPointF polygon[7];
@@ -329,16 +331,16 @@ QImage* MyTextEffect::drawImage()
 	
 	painter.end();
 	
-	double ra = 1920.0 / 1080.0;
+	double ra = MAXW / MAXH;
 	double ar = (double)iwidth / (double)iheight;
 	double sw, sh;
 	if (ar < ra) {
-		sh = image.height() * iheight / 1080.0;
-		sw = image.width() * sh * ar;
+		sh = image.height() * iheight / MAXH;
+		sw = image.width() * iheight / MAXH;
 	}
 	else {
-		sw = image.width() * iwidth / 1920.0;
-		sh = image.height() * sw / ar;
+		sw = image.width() * iwidth / MAXW;
+		sh = image.height() * iwidth / MAXW;
 	}
 	
 	return new QImage(image.scaled( sw, sh, Qt::KeepAspectRatio, Qt::SmoothTransformation ));
