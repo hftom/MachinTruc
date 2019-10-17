@@ -296,6 +296,8 @@ QImage* MyTextEffect::drawImage()
 	painter.setBrush( myBrush );
 	painter.setFont( myFont );
 
+	QPainterPath myPath;
+	
 	for ( int i = 0; i < sl.count(); ++i ) {
 		QPointF point( 0, y + topOffset + metrics.ascent() );
 		switch ( align ) {
@@ -312,17 +314,19 @@ QImage* MyTextEffect::drawImage()
 				break;
 			}
 		}
-		if ( outline ) {
-			QPainterPath myPath;
-			painter.setPen( myOutlinePen );
-			myPath.addText( point, myFont, sl[i] );
-			painter.drawPath( myPath );
-		}
-		painter.setPen( myPen );
-		painter.drawText( point, sl[i] );
-
+		myPath.addText( point, myFont, sl[i] );
 		y += metrics.lineSpacing();
 	}
+	
+	if ( outline ) {
+		painter.setPen( myOutlinePen );
+		painter.setBrush(Qt::NoBrush);
+		painter.drawPath( myPath );
+	}
+	painter.setPen( Qt::NoPen );
+	painter.setBrush(myBrush);
+	painter.drawPath( myPath );
+	
 	painter.end();
 	
 	double ra = 1920.0 / 1080.0;
