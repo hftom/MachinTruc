@@ -189,7 +189,7 @@ TopWindow::TopWindow()
 	restoreGeometry( appConfig.value("mainWindow").toByteArray() );
 	videoSplitter->restoreState( appConfig.value("videoSplitter").toByteArray() );
 	timelineSplitter->restoreState( appConfig.value("timelineSplitter").toByteArray() );
-	sourcePage->getSplitter()->restoreState( appConfig.value("sourceSplitter").toByteArray() );
+	//sourcePage->getSplitter()->restoreState( appConfig.value("sourceSplitter").toByteArray() );
 	fxPage->getVideoSplitter()->restoreState( appConfig.value("fxVideoSplitter").toByteArray() );
 	fxPage->getVideoGraphSplitter()->restoreState( appConfig.value("fxVideoGraphSplitter").toByteArray() );
 	fxPage->getAudioSplitter()->restoreState( appConfig.value("fxAudioSplitter").toByteArray() );
@@ -366,7 +366,7 @@ void TopWindow::closeEvent( QCloseEvent *event )
 	appConfig.setValue( "mainWindow", saveGeometry() );
 	appConfig.setValue( "videoSplitter", videoSplitter->saveState() );
 	appConfig.setValue( "timelineSplitter", timelineSplitter->saveState() );
-	appConfig.setValue( "sourceSplitter", sourcePage->getSplitter()->saveState() );
+	//appConfig.setValue( "sourceSplitter", sourcePage->getSplitter()->saveState() );
 	appConfig.setValue( "fxVideoSplitter", fxPage->getVideoSplitter()->saveState() );
 	appConfig.setValue( "fxVideoGraphSplitter", fxPage->getVideoGraphSplitter()->saveState() );
 	appConfig.setValue( "fxAudioSplitter", fxPage->getAudioSplitter()->saveState() );

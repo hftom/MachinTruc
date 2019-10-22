@@ -76,7 +76,7 @@ public:
 	double currentPtsActiveSource() { return activeSource->getCurrentPts(); }
 	void activeSourceSetCurrentPts( double d ) { activeSource->setCurrentPts( d ); }
 	Profile activeSourceGetProfile() { return activeSource->getProfile(); }
-	QSplitter* getSplitter() { return splitter; }
+	//QSplitter* getSplitter() { return splitter; }
 
 private slots:
 	void sourceItemMenu( const QPoint &pos );

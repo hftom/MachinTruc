@@ -27,7 +27,7 @@ ProjectSourcesPage::ProjectSourcesPage( Sampler *samp )
 	connect( sourceListWidget, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)), this, SLOT(sourceItemActivated(QListWidgetItem*,QListWidgetItem*)) );
 
 	connect( openClipToolButton, SIGNAL(clicked()), this, SIGNAL(openSourcesBtnClicked()) );
-	connect( openBlankToolButton, SIGNAL(clicked()), this, SIGNAL(openBlankBtnClicked()) );
+	//connect( openBlankToolButton, SIGNAL(clicked()), this, SIGNAL(openBlankBtnClicked()) );
 }
 
 

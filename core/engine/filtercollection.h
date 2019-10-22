@@ -24,6 +24,7 @@
 #include "vfx/gldropshadow.h"
 #include "vfx/gledge.h"
 #include "vfx/glfiber.h"
+#include "vfx/gllaser.h"
 #include "vfx/glglow.h"
 #include "vfx/glhanddrawing.h"
 #include "vfx/glkaleidoscope.h"

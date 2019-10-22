@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="toolbar">
+    <file>icons/text.png</file>
     <file>icons/audio-volume-high.png</file>
     <file>icons/arrow-down.png</file>
     <file>icons/video_icon.png</file>
@@ -27,27 +28,27 @@
     <file>icons/edit-redo.png</file>
     <file>icons/applications-multimedia.png</file>
     <file>icons/tools-wizard.png</file>
-	<file>icons/page-simple.png</file>
-	<file>icons/format-text-color.png</file>
-	<file>icons/format-text-bold.png</file>
-	<file>icons/format-text-italic.png</file>
-	<file>icons/format-justify-center.png</file>
-	<file>icons/format-justify-left.png</file>
-	<file>icons/format-justify-right.png</file>
-	<file>icons/fill-color.png</file>
+    <file>icons/page-simple.png</file>
+    <file>icons/format-text-color.png</file>
+    <file>icons/format-text-bold.png</file>
+    <file>icons/format-text-italic.png</file>
+    <file>icons/format-justify-center.png</file>
+    <file>icons/format-justify-left.png</file>
+    <file>icons/format-justify-right.png</file>
+    <file>icons/fill-color.png</file>
   </qresource>
   <qresource prefix="images">
     <file>icons/sound.png</file>
     <file>icons/colors.png</file>
-	<file>icons/draw.png</file>
-	<file>icons/alpha.png</file>
-	<file>icons/lens.png</file>
-	<file>icons/size.png</file>
-	<file>icons/deform.png</file>
-	<file>icons/transparency.png</file>
-	<file>icons/color-wheel.png</file>
-	<file>icons/cursor.png</file>
-	<file>icons/point.png</file>
-	<file>icons/stabilize.png</file>
+    <file>icons/draw.png</file>
+    <file>icons/alpha.png</file>
+    <file>icons/lens.png</file>
+    <file>icons/size.png</file>
+    <file>icons/deform.png</file>
+    <file>icons/transparency.png</file>
+    <file>icons/color-wheel.png</file>
+    <file>icons/cursor.png</file>
+    <file>icons/point.png</file>
+    <file>icons/stabilize.png</file>
   </qresource>
 </RCC>
