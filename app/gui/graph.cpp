@@ -48,6 +48,7 @@ void Graph::setCurrentClip( ClipViewItem *c )
 		delete it;
 	}
 	selectedItem = NULL;
+	currentThumb = NULL;
 	currentClip = c;
 	if ( !currentClip ) {
 		emit filterSelected( NULL, 0 );
