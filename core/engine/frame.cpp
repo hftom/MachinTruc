@@ -105,7 +105,7 @@ void Frame::setVideoFrame( DataType t, int w, int h, double sar, bool il, bool t
 		size = w * h;
 		int bytes = bitDepth > 8 ? 2 : 1;
 		switch ( pType ) {
-			case YUV420P : size *= 3 / 2 * bytes; break;
+			case YUV420P : size = size * 3 / 2 * bytes; break;
 			case YUV422P : size *= 2 * bytes; break;
 			case YUV444P : size *= 3 * bytes; break;
 			case RGBA : size *= 4; break;
