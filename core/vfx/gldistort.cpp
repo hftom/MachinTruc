@@ -23,7 +23,7 @@ bool GLDistort::process( const QList<Effect*> &el, double pts, Frame *src, Profi
 	float top = 0.0f;
 	float left = 0.0f;
 	
-	double sar = getParamValue( ratio ).toFloat();
+	double sar = getParamValue( ratio, pts ).toFloat();
 	
 	if (sar < 1) {
 		w = src->glWidth * sar;
