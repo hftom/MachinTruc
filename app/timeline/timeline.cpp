@@ -25,14 +25,14 @@
 #include "timeline/timeline.h"
 
 #define MINTRACKLENGTH 300
-#define DEFAULTZOOM 102400.0
+#define DEFAULTZOOM 25600.0
 #define ZOOMMAX 3276800.0
 #define ZOOMMIN 800.0
 
 
 
 Timeline::Timeline( TopWindow *parent, QUndoStack *stack ) : QGraphicsScene(),
-	zoom( DEFAULTZOOM / 4.0 ),
+	zoom( DEFAULTZOOM ),
 	currentZoom( DEFAULTZOOM ),
 	viewWidth( 0 ),
 	effectItem( NULL ),
@@ -55,8 +55,8 @@ Timeline::Timeline( TopWindow *parent, QUndoStack *stack ) : QGraphicsScene(),
 	ruler = new RulerViewItem();
 	addItem( ruler );
 	ruler->setZValue( ZRULER );
-	ruler->setPos( 0, 0 );
 	ruler->setTimeScale( MICROSECOND / zoom );
+	ruler->setPos( 0, 0 );
 	
 	zoomAnim = new QPropertyAnimation( this, "animZoom" );
 	zoomAnim->setDuration( 250 );
@@ -1094,6 +1094,7 @@ void Timeline::setScene( Scene *s )
 	
 	setCursorPos( 0, true );
 	ruler->setFrameDuration( scene->getProfile().getVideoFrameDuration() );
+	ruler->setTimeScale(MICROSECOND / zoom);
 
 	updateAfterEdit(false, true);
 }
