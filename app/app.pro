@@ -118,25 +118,34 @@ FORMS = \
 
 TARGET = ../machintruc
 
-LIBS += ../core/libcore.a
 INCLUDEPATH += ../core
 DEPENDPATH += ../core
-PRE_TARGETDEPS += ../core/libcore.a
+
+unix {
+	LIBS += ../core/libcore.a
+	PRE_TARGETDEPS += ../core/libcore.a
+}
+
+win32 {
+	LIBS += ../core/release/libcore.a
+	PRE_TARGETDEPS += ../core/release/libcore.a
+}
 
 RESOURCES = resources.qrc
 
 CONFIG += c++11
 CONFIG += debug
+
+CONFIG += link_pkgconfig
+PKGCONFIG += movit
+PKGCONFIG += libavformat libavcodec libavutil libswresample libswscale libavfilter
+PKGCONFIG += sdl2	
+QMAKE_CXXFLAGS += -fopenmp
+QMAKE_CFLAGS += -fopenmp
+QMAKE_LFLAGS += -fopenmp
+
 unix {
-	CONFIG += link_pkgconfig
-	PKGCONFIG += movit
-	PKGCONFIG += libavformat libavcodec libavutil libswresample libswscale libavfilter
-	PKGCONFIG += sdl2
 	PKGCONFIG += x11
-	
-	QMAKE_CXXFLAGS += -fopenmp
-	QMAKE_CFLAGS += -fopenmp
-	QMAKE_LFLAGS += -fopenmp
 }
 
 # ffmpeg

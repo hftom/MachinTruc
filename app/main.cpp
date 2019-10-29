@@ -1,3 +1,7 @@
+#ifdef Q_OS_WIN
+#include <SDL.h>
+#endif
+
 #include <QApplication>
 #include <QStyleFactory>
 
@@ -5,10 +9,15 @@
 #include "gui/topwindow.h"
 
 
-
+#ifdef Q_OS_WIN
+int SDl_main(int argc, char **argv)
+#else
 int main(int argc, char **argv)
+#endif
 {
+#ifndef Q_OS_WIN
 	QCoreApplication::setAttribute( Qt::AA_X11InitThreads );
+#endif
 
 	QApplication app(argc, argv);
 	//qDebug() << QStyleFactory::keys();

@@ -196,16 +196,18 @@ QT += concurrent
 
 CONFIG += c++11
 CONFIG += staticlib debug
+
+CONFIG += link_pkgconfig
+PKGCONFIG += movit
+PKGCONFIG += libavformat libavcodec libavutil libswresample libswscale libavfilter
+PKGCONFIG += sdl2
+PKGCONFIG += x11
+QMAKE_CXXFLAGS += -fopenmp
+QMAKE_CFLAGS += -fopenmp -O3
+QMAKE_LFLAGS += -fopenmp
+
 unix {
-	CONFIG += link_pkgconfig
-	PKGCONFIG += movit
-	PKGCONFIG += libavformat libavcodec libavutil libswresample libswscale libavfilter
-	PKGCONFIG += sdl2
 	PKGCONFIG += x11
-	
-	QMAKE_CXXFLAGS += -fopenmp
-	QMAKE_CFLAGS += -fopenmp -O3
-	QMAKE_LFLAGS += -fopenmp
 }
 
 DEFINES += MOVIT_SHADERDIR=\\\"$$system(pkg-config --variable=shaderdir movit)\\\"

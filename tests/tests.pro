@@ -20,16 +20,17 @@ PRE_TARGETDEPS += ../build/core/libcore.a
 
 CONFIG += c++11
 CONFIG += debug
+
+CONFIG += link_pkgconfig
+PKGCONFIG += movit
+PKGCONFIG += libavformat libavcodec libavutil libswresample libswscale libavfilter
+PKGCONFIG += sdl2
+QMAKE_CXXFLAGS += -fopenmp
+QMAKE_CFLAGS += -fopenmp
+QMAKE_LFLAGS += -fopenmp
+
 unix {
-	CONFIG += link_pkgconfig
-	PKGCONFIG += movit
-	PKGCONFIG += libavformat libavcodec libavutil libswresample libswscale libavfilter
-	PKGCONFIG += sdl2
 	PKGCONFIG += x11
-	
-	QMAKE_CXXFLAGS += -fopenmp
-	QMAKE_CFLAGS += -fopenmp
-	QMAKE_LFLAGS += -fopenmp
 }
 
 # ffmpeg

@@ -127,7 +127,7 @@ bool OutputFF::openVideo( Profile &prof, int vrate, int vcodec, QString vcodecNa
 		//av_opt_set( videoCodecCtx->priv_data, "preset", "veryslow", 0 );
 	
 	if ( formatCtx->oformat->flags & AVFMT_GLOBALHEADER )
-		videoCodecCtx->flags |= CODEC_FLAG_GLOBAL_HEADER;
+		videoCodecCtx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
 
 	// open it
 	if ( avcodec_open2( videoCodecCtx, codec, NULL ) < 0 ) {
@@ -200,7 +200,7 @@ bool OutputFF::openAudio( Profile &prof, int vcodec )
 	audioStream->time_base = (AVRational){ 1, audioCodecCtx->sample_rate };
 	
 	if ( formatCtx->oformat->flags & AVFMT_GLOBALHEADER )
-		audioCodecCtx->flags |= CODEC_FLAG_GLOBAL_HEADER;
+		audioCodecCtx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
 
 	/* open it */
 	if ( avcodec_open2( audioCodecCtx, codec, NULL ) < 0 ) {

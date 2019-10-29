@@ -1,4 +1,6 @@
+#ifndef Q_OS_WIN
 #include <sys/resource.h>
+#endif
 
 extern "C" { 
 	#include "vidstab/vidstab.h"
@@ -277,7 +279,11 @@ void StabMotionDetect::stop()
 	
 void StabMotionDetect::run()
 {
+#ifndef Q_OS_WIN
 	setpriority( PRIO_PROCESS, 0, 19 );
+#else
+	setPriority(LowestPriority);
+#endif
 	
 	Profile sourceProfile = source->getProfile();
 	Profile outProfile = sourceProfile;

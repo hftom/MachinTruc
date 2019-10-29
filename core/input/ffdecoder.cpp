@@ -1025,8 +1025,8 @@ bool Yadif::reset( bool sendFields, int videoStreamIndex, AVFormatContext *fmtCt
 		filter_descr = "yadif=0";
 	char args[512];
 	int ret = 0;
-	AVFilter *buffersrc  = avfilter_get_by_name("buffer");
-	AVFilter *buffersink = avfilter_get_by_name("buffersink");
+	const AVFilter *buffersrc  = avfilter_get_by_name("buffer");
+	const AVFilter *buffersink = avfilter_get_by_name("buffersink");
 	AVFilterInOut *outputs = avfilter_inout_alloc();
 	AVFilterInOut *inputs  = avfilter_inout_alloc();
 	AVRational time_base = fmtCtx->streams[videoStreamIndex]->time_base;
