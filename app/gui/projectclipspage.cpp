@@ -6,8 +6,6 @@
 
 #include <QGLFramebufferObject>
 
-#include "input/input_ff.h"
-#include "input/input_image.h"
 #include "engine/thumbnailer.h"
 #include "gui/projectclipspage.h"
 #include "gui/profiledialog.h"
@@ -25,9 +23,54 @@ ProjectSourcesPage::ProjectSourcesPage( Sampler *samp )
 	sourceListWidget->setContextMenuPolicy( Qt::CustomContextMenu );
 	connect( sourceListWidget, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(sourceItemMenu(const QPoint&)) );
 	connect( sourceListWidget, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)), this, SLOT(sourceItemActivated(QListWidgetItem*,QListWidgetItem*)) );
+	
+	//patternsListWidget->setViewMode(QListView::IconMode);
+	patternsListWidget->setType("GLSL");
+	patternsListWidget->setIconSize( QSize( ICONSIZEWIDTH + 4, ICONSIZEHEIGHT + 4 ) );
+	
+	//titlesListWidget->setViewMode(QListView::IconMode);
+	titlesListWidget->setType("TITLE");
+	titlesListWidget->setIconSize( QSize( ICONSIZEWIDTH + 4, ICONSIZEHEIGHT + 4 ) );
 
 	connect( openClipToolButton, SIGNAL(clicked()), this, SIGNAL(openSourcesBtnClicked()) );
-	//connect( openBlankToolButton, SIGNAL(clicked()), this, SIGNAL(openBlankBtnClicked()) );
+}
+
+
+
+void ProjectSourcesPage::populateBuiltins()
+{
+	QStringList patternsBuiltins;
+	patternsBuiltins << "GLSL_Blank" << "GLSL_OpticalFiber" << "GLSL_LaserGrid" << "GLSL_Warp" << "GLSL_Warp2" << "GLSL_Clouds";
+	for (int i = 0; i < patternsBuiltins.count(); ++i) {
+		emit requestBuiltinThumb(patternsBuiltins.at(i), InputBase::GLSL);
+	}
+	
+	QStringList titlesBuiltins;
+	// titlesBuiltins << 
+	for (int i = 0; i < titlesBuiltins.count(); ++i) {
+		emit requestBuiltinThumb(titlesBuiltins.at(i), InputBase::GLSL);
+	}
+}
+
+
+
+void ProjectSourcesPage::addBuiltin( QString name, QPixmap pix )
+{
+	if ( name.startsWith("GLSL_")) {
+		InputGLSL input;
+		Profile p;
+		input.probe(name, &p);
+		SourceListItem *it = new SourceListItem( pix, new Source(InputBase::GLSL, name, p) );
+		patternsListWidget->addItem( it );
+	}
+}
+
+
+
+void ProjectSourcesPage::addSource( QPixmap pix, Source *src )
+{
+	SourceListItem *it = new SourceListItem( pix, src );
+	sourceListWidget->addItem( it );
 }
 
 
@@ -44,11 +87,32 @@ bool ProjectSourcesPage::exists( QString name )
 
 
 
-QList<Source*> ProjectSourcesPage::getAllSources()
+QList<Source*> ProjectSourcesPage::getAllSources(bool withBuiltins)
 {
 	QList<Source*> list;
 	for ( int i = 0; i < sourceListWidget->count(); ++i ) {
 		SourceListItem *it = (SourceListItem*)sourceListWidget->item( i );
+		list.append( it->getSource() );
+	}
+	if (withBuiltins) {
+		list.append(getBuiltinSources());
+	}
+	
+	return list;
+}
+
+
+
+QList<Source*> ProjectSourcesPage::getBuiltinSources()
+{
+	QList<Source*> list;
+
+	for ( int i = 0; i < patternsListWidget->count(); ++i ) {
+		SourceListItem *it = (SourceListItem*)patternsListWidget->item( i );
+		list.append( it->getSource() );
+	}
+	for ( int i = 0; i < titlesListWidget->count(); ++i ) {
+		SourceListItem *it = (SourceListItem*)titlesListWidget->item( i );
 		list.append( it->getSource() );
 	}
 	
@@ -71,10 +135,16 @@ void ProjectSourcesPage::clearAllSources()
 
 Source* ProjectSourcesPage::getSource( int index, const QString &filename )
 {
-	Q_UNUSED( filename );
-	if ( index < 0 || index > sourceListWidget->count() - 1 )
+	SourceListWidget *s;
+	if (filename == "GLSL") {
+		s = patternsListWidget;
+	}
+	else {
+		s = sourceListWidget;
+	}
+	if ( index < 0 || index > s->count() - 1 )
 		return NULL;
-	SourceListItem *it = (SourceListItem*)sourceListWidget->item( index );
+	SourceListItem *it = (SourceListItem*)s->item( index );
 	if ( !it )
 		return NULL;
 	/*if ( it->getSource()->getFileName() != filename )
@@ -121,7 +191,7 @@ void ProjectSourcesPage::sourceItemMenu( const QPoint &pos )
 		menu.addAction( tr("Add selection to track..."), this, SIGNAL(addSelectionToTimeline()) );
 	}
 	menu.addAction( tr("Source properties"), this, SLOT(showSourceProperties()) );
-	menu.addAction( tr("Filters..."), this, SLOT(showSourceFilters()) );
+	//menu.addAction( tr("Filters..."), this, SLOT(showSourceFilters()) );
 	menu.exec( QCursor::pos() );
 }
 
@@ -149,12 +219,4 @@ void ProjectSourcesPage::showSourceFilters()
 		return;
 	
 	FiltersDialog( this, item->getSource(), sampler ).exec();
-}
-
-
-
-void ProjectSourcesPage::addSource( QPixmap pix, Source *src )
-{
-	SourceListItem *it = new SourceListItem( pix, src );
-	sourceListWidget->addItem( it );
 }

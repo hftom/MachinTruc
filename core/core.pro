@@ -37,7 +37,7 @@ SOURCES = \
 	input/ffdecoder.cpp \
 	input/input_ff.cpp \
 	input/input_image.cpp \
-	input/input_blank.cpp \
+	input/input_glsl.cpp \
 	\
 	output/common_ff.cpp \
 	output/output_ff.cpp \
@@ -122,7 +122,7 @@ HEADERS = \
 	input/ffdecoder.h \
 	input/input_ff.h \
 	input/input_image.h \
-	input/input_blank.h \
+	input/input_glsl.h \
 	\
 	output/common_ff.h \
 	output/output_ff.h \

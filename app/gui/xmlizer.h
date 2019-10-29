@@ -12,7 +12,7 @@
 class XMLizer
 {
 public:
-	static Clip* readClip( QDomElement &element, QList<Source*> *sourcesList, Scene *scene, bool &readError );
+	static Clip* readClip( QDomElement &element, QList<Source*> *sourcesList, QList<Source*> *builtin, Scene *scene, bool &readError );
 	static void readTransition( QDomElement &element, Clip *clip, bool &readError );
 	static QSharedPointer<Filter> readFilter( QDomElement &element, bool audio, bool &readError, bool transition = false );
 	static void readParameter( QDomElement &element, QSharedPointer<Filter> f );

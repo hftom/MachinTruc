@@ -1,5 +1,7 @@
 #include <QApplication>
+#include <QStyleFactory>
 
+#include "DarkStyle.h"
 #include "gui/topwindow.h"
 
 
@@ -9,6 +11,8 @@ int main(int argc, char **argv)
 	QCoreApplication::setAttribute( Qt::AA_X11InitThreads );
 
 	QApplication app(argc, argv);
+	//qDebug() << QStyleFactory::keys();
+	app.setStyle(new DarkStyle);
 
 	/*QGLFormat glf = QGLFormat::defaultFormat();
 	glf.setAlpha( true );

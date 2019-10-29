@@ -1,12 +1,11 @@
-// kate: tab-indent on; indent-width 4; mixedindent off; indent-mode cstyle; remove-trailing-space on;
-
-#include "input/input_blank.h"
+#include "input/input_glsl.h"
 
 #define DEFAULTLENGTH 5.0 * MICROSECOND
+#define DEFAULTFPS 30.0
 
 
 
-InputBlank::InputBlank() : InputBase(),
+InputGLSL::InputGLSL() : InputBase(),
 	currentVideoPTS( 0 )
 {
 	inputType = GLSL;
@@ -14,7 +13,7 @@ InputBlank::InputBlank() : InputBase(),
 
 
 
-bool InputBlank::probe( QString fn, Profile *prof )
+bool InputGLSL::probe( QString fn, Profile *prof )
 {
 	if ( !open( fn ) )
 		return false;
@@ -22,14 +21,14 @@ bool InputBlank::probe( QString fn, Profile *prof )
 	prof->setVideoWidth( 1280 );
 	prof->setVideoHeight( 720 );
 	prof->setVideoSAR( 1.0 );
-	prof->setVideoFrameRate( 25.0 );
-	prof->setVideoFrameDuration( MICROSECOND / 25.0 );
+	prof->setVideoFrameRate( DEFAULTFPS );
+	prof->setVideoFrameDuration( MICROSECOND / DEFAULTFPS );
 	prof->setStreamStartTime( 0 );
 	prof->setStreamDuration( DEFAULTLENGTH );
 	prof->setVideoColorSpace( Profile::SPC_SRGB );
 	prof->setVideoColorPrimaries( Profile::PRI_SRGB );
 	prof->setVideoGammaCurve( Profile::GAMMA_SRGB );
-	prof->setVideoCodecName( "glsl" );
+	prof->setVideoCodecName( fn.replace("GLSL_", ""));
 	prof->setHasVideo( true );
 	prof->setHasAudio( false );
 	return true;
@@ -37,15 +36,16 @@ bool InputBlank::probe( QString fn, Profile *prof )
 
 
 
-bool InputBlank::open( QString fn )
+bool InputGLSL::open( QString fn )
 {
 	mmiSeek();
-	return fn.startsWith("Blank");
+	sourceName = fn;
+	return fn.startsWith("GLSL_");
 }
 
 
 
-void InputBlank::openSeekPlay( QString fn, double p, bool backward )
+void InputGLSL::openSeekPlay( QString fn, double p, bool backward )
 {
 	Q_UNUSED( backward );
 	open( fn );
@@ -54,11 +54,11 @@ void InputBlank::openSeekPlay( QString fn, double p, bool backward )
 
 
 
-double InputBlank::seekTo( double p )
+double InputGLSL::seekTo( double p )
 {
 	mmiSeek();
 
-	double dur = MICROSECOND / 25.0;
+	double dur = MICROSECOND / DEFAULTFPS;
 	qint64 i = p / dur;
 	currentVideoPTS = i * dur;
 
@@ -67,18 +67,19 @@ double InputBlank::seekTo( double p )
 
 
 
-void InputBlank::upload( Frame *f )
+void InputGLSL::upload( Frame *f )
 {
 	f->mmi = mmi;
 	f->mmiProvider = mmiProvider;
 	f->setVideoFrame( Frame::GLSL, outProfile.getVideoWidth(), outProfile.getVideoHeight(), outProfile.getVideoSAR(), false, false, currentVideoPTS, outProfile.getVideoFrameDuration() );
-	mmiDuplicate();
+	f->profile.setVideoCodecName(sourceName.replace("GLSL_", ""));
+	mmiIncrement();
 	currentVideoPTS += outProfile.getVideoFrameDuration();
 }
 
 
 
-Frame* InputBlank::getVideoFrame()
+Frame* InputGLSL::getVideoFrame()
 {
 	Frame *f = new Frame();
 	upload( f );

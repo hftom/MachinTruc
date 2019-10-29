@@ -656,18 +656,23 @@ bool FFDecoder::makeFrame( Frame *f, AVFrame *avFrame, double ratio, double pts,
 	}
 
 	Frame::DataType formatType;
-	int stride[3] = {
-		avFrame->linesize[0] * videoCodecCtx->height,
-		avFrame->linesize[1] * videoCodecCtx->height,
-		avFrame->linesize[2] * videoCodecCtx->height
+	int ph[3] = {
+		videoCodecCtx->height,
+		videoCodecCtx->height,
+		videoCodecCtx->height
+	};
+	int pw[3] = {
+		videoCodecCtx->width,
+		videoCodecCtx->width / 2,
+		videoCodecCtx->width / 2
 	};
 	int bitDepth = 8;
 	switch ( avFrame->format ) {
 		case AV_PIX_FMT_YUVJ420P:
 		case AV_PIX_FMT_YUV420P: {
 			formatType = Frame::YUV420P;
-			stride[1] /= 2;
-			stride[2] /= 2;
+			ph[1] /= 2;
+			ph[2] /= 2;
 			break;
 		}
 		case AV_PIX_FMT_YUVJ422P:
@@ -678,12 +683,14 @@ bool FFDecoder::makeFrame( Frame *f, AVFrame *avFrame, double ratio, double pts,
 		case AV_PIX_FMT_YUVJ444P:
 		case AV_PIX_FMT_YUV444P: {
 			formatType = Frame::YUV444P;
+			pw[1] *= 2;
+			pw[2] *= 2;
 			break;
 		}
 		case AV_PIX_FMT_YUV420P10LE: {
 			formatType = Frame::YUV420P;
-			stride[1] /= 2;
-			stride[2] /= 2;
+			ph[1] /= 2;
+			ph[2] /= 2;
 			bitDepth = 10;
 			break;
 		}
@@ -694,13 +701,15 @@ bool FFDecoder::makeFrame( Frame *f, AVFrame *avFrame, double ratio, double pts,
 		}
 		case AV_PIX_FMT_YUV444P10LE: {
 			formatType = Frame::YUV444P;
+			pw[1] *= 2;
+			pw[2] *= 2;
 			bitDepth = 10;
 			break;
 		}
 		case AV_PIX_FMT_YUV420P12LE: {
 			formatType = Frame::YUV420P;
-			stride[1] /= 2;
-			stride[2] /= 2;
+			ph[1] /= 2;
+			ph[2] /= 2;
 			bitDepth = 12;
 			break;
 		}
@@ -711,6 +720,8 @@ bool FFDecoder::makeFrame( Frame *f, AVFrame *avFrame, double ratio, double pts,
 		}
 		case AV_PIX_FMT_YUV444P12LE: {
 			formatType = Frame::YUV444P;
+			pw[1] *= 2;
+			pw[2] *= 2;
 			bitDepth = 12;
 			break;
 		}
@@ -721,14 +732,35 @@ bool FFDecoder::makeFrame( Frame *f, AVFrame *avFrame, double ratio, double pts,
 	}
 
 	f->setVideoFrame( formatType, videoCodecCtx->width, videoCodecCtx->height,
-					  ratio, avFrame->interlaced_frame, avFrame->top_field_first, pts, dur, orientation,  stride[0] + stride[1] + stride[2], bitDepth);
-	uint8_t *buf = f->data();
+					  ratio, avFrame->interlaced_frame, avFrame->top_field_first, pts, dur, orientation, 0, bitDepth);
 
-	memcpy( buf, avFrame->data[0], stride[0] );
-	memcpy( buf + stride[0], avFrame->data[1], stride[1] );
-	memcpy( buf + stride[0] + stride[1], avFrame->data[2], stride[2] );
+	copyYUVPlanar(f->data(), avFrame, ph, pw, bitDepth);
 
 	return true;
+}
+
+
+// removes ffmpeg padding
+void FFDecoder::copyYUVPlanar(uint8_t *buf, AVFrame *avFrame, int ph[3], int pw[3], int bits)
+{
+	int i;
+	int bytes = bits > 8 ? 2 : 1;
+	pw[0] *= bytes;
+	pw[1] *= bytes;
+	pw[2] *= bytes;
+
+	for ( i = 0; i < ph[0]; i++ ) {
+		memcpy( buf, avFrame->data[0] + (avFrame->linesize[0] * i), pw[0] );
+		buf += pw[0];
+	}
+	for ( i = 0; i < ph[1]; i++ ) {
+		memcpy( buf, avFrame->data[1] + (avFrame->linesize[1] * i), pw[1] );
+		buf += pw[1];
+	}
+	for ( i = 0; i < ph[2]; i++ ) {
+		memcpy( buf, avFrame->data[2] + (avFrame->linesize[2] * i), pw[2] );
+		buf += pw[2];
+	}
 }
 
 

@@ -13,7 +13,7 @@
 
 #include "input/input_ff.h"
 #include "input/input_image.h"
-#include "input/input_blank.h"
+#include "input/input_glsl.h"
 #include "engine/source.h"
 #include "util.h"
 #include "thumbnailer.h"
@@ -67,15 +67,13 @@ bool Thumbnailer::cdThumbDir( QDir &dir )
 void Thumbnailer::setSharedContext( QGLWidget *sharedContext )
 {
 	glContext = sharedContext;
+	go();
 }
 
 
 
 bool Thumbnailer::pushRequest( ThumbRequest req )
 {
-	if ( !glContext )
-		return false;
-
 	requestMutex.lock();
 	if ( req.typeOfRequest == ThumbRequest::SHADER )
 		requestList.prepend( req );
@@ -83,15 +81,22 @@ bool Thumbnailer::pushRequest( ThumbRequest req )
 		requestList.append( req );
 	requestMutex.unlock();
 	
-	if ( !isRunning() ) {
+	go();
+	
+	return true;
+}
+
+
+
+void Thumbnailer::go()
+{
+	if ( glContext && !isRunning() ) {
 #if QT_VERSION >= 0x050000
 		glContext->context()->moveToThread( this );
 #endif
 		running = true;
 		start();
 	}
-	
-	return true;
 }
 
 
@@ -125,7 +130,7 @@ void Thumbnailer::run()
 			ThumbRequest request = requestList.takeFirst();
 			requestMutex.unlock();
 		
-			if ( request.typeOfRequest == ThumbRequest::PROBE ) {
+			if ( request.typeOfRequest == ThumbRequest::PROBE || request.typeOfRequest == ThumbRequest::BUILTIN) {
 				probe( request );
 			}
 			else if ( request.typeOfRequest == ThumbRequest::SHADER ) {
@@ -163,7 +168,7 @@ void Thumbnailer::probe( ThumbRequest &request )
 		}
 	}
 
-	InputBase *input = new InputBlank();
+	InputBase *input = new InputGLSL();
 	bool probed = false;
 	probed = input->probe( request.filePath, &request.profile );
 	if (!probed) {
@@ -218,7 +223,7 @@ void Thumbnailer::makeThumb( ThumbRequest &request )
 
 	InputBase *input;
 	if ( request.inputType == InputBase::GLSL )
-		input = new InputBlank();
+		input = new InputGLSL();
 	else if ( request.inputType == InputBase::IMAGE )
 		input = new InputImage();
 	else 
@@ -330,7 +335,9 @@ QImage Thumbnailer::getSourceThumb( Frame *f, bool border )
 	MovitBranch *branch = new MovitBranch( in );
 	movitChain->branches.append( branch );
 	movitChain->chain->add_input( in->getMovitInput( f ) );
-	branch->input->process( f );
+	f->glWidth = f->profile.getVideoWidth();
+	f->glHeight = f->profile.getVideoHeight();
+	branch->input->process( f, f->pts() );
 
 	int iw, ih;
 	if ( ar >= ICONSIZEWIDTH / ICONSIZEHEIGHT ) {
@@ -367,7 +374,7 @@ QImage Thumbnailer::getSourceThumb( Frame *f, bool border )
 	glReadPixels(0, 0, iw, ih, GL_BGRA, GL_UNSIGNED_BYTE, data);
 	fbo->release();
 	
-	if ( f->type() == Frame::GLSL ) {
+	if ( f->type() == Frame::GLSL && f->profile.getVideoCodecName() == "Blank" ) {
 		QImage trans(":/images/icons/transparency.png");
 		for ( int i = 0; i < ih; ++i )
 			memcpy( data + iw * 4 * i, trans.constScanLine( i ), iw * 4 );

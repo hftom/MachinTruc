@@ -8,7 +8,7 @@
 GLWhiteBalance::GLWhiteBalance( QString id, QString name ) : GLFilter( id, name )
 {
 	neutralColor = addParameter( "neutralColor", tr("Neutral color:"), Parameter::PRGBCOLOR, QColor::fromRgbF( 0.5, 0.5, 0.5 ), QColor::fromRgbF( 0, 0, 0 ), QColor::fromRgbF( 1, 1, 1 ), false );
-	temperature = addParameter( "temperature", tr("Temperature:"), Parameter::PINT, 6500, 1000, 15000, false );
+	temperature = addParameter( "temperature", tr("Temperature:"), Parameter::PINT, 6500, 1000, 15000, true, "K" );
 }
 
 

@@ -1213,7 +1213,7 @@ void Timeline::editPaste(ClipBoard *clipboard)
 		}
 	}
 	else if (type.startsWith("Track")) {
-		QList< QList<Clip*>* > *list = clipboard->getClips( topParent->getAllSources(), scene );
+		QList< QList<Clip*>* > *list = clipboard->getClips( topParent->getAllSources(), topParent->getBuiltinSources(), scene );
 		
 		int activeTrack = cursor->getActiveTrack();
 		if (mouseScenePosition.y() >= 0 && mouseScenePosition.x() >= 0) {

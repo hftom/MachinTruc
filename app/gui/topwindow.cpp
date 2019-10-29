@@ -18,6 +18,7 @@ TopWindow::TopWindow()
 	thumbnailer( new Thumbnailer() )
 {
 	setupUi( this );
+	setWindowIcon(QIcon(":/toolbar/icons/umovit.png"));
 
 	qRegisterMetaType<OVDUpdateMessage>();
 
@@ -32,6 +33,9 @@ TopWindow::TopWindow()
 	seekSlider->setTickPosition( QSlider::NoTicks );
 	seekSlider->setTickInterval( 0 );
 	horizontalLayout_2->insertWidget( 9, seekSlider );
+	
+	connect( thumbnailer, SIGNAL(resultReady()), thumbnailer, SLOT(gotResult()) );
+	connect( thumbnailer, SIGNAL(thumbReady(ThumbRequest)), this, SLOT(thumbResultReady(ThumbRequest)) );
 
 	sampler = new Sampler();
 	undoStack.setUndoLimit(100);
@@ -62,10 +66,11 @@ TopWindow::TopWindow()
 	timelineStackedWidget->addWidget( animEditor );
 
 	sourcePage = new ProjectSourcesPage( sampler );
+	connect( sourcePage, SIGNAL(requestBuiltinThumb(QString,int)), this, SLOT(requestBuiltinThumb(QString,int)));
 	connect( sourcePage, SIGNAL(sourceActivated()), this, SLOT(sourceActivated()) );
 	connect( sourcePage, SIGNAL(openSourcesBtnClicked()), this, SLOT(openSources()) );
-	connect( sourcePage, SIGNAL(openBlankBtnClicked()), this, SLOT(openBlank()) );
 	connect( sourcePage, SIGNAL(addSelectionToTimeline()), timeline, SLOT(addSelectionToTimeline()) );
+	sourcePage->populateBuiltins();
 
 	fxPage = new FxPage();
 	connect( animEditor, SIGNAL(ovdValueChanged(ParameterWidget*)), fxPage, SIGNAL(ovdValueChanged(ParameterWidget*)) );
@@ -323,7 +328,7 @@ void TopWindow::doBackup()
 	}
 
 	ProjectFile xml;
-	QList<Source*> sources = sourcePage->getAllSources();
+	QList<Source*> sources = sourcePage->getAllSources(false);
 	if (sources.count()) {
 		xml.saveProject( sources, sampler, dir.filePath(AUTORECOVERY), currentProjectFile );
 	}
@@ -510,6 +515,13 @@ void TopWindow::timelineTrackAddRemove( int index, bool remove )
 QList<Source*> TopWindow::getAllSources()
 {
 	return sourcePage->getAllSources();
+}
+
+
+
+QList<Source*> TopWindow::getBuiltinSources()
+{
+	return sourcePage->getBuiltinSources();
 }
 
 
@@ -833,8 +845,6 @@ void TopWindow:: timelineSeek( double pts )
 void TopWindow::setThumbContext( QGLWidget *context )
 {
 	thumbnailer->setSharedContext( context );
-	connect( thumbnailer, SIGNAL(resultReady()), thumbnailer, SLOT(gotResult()) );
-	connect( thumbnailer, SIGNAL(thumbReady(ThumbRequest)), this, SLOT(thumbResultReady(ThumbRequest)) );
 }
 
 
@@ -842,21 +852,6 @@ void TopWindow::setThumbContext( QGLWidget *context )
 void TopWindow::clipThumbRequest( ThumbRequest request )
 {
 	thumbnailer->pushRequest( request );
-}
-
-
-
-void TopWindow::openBlank()
-{
-	QString s = "Blank";
-	if ( sourcePage->exists( s ) )
-		duplicateOpenSources.append( s );
-	else {
-		if ( thumbnailer->pushRequest( ThumbRequest( s ) ) )
-			++openSourcesCounter;
-	}
-	if ( !openSourcesCounter )
-		unsupportedDuplicateMessage();
 }
 
 
@@ -897,6 +892,13 @@ void TopWindow::unsupportedDuplicateMessage()
 
 
 
+void TopWindow::requestBuiltinThumb(QString name, int type)
+{
+	thumbnailer->pushRequest(ThumbRequest(name, true, type));
+}
+
+
+
 void TopWindow::thumbResultReady( ThumbRequest result )
 {
 	if ( result.typeOfRequest == ThumbRequest::THUMB ) {
@@ -908,6 +910,11 @@ void TopWindow::thumbResultReady( ThumbRequest result )
 		ShaderEdit *edit = (ShaderEdit*)result.caller;
 		if ( edit )
 			edit->setCompileResult( result.filePath );
+		return;
+	}
+	
+	if ( result.typeOfRequest == ThumbRequest::BUILTIN ) {
+		sourcePage->addBuiltin( result.filePath, QPixmap::fromImage( result.thumb ) );
 		return;
 	}
 
@@ -998,7 +1005,7 @@ void TopWindow::saveProject()
 	}
 
 	ProjectFile xml;
-	xml.saveProject( sourcePage->getAllSources(), sampler, currentProjectFile );
+	xml.saveProject( sourcePage->getAllSources(false), sampler, currentProjectFile );
 	vw->showOSDMessage( QString( tr("Saved: %1") ).arg(currentProjectFile), 3 );
 	undoStack.setClean();
 
@@ -1062,7 +1069,7 @@ bool TopWindow::loadProject(QString filename, QString &backupFilename)
 
 	projectLoader = new ProjectFile();
 
-	if ( projectLoader->loadProject( filename ) && projectLoader->sourcesList.count() ) {
+	if ( projectLoader->loadProject( filename, sourcePage->getBuiltinSources() ) && projectLoader->sourcesList.count() ) {
 		int i;
 		for ( i = 0; i < projectLoader->sourcesList.count(); ++i ) {
 			thumbnailer->pushRequest( ThumbRequest( projectLoader->sourcesList[i]->getFileName(), projectLoader->sourcesList[i]->getType() ) );

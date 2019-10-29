@@ -2,7 +2,7 @@
 
 
 
-Clip* XMLizer::readClip( QDomElement &element, QList<Source*> *sourcesList, Scene *scene, bool &readError )
+Clip* XMLizer::readClip( QDomElement &element, QList<Source*> *sourcesList, QList<Source*> *builtin, Scene *scene, bool &readError )
 {
 	QDomNodeList nodes = element.childNodes();
 	
@@ -51,6 +51,14 @@ Clip* XMLizer::readClip( QDomElement &element, QList<Source*> *sourcesList, Scen
 		if ( sourcesList->at(i)->getFileName() == name ) {
 			clip = scene->createClip( sourcesList->at(i), posInTrack, startTime, length );
 			break;
+		}
+	}
+	if ( !clip ) {
+		for ( int i = 0; i < builtin->count(); ++i ) {
+			if ( builtin->at(i)->getFileName() == name ) {
+				clip = scene->createClip( builtin->at(i), posInTrack, startTime, length );
+				break;
+			}
 		}
 	}
 	

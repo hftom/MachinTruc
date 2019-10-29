@@ -31,7 +31,17 @@ public:
 		secs %= 60;
 		hours = mins / 60;
 		mins %= 60;
-		setText( QFileInfo( source->getFileName() ).fileName() + "\n" + QTime( hours, mins, secs ).toString("hh:mm:ss") );
+		QString text;
+		switch (source->getType()) {
+			case InputBase::GLSL:
+				text = source->getFileName();
+				text.replace("GLSL_", "");
+				break;
+			default:
+				text = QFileInfo( source->getFileName() ).fileName() + "\n" + QTime( hours, mins, secs ).toString("hh:mm:ss");
+				break;
+		}
+		setText( text );
 		setIcon( pix );
 		currentPts = inPoint = 0;
 		outPoint = inPoint + ( p.getStreamDuration() / 2 );
@@ -47,7 +57,11 @@ public:
 	double getCurrentPts() { return currentPts; }
 	Source* getSource() { return source; }
 	const QImage & getInThumb() { return inThumb; }
-	QSize getThumbSize() { return QSize( source->getProfile().getVideoSAR() * source->getProfile().getVideoWidth() * THUMBHEIGHT / source->getProfile().getVideoHeight(), THUMBHEIGHT ); }	
+	QSize getThumbSize() { return QSize( source->getProfile().getVideoSAR() * source->getProfile().getVideoWidth() * THUMBHEIGHT / source->getProfile().getVideoHeight(), THUMBHEIGHT ); }
+	
+	void setPixmap( QPixmap pix ) {
+		setIcon(pix);
+	}
 	
 private:
 	Source *source;
@@ -66,17 +80,20 @@ public:
 	
 	bool exists( QString name );
 	void clearAllSources();
-	QList<Source*> getAllSources();
+	QList<Source*> getAllSources(bool withBuiltins = true);
+	QList<Source*> getBuiltinSources();
 	Source* getSource( int index, const QString &filename );
 	QList<Source*> getSelectedSources();
 	void addSource( QPixmap pix, Source *src );
+	void addBuiltin( QString name, QPixmap pix );
+	
+	void populateBuiltins();
 	
 	bool hasActiveSource() { return activeSource != NULL; }
 	Source *sourceActiveSource() { return activeSource->getSource(); }
 	double currentPtsActiveSource() { return activeSource->getCurrentPts(); }
 	void activeSourceSetCurrentPts( double d ) { activeSource->setCurrentPts( d ); }
 	Profile activeSourceGetProfile() { return activeSource->getProfile(); }
-	//QSplitter* getSplitter() { return splitter; }
 
 private slots:
 	void sourceItemMenu( const QPoint &pos );
@@ -87,8 +104,8 @@ private slots:
 signals:
 	void sourceActivated();
 	void openSourcesBtnClicked();
-	void openBlankBtnClicked();
 	void addSelectionToTimeline();
+	void requestBuiltinThumb(QString, int);
 
 private:
 	Sampler *sampler;

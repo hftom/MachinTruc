@@ -17,7 +17,7 @@ public:
 	QString getCopyType();
 	
 	void copyClips( QList< QList<Clip*>* > *list );
-	QList< QList<Clip*>* >* getClips( QList<Source*> sourcesList, Scene *scene );
+	QList< QList<Clip*>* >* getClips( QList<Source*> sourcesList, QList<Source*> builtin, Scene *scene );
 	void deleteClips(QList< QList<Clip*>* > *list);
 	
 	
@@ -29,7 +29,7 @@ public slots:
 	void reset();
 
 private:
-	void readTrack( QDomElement &element, QList<Clip*> *track, QList<Source*> *sourcesList, Scene *scene );
+	void readTrack( QDomElement &element, QList<Clip*> *track, QList<Source*> *sourcesList, QList<Source*> *builtin, Scene *scene );
 	
 	QDomDocument document;
 	

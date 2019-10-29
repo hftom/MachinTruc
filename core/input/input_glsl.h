@@ -1,15 +1,15 @@
-#ifndef INPUT_BLANK_H
-#define INPUT_BLANK_H
+#ifndef INPUT_GLSL_H
+#define INPUT_GLSL_H
 
 #include "input/input.h"
 
 
 
-class InputBlank : public InputBase
+class InputGLSL : public InputBase
 {
 	Q_OBJECT
 public:
-	InputBlank();
+	InputGLSL();
 	bool open( QString fn );
 	void openSeekPlay( QString fn, double p, bool backward = false );
 	void seekFast( float percent );
@@ -27,4 +27,4 @@ private:
 	double currentVideoPTS;
 	int width, height;
 };
-#endif // INPUT_BLANK_H
+#endif // INPUT_GLSL_H

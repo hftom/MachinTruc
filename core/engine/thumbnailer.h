@@ -22,7 +22,14 @@ class QGLWidget;
 class ThumbRequest
 {
 public:
-	enum RequestType{ PROBE, THUMB, SHADER };
+	enum RequestType{ PROBE, BUILTIN, THUMB, SHADER };
+	
+	ThumbRequest( QString path, bool builtin, int inType = 0 )
+		: typeOfRequest( BUILTIN ),
+		caller( NULL ),
+		inputType( inType ),
+		filePath( path ),
+		thumbPTS( 0 ) {}
 
 	ThumbRequest( QString path, int inType = 0 )
 		: typeOfRequest( PROBE ),
@@ -69,6 +76,7 @@ public:
 	bool pushRequest( ThumbRequest req );
 	
 protected:
+	void go();
 	void run();
 	
 private slots:

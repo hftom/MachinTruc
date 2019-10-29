@@ -3,7 +3,7 @@
 
 #include "input/input_ff.h"
 #include "input/input_image.h"
-#include "input/input_blank.h"
+#include "input/input_glsl.h"
 
 #include "engine/scene.h"
 #include "engine/metronom.h"

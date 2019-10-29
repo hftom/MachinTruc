@@ -5,6 +5,7 @@ QT += xml
 
 SOURCES = \
 	main.cpp \
+	DarkStyle.cpp \
 	gui/appconfig.cpp \
 	gui/shadercollection.cpp \
 	gui/renderingdialog.cpp \
@@ -51,6 +52,7 @@ SOURCES = \
 	
 HEADERS = \
 	undo.h \
+	DarkStyle.h \
 	gui/appconfig.h \
 	gui/shadercollection.h \
 	gui/renderingdialog.h \

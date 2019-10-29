@@ -140,6 +140,7 @@ public:
 	Sampler* getSampler() { return sampler; };
 	void timelineTrackAddRemove( int index, bool remove );
 	QList<Source*> getAllSources();
+	QList<Source*> getBuiltinSources();
 	QList<Source*> getSelectedSources();
 
 public slots:
@@ -162,8 +163,8 @@ private slots:
 	void renderFinished( double pts );
 	
 	void openSources();
-	void openBlank();
 	void thumbResultReady( ThumbRequest result );
+	void requestBuiltinThumb(QString name, int type);
 	
 	void trackRequest( bool rm, int index );
 	void clipAddedToTimeline( Profile );

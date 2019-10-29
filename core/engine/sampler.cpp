@@ -433,7 +433,7 @@ InputBase* Sampler::getInput( QString fn, InputBase::InputType type )
 			in = new InputFF();
 			break;
 		case InputBase::GLSL:
-			in = new InputBlank();
+			in = new InputGLSL();
 			break;
 		case InputBase::IMAGE:
 		default:

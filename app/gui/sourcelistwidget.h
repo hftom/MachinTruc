@@ -14,8 +14,13 @@ class SourceListWidget : public QListWidget
 {
 	Q_OBJECT
 public:
-	SourceListWidget( QWidget *parent ) : QListWidget( parent ) {
+	SourceListWidget( QWidget *parent ) : QListWidget( parent ), type("source") {
 		setSelectionMode(QAbstractItemView::ExtendedSelection);
+	}
+	
+	void setType(QString t) {
+		type = t;
+		setSelectionMode(QAbstractItemView::SingleSelection);
 	}
 	
 protected:
@@ -36,7 +41,7 @@ protected:
 		QMimeData *mimeData = new QMimeData();
 		QByteArray encodedData;
 		encodedData.append( QString::number( row( it ) ) + " " );
-		encodedData.append( "source" );
+		encodedData.append( type );
 		mimeData->setData( MIMETYPESOURCE, encodedData );
 		drag->setMimeData(mimeData);
 		//drag->setPixmap( QPixmap(":/images/icons/sound.png") );
@@ -45,6 +50,7 @@ protected:
 	
 private:
 	QPoint dragStartPosition;
+	QString type;
 };
 
 #endif // SOURCELISTWIDGET_H

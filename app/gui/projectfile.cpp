@@ -2,7 +2,7 @@
 
 
 
-bool ProjectFile::loadProject( QString filename )
+bool ProjectFile::loadProject( QString filename, QList<Source*> builtin )
 {
 	document = QDomDocument();
 	QFile file( filename );
@@ -74,6 +74,8 @@ bool ProjectFile::loadProject( QString filename )
 			readSource( e );
 		}
 	}
+	
+	builtinSources = builtin;
 	
 	// get all "Scene"
 	for ( int i = 0; i < nodes.count(); ++i ) {
@@ -303,7 +305,7 @@ void ProjectFile::readTrack( QDomElement &element, Scene *scene, int index )
 			continue;
 		
 		if ( e.tagName() == "Clip" ) {
-			Clip *clip = XMLizer::readClip( e, &sourcesList, scene, readError );
+			Clip *clip = XMLizer::readClip( e, &sourcesList, &builtinSources, scene, readError );
 			if (clip) {
 				double posInTrack = clip->position();
 				if ( !scene->canMove( clip, clip->length(), posInTrack, index ) ) {

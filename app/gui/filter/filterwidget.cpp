@@ -200,7 +200,7 @@ void FilterWidget::valueChanged( Parameter *p, QVariant val )
 			break;
 		}
 	}
-	
+
 	emit paramUndoCommand(filter, p, old, p->value);
 	
 	if ( p->type == Parameter::PSHADEREDIT ) {

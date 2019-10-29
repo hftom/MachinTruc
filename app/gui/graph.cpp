@@ -221,7 +221,6 @@ void Graph::updateLength()
 	
 	setSceneRect( 0, 0, ICONSIZEWIDTH, maxlen );
 	emit showVerticalScrollBar( maxlen > viewHeight );
-		
 }
 
 
@@ -364,8 +363,11 @@ void Graph::dragMoveEvent( QGraphicsSceneDragDropEvent *event )
 
 void Graph::dragLeaveEvent( QGraphicsSceneDragDropEvent *event )
 {
-	for ( int i = 0; i < dragList.count(); ++i )
-		dragList.at( i )->setY( (ITEMSPACING * 3.0 / 2.0) + ICONSIZEHEIGHT + (i * (ICONSIZEHEIGHT + ITEMSPACING)) );
+	const QMimeData *mimeData = event->mimeData();
+	if ( currentClip && mimeData->formats().contains( MIMETYPEEFFECT ) ) {
+		for ( int i = 0; i < dragList.count(); ++i )
+			dragList.at( i )->setY( (ITEMSPACING * 3.0 / 2.0) + ICONSIZEHEIGHT + (i * (ICONSIZEHEIGHT + ITEMSPACING)) );
+	}
 	QGraphicsScene::dragLeaveEvent( event );
 }
 

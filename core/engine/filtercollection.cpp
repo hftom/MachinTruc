@@ -19,9 +19,9 @@ FilterCollection::FilterCollection()
 	//videoFilters.append( FilterEntry( "lens", "GLDeconvolutionSharpen", QObject::tr("Sharpen (deconvolution)"), &Maker<GLDeconvolutionSharpen>::make ) );
 	videoFilters.append( FilterEntry( "lens", "GLSharpen", QObject::tr("Sharpen"), &Maker<GLSharpen>::make ) );
 	//videoFilters.append( FilterEntry( "lens", "GLDenoise", QObject::tr("Denoise"), &Maker<GLDenoise>::make ) );
-	videoFilters.append( FilterEntry( "lens", "GLDiffusion", QObject::tr("Diffusion"), &Maker<GLDiffusion>::make ) );
-	videoFilters.append( FilterEntry( "lens", "GLMirror", QObject::tr("Mirror"), &Maker<GLMirror>::make ) );
+	videoFilters.append( FilterEntry( "lens", "GLDiffusion", QObject::tr("Soften"), &Maker<GLDiffusion>::make ) );
 	videoFilters.append( FilterEntry( "lens", "GLGlow", QObject::tr("Glow"), &Maker<GLGlow>::make ) );
+	videoFilters.append( FilterEntry( "size", "GLMirror", QObject::tr("Mirror"), &Maker<GLMirror>::make ) );
 	videoFilters.append( FilterEntry( "size", "GLSize", QObject::tr("Size and position"), &Maker<GLSize>::make ) );
 	videoFilters.append( FilterEntry( "size", "GLPanZoom", QObject::tr("Animated image"), &Maker<GLPanZoom>::make ) );
 	videoFilters.append( FilterEntry( "size", "GLDistort", QObject::tr("Distort"), &Maker<GLDistort>::make ) );

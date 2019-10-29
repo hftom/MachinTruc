@@ -126,7 +126,7 @@ QSharedPointer<Filter> ClipBoard::getFilter()
 
 
 
-QList< QList<Clip*>* >* ClipBoard::getClips( QList<Source*> sourcesList, Scene *scene )
+QList< QList<Clip*>* >* ClipBoard::getClips( QList<Source*> sourcesList, QList<Source*> builtin, Scene *scene )
 {
 	QDomElement rootElement = document.documentElement();	
 	QDomNodeList nodes = rootElement.childNodes();
@@ -140,7 +140,7 @@ QList< QList<Clip*>* >* ClipBoard::getClips( QList<Source*> sourcesList, Scene *
 
 		if ( e.tagName().startsWith( "Track" ) ) {
 			QList<Clip*> *track = new QList<Clip*>();
-			readTrack( e, track, &sourcesList, scene );
+			readTrack( e, track, &sourcesList, &builtin, scene );
 			list->append(track);
 		}
 	}
@@ -164,7 +164,7 @@ void ClipBoard::deleteClips(QList< QList<Clip*>* > *list)
 
 
 
-void ClipBoard::readTrack( QDomElement &element, QList<Clip*> *track, QList<Source*> *sourcesList, Scene *scene )
+void ClipBoard::readTrack( QDomElement &element, QList<Clip*> *track, QList<Source*> *sourcesList, QList<Source*> *builtin, Scene *scene )
 {
 	bool readError = false;
 	QDomNodeList nodes = element.childNodes();
@@ -175,7 +175,7 @@ void ClipBoard::readTrack( QDomElement &element, QList<Clip*> *track, QList<Sour
 			continue;
 		
 		if ( e.tagName() == "Clip" ) {
-			Clip *clip = XMLizer::readClip( e, sourcesList, scene, readError );
+			Clip *clip = XMLizer::readClip( e, sourcesList, builtin, scene, readError );
 			if (clip) {
 				int k = 0, tc = track->count();
 				// sort clips by position

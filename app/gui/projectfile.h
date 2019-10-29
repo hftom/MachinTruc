@@ -11,10 +11,11 @@ class ProjectFile
 public:
 	ProjectFile() : readError( false ) {}
 
-	bool loadProject( QString filename );
+	bool loadProject( QString filename, QList<Source*> builtin );
 	bool saveProject( QList<Source*> sources, Sampler *sampler, QString filename, QString backupProjectFilename = "" );
 
 	QList<Source*> sourcesList;
+	QList<Source*> builtinSources;
 	QList<Scene*> sceneList;
 	QString backupFilename;
 	bool readError;

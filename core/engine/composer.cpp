@@ -715,7 +715,7 @@ void Composer::movitRender( Frame *dst, bool update )
 
 		// input and filters
 		MovitBranch *branch = movitChain.branches[ j++ ];
-		branch->input->process( f, &gl );
+		branch->input->process( f, pts, &gl );
 		int vf = 0;
 		FrameSample *sample = dst->sample->frames[i - 1];
 		for ( int k = 0; k < branch->filters.count(); ++k ) {
@@ -730,7 +730,7 @@ void Composer::movitRender( Frame *dst, bool update )
 			sample->transitionFrame.frame->glHeight = sample->transitionFrame.frame->profile.getVideoHeight();
 			sample->transitionFrame.frame->glSAR = sample->transitionFrame.frame->profile.getVideoSAR();
 			MovitBranch *branchTrans = movitChain.branches[ j++ ];
-			branchTrans->input->process( sample->transitionFrame.frame, &gl );
+			branchTrans->input->process( sample->transitionFrame.frame, pts, &gl );
 			int tvf = 0;
 			int k;
 			for ( k = 0; k < branchTrans->filters.count() - 1; ++k ) {

@@ -80,7 +80,7 @@ void MovitInput::setPixelData16(Frame *src, int size, int stride[], GLResource *
 
 
 
-bool MovitInput::process( Frame *src, GLResource *gl )
+bool MovitInput::process( Frame *src, double pts, GLResource *gl)
 {
 	if ( src->mmiProvider != mmiProvider )
 		mmiProvider = src->mmiProvider;
@@ -128,6 +128,10 @@ bool MovitInput::process( Frame *src, GLResource *gl )
 			return true;
 		}
 		case Frame::GLSL:{
+			GLSLInput *glsl = (GLSLInput*)input;
+			glsl->set_float( "time", pts / MICROSECOND );
+			glsl->set_float( "iwidth", src->glWidth );
+			glsl->set_float( "iheight", src->glHeight );
 			return true;
 		}
 	}
@@ -231,7 +235,7 @@ Input* MovitInput::getMovitInput( Frame *src )
 				return input;
 			}
 			case Frame::GLSL: {
-				input = new BlankInput( src->profile.getVideoWidth(), src->profile.getVideoHeight() );
+				input = new GLSLInput( src->profile.getVideoWidth(), src->profile.getVideoHeight(), src->profile.getVideoCodecName() );
 				return input;
 			}
 		}
@@ -256,7 +260,7 @@ QString MovitInput::getDescriptor( Frame *src )
 		case Frame::RGBA:
 			return QString("FLATINPUT RGBA %1 %2").arg( src->profile.getVideoWidth() ).arg( src->profile.getVideoHeight() );
 		case Frame::GLSL:
-			return QString("BLANKINPUT %1 %2").arg( src->profile.getVideoWidth() ).arg( src->profile.getVideoHeight() );
+			return QString("GLSL %1 %2 %3").arg(src->profile.getVideoCodecName()).arg( src->profile.getVideoWidth() ).arg( src->profile.getVideoHeight() );
 	}
 	return QString();
 }

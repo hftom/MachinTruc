@@ -6,7 +6,7 @@
 
 GLBackgroundColor::GLBackgroundColor( QString id, QString name ) : GLFilter( id, name )
 {
-	color = addParameter( "color", tr("Color:"), Parameter::PRGBACOLOR, QColor::fromRgbF( 0, 0, 0 ), QColor::fromRgbF( 0, 0, 0, 0 ), QColor::fromRgbF( 1, 1, 1 ), false );
+	color = addParameter( "color", tr("Color:"), Parameter::PRGBACOLOR, QColor::fromRgbF( 1, 1, 1 ), QColor::fromRgbF( 0, 0, 0, 0 ), QColor::fromRgbF( 1, 1, 1 ), false );
 }
 
 

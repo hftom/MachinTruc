@@ -152,6 +152,7 @@ private:
 	bool getPacket();
 	void freePacket( AVPacket *packet );
 	bool makeFrame( Frame *f, AVFrame *avFrame, double ratio, double pts, double dur );
+	void copyYUVPlanar(uint8_t *buf, AVFrame *avFrame, int h[3], int w[3], int bits);
 	void freeCurrentAudioPacket();
 	void shiftCurrentAudioPacket( int len );
 	void shiftCurrentAudioPacketPts( double pts );
