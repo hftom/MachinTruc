@@ -1,4 +1,4 @@
-#ifndef Q_OS_WIN
+#ifdef Q_OS_UNIX
 #include <sys/resource.h>
 #endif
 
@@ -279,7 +279,7 @@ void StabMotionDetect::stop()
 	
 void StabMotionDetect::run()
 {
-#ifndef Q_OS_WIN
+#ifdef Q_OS_UNIX
 	setpriority( PRIO_PROCESS, 0, 19 );
 #else
 	setPriority(LowestPriority);

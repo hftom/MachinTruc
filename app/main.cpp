@@ -9,13 +9,13 @@
 #include "gui/topwindow.h"
 
 
-#ifdef Q_OS_WIN
-int SDl_main(int argc, char **argv)
-#else
+#ifdef Q_OS_UNIX
 int main(int argc, char **argv)
+#else
+int SDl_main(int argc, char **argv)
 #endif
 {
-#ifndef Q_OS_WIN
+#ifdef Q_OS_UNIX
 	QCoreApplication::setAttribute( Qt::AA_X11InitThreads );
 #endif
 
