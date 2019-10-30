@@ -181,6 +181,7 @@ private slots:
 	void showFxPage();
 	void showFxSettingsPage();
 
+	void setComposerContext( QGLWidget* );
 	void setThumbContext( QGLWidget* );
 	void sourceActivated();
 	void currentFramePts( double d );

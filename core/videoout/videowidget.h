@@ -203,14 +203,16 @@ private:
 	OSDMessage osdMessage;
 	OSDTimer osdTimer;
 	bool playing;
+	
+	bool glInitialized;
 
 signals:
 	void playPause();
 	void wheelSeek( int );
 	void move( int, int );
-	void newSharedContext(QGLWidget*);
+	void newComposerContext(QGLWidget*);
 	void newThumbContext(QGLWidget*);
-	void newFencesContext(QGLWidget*);
+	void newMetronomContext(QGLWidget*);
 	void frameShown( Frame* );
 
 	void toggleFullscreen();

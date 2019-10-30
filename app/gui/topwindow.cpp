@@ -114,8 +114,8 @@ TopWindow::TopWindow()
 	connect( vw, SIGNAL(ovdUpdateSignal(QList<OVDUpdateMessage>)), animEditor, SLOT(ovdUpdate(QList<OVDUpdateMessage>)) );
 	connect( vw, SIGNAL(playPause()), this, SLOT(videoPlayPause()) );
 	connect( vw, SIGNAL(wheelSeek(int)), sampler, SLOT(wheelSeek(int)) );
-	connect( vw, SIGNAL(newSharedContext(QGLWidget*)), sampler, SLOT(setSharedContext(QGLWidget*)) );
-	connect( vw, SIGNAL(newFencesContext(QGLWidget*)), sampler, SLOT(setFencesContext(QGLWidget*)) );
+	connect( vw, SIGNAL(newComposerContext(QGLWidget*)), this, SLOT(setComposerContext(QGLWidget*)) );
+	connect( vw, SIGNAL(newMetronomContext(QGLWidget*)), sampler, SLOT(setMetronomContext(QGLWidget*)) );
 	connect( vw, SIGNAL(newThumbContext(QGLWidget*)), this, SLOT(setThumbContext(QGLWidget*)) );
 	connect( sampler->getMetronom(), SIGNAL(newFrame(Frame*)), vw, SLOT(showFrame(Frame*)) );
 	connect( sampler->getMetronom(), SIGNAL(currentFramePts(double)), this, SLOT(currentFramePts(double)) );
@@ -838,6 +838,16 @@ void TopWindow:: timelineSeek( double pts )
 		switchButton->toggle();
 
 	sampler->slideSeek( pts );
+}
+
+
+
+void TopWindow::setComposerContext( QGLWidget *context )
+{
+	if (!sampler->setComposerContext( context )) {
+		QMessageBox::warning(this, tr("OpenGL error"), tr("Sorry, we require OpenGL 3.0 or higher."));
+		exit(1);
+	}
 }
 
 

@@ -23,7 +23,8 @@ VideoWidget::VideoWidget( QWidget *parent ) : QGLWidget( QGLFormat(QGL::SampleBu
 	lastFrame( NULL ),
 	leftButtonPressed( false ),
 	ovdTarget( 0 ),
-	playing( false )
+	playing( false ),
+	glInitialized(false)
 {
 	setAttribute( Qt::WA_OpaquePaintEvent );
 	setAutoFillBackground( false );
@@ -52,22 +53,26 @@ void VideoWidget::initializeGL()
 {
 	glEnable(GL_MULTISAMPLE);
 
-	QGLWidget *hidden = new QGLWidget( NULL, this );
-	if ( hidden ) {
-		hidden->hide();
-		emit newSharedContext( hidden );
-	}
-	
-	QGLWidget *thumb = new QGLWidget();
-	if ( thumb ) {
-		thumb->hide();
-		emit newThumbContext( thumb );
-	}
-	
-	QGLWidget *fences = new QGLWidget( NULL, this );
-	if ( fences ) {
-		fences->hide();
-		emit newFencesContext( fences );
+	if (!glInitialized) {
+		glInitialized = true;
+		
+		QGLWidget *composerCtx = new QGLWidget( NULL, this );
+		if ( composerCtx ) {
+			composerCtx->hide();
+			emit newComposerContext( composerCtx );
+		}
+		
+		QGLWidget *thumbCtx = new QGLWidget();
+		if ( thumbCtx ) {
+			thumbCtx->hide();
+			emit newThumbContext( thumbCtx );
+		}
+		
+		QGLWidget *metronomCtx = new QGLWidget( NULL, this );
+		if ( metronomCtx ) {
+			metronomCtx->hide();
+			emit newMetronomContext( metronomCtx );
+		}
 	}
 }
 

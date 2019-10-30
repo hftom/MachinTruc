@@ -56,8 +56,8 @@ public:
 	void fromComposerReleaseVideoFrame( Frame *f );
 
 public slots:
-	void setSharedContext( QGLWidget *shared );
-	void setFencesContext( QGLWidget *shared );
+	bool setComposerContext( QGLWidget *shared );
+	void setMetronomContext( QGLWidget *shared );
 	void switchMode( bool down );
 	void setSource( Source *source, double pts );
 	void wheelSeek( int a );

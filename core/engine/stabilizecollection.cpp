@@ -1,7 +1,3 @@
-#ifdef Q_OS_UNIX
-#include <sys/resource.h>
-#endif
-
 extern "C" { 
 	#include "vidstab/vidstab.h"
 }
@@ -16,6 +12,10 @@ extern "C" {
 
 #define STABILIZE_DIR "stab"
 #define STABILIZE_EXTENSION ".vidstab"
+
+#ifdef Q_OS_UNIX
+#include <sys/resource.h>
+#endif
 
 
 

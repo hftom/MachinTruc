@@ -35,14 +35,17 @@ Composer::~Composer()
 
 
 
-void Composer::setSharedContext( QGLWidget *shared )
+bool Composer::setSharedContext( QGLWidget *shared )
 {
 	hiddenContext = shared;
 	hiddenContext->makeCurrent();
 
 	glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
 
-	assert( init_movit( MOVIT_SHADERDIR, MOVIT_DEBUG_ON ) );
+	if (!init_movit( MOVIT_SHADERDIR, MOVIT_DEBUG_ON )) {
+		return false;
+	}
+	
 	movitPool = new ResourcePool( 100, 300 << 20, 100 );
 
 	hiddenContext->doneCurrent();
@@ -50,6 +53,8 @@ void Composer::setSharedContext( QGLWidget *shared )
 	
 	running = true;
 	start();
+	
+	return true;
 }
 
 

@@ -56,7 +56,7 @@ public:
 	void setOutputResize( QSize size ) { outputResize = size; }
 
 public slots:
-	void setSharedContext( QGLWidget *shared );
+	bool setSharedContext( QGLWidget *shared );
 	void discardFrame( int );
 
 private:

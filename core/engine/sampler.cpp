@@ -199,14 +199,14 @@ Profile Sampler::getProfile()
 
 
 
-void Sampler::setSharedContext( QGLWidget *shared )
+bool Sampler::setComposerContext( QGLWidget *shared )
 {
-	composer->setSharedContext( shared );
+	return composer->setSharedContext( shared );
 }
 
 
 
-void Sampler::setFencesContext( QGLWidget *shared )
+void Sampler::setMetronomContext( QGLWidget *shared )
 {
 	metronom->setSharedContext( shared );
 }
