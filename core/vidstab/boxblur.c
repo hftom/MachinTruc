@@ -61,7 +61,7 @@ void boxblurPlanar(VSFrame* dest, const VSFrame* src,
     buf = *buffer;
   }
   // odd and larger than 2 and maximally half of smaller image dimension
-  size  = VS_CLAMP((size/2)*2+1,3,VS_MIN(fi->height/2,fi->width/2));
+  size  = VS_CLAMP((size/2)*2+1,3,(unsigned int)VS_MIN(fi->height/2,fi->width/2));
   //printf("%i\n",size);
 
   // luminance

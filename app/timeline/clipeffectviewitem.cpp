@@ -111,6 +111,7 @@ void ClipEffectViewItem::mouseMoveEvent( QGraphicsSceneMouseEvent *event )
 
 void ClipEffectViewItem::mouseReleaseEvent( QGraphicsSceneMouseEvent *event )
 {
+	Q_UNUSED(event);
 	if ( firstMove )
 		return;
 	Timeline* t = (Timeline*)scene();

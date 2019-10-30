@@ -14,6 +14,7 @@ GLDenoise::GLDenoise( QString id, QString name ) : GLFilter( id, name )
 bool GLDenoise::process( const QList<Effect*> &el, double pts, Frame *src, Profile *p )
 {
 	Q_UNUSED( p );
+	Q_UNUSED(pts);
 	Effect *e = el[0];
 	return e->set_float( "radius", src->glWidth * getParamValue( blur ).toFloat() / 100.0 )
 		&& e->set_float( "eradius", getParamValue( eblur ).toFloat() )

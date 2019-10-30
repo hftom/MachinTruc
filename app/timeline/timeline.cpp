@@ -204,7 +204,6 @@ void Timeline::selectAll()
 		for ( int i = 0; i < list.count(); ++i ) {
 			QGraphicsItem *it = list.at( i );
 			if ( it->data( DATAITEMTYPE ).toInt() == TYPECLIP ) {
-				ClipViewItem *cv = (ClipViewItem*)it;
 				itemSelected((ClipViewItem*)it, n > 0, n < total - 1);
 				++n;
 			}
@@ -610,6 +609,7 @@ void Timeline::effectCanMove( QPointF mouse, double clipStartPos, QPointF clipSt
 
 void Timeline::effectMoved( QPointF clipMouseStart )
 {
+	Q_UNUSED(clipMouseStart);
 	QSharedPointer<Filter> f;
 	if ( effectItem->isVideoEffect() )
 		f = effectItem->getClip()->videoFilters.at( effectItem->getIndex() );
@@ -1320,13 +1320,10 @@ void Timeline::addSelectionToTimeline()
 	clipPos = (clipPos * zoom) + (scene->getProfile().getVideoFrameDuration() / 4.0);
 	
 	FilterCollection *fc = FilterCollection::getGlobalInstance();
-	double pw = scene->getProfile().getVideoWidth();
-	double ph = scene->getProfile().getVideoHeight();
 	
 	QList<Clip*> added;
 	
 	for (int j = 0; j < list.count(); ++j) {
-		int animType = rand() % 2; 
 		Source *source = list.at(j);
 		double len = (source->getType() == InputBase::IMAGE ? (double)settings.imageDuration * MICROSECOND : source->getProfile().getStreamDuration());
 		Clip *c = scene->createClip( source, clipPos, source->getProfile().getStreamStartTime(), len );
@@ -1441,7 +1438,6 @@ void Timeline::splitCurrentClip()
 
 void Timeline::addFilter( ClipViewItem *clip, QString fx, int index )
 {
-	int i;
 	bool isVideo = true;
 	Clip *c = clip->getClip();
 

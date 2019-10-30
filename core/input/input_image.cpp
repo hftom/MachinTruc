@@ -104,6 +104,7 @@ bool InputImage::open( QString fn )
 
 void InputImage::openSeekPlay( QString fn, double p, bool backward )
 {
+	Q_UNUSED(backward);
 	if ( fn != sourceName || !buffer ) {
 		wait();
 		semaphore->acquire();

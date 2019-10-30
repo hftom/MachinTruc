@@ -151,6 +151,7 @@ void VideoWidget::openglDraw()
 
 void VideoWidget::paintEvent( QPaintEvent *event )
 {
+	Q_UNUSED(event);
 	makeCurrent();
 
 	openglDraw();
@@ -362,6 +363,7 @@ void VideoWidget::mousePressEvent( QMouseEvent * event )
 
 void VideoWidget::mouseReleaseEvent( QMouseEvent * event )
 {
+	Q_UNUSED(event);
 	leftButtonPressed = false;
 }
 

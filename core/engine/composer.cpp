@@ -693,8 +693,8 @@ void Composer::movitRender( Frame *dst, bool update )
 		// output resizer
 		if (outputResize.width() > 0) {
 			Effect *e = new ResampleEffect();
-			e->set_int( "width", outputResize.width() );
-			e->set_int( "height", outputResize.height() );
+			e->set_int( "width", outputResize.width() )
+			&& e->set_int( "height", outputResize.height() );
 			movitChain.chain->add_effect( e );
 		}
 		// output

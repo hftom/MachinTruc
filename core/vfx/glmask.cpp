@@ -16,6 +16,7 @@ void GLMask::setParameters()
 	selectionMode = addParameter( "selectionMode", "Selection:", Parameter::PGROUPCOMBO, 0, 0, 0, false );
 
 	Parameter *item = addParameter( "colorGroup", "Color", Parameter::PGROUPITEM, 0, 0, 0, false );
+	Q_UNUSED(item);
 	hsvColor = addParameter( "color", tr("Color:"), Parameter::PCOLORWHEEL, QColor::fromRgbF( 0, 0.5, 0.5 ), QColor::fromRgbF( 0, 0, 0 ), QColor::fromRgbF( 1, 1, 1 ), false );
 	hsvColor->layout.setLayout( 100, 0, 3, 1 );
 	varianceH = addParameter( "varianceH", tr("H variance:"), Parameter::PDOUBLE, 25.0, 0.0, 180.0, false );
@@ -64,7 +65,7 @@ bool GLMask::processMask( double pts, Frame *src, Profile *p )
 			QColor c = getParamValue( hsvColor ).value<QColor>();
 			RGBTriplet col = RGBTriplet( 360.0 * c.redF(), c.greenF(), c.blueF() );
 			if (blur) {
-				blur->set_float("radius", getParamValue( smoothColor ).toDouble() * 4.0);
+				blur->set_float("radius", getParamValue( smoothColor ).toDouble() * 4.0) && true;
 			}
 			return mask->set_vec3( "hsvColor", (float*)&col )
 				&& mask->set_float("varianceH", qMax(getParamValue( varianceH ).toDouble(), 0.0001))
@@ -85,14 +86,14 @@ void GLMask::setGraph(EffectChain *graph, Node *input, Node *receiverSender, Nod
 			mask = new MaskEffect();
 			mix = new MixMaskEffect();
 
-			mix->set_int("invert", getParamValue(invertColor).toInt());
-			mix->set_int("show", getParamValue(showColor).toInt());
+			mix->set_int("invert", getParamValue(invertColor).toInt())
+			&& mix->set_int("show", getParamValue(showColor).toInt());
 
 			Node *mask_node = graph->add_node(mask);
 			Node *mix_node = graph->add_node(mix);
 			if (getParamValue(smoothColor).toDouble() > 0) {
 				blur = new BlurEffect;
-				blur->set_int( "num_taps", 6 );
+				blur->set_int( "num_taps", 6 ) && true;
 				Node *blur_node = graph->add_node(blur);
 				graph->replace_receiver(receiverSender, blur_node);
 				graph->connect_nodes(blur_node, mask_node);

@@ -19,6 +19,7 @@ GLPanZoom::GLPanZoom( QString id, QString name ) : GLSize( id, name ), pw(0), ph
 
 void GLPanZoom::preProcess(double pts, Frame *src, Profile *p )
 {
+	Q_UNUSED(pts);
 	if (pw == p->getVideoWidth() && ph == p->getVideoHeight() && sw == src->glWidth && sh == src->glHeight) {
 		return;
 	}

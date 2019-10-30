@@ -59,6 +59,7 @@ static const VideoPreset vPresets[ nvpresets ] = {
 
 ProjectProfileDialog::ProjectProfileDialog( QWidget *parent, Profile &p, int warn ) : QDialog( parent )
 {
+	Q_UNUSED(warn);
 	setupUi( this );
 	
 	QString info = "<p>";

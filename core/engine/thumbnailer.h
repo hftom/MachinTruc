@@ -24,7 +24,7 @@ class ThumbRequest
 public:
 	enum RequestType{ PROBE, BUILTIN, THUMB, SHADER };
 	
-	ThumbRequest( QString path, bool builtin, int inType = 0 )
+	ThumbRequest( QString path, bool /*builtin*/, int inType = 0 )
 		: typeOfRequest( BUILTIN ),
 		caller( NULL ),
 		inputType( inType ),

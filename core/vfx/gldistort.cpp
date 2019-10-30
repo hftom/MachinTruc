@@ -19,6 +19,7 @@ GLDistort::~GLDistort()
 
 bool GLDistort::process( const QList<Effect*> &el, double pts, Frame *src, Profile *p )
 {
+	Q_UNUSED(p);
 	int w, h;
 	float top = 0.0f;
 	float left = 0.0f;

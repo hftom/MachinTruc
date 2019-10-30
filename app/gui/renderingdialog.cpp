@@ -61,6 +61,7 @@ RenderingDialog::~RenderingDialog()
 
 void RenderingDialog::videoCodecSelected(int id)
 {
+	Q_UNUSED(id);
 	double brRatio = 1.0;
 	if (mpeg2RadBtn->isChecked())
 		brRatio = 2.0;

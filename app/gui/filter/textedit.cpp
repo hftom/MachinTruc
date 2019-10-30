@@ -222,6 +222,7 @@ TextEdit::TextEdit( QWidget *parent, Parameter *p ) : ParameterWidget( parent, p
 
 void TextEdit::arrowChanged( int val )
 {
+	Q_UNUSED(val);
 	textChanged();
 }
 

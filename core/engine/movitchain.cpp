@@ -129,9 +129,9 @@ bool MovitInput::process( Frame *src, double pts, GLResource *gl)
 		}
 		case Frame::GLSL:{
 			GLSLInput *glsl = (GLSLInput*)input;
-			glsl->set_float( "time", pts / MICROSECOND );
-			glsl->set_float( "iwidth", src->glWidth );
-			glsl->set_float( "iheight", src->glHeight );
+			glsl->set_float( "time", pts / MICROSECOND )
+			&& glsl->set_float( "iwidth", src->glWidth )
+			&& glsl->set_float( "iheight", src->glHeight );
 			return true;
 		}
 	}

@@ -24,6 +24,7 @@ QString GLCut::getDescriptor( double pts, Frame *src, Profile *p  )
 
 bool GLCut::process( const QList<Effect*> &el, double pts, Frame *src, Profile *p )
 {
+	Q_UNUSED(el);
 	return GLMask::processMask(pts, src, p);
 }
 

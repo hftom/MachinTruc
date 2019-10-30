@@ -42,6 +42,8 @@ void AnimItem::reset()
 void AnimItem::setCursorPos( double pts, bool isPlaying )
 {
 	// TODO
+	Q_UNUSED(pts);
+	Q_UNUSED(isPlaying);
 }
 
 

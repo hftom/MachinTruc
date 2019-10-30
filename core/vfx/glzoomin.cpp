@@ -83,7 +83,7 @@ QList<Effect*> GLZoomIn::getMovitEffects()
 		rotateAngle->graph.keys.first().y = 0;
 		rotateAngle->graph.keys.last().y = getParamValue( rotateStart ).toDouble() / (rotateAngle->max.toDouble() - rotateAngle->min.toDouble());
 		firstList.append( GLSize::getMovitEffects() );
-		e->set_int( "swap_inputs", 1 );
+		e->set_int( "swap_inputs", 1 ) && true;
 	}
 	else {
 		sizePercent->graph.keys.first().y = 0;

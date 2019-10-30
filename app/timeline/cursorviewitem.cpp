@@ -88,5 +88,6 @@ void CursorViewItem::mouseReleaseEvent( QGraphicsSceneMouseEvent *event )
 
 void CursorViewItem::hoverMoveEvent( QGraphicsSceneHoverEvent *event )
 {
+	Q_UNUSED(event);
 	setCursor( QCursor(Qt::SizeHorCursor) );
 }

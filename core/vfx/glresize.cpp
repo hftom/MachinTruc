@@ -39,6 +39,7 @@ void GLResize::preProcess( Frame *src, Profile *p )
 
 QString GLResize::getDescriptor( double pts, Frame *src, Profile *p )
 {
+	Q_UNUSED(pts);
 	preProcess( src, p );
 	return getIdentifier();
 }
@@ -47,6 +48,7 @@ QString GLResize::getDescriptor( double pts, Frame *src, Profile *p )
 
 bool GLResize::process( const QList<Effect*> &el, double pts, Frame *src, Profile *p )
 {
+	Q_UNUSED(pts);
 	int glw = src->glWidth;
 	int glh = src->glHeight;
 	

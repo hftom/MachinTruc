@@ -101,7 +101,9 @@ public:
 
 		
 protected:
-	virtual void preProcess(double pts, Frame *src, Profile *p ) {}
+	virtual void preProcess(double pts, Frame *src, Profile *p ) {
+		Q_UNUSED(pts); Q_UNUSED(src); Q_UNUSED(p);
+	}
 	void findPoints( double &x1, double &x2, double first, double last );
 	
 	Parameter *sizePercent;

@@ -229,11 +229,11 @@ public:
 	GammaCurve get_gamma_curve() const { return GAMMA_LINEAR; }
 	
 private:
-	QString shaderName;
-	int width, height;
 	float iwidth, iheight;
-	int output_linear_gamma, needs_mipmaps;
+	int width, height;
+	QString shaderName;
 	float time;
+	int output_linear_gamma, needs_mipmaps;
 };
 
 

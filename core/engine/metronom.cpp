@@ -15,7 +15,6 @@
 // less than 2 would freeze the app.
 #define NUMOUTPUTFRAMES 4
 
-#define BUFFER_OFFSET(i) ((uint8_t*)NULL + (i))
 
 
 static const int NSPS = 5;
