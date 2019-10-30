@@ -1,4 +1,4 @@
-#ifdef Q_OS_WIN
+#ifndef Q_OS_UNIX
 #include <SDL.h>
 #endif
 
@@ -12,7 +12,7 @@
 #ifdef Q_OS_UNIX
 int main(int argc, char **argv)
 #else
-int SDL_main(int argc, char *argv[])
+int SDL_main(int argc, char **argv)
 #endif
 {
 #ifdef Q_OS_UNIX
