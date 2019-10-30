@@ -41,10 +41,23 @@ bool Composer::setSharedContext( QGLWidget *shared )
 	hiddenContext->makeCurrent();
 
 	glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
-
+	
+#ifdef Q_OS_UNIX
 	if (!init_movit( MOVIT_SHADERDIR, MOVIT_DEBUG_ON )) {
 		return false;
 	}
+#else
+	QDir d;
+	if (d.exists("movit/identity.frag")) {
+		d.cd("movit");
+		if (!init_movit( d.absolutePath().toStdString(), MOVIT_DEBUG_OFF )) {
+			return false;
+		}
+	}
+	else {
+		return false;
+	}
+#endif
 	
 	movitPool = new ResourcePool( 100, 300 << 20, 100 );
 
