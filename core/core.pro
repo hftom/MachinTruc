@@ -78,7 +78,6 @@ SOURCES = \
 	vfx/glorientation.cpp \
 	vfx/glwhitebalance.cpp \
 	vfx/gldefish.cpp \
-	vfx/glfiber.cpp \
 	vfx/glnoise.cpp \
 	vfx/gltext.cpp \
 	vfx/glcustom.cpp \
@@ -93,7 +92,6 @@ SOURCES = \
 	vfx/glhanddrawing.cpp \
 	vfx/glmask.cpp \
 	vfx/glpanzoom.cpp \
-	vfx/gllaser.cpp \
 	\
 	videoout/videowidget.cpp
 
@@ -170,7 +168,6 @@ HEADERS = \
 	vfx/glorientation.h \
 	vfx/glwhitebalance.h \
 	vfx/gldefish.h \
-	vfx/glfiber.h \
 	vfx/glnoise.h \
 	vfx/gltext.h \
 	vfx/glcustom.h \
@@ -185,7 +182,6 @@ HEADERS = \
 	vfx/glhanddrawing.h \
 	vfx/glmask.h \
 	vfx/glpanzoom.h \
-	vfx/gllaser.h \
 	\
 	videoout/videowidget.h
 
