@@ -170,7 +170,7 @@ std::string MaskEffect::output_fragment_shader()
 {
 	QString s = GLFilter::getShaderRGBTOHSV();
 	s.append(mask_shader);
-	return s.toLatin1().data();
+	return s.toStdString();
 }
 
 
