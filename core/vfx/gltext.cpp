@@ -8,7 +8,7 @@
 
 GLText::GLText( QString id, QString name ) : GLFilter( id, name )
 {
-	editor = addParameter( "editor", tr("Editor:"), Parameter::PSTRING, "Arial,12,-1,5,50,0,0,0,0,0|30|0|0|#ffffff.255|#000000.0|1|0|#000000.255|0|50|50\nText", "", "", false );
+	editor = addParameter( "editor", tr("Editor:"), Parameter::PSTRING, "Arial,12,-1,5,50,0,0,0,0,0|100|0|0|#ffffff.255|#000000.0|1|0|#000000.255|0|50|50\nText", "", "", false );
 	opacity = addParameter( "opacity", tr("Opacity:"), Parameter::PDOUBLE, 1.0, 0.0, 1.0, true );
 	xOffset = addParameter( "xOffset", tr("X offset:"), Parameter::PINPUTDOUBLE, 0.0, -110.0, 110.0, true, "%" );
 	yOffset = addParameter( "yOffset", tr("Y offset:"), Parameter::PINPUTDOUBLE, 0.0, -110.0, 110.0, true, "%" );
@@ -89,6 +89,7 @@ QList<Effect*> GLText::getMovitEffects()
 QImage* MyTextEffect::drawImage()
 {
 	QFont myFont;
+	myFont.setStyleHint(QFont::Helvetica, QFont::PreferAntialias);
 	QPen myPen;
 	myPen.setJoinStyle( Qt::RoundJoin );
 	QPen myOutlinePen;
@@ -138,7 +139,7 @@ QImage* MyTextEffect::drawImage()
 				if ( oc.count() == 2 ) {
 					outline = osize;
 					myOutlinePen.setWidth( osize );
-					myFont.setStyleStrategy( QFont::ForceOutline );
+					//myFont.setStyleStrategy( QFont::ForceOutline );
 					QColor col;
 					col.setNamedColor( oc[ 0 ] );
 					col.setAlpha( oc[ 1 ].toInt() );
@@ -281,9 +282,11 @@ QImage* MyTextEffect::drawImage()
 	}
 	
 	image = QImage( w + wMargin, h + hMargin, QImage::Format_ARGB32_Premultiplied );
-	image.fill( QColor(0,0,0,0) );
+	QColor bk = myPen.color();
+	bk.setAlpha(0);
+	image.fill( bk );
 	painter.begin( &image );
-	painter.setRenderHints( QPainter::Antialiasing | QPainter::TextAntialiasing );
+	painter.setRenderHints( QPainter::Antialiasing );
 	if ( backgroundColor.alpha() > 0 ) {
 		painter.setPen( QColor(0,0,0,0) );
 		painter.setBrush( backgroundColor );
