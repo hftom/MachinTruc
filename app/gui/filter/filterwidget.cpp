@@ -49,7 +49,7 @@ FilterWidget::FilterWidget( QWidget *parent, Clip *c, QSharedPointer<Filter> f )
 				else {
 					vBoxLayout->addLayout(grid);
 				}
-				groupBox = new QGroupBox();
+				groupBox = new QGroupBox(this);
 				if (combo) {
 					combo->addItem(p->name, groupBox);
 				}
