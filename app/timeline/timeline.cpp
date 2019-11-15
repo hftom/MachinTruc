@@ -1308,12 +1308,24 @@ void Timeline::addSelectionToTimeline()
 		return;
 	}
 	
+	bool imageOnly = true;
+	double minLength = 0;
+	for (int j = 0; j < list.count(); ++j) {
+		if (list.at(j)->getType() != InputBase::IMAGE) {
+			imageOnly = false;
+			if (minLength == 0 || list.at(j)->getProfile().getStreamDuration() < minLength) {
+				minLength = list.at(j)->getProfile().getStreamDuration();
+			}
+		}
+	}
+	
 	AddClipsDialog dlg(NULL);
 	dlg.exec();
 	if ( dlg.result() != QDialog::Accepted ) {
 		return;
 	}
 	AddClipsSettings settings = dlg.getSettings();
+	double transitionLength = settings.transition != "none" ? MICROSECOND * settings.transitionDuration : 0;
 	
 	int activeTrack = cursor->getActiveTrack();
 	double clipPos = cursor->mapRectToScene( cursor->rect() ).left();
@@ -1329,8 +1341,7 @@ void Timeline::addSelectionToTimeline()
 		Clip *c = scene->createClip( source, clipPos, source->getProfile().getStreamStartTime(), len );
 		if (scene->canMove( c, c->length(), clipPos, activeTrack )) {
 			c->setPosition( clipPos );
-			clipPos += c->length() - (MICROSECOND * settings.transitionDuration);
-			qDebug() << clipPos;
+			clipPos += c->length() - transitionLength;
 			scene->addClip(c, activeTrack);
 			if (settings.panAndZoom) {
 				QSharedPointer<Filter> f = fc->createVideoFilter( "GLPanZoom" );

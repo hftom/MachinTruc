@@ -7,6 +7,7 @@
 
 class GLLiftGammaGain : public GLMask
 {
+	Q_OBJECT
 public:
 	GLLiftGammaGain( QString id, QString name );
 	~GLLiftGammaGain();

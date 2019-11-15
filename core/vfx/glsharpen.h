@@ -7,6 +7,7 @@
 
 class GLSharpen : public GLFilter
 {
+	Q_OBJECT
 public:
 	GLSharpen( QString id, QString name );
 	~GLSharpen();

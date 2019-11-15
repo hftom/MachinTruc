@@ -35,6 +35,7 @@ private:
 
 class GLContrast : public GLMask
 {
+	Q_OBJECT
 public:
 	GLContrast( QString id, QString name );
 	bool process( const QList<Effect*> &el, double pts, Frame *src, Profile *p );

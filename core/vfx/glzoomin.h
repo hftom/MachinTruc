@@ -7,6 +7,7 @@
 
 class GLZoomIn : public GLSize
 {
+	Q_OBJECT
 public:
 	GLZoomIn( QString id, QString name );
 	~GLZoomIn();

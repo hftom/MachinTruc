@@ -7,6 +7,7 @@
 
 class GLBlur : public GLMask
 {
+	Q_OBJECT
 public:
 	GLBlur( QString id, QString name );
 	~GLBlur();

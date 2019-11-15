@@ -97,6 +97,7 @@ private:
 
 class GLDenoise : public GLFilter
 {
+	Q_OBJECT
 public:
 	GLDenoise( QString id, QString name );
 

@@ -18,16 +18,14 @@ int SDL_main(int argc, char **argv)
 #ifdef Q_OS_UNIX
 	QCoreApplication::setAttribute( Qt::AA_X11InitThreads );
 #endif
-
+	
 	QApplication app(argc, argv);
 	//qDebug() << QStyleFactory::keys();
 	app.setStyle(new DarkStyle);
 
-	/*QGLFormat glf = QGLFormat::defaultFormat();
-	glf.setAlpha( true );
-	glf.setSampleBuffers( true );
-	glf.setSamples( 4 );
-	QGLFormat::setDefaultFormat( glf );*/
+	/*QTranslator translator;
+	translator.load(QString("/home/cris/Devel/MachinTruc/machintruc_fr.qm"));
+	app.installTranslator(&translator);*/
 	
 	srand((unsigned)time(0));
 

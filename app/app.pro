@@ -99,6 +99,21 @@ HEADERS = \
 	timeline/rulerviewitem.h \
 	timeline/selectwindowitem.h \
 	\
+	timeline/undoclipadd.h\
+	timeline/undoclipmove.h\
+	timeline/undoclipremove.h\
+	timeline/undoclipresize.h\
+	timeline/undoclispeed.h\
+	timeline/undoclipsplit.h\
+	timeline/undoeffectadd.h\
+	timeline/undoeffectmove.h\
+	timeline/undoeffectparam.h\
+	timeline/undoeffectremove.h\
+	timeline/undoeffectreorder.h\
+	timeline/undoeffectresize.h\
+	timeline/undotrackadd.h\
+	timeline/undotransitionchanged.h\
+	\
 	animation/animeditor.h \
 	animation/animscene.h \
 	animation/animitem.h \

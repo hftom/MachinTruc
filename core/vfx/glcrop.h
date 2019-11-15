@@ -7,6 +7,7 @@
 
 class GLCrop : public GLFilter
 {
+	Q_OBJECT
 public:
 	GLCrop( QString id, QString name );
 	~GLCrop();

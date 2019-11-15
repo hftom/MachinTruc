@@ -6,3 +6,7 @@ SUBDIRS += \
 	app
 
 app.depends = core
+
+TRANSLATIONS = \
+	machintruc_fr.ts \
+	machintruc_es.ts

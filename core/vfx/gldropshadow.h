@@ -71,6 +71,7 @@ private:
 
 class GLDropShadow : public GLFilter
 {
+	Q_OBJECT
 public:
 	GLDropShadow( QString id, QString name );
 	~GLDropShadow();

@@ -31,6 +31,7 @@ private:
 
 class GLBackgroundColor : public GLFilter
 {
+	Q_OBJECT
 public:
 	GLBackgroundColor( QString id, QString name );
 	

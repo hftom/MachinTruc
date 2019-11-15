@@ -36,6 +36,7 @@ private:
 
 class GLMask : public GLFilter
 {
+	Q_OBJECT
 public:
 	GLMask( QString id, QString name );
 

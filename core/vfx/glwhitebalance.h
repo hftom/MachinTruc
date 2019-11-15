@@ -7,6 +7,7 @@
 
 class GLWhiteBalance : public GLFilter
 {
+	Q_OBJECT
 public:
 	GLWhiteBalance( QString id, QString name );
 	~GLWhiteBalance();

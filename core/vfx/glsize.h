@@ -89,6 +89,7 @@ private:
 
 class GLSize : public GLFilter
 {
+	Q_OBJECT
 public:
 	GLSize( QString id, QString name );
 	~GLSize();

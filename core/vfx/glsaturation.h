@@ -11,6 +11,7 @@
 
 class GLSaturation : public GLMask
 {
+	Q_OBJECT
 public:
 	GLSaturation( QString id, QString name );
 	~GLSaturation();

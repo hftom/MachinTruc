@@ -106,6 +106,7 @@ private:
 
 class GLCover : public GLFilter
 {
+	Q_OBJECT
 public:
 	GLCover( QString id, QString name );
 

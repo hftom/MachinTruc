@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>398</width>
-    <height>348</height>
+    <width>351</width>
+    <height>341</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -35,7 +35,7 @@
         <item row="1" column="0">
          <widget class="QRadioButton" name="crossfadeTransitionRad">
           <property name="text">
-           <string>Crossfade</string>
+           <string>C&amp;rossfade</string>
           </property>
          </widget>
         </item>
@@ -46,13 +46,6 @@
           </property>
           <property name="checked">
            <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="0" colspan="2">
-         <widget class="QRadioButton" name="randomTransitionRad">
-          <property name="text">
-           <string>&amp;Random</string>
           </property>
          </widget>
         </item>
@@ -142,9 +135,8 @@
  <tabstops>
   <tabstop>noTransitionRad</tabstop>
   <tabstop>crossfadeTransitionRad</tabstop>
-  <tabstop>randomTransitionRad</tabstop>
-  <tabstop>imageDurationSpin</tabstop>
   <tabstop>transitionDurationSpin</tabstop>
+  <tabstop>imageDurationSpin</tabstop>
   <tabstop>panZoomCb</tabstop>
  </tabstops>
  <resources/>

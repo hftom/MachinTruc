@@ -7,6 +7,7 @@
 
 class AudioVolume : public AudioFilter
 {
+	Q_OBJECT
 public:
 	AudioVolume( QString id, QString name ) : AudioFilter( id, name ) {
 		volume = addParameter( "volume", tr("Volume:"), Parameter::PDOUBLE, 1.0, 0.0, 2.0, true );

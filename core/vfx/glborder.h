@@ -47,6 +47,7 @@ private:
 
 class GLBorder : public GLFilter
 {
+	Q_OBJECT
 public:
 	GLBorder( QString id, QString name );
 	

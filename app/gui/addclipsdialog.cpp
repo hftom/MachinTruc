@@ -12,7 +12,7 @@ AddClipsDialog::AddClipsDialog( QWidget *parent ) : QDialog( parent )
 AddClipsSettings AddClipsDialog::getSettings()
 {
 	AddClipsSettings s;
-	s.transition = randomTransitionRad->isChecked() ? "random" : (crossfadeTransitionRad->isChecked() ? "crossfade" : "none");
+	s.transition = crossfadeTransitionRad->isChecked() ? "crossfade" : "none";
 	s.imageDuration = imageDurationSpin->value();
 	s.transitionDuration = transitionDurationSpin->value();
 	s.panAndZoom = panZoomCb->isChecked();

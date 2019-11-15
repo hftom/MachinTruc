@@ -71,6 +71,7 @@ private:
 
 class GLFrostedGlass : public GLFilter
 {
+	Q_OBJECT
 public:
 	GLFrostedGlass( QString id, QString name );
 

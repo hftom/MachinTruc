@@ -72,6 +72,7 @@ private:
 
 class GLOrientation : public GLFilter
 {
+	Q_OBJECT
 public:
 	GLOrientation( QString id = "AutoRotate", QString name = "AutoRotate" );
 	~GLOrientation();

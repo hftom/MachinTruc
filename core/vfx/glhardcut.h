@@ -32,6 +32,7 @@ private:
 
 class GLHardCut : public GLFilter
 {
+	Q_OBJECT
 public:
 	GLHardCut( QString id, QString name );
 

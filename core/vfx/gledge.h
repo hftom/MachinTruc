@@ -65,6 +65,7 @@ private:
 
 class GLEdge : public GLFilter
 {
+	Q_OBJECT
 public:
 	GLEdge( QString id, QString name );
 	~GLEdge();

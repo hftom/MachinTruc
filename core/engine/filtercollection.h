@@ -60,6 +60,8 @@
 #include "afx/audiocrossfade.h"
 #include "afx/audiohardcut.h"
 
+#include <QCoreApplication>
+
 
 
 template <class T>
@@ -95,6 +97,7 @@ private:
 
 class FilterCollection
 {
+	Q_DECLARE_TR_FUNCTIONS(FilterCollection)
 public:
 	static FilterCollection* getGlobalInstance();
 	
@@ -114,7 +117,8 @@ private:
 	FilterCollection();
 	~FilterCollection() {}
 	
-	static FilterCollection globalInstance;
+	//static FilterCollection globalInstance;
+	static FilterCollection *globalInstance;
 };
 
 #endif // FILTERCOLLECTION_H

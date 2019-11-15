@@ -7,6 +7,7 @@
 
 class GLMix : public GLFilter
 {
+	Q_OBJECT
 public:
 	GLMix( QString id, QString name );
 

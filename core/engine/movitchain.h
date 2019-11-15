@@ -27,8 +27,8 @@ static const char *OpticalFiber_input=
 "vec4 FUNCNAME( vec2 tc ) {\n"
 "	tc -= 0.5;\n"
 "	float vertColor = 0.0;\n"
+"	float t = PREFIX(time) * 0.5;\n"
 "	for( float i = 0.0; i < 4.0; i++ ) {\n"
-"		float t = PREFIX(time) * 0.5;\n"
 "		tc.y += sin( t + tc.x * 6.0 ) * 0.45;\n"
 "		tc.x += sin( -t + tc.y * 3.0 ) * 0.25;\n"
 "		float value = atan( tc.y * 2.5 ) + sin( tc.x * 10.0 );\n"
@@ -192,7 +192,7 @@ static const char *Clouds_input=
 "	p.x /= PREFIX(iheight) / PREFIX(iwidth);\n"
 "	vec3 c1 = mix(vec3(-0.5), vec3(0.0, 0.2, 1.0), tc.y);\n"
 "	float c2 = PREFIX(fbm)(p - PREFIX(time) / 10.0) + PREFIX(fbm)(p - PREFIX(time) / 20.0) + PREFIX(fbm)(p - PREFIX(time) / 60.0) + 11.0;\n"
-"	float v = (((c2 * 0.1) - 0.35) * 0.45) + 0.4;\n"
+"	float v = c2 * 0.06; //(((c2 * 0.1) - 0.35) * 0.45) + 0.3;\n"
 "	vec4 col = vec4( mix( c1, vec3(v), v ), 1.0 );\n"
 "	return vec4( col.rgb + PREFIX(sun)( tc ), 1.0);\n"
 "}\n";

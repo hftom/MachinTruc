@@ -60,6 +60,7 @@ private:
 
 class GLCustom : public GLFilter
 {
+	Q_OBJECT
 public:
 	GLCustom( QString id, QString name );
 	~GLCustom();

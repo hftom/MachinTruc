@@ -28,6 +28,7 @@ public:
 
 class GLCut : public GLMask
 {
+	Q_OBJECT
 public:
 	GLCut( QString id, QString name );
 	~GLCut();

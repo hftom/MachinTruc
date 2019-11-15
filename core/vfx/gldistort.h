@@ -7,6 +7,7 @@
 
 class GLDistort : public GLFilter
 {
+	Q_OBJECT
 public:
 	GLDistort( QString id, QString name );
 	~GLDistort();

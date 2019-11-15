@@ -7,6 +7,7 @@
 
 class GLOpacity : public GLFilter
 {
+	Q_OBJECT
 public:
 	GLOpacity( QString id, QString name );
 	~GLOpacity();

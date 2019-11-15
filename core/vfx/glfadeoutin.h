@@ -33,6 +33,7 @@ private:
 
 class GLFadeOutIn : public GLFilter
 {
+	Q_OBJECT
 public:
 	GLFadeOutIn( QString id, QString name );
 

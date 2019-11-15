@@ -53,6 +53,7 @@ private:
 
 class GLSoftBorder : public GLFilter
 {
+	Q_OBJECT
 public:
 	GLSoftBorder( QString id, QString name );
 	

@@ -126,6 +126,7 @@ private:
 
 class GLPush : public GLFilter
 {
+	Q_OBJECT
 public:
 	GLPush( QString id, QString name );
 

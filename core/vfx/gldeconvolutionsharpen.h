@@ -7,6 +7,7 @@
 
 class GLDeconvolutionSharpen : public GLFilter
 {
+	Q_OBJECT
 public:
 	GLDeconvolutionSharpen( QString id, QString name );
 	~GLDeconvolutionSharpen();

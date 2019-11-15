@@ -7,6 +7,7 @@
 
 class GLNormalizeSAR : public GLResize
 {
+	Q_OBJECT
 public:
 	GLNormalizeSAR( QString id = "NormalizeSARAuto", QString name = "NormalizeSARAuto" );
 	virtual ~GLNormalizeSAR();

@@ -7,6 +7,7 @@
 
 class AudioCrossFade : public AudioFilter
 {
+	Q_OBJECT
 public:
 	AudioCrossFade( QString id, QString name ) : AudioFilter( id, name ) {
 		firstVol = new AudioVolume( "AudioVolume", "AudioVolume" );

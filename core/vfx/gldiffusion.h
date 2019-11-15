@@ -7,6 +7,7 @@
 
 class GLDiffusion : public GLFilter
 {
+	Q_OBJECT
 public:
 	GLDiffusion( QString id, QString name );
 	~GLDiffusion();

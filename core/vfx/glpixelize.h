@@ -47,6 +47,7 @@ private:
 
 class GLPixelize : public GLMask
 {
+	Q_OBJECT
 public:
 	GLPixelize( QString id, QString name );
 	~GLPixelize();

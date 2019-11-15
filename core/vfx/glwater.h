@@ -102,6 +102,7 @@ private:
 
 class GLWater : public GLFilter
 {
+	Q_OBJECT
 public:
 	GLWater( QString id, QString name );
 	~GLWater();

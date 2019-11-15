@@ -35,6 +35,7 @@ private:
 
 class GLMirror : public GLFilter
 {
+	Q_OBJECT
 public:
 	GLMirror( QString id, QString name );
 	bool process( const QList<Effect*> &el, double pts, Frame *src, Profile *p );

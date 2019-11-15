@@ -7,6 +7,7 @@
 
 class GLVignette : public GLFilter
 {
+	Q_OBJECT
 public:
 	GLVignette( QString id, QString name );
 	~GLVignette();

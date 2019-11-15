@@ -31,6 +31,7 @@ private:
 
 class GLNoise : public GLFilter
 {
+	Q_OBJECT
 public:
 	GLNoise( QString id, QString name );
 

@@ -7,6 +7,7 @@
 
 class GLGlow : public GLMask
 {
+	Q_OBJECT
 public:
 	GLGlow( QString id, QString name );
 	~GLGlow();

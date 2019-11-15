@@ -149,6 +149,7 @@ private:
 
 class GLHandDrawing : public GLFilter
 {
+	Q_OBJECT
 public:
 	GLHandDrawing( QString id, QString name );
 	~GLHandDrawing();

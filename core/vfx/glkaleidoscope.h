@@ -43,6 +43,7 @@ private:
 
 class GLKaleidoscope : public GLFilter
 {
+	Q_OBJECT
 public:
 	GLKaleidoscope( QString id, QString name );
 	~GLKaleidoscope();

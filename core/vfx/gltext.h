@@ -117,6 +117,7 @@ private:
 
 class GLText : public GLFilter
 {
+	Q_OBJECT
 public:
 	GLText( QString id, QString name );
 	

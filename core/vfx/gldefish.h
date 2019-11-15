@@ -63,6 +63,7 @@ private:
 
 class GLDefish : public GLFilter
 {
+	Q_OBJECT
 public:
 	GLDefish( QString id, QString name );
 	
