@@ -39,16 +39,25 @@ ProjectSourcesPage::ProjectSourcesPage( Sampler *samp )
 
 void ProjectSourcesPage::populateBuiltins()
 {
-	QStringList patternsBuiltins;
-	patternsBuiltins << "GLSL_Blank" << "GLSL_OpticalFiber" << "GLSL_LaserGrid" << "GLSL_Warp" << "GLSL_Warp2" << "GLSL_Clouds";
-	for (int i = 0; i < patternsBuiltins.count(); ++i) {
-		emit requestBuiltinThumb(patternsBuiltins.at(i), InputBase::GLSL);
+	patternsBuiltins["GLSL_Blank"] = tr("Blank");
+	patternsBuiltins["GLSL_OpticalFiber"] = tr("OpticalFiber");
+	patternsBuiltins["GLSL_LaserGrid"] = tr("LaserGrid");
+	patternsBuiltins["GLSL_Warp"] = tr("Warp");
+	patternsBuiltins["GLSL_Warp2"] = tr("Warp2");
+	patternsBuiltins["GLSL_Clouds"] = tr("Clouds");
+	
+	QMapIterator<QString, QString> pb(patternsBuiltins);
+	while (pb.hasNext()) {
+		pb.next();
+		emit requestBuiltinThumb(pb.key(), InputBase::GLSL);
 	}
 	
-	QStringList titlesBuiltins;
+
 	// titlesBuiltins << 
-	for (int i = 0; i < titlesBuiltins.count(); ++i) {
-		emit requestBuiltinThumb(titlesBuiltins.at(i), InputBase::GLSL);
+	QMapIterator<QString, QString> tb(titlesBuiltins);
+	while (tb.hasNext()) {
+		tb.next();
+		emit requestBuiltinThumb(tb.key(), InputBase::GLSL);
 	}
 }
 
@@ -60,7 +69,7 @@ void ProjectSourcesPage::addBuiltin( QString name, QPixmap pix )
 		InputGLSL input;
 		Profile p;
 		input.probe(name, &p);
-		SourceListItem *it = new SourceListItem( pix, new Source(InputBase::GLSL, name, p) );
+		SourceListItem *it = new SourceListItem( pix, new Source(InputBase::GLSL, name, p, patternsBuiltins[name]) );
 		patternsListWidget->addItem( it );
 	}
 }

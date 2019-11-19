@@ -30,7 +30,7 @@ ClipViewItem::ClipViewItem( Clip *c, double scale ) : AbstractViewItem(),
 	setAcceptDrops( true );
 	 
 	setClip( c );
-	filename = clip->sourceName();
+	filename = clip->getSource()->getDisplayName();
 	
 	setCuts( clip->position(), clip->length(), scale );
 

@@ -4,8 +4,9 @@
 
 
 
-Source::Source( InputBase::InputType t, QString path, Profile prof ) 
+Source::Source( InputBase::InputType t, QString path, Profile prof, QString nameToDisplay ) 
 	: fileName( path ),
+	displayName(nameToDisplay),
 	profile( prof ),
 	type( t ),
 	refcount( 1 )
@@ -53,6 +54,15 @@ const QString & Source::getFileName() const
 {
 	return fileName;
 }
+
+
+
+const QString & Source::getDisplayName() const
+{
+	return displayName.isEmpty() ? fileName : displayName;
+}
+
+
 
 qint64 Source::getSize() const
 {

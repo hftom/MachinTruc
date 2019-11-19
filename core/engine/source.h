@@ -11,12 +11,13 @@ class Source
 {
 public:
 	Source( QString path );
-	Source( InputBase::InputType t, QString path, Profile prof );
+	Source( InputBase::InputType t, QString path, Profile prof, QString nameToDisplay = "" );
 	
 	void use();
 	void release();
 	
 	const QString & getFileName() const;
+	const QString & getDisplayName() const;
 	qint64 getSize() const;
 	const Profile & getProfile() const;
 	InputBase::InputType getType() const;
@@ -28,6 +29,7 @@ public:
 
 private:
 	QString fileName;
+	QString displayName;
 	qint64 size;
 	Profile profile;
 	InputBase::InputType type;

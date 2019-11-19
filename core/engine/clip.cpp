@@ -27,18 +27,6 @@ Clip::~Clip()
 
 
 
-QString Clip::sourceName()
-{
-	QString name = source->getFileName();
-	if (name.startsWith("GLSL_")) {
-		return name.replace("GLSL_", "");
-	}
-	
-	return name;
-}
-
-
-
 void Clip::setPosition( double p )
 {
 	posInTrack = p;

@@ -34,8 +34,7 @@ public:
 		QString text;
 		switch (source->getType()) {
 			case InputBase::GLSL:
-				text = source->getFileName();
-				text.replace("GLSL_", "");
+				text = source->getDisplayName();
 				break;
 			default:
 				text = QFileInfo( source->getFileName() ).fileName() + "\n" + QTime( hours, mins, secs ).toString("hh:mm:ss");
@@ -110,5 +109,8 @@ signals:
 private:
 	Sampler *sampler;
 	SourceListItem *activeSource;
+	
+	QMap<QString,QString> patternsBuiltins;
+	QMap<QString,QString> titlesBuiltins;
 };
 #endif // PROJECTCLIPSPAGE_H
