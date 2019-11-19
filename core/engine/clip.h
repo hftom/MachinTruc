@@ -22,6 +22,7 @@ public:
 	FList< QSharedPointer<AudioFilter> > audioFilters;
 
 	QString sourcePath() { return source->getFileName(); }
+	QString sourceName(); // the name to display
 	const Profile & getProfile() const { return source->getProfile(); }
 	
 	double position() { return posInTrack; }
