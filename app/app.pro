@@ -103,7 +103,7 @@ HEADERS = \
 	timeline/undoclipmove.h\
 	timeline/undoclipremove.h\
 	timeline/undoclipresize.h\
-	timeline/undoclispeed.h\
+	timeline/undoclipspeed.h\
 	timeline/undoclipsplit.h\
 	timeline/undoeffectadd.h\
 	timeline/undoeffectmove.h\
