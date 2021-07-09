@@ -33,8 +33,10 @@ protected:
 	void run();
 
 private:
+	void getOrientation();
 	bool upload( Frame *f );
 
+	int orientation;
 	double fps;
 	double currentVideoPTS;
 

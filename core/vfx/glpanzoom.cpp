@@ -8,6 +8,7 @@ GLPanZoom::GLPanZoom( QString id, QString name ) : GLSize( id, name ), pw(0), ph
 	xOffset->hidden = true;
 	yOffset->hidden = true;
 	rotateAngle->hidden = true;
+	blurFiller->hidden = true;
 	//softBorder->hidden = true;
 	
 	animType = rand() % 2;
@@ -37,6 +38,11 @@ void GLPanZoom::preProcess(double pts, Frame *src, Profile *p )
 	}
 	if (sh * fullscreenZoom * zoom < ph) {
 		zoom = ph / (sh * fullscreenZoom);
+	}
+
+	if (zoom > 1.3) {
+		zoom = 1.3;
+		blurFiller->value = 1;
 	}
 	double percent = zoom * 100.0;
 	

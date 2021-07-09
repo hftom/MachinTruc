@@ -1,6 +1,5 @@
 #include <movit/resample_effect.h>
-#include <movit/resize_effect.h>
-#include <movit/padding_effect.h>
+
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
@@ -25,6 +24,7 @@ GLSize::GLSize( QString id, QString name ) : GLFilter( id, name ),
 	xOffset = addParameter( "xOffset", tr("X offset:"), Parameter::PINPUTDOUBLE, 0.0, -110.0, 110.0, true, "%" );
 	yOffset = addParameter( "yOffset", tr("Y offset:"), Parameter::PINPUTDOUBLE, 0.0, -110.0, 110.0, true, "%" );
 	rotateAngle = addParameter( "rotateAngle", tr("Rotation angle:"), Parameter::PDOUBLE, 0.0, -360.0, 360.0, true );
+	blurFiller = addBooleanParameter("blurFiller", tr("Fill with blur (no effect if rotation):"), 0);
 	//softBorder = addParameter( "softBorder", tr("Soft border:"), Parameter::PINT, 2, 1, 10, false );
 }
 
@@ -51,9 +51,16 @@ QString GLSize::getDescriptor( double pts, Frame *src, Profile *p )
 		resizeActive = true;
 	}
 	
+	blurFillerActive = false;
 	if ( !rotateAngle->graph.keys.count() && getParamValue( rotateAngle ).toDouble() == 0.0 ) {
 		rotateActive = false;
-		s += "Padding";
+		if (getParamValue(blurFiller).toInt()) {
+			blurFillerActive = true;
+			s += "FillBlur";
+		}
+		else {
+			s += "Padding";
+		}
 	}
 	else {
 		s += "Rotate";
@@ -222,10 +229,6 @@ bool GLSize::process( const QList<Effect*> &el, double pts, Frame *src, Profile 
 	left -= (imageWidth - pw) / 2.0;
 	top -= (imageHeight - ph) / 2.0;
 	
-	src->glWidth = pw;
-	src->glHeight = ph;
-	src->glSAR = psar;
-	
 	if ( resizeActive ) {
 		Effect *e = el[index];
 		ok = e->set_int( "width", resizeOutputWidth )
@@ -245,9 +248,9 @@ bool GLSize::process( const QList<Effect*> &el, double pts, Frame *src, Profile 
 		
 		Effect *e = el[index];
 		ok |= e->set_float( "angle", rad )
-			&& e->set_float( "SAR", src->glSAR )
-			&& e->set_int( "width", src->glWidth )
-			&& e->set_int( "height", src->glHeight )
+			&& e->set_float( "SAR", psar )
+			&& e->set_int( "width", pw )
+			&& e->set_int( "height", ph )
 			&& e->set_float( "top", top )
 			&& e->set_float( "left", left )
 			&& e->set_float( "centerOffsetX", centerOffsetX )
@@ -255,12 +258,23 @@ bool GLSize::process( const QList<Effect*> &el, double pts, Frame *src, Profile 
 			
 	}
 	else {
-		Effect *e = el[index];
-		ok |= e->set_int( "width", src->glWidth )
-			&& e->set_int( "height", src->glHeight )
-			&& e->set_float( "top", top )
-			&& e->set_float( "left", left );
+		if (blurFillerActive) {
+			MyBlurFillerEffect *e = (MyBlurFillerEffect*)el[index];
+			e->setPadding(pw, ph, top, left);
+			ok |= true;
+		}
+		else {
+			Effect *e = el[index];
+			ok |= e->set_int( "width", pw )
+				&& e->set_int( "height", ph )
+				&& e->set_float( "top", top )
+				&& e->set_float( "left", left );
+		}
 	}
+
+	src->glWidth = pw;
+	src->glHeight = ph;
+	src->glSAR = psar;
 	
 	return ok;
 }
@@ -277,8 +291,14 @@ QList<Effect*> GLSize::getMovitEffects()
 		//list.append( new PaddingEffect() );
 		list.append( new MyRotateEffect() );
 	}
-	else
-		list.append( new PaddingEffect() );
+	else {
+		if (blurFillerActive) {
+			list.append( new MyBlurFillerEffect() );
+		}
+		else {
+			list.append( new PaddingEffect() );
+		}
+	}
 
 	return list;
 }

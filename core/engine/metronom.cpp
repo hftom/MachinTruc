@@ -13,7 +13,7 @@
 // 1 in metronom::runShow
 // 1 in display
 // less than 2 would freeze the app.
-#define NUMOUTPUTFRAMES 4
+#define NUMOUTPUTFRAMES 5
 
 
 

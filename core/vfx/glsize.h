@@ -4,8 +4,58 @@
 #include <movit/effect_util.h>
 #include <movit/effect_chain.h>
 #include <movit/util.h>
+#include <movit/resize_effect.h>
+#include <movit/blur_effect.h>
+#include <movit/padding_effect.h>
+#include <movit/overlay_effect.h>
 
 #include "glsoftborder.h"
+
+
+
+class MyBlurFillerEffect : public Effect {
+public:
+	MyBlurFillerEffect() : blur(new BlurEffect), resize(new ResizeEffect), padding(new PaddingEffect), overlay(new OverlayEffect) {
+	}
+	std::string effect_type_id() const { return "MyBlurFillerEffect"; }
+	std::string output_fragment_shader() { assert(false); }
+
+	void rewrite_graph(EffectChain *graph, Node *self) {
+		assert(self->incoming_links.size() == 1);
+		Node *input = self->incoming_links[0];
+
+		Node *resize_node = graph->add_node(resize);
+		Node *blur_node = graph->add_node(blur);
+		Node *padding_node = graph->add_node(padding);
+		Node *overlay_node = graph->add_node(overlay);
+
+		graph->replace_receiver(self, resize_node);
+		graph->connect_nodes(resize_node, blur_node);
+		graph->connect_nodes(input, padding_node);
+		graph->connect_nodes(blur_node, overlay_node);
+		graph->connect_nodes(padding_node, overlay_node);
+		graph->replace_sender(self, overlay_node);
+
+		self->disabled = true;
+	}
+
+	bool setPadding(int ow, int oh, float top, float left) {
+		bool ok = resize->set_int("width", ow);
+		ok = resize->set_int("height", oh);
+		ok = padding->set_int( "width", ow );
+		ok = padding->set_int( "height", oh );
+		ok = padding->set_float( "top", top );
+		ok = padding->set_float( "left", left );
+		ok = blur->set_float("radius", ow * 6.0f / 100.0f);
+		return ok;
+	}
+
+private:
+	BlurEffect *blur;
+	ResizeEffect *resize;
+	PaddingEffect *padding;
+	OverlayEffect *overlay;
+};
 
 
 static const char *MyRotateEffect_shader=
@@ -120,6 +170,9 @@ protected:
 	
 	Parameter *xOffset, *yOffset;
 	QVariant ovdOffset, ovdScale;
+
+	Parameter *blurFiller;
+	bool blurFillerActive;
 };
 
 #endif //GLSIZE_H

@@ -123,8 +123,12 @@ void Filter::splitParameters( Filter *second, double posPts )
 				else
 					p_second[i]->graph.keys.append( AnimationKey( graph.keys[j].keyType, (graph.keys[j].x - split_pos) / (1.0 - split_pos), graph.keys[j].y ) );
 			}
-			p_second[i]->graph.keys.prepend( AnimationKey( p_second[i]->graph.keys.first().keyType, 0.0, split_value.toDouble() ) );
-			params[i]->graph.keys.append( AnimationKey( params[i]->graph.keys.last().keyType, 1.0, split_value.toDouble() ) );
+			if (p_second[i]->graph.keys.count()) {
+				p_second[i]->graph.keys.prepend( AnimationKey( p_second[i]->graph.keys.first().keyType, 0.0, split_value.toDouble() ) );
+			}
+			if (params[i]->graph.keys.count()) {
+				params[i]->graph.keys.append( AnimationKey( params[i]->graph.keys.last().keyType, 1.0, split_value.toDouble() ) );
+			}
 		}
 	}
 }

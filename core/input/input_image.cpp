@@ -1,6 +1,7 @@
 // kate: tab-indent on; indent-width 4; mixedindent off; indent-mode cstyle; remove-trailing-space on;
 
 #include <unistd.h>
+#include <libexif/exif-data.h>
 
 #include <QFile>
 
@@ -11,6 +12,7 @@
 
 
 InputImage::InputImage() : InputBase(),
+	orientation(0),
 	fps( 25 ),
 	currentVideoPTS( 0 ),
 	buffer( NULL ),
@@ -59,6 +61,31 @@ bool InputImage::probe( QString fn, Profile *prof )
 
 
 
+void InputImage::getOrientation()
+{
+	orientation = 0;
+	ExifData *ed = exif_data_new_from_file(sourceName.toLocal8Bit().data());
+	if (ed) {
+		ExifEntry *ee = exif_data_get_entry(ed, EXIF_TAG_ORIENTATION);
+		if (ee && ee->size == 2) {
+			int orient = exif_get_short(ee->data, EXIF_BYTE_ORDER_INTEL);
+			if (orient < 1 || orient > 8) {
+				orient = exif_get_short(ee->data, EXIF_BYTE_ORDER_MOTOROLA);
+			}
+			switch (orient) {
+				case 5:
+				case 6: orientation = 90; break;
+				case 3:
+				case 4: orientation = 180;  break;
+				case 7:
+				case 8: orientation = 270;
+			}
+		}
+	}
+}
+
+
+
 void InputImage::run()
 {
 	open( sourceName );
@@ -96,6 +123,8 @@ bool InputImage::open( QString fn )
 	rgba = image.depth() == 32;
 	buffer = BufferPool::globalInstance()->getBuffer( image.byteCount() );
 	memcpy( buffer->data(), image.constBits(), image.byteCount() );
+
+	getOrientation();
 
 	return true;
 }
@@ -141,7 +170,7 @@ bool InputImage::upload( Frame *f )
 	f->setSharedBuffer( buffer );
 	f->mmi = mmi;
 	f->mmiProvider = mmiProvider;
-	f->setVideoFrame( rgba ? Frame::RGBA : Frame::RGB, width, height, 1.0, false, false, currentVideoPTS, outProfile.getVideoFrameDuration() );
+	f->setVideoFrame( rgba ? Frame::RGBA : Frame::RGB, width, height, 1.0, false, false, currentVideoPTS, outProfile.getVideoFrameDuration(), orientation );
 
 	mmiDuplicate();
 	currentVideoPTS += outProfile.getVideoFrameDuration();
