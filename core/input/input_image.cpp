@@ -72,13 +72,8 @@ void InputImage::getOrientation()
 			if (orient < 1 || orient > 8) {
 				orient = exif_get_short(ee->data, EXIF_BYTE_ORDER_MOTOROLA);
 			}
-			switch (orient) {
-				case 5:
-				case 6: orientation = 90; break;
-				case 3:
-				case 4: orientation = 180;  break;
-				case 7:
-				case 8: orientation = 270;
+			if (orient > 1 && orient < 9) {
+				orientation = orient;
 			}
 		}
 	}

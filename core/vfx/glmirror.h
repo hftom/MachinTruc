@@ -7,7 +7,7 @@
 
 
 
-static const char *MMirrorEffect_shader=
+static const char *MyMirrorEffect_shader=
 "vec4 FUNCNAME( vec2 tc ) {\n"
 "	if (PREFIX(horizontal) > 0.0)\n"
 "		tc.x = 1.0 - tc.x;\n"
@@ -18,14 +18,17 @@ static const char *MMirrorEffect_shader=
 
 
 
-class MMirrorEffect : public Effect {
+class MyMirrorEffect : public Effect {
 public:
-	MMirrorEffect() : vertical(0.0), horizontal(0.0) {
+	MyMirrorEffect() : vertical(0.0), horizontal(1.0) {
 		register_float("vertical", &vertical);
 		register_float("horizontal", &horizontal);
 	}
-	virtual std::string effect_type_id() const { return "MMirrorEffect"; }
-	std::string output_fragment_shader() { return MMirrorEffect_shader; }
+	virtual std::string effect_type_id() const { return "MyMirrorEffect"; }
+	std::string output_fragment_shader() { return MyMirrorEffect_shader; }
+	bool needs_linear_light() const { return false; }
+	bool needs_srgb_primaries() const { return false; }
+	AlphaHandling alpha_handling() const { return DONT_CARE_ALPHA_TYPE; }
 	
 private:
 	float vertical, horizontal;

@@ -80,11 +80,14 @@ public:
 	QString getDescriptor( double pts, Frame *src, Profile *p );
 	bool process( const QList<Effect*> &el, double pts, Frame *src, Profile *p );
 
-	void setOrientation( int a );
+	void setOrientation( int o );
 	QList<Effect*> getMovitEffects();
 	
 private:
+	void computeAngleAndMirror(int o);
+
 	int angle;
+	bool mirror;
 };
 
 #endif //GLORIENTATION_H

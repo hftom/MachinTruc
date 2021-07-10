@@ -24,6 +24,6 @@ bool GLMirror::process( const QList<Effect*> &el, double pts, Frame *src, Profil
 QList<Effect*> GLMirror::getMovitEffects()
 {
 	QList<Effect*> list;
-	list.append( new MMirrorEffect() );
+	list.append( new MyMirrorEffect() );
 	return list;
 }

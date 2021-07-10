@@ -44,6 +44,10 @@ void GLPanZoom::preProcess(double pts, Frame *src, Profile *p )
 		zoom = 1.3;
 		blurFiller->value = 1;
 	}
+	else {
+		blurFiller->value = 0;
+	}
+	
 	double percent = zoom * 100.0;
 	
 	sizePercent->graph.keys.clear();

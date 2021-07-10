@@ -24,7 +24,7 @@ GLSize::GLSize( QString id, QString name ) : GLFilter( id, name ),
 	xOffset = addParameter( "xOffset", tr("X offset:"), Parameter::PINPUTDOUBLE, 0.0, -110.0, 110.0, true, "%" );
 	yOffset = addParameter( "yOffset", tr("Y offset:"), Parameter::PINPUTDOUBLE, 0.0, -110.0, 110.0, true, "%" );
 	rotateAngle = addParameter( "rotateAngle", tr("Rotation angle:"), Parameter::PDOUBLE, 0.0, -360.0, 360.0, true );
-	blurFiller = addBooleanParameter("blurFiller", tr("Fill with blur (no effect if rotation):"), 0);
+	blurFiller = addBooleanParameter("blurFiller", tr("Fill background with blur (no effect if rotation):"), 0);
 	//softBorder = addParameter( "softBorder", tr("Soft border:"), Parameter::PINT, 2, 1, 10, false );
 }
 
@@ -38,7 +38,8 @@ GLSize::~GLSize()
 
 QString GLSize::getDescriptor( double pts, Frame *src, Profile *p )
 {
-	Q_UNUSED( pts );
+	preProcess(pts, src, p);
+
 	QString s;
 	bool samesar = qAbs( p->getVideoSAR() - src->glSAR ) < 1e-3;
 
@@ -52,11 +53,16 @@ QString GLSize::getDescriptor( double pts, Frame *src, Profile *p )
 	}
 	
 	blurFillerActive = false;
+	softBorderActive = false;
 	if ( !rotateAngle->graph.keys.count() && getParamValue( rotateAngle ).toDouble() == 0.0 ) {
 		rotateActive = false;
 		if (getParamValue(blurFiller).toInt()) {
 			blurFillerActive = true;
 			s += "FillBlur";
+			if (sizePercent->graph.keys.count()) {
+				softBorderActive = true;
+				s += "SoftBorder";
+			}
 		}
 		else {
 			s += "Padding";
@@ -102,7 +108,7 @@ bool GLSize::process( const QList<Effect*> &el, double pts, Frame *src, Profile 
 	
 	if (!ovdScale.isNull()) {
 		QPointF pos = ovdScale.toPointF();
-		if ( !sizePercent->graph.keys.count() ) {
+		if ( !sizePercent->hidden && !sizePercent->graph.keys.count() ) {
 			if (vertical) {
 				sizePercent->value = pos.x() / (ph / (double)src->glHeight);
 			}
@@ -125,10 +131,10 @@ bool GLSize::process( const QList<Effect*> &el, double pts, Frame *src, Profile 
 	
 	if (!ovdOffset.isNull()) {
 		QPointF pos = ovdOffset.toPointF();
-		if ( !xOffset->graph.keys.count() ) {
+		if ( !xOffset->hidden && !xOffset->graph.keys.count() ) {
 			xOffset->value = pos.x() * 100.0 / pw;
 		}
-		if ( !yOffset->graph.keys.count() ) {
+		if ( !yOffset->hidden && !yOffset->graph.keys.count() ) {
 			yOffset->value = pos.y() * 100.0 / ph;
 		}
 		
@@ -229,6 +235,9 @@ bool GLSize::process( const QList<Effect*> &el, double pts, Frame *src, Profile 
 	left -= (imageWidth - pw) / 2.0;
 	top -= (imageHeight - ph) / 2.0;
 	
+	if (softBorderActive) {
+		++index;
+	}
 	if ( resizeActive ) {
 		Effect *e = el[index];
 		ok = e->set_int( "width", resizeOutputWidth )
@@ -284,6 +293,9 @@ bool GLSize::process( const QList<Effect*> &el, double pts, Frame *src, Profile 
 QList<Effect*> GLSize::getMovitEffects()
 {
 	QList<Effect*> list;
+	if (softBorderActive) {
+		list.append( new MySoftBorderEffect() );
+	}
 	if ( resizeActive )
 		list.append( new ResampleEffect() );
 	if ( rotateActive ) {

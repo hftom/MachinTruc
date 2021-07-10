@@ -46,7 +46,7 @@ public:
 		ok = padding->set_int( "height", oh );
 		ok = padding->set_float( "top", top );
 		ok = padding->set_float( "left", left );
-		ok = blur->set_float("radius", ow * 6.0f / 100.0f);
+		ok = blur->set_float("radius", ow * 0.05f);
 		return ok;
 	}
 
@@ -173,6 +173,7 @@ protected:
 
 	Parameter *blurFiller;
 	bool blurFillerActive;
+	bool softBorderActive;
 };
 
 #endif //GLSIZE_H
