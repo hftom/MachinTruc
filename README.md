@@ -8,6 +8,7 @@ Detailed installation instructions can be found [here](http://machintruc.hftom.f
 
 Deps:
 - ffmpeg (libavformat, libavcodec, libavutil, libavfilter, libswresample, libswscale)
+- libexif
 - OpenMP
 - SDL2 (sound output)
 - Movit (http://git.sesse.net/?p=movit)
