@@ -1,5 +1,5 @@
 #include "glorientation.h"
-#include "glmirror.h"
+#include <movit/mirror_effect.h>
 
 
 
@@ -84,7 +84,7 @@ QList<Effect*> GLOrientation::getMovitEffects()
 	}
  
 	if (mirror) {
-		Effect *e = new MyMirrorEffect();
+		Effect *e = new MirrorEffect();
 		list.append( e );
 	}
 
