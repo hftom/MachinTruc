@@ -277,7 +277,7 @@ void ShaderEdit::localShaderChanged( const QString & text )
 	QString shader = ShaderCollection::getGlobalInstance()->getLocalShader( text );
 	if ( !shader.isEmpty() ) {
 		if ( !shader.endsWith("\n") )
-			shader += "\n";			
+			shader += "\n";
 		emit valueChanged( param, QVariant( shader ) );
 	}
 }

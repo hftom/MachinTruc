@@ -44,7 +44,7 @@ FilterCollection::FilterCollection()
 	videoFilters.append( FilterEntry( "deform", "GLPixelize", tr("Pixelize"), &Maker<GLPixelize>::make ) );
 	videoFilters.append( FilterEntry( "deform", "GLWater", tr("Water"), &Maker<GLWater>::make ) );
 	videoFilters.append( FilterEntry( "deform", "GLKaleidoscope", tr("Kaleidoscope"), &Maker<GLKaleidoscope>::make ) );
-	//videoFilters.append( FilterEntry( "deform", "GLCustom", tr("Custom"), &Maker<GLCustom>::make ) );
+	videoFilters.append( FilterEntry( "deform", "GLCustom", tr("Custom"), &Maker<GLCustom>::make ) );
 	
 	// source video filters, a subset of videoFilters
 	sourceVideoFilters.append( FilterEntry( "colors", "GLSaturation", tr("Saturation"), &Maker<GLSaturation>::make ) );

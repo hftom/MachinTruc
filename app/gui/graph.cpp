@@ -111,6 +111,13 @@ void Graph::setCurrentClip( ClipViewItem *c )
 
 void Graph::reloadCurrentFilter()
 {
+	QTimer::singleShot(1, this, SLOT(reload()));
+}
+
+
+
+void Graph::reload()
+{
 	if ( selectedItem )
 		setCurrentClip( currentClip );
 }
