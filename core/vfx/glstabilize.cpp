@@ -133,19 +133,22 @@ bool GLStabilize::process( const QList<Effect*> &el, double pts, Frame *src, Pro
 		double zoom = 1.0 - ((ts.zoom * st) / 100.0);
 		double left = ts.x * st;
 		double top = ts.y * st;
+		double tmp;
 
 		switch ( src->orientation() ) {
 			case 270:
+				tmp = left;
 				left = top;
-				top = -left;
+				top = -tmp;
 				break;
 			case 180:
 				left = -left;
 				top = -top;
 				break;
 			case 90:
+				tmp = left;
 				left = -top;
-				top = left;
+				top = tmp;
 		}
 	
 		return e->set_float( "angle", rad )

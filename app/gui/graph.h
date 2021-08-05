@@ -40,6 +40,7 @@ protected:
 	void dropEvent( QGraphicsSceneDragDropEvent *event );
 
 private slots:
+	void reload();
 	void updateLength();
 	void rebuildGraph();
 	
