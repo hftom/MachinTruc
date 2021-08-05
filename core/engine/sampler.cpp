@@ -234,9 +234,14 @@ bool Sampler::play( bool b, bool backward )
 
 void Sampler::slideSeek( double p )
 {
+	bool play = composer->isPlaying();
 	stopComposer();
 	metronom->flush();
 	composer->seekTo( p );
+	if (play) {
+		composer->play(true);
+		emit paused(false);
+	}
 }
 
 

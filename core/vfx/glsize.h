@@ -13,9 +13,40 @@
 
 
 
+static const char *MyResizeOpaqueEffect_shader =
+"vec4 FUNCNAME( vec2 tc ) {\n"
+"	return vec4(INPUT(tc).rgb, 1.0);\n"
+"}\n";
+
+
+
+class MyResizeOpaqueEffect : public Effect {
+public:
+	MyResizeOpaqueEffect() 	: width(1280), height(720)
+	{
+		register_int("width", &width);
+		register_int("height", &height);
+	}
+	std::string effect_type_id() const override { return "MyResizeOpaqueEffect"; }
+	std::string output_fragment_shader() override { return MyResizeOpaqueEffect_shader; }
+	bool needs_texture_bounce() const override { return true; }
+	bool changes_output_size() const override { return true; }
+	bool sets_virtual_output_size() const override { return false; }
+	void get_output_size(unsigned *width, unsigned *height, unsigned *virtual_width, unsigned *virtual_height) const override
+	{
+		*virtual_width = *width = this->width;
+		*virtual_height = *height = this->height;
+	}
+
+private:
+	int width, height;
+};
+
+
+
 class MyBlurFillerEffect : public Effect {
 public:
-	MyBlurFillerEffect() : blur(new BlurEffect), resize(new ResizeEffect), padding(new PaddingEffect), overlay(new OverlayEffect) {
+	MyBlurFillerEffect() : blur(new BlurEffect), resize(new MyResizeOpaqueEffect), padding(new PaddingEffect), overlay(new OverlayEffect) {
 	}
 	std::string effect_type_id() const { return "MyBlurFillerEffect"; }
 	std::string output_fragment_shader() { assert(false); }
@@ -52,7 +83,7 @@ public:
 
 private:
 	BlurEffect *blur;
-	ResizeEffect *resize;
+	MyResizeOpaqueEffect *resize;
 	PaddingEffect *padding;
 	OverlayEffect *overlay;
 };

@@ -465,6 +465,7 @@ void TopWindow::renderDialog()
 
 void TopWindow::renderStart( double startPts, QSize out )
 {
+	playPause( false );
 	sampler->setOutputResize(out);
 	timelineSeek( startPts );
 	vw->clear();
@@ -475,6 +476,7 @@ void TopWindow::renderStart( double startPts, QSize out )
 
 void TopWindow::renderFinished( double pts )
 {
+	playPause( false );
 	timelineSeek( pts );
 	sampler->getMetronom()->setRenderMode( false );
 	sampler->setOutputResize(QSize(0, 0));
