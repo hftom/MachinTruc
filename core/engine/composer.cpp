@@ -8,6 +8,24 @@
 #include "engine/composer.h"
 
 
+ShaderReader *myShaderReader;
+
+
+
+std::string MyShaderReader::readFile(const std::string &name)
+{
+	QString data;
+	QFile file(QString(":/movit_shaders/%1").arg(QString::fromStdString(name)));
+	
+	if(file.open(QIODevice::ReadOnly)) {
+    	data = file.readAll();
+		file.close();
+	}
+	
+	return data.toStdString();
+}
+
+
 
 Composer::Composer( Sampler *samp, PlaybackBuffer *pb )
 	: playBackward( false ),
@@ -35,21 +53,6 @@ Composer::~Composer()
 
 
 
-std::string Composer::readMovitShader(const std::string &name)
-{
-	QString data;
-	QFile file(QString(":/movit_shaders/%1").arg(QString::fromStdString(name)));
-	
-	if(file.open(QIODevice::ReadOnly)) {
-    	data = file.readAll();
-		file.close();
-	}
-	
-	return data.toStdString();
-}
-
-
-
 bool Composer::setSharedContext( QGLWidget *shared )
 {
 	hiddenContext = shared;
@@ -73,7 +76,7 @@ bool Composer::setSharedContext( QGLWidget *shared )
 		return false;
 	}*/
 
-	if (!init_movit( QString("").toStdString(), &Composer::readMovitShader, MOVIT_DEBUG_OFF )) {
+	if (!init_movit( "", myShaderReader = new MyShaderReader(), MOVIT_DEBUG_OFF )) {
 		return false;
 	}
 #endif

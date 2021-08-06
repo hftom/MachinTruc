@@ -1,6 +1,7 @@
 #ifndef COMPOSER_H
 #define COMPOSER_H
 
+#include <movit/util.h>
 #include "movitchain.h"
 #include "vfx/movitbackground.h"
 #include "filtercollection.h"
@@ -9,6 +10,10 @@
 #include <QThread>
 
 #include "engine/sampler.h"
+
+
+
+using namespace movit;
 
 
 
@@ -37,6 +42,14 @@ public:
 
 
 
+class MyShaderReader : public movit::ShaderReader
+{
+public:
+	virtual std::string readFile(const std::string &filename);
+};
+
+
+
 class Composer : public QThread
 {
 	Q_OBJECT
@@ -54,8 +67,6 @@ public:
 	bool isPlaying();
 
 	void setOutputResize( QSize size ) { outputResize = size; }
-
-	static std::string readMovitShader(const std::string &name);
 
 public slots:
 	bool setSharedContext( QGLWidget *shared );
