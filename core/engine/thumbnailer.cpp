@@ -15,6 +15,7 @@
 #include "input/input_image.h"
 #include "input/input_glsl.h"
 #include "engine/source.h"
+#include "engine/composer.h"
 #include "util.h"
 #include "thumbnailer.h"
 
@@ -302,8 +303,12 @@ void Thumbnailer::compileShader( ThumbRequest &request )
 	s = request.filePath;
 	shader += s.replace( QRegExp("PREFIX\\(([^\\)]*)\\)"), "eff2_\\1" );
 	shader += "\n";
-	shader += read_file( "footer.frag" ).c_str();
-	
+#ifdef Q_OS_UNIX
+	shader += read_file("footer.frag").c_str();
+#else
+	shader += Composer::readMovitShader( "footer.frag" ).c_str();
+#endif	
+
 	QGLShaderProgram prog;
 	bool ok = prog.addShaderFromSourceCode( QGLShader::Fragment, shader )
 		&& prog.addShaderFromSourceCode( QGLShader::Vertex, read_version_dependent_file("vs", "vert").c_str());
