@@ -22,6 +22,8 @@
 #define THUMB_DIR "thumb"
 #define THUMB_EXTENSION ".png"
 
+extern ShaderReader *myShaderReader;
+
 
 
 Thumbnailer::Thumbnailer()
@@ -306,7 +308,7 @@ void Thumbnailer::compileShader( ThumbRequest &request )
 #ifdef Q_OS_UNIX
 	shader += read_file("footer.frag").c_str();
 #else
-	shader += Composer::readMovitShader( "footer.frag" ).c_str();
+	shader += myShaderReader->readFile( "footer.frag" ).c_str();
 #endif	
 
 	QGLShaderProgram prog;
