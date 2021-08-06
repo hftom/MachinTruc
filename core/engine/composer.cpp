@@ -9,21 +9,6 @@
 
 
 
-std::string read_movit_shader(const std::string &name)
-{
-	QString data;
-	QFile file(QString(":/movit_shaders/%1").arg(QString::fromStdString(name)));
-	
-	if(file.open(QIODevice::ReadOnly)) {
-    	data = file.readAll();
-		file.close();
-	}
-	
-	return data.toStdString();
-}
-
-
-
 Composer::Composer( Sampler *samp, PlaybackBuffer *pb )
 	: playBackward( false ),
 	running( false ),
@@ -46,6 +31,21 @@ Composer::~Composer()
 {
 	running = false;
 	wait();
+}
+
+
+
+std::string Composer::readMovitShader(const std::string &name)
+{
+	QString data;
+	QFile file(QString(":/movit_shaders/%1").arg(QString::fromStdString(name)));
+	
+	if(file.open(QIODevice::ReadOnly)) {
+    	data = file.readAll();
+		file.close();
+	}
+	
+	return data.toStdString();
 }
 
 
@@ -73,7 +73,7 @@ bool Composer::setSharedContext( QGLWidget *shared )
 		return false;
 	}*/
 
-	if (!init_movit( QString("").toStdString(), read_movit_shader, MOVIT_DEBUG_OFF )) {
+	if (!init_movit( QString("").toStdString(), &Composer::readMovitShader, MOVIT_DEBUG_OFF )) {
 		return false;
 	}
 #endif

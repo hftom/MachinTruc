@@ -55,6 +55,8 @@ public:
 
 	void setOutputResize( QSize size ) { outputResize = size; }
 
+	static std::string readMovitShader(const std::string &name);
+
 public slots:
 	bool setSharedContext( QGLWidget *shared );
 	void discardFrame( int );
