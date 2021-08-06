@@ -9,6 +9,21 @@
 
 
 
+std::string read_movit_shader(const std::string &name)
+{
+	QString data;
+	QFile file(QString(":/movit_shaders/%1").arg(name));
+	
+	if(file.open(QIODevice::ReadOnly)) {
+    	data = file.readAll();
+		file.close();
+	}
+	
+	return data.toStdString();
+}
+
+
+
 Composer::Composer( Sampler *samp, PlaybackBuffer *pb )
 	: playBackward( false ),
 	running( false ),
@@ -47,7 +62,7 @@ bool Composer::setSharedContext( QGLWidget *shared )
 		return false;
 	}
 #else
-	QDir d;
+	/*QDir d;
 	if (d.exists("movit/identity.frag")) {
 		d.cd("movit");
 		if (!init_movit( d.absolutePath().toStdString(), MOVIT_DEBUG_OFF )) {
@@ -55,6 +70,10 @@ bool Composer::setSharedContext( QGLWidget *shared )
 		}
 	}
 	else {
+		return false;
+	}*/
+
+	if (!init_movit( QString("").toStdString(), read_movit_shader, MOVIT_DEBUG_OFF )) {
 		return false;
 	}
 #endif
