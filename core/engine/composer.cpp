@@ -12,7 +12,7 @@
 std::string read_movit_shader(const std::string &name)
 {
 	QString data;
-	QFile file(QString(":/movit_shaders/%1").arg(name));
+	QFile file(QString(":/movit_shaders/%1").arg(QString::fromStdString(name)));
 	
 	if(file.open(QIODevice::ReadOnly)) {
     	data = file.readAll();
