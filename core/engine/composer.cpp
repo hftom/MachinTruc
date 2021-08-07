@@ -64,7 +64,7 @@ bool Composer::setSharedContext( QGLWidget *shared )
 		return false;
 	}
 #else
-	if (!init_movit( "", myShaderReader = new MyShaderReader(), MOVIT_DEBUG_OFF )) {
+	if (!init_movit( "", new MyShaderReader(), MOVIT_DEBUG_OFF )) {
 		return false;
 	}
 #endif
