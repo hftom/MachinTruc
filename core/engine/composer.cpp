@@ -12,13 +12,13 @@
 std::string MyShaderReader::readFile(const std::string &name)
 {
 	QString data;
-	QFile file(QString(":/movit_shaders/%1").arg(QString::fromStdString(name)));
+	QFile file(QString(":/movit_shaders/movit_win_shaders/%1").arg(QString::fromStdString(name)));
 	
 	if(file.open(QIODevice::ReadOnly)) {
     	data = file.readAll();
 		file.close();
 	}
-	
+
 	return data.toStdString();
 }
 #endif
