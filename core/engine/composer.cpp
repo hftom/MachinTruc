@@ -8,10 +8,7 @@
 #include "engine/composer.h"
 
 
-ShaderReader *myShaderReader;
-
-
-
+#ifndef Q_OS_UNIX
 std::string MyShaderReader::readFile(const std::string &name)
 {
 	QString data;
@@ -24,6 +21,7 @@ std::string MyShaderReader::readFile(const std::string &name)
 	
 	return data.toStdString();
 }
+#endif
 
 
 
@@ -61,21 +59,11 @@ bool Composer::setSharedContext( QGLWidget *shared )
 	glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
 	
 #ifdef Q_OS_UNIX
+	qDebug() << "MOVIT_SHADERDIR : " << MOVIT_SHADERDIR;
 	if (!init_movit( MOVIT_SHADERDIR, MOVIT_DEBUG_ON )) {
 		return false;
 	}
 #else
-	/*QDir d;
-	if (d.exists("movit/identity.frag")) {
-		d.cd("movit");
-		if (!init_movit( d.absolutePath().toStdString(), MOVIT_DEBUG_OFF )) {
-			return false;
-		}
-	}
-	else {
-		return false;
-	}*/
-
 	if (!init_movit( "", myShaderReader = new MyShaderReader(), MOVIT_DEBUG_OFF )) {
 		return false;
 	}

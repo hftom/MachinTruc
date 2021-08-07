@@ -41,12 +41,13 @@ public:
 };
 
 
-
+#ifndef Q_OS_UNIX
 class MyShaderReader : public movit::ShaderReader
 {
 public:
 	virtual std::string readFile(const std::string &filename);
 };
+#endif
 
 
 

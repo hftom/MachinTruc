@@ -15,14 +15,11 @@
 #include "input/input_image.h"
 #include "input/input_glsl.h"
 #include "engine/source.h"
-#include "engine/composer.h"
 #include "util.h"
 #include "thumbnailer.h"
 
 #define THUMB_DIR "thumb"
 #define THUMB_EXTENSION ".png"
-
-extern ShaderReader *myShaderReader;
 
 
 
@@ -183,6 +180,7 @@ void Thumbnailer::probe( ThumbRequest &request )
 		delete input;
 		input = new InputFF();
 		probed = input->probe( request.filePath, &request.profile );
+		qDebug() << "ffmpeg probe : " << probed;
 	}
 	if ( probed ) {
 		if ( request.profile.hasVideo() ) {
@@ -305,11 +303,7 @@ void Thumbnailer::compileShader( ThumbRequest &request )
 	s = request.filePath;
 	shader += s.replace( QRegExp("PREFIX\\(([^\\)]*)\\)"), "eff2_\\1" );
 	shader += "\n";
-#ifdef Q_OS_UNIX
 	shader += read_file("footer.frag").c_str();
-#else
-	shader += myShaderReader->readFile( "footer.frag" ).c_str();
-#endif	
 
 	QGLShaderProgram prog;
 	bool ok = prog.addShaderFromSourceCode( QGLShader::Fragment, shader )
