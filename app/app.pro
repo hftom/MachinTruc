@@ -139,14 +139,15 @@ DEPENDPATH += ../core
 unix {
 	LIBS += ../core/libcore.a
 	PRE_TARGETDEPS += ../core/libcore.a
+	RESOURCES = resources_unix.qrc
 }
 
 win32 {
 	LIBS += ../core/release/libcore.a
 	PRE_TARGETDEPS += ../core/release/libcore.a
+	RC_ICONS += umovit.ico
+	RESOURCES = resources_win.qrc
 }
-
-RESOURCES = resources.qrc
 
 CONFIG += c++11
 CONFIG += debug
