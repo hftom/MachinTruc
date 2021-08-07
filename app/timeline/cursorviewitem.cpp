@@ -8,7 +8,7 @@
 
 
 
-CursorViewItem::CursorViewItem()
+CursorViewItem::CursorViewItem() : isMoving(false)
 {
 	setData( DATAITEMTYPE, TYPECURSOR );
 	setRect( 0, 0, 10, TRACKVIEWITEMHEIGHT - 2 );
