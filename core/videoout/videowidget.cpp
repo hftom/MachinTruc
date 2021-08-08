@@ -5,6 +5,9 @@
 #include <QTransform>
 #include <QThread>
 #include <QFile>
+#include <QFileInfo>
+#include <QMessageBox>
+#include <QFileDialog>
 
 #include "videoout/videowidget.h"
 
@@ -254,12 +257,23 @@ QImage VideoWidget::lastImage()
 void VideoWidget::shot()
 {
 	QImage img = lastImage();
-	if ( img.isNull() )
+	if ( img.isNull() ) {
 		return;
-	int i=0;
-	while ( QFile::exists( QString("shot%1.png").arg( i ) ) )
-		++i;
-	img.save(QString("shot%1.png").arg( i ));
+	}
+
+	QString file = QFileDialog::getSaveFileName( this, tr("Save current image") );
+	if ( file.isEmpty() ) {
+		return;
+	}
+
+	QFileInfo fi( file );
+	QString suffix = fi.suffix();
+	QString path = fi.absoluteFilePath();
+	if ( !suffix.isEmpty() ) {
+		path.truncate( path.length() - suffix.length() - 1 );
+	}
+	path += ".png";
+	img.save(path);
 }
 
 

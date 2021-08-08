@@ -736,7 +736,7 @@
   </action>
   <action name="actionSaveImage">
    <property name="text">
-    <string>&amp;Save image</string>
+    <string>&amp;Save current image</string>
    </property>
   </action>
   <action name="actionNewProject">
