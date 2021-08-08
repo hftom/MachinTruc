@@ -29,7 +29,7 @@ RenderingDialog::RenderingDialog( QWidget *parent, Profile prof, double playhead
 	heightSpin->setValue(prof.getVideoHeight());
 	
 	h264RadBtn->setChecked( true );
-	playheadRadBtn->setChecked( true );
+	timelineRadBtn->setChecked(true);
 	cancelBtn->setFocus();
 	
 	FFmpegCommon::getGlobalInstance()->initFFmpeg();
