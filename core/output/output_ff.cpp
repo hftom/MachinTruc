@@ -272,17 +272,14 @@ bool OutputFF::openFormat( QString filename, Profile &prof, int vrate, int vcode
 	switch (vcodec) {
 		case VCODEC_HEVC: {
 			container = "matroska";
-			filename += ".mkv";
 			break;
 		}
 		case VCODEC_MPEG2: {
 			container = "mpeg";
-			filename += ".mpg";
 			break;
 		}
 		default: {
 			container = "mp4";
-			filename += ".mp4";
 		}
 	}
 	avformat_alloc_output_context2( &formatCtx, NULL, container.toLatin1().data(), filename.toLatin1().data() );

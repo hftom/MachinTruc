@@ -18,6 +18,7 @@ RenderingDialog::RenderingDialog( QWidget *parent, Profile prof, double playhead
 	encoderRunning( false )
 {
 	setupUi( this );
+	cancelBtn->hide();
 	
 	widthSpin->setRange( 64, MAXPROJECTWIDTH );
 	widthSpin->setSingleStep( 2 );
@@ -93,28 +94,21 @@ void RenderingDialog::heightChanged( int val )
 void RenderingDialog::openFile()
 {
 	QString file = QFileDialog::getSaveFileName( this, tr("Render to file") );
-	if ( !file.isEmpty() )
-		filenameLE->setText( file );
+	if ( !file.isEmpty() ) {
+		QFileInfo fi( file );
+		QString suffix = fi.suffix();
+		QString path = fi.absoluteFilePath();
+		if ( !suffix.isEmpty() ) {
+			path.truncate( path.length() - suffix.length() - 1 );
+		}
+		filenameLE->setText( path );
+	}
 }
 
 
 
 void RenderingDialog::startRender()
-{
-	QFileInfo fi( filenameLE->text() );
-	if ( !fi.dir().exists() || fi.fileName().isEmpty() ) {
-		QMessageBox::warning( this, tr("Error"), tr("Invalid file name.") );
-		return;
-	}
-	if ( fi.exists() && QMessageBox::Yes != QMessageBox::question( this, tr("Warning"),
-		tr("This file exists, do you want to overwrite it?"), QMessageBox::Yes | QMessageBox::No ) )
-		return;
-	
-	QString suffix = fi.suffix();
-	QString s = fi.absoluteFilePath();
-	if ( !suffix.isEmpty() )
-		s.truncate( s.length() - suffix.length() - 1 );
-	
+{	
 	double endPts = timelineLength - profile.getVideoFrameDuration();
 	if ( playheadRadBtn->isChecked() ) {
 		double end = playheadPts + (double)durationSpin->value() * MICROSECOND;
@@ -131,22 +125,46 @@ void RenderingDialog::startRender()
 		encodeStartPts = playheadPts;
 	}
 	
+	QFileInfo fi( filenameLE->text() );
+	QString suffix = fi.suffix();
+	QString filePath = fi.absoluteFilePath();
+	if ( !suffix.isEmpty() ) {
+		filePath.truncate( filePath.length() - suffix.length() - 1 );
+	}
+	if ( !fi.dir().exists() || fi.fileName().isEmpty() ) {
+		QMessageBox::warning( this, tr("Error"), tr("Invalid file name.") );
+		return;
+	}
+
 	int vcodec = OutputFF::VCODEC_H264;
 	QString vcodecName = h264CodecCb->currentText();
 	if (mpeg2RadBtn->isChecked()) {
 		vcodec = OutputFF::VCODEC_MPEG2;
 		vcodecName = "";
+		filePath += ".mpg";
 	}
 	else if (hevcRadBtn->isChecked()) {
 		vcodec = OutputFF::VCODEC_HEVC;
 		vcodecName = hevcCodecCb->currentText();
+		filePath += ".mkv";
 	}
+	else {
+		filePath += ".mp4";
+	}
+
+	QFileInfo fi2( filePath );
+	if ( fi2.exists() && QMessageBox::Yes != QMessageBox::question( this, tr("Warning"),
+		tr("The file %1 exists, do you want to overwrite it?").arg(fi2.fileName()), QMessageBox::Yes | QMessageBox::No ) )
+	{
+		return;
+	}
+	
 	
 	Profile p = profile;
 	p.setVideoWidth(widthSpin->value());
 	p.setVideoHeight(heightSpin->value());
 
-	if ( !out->init( s, p, videoRateSpin->value(), vcodec, vcodecName, endPts ) ) {
+	if ( !out->init( filePath, p, videoRateSpin->value(), vcodec, vcodecName, endPts ) ) {
 		QMessageBox::warning( this, tr("Error"), tr("Could not setup encoder.") );
 		return;
 	}
@@ -196,6 +214,12 @@ void RenderingDialog::outputFinished()
 
 void RenderingDialog::canceled()
 {
+	if ( QMessageBox::Yes != QMessageBox::question( this, tr("Warning"),
+		tr("Do you really want to cancel?"), QMessageBox::Yes | QMessageBox::No ) )
+	{
+		return;
+	}
+
 	if ( !encoderRunning )
 		done( QDialog::Rejected );
 	else {
@@ -223,6 +247,12 @@ void RenderingDialog::enableUI( bool b )
 	heightSpin->setEnabled( b );
 	hevcCodecCb->setEnabled( b );
 	h264CodecCb->setEnabled( b );
+	if (b) {
+		cancelBtn->hide();
+	}
+	else {
+		cancelBtn->show();
+	}
 }
 
 
