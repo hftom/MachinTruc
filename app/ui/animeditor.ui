@@ -7,14 +7,23 @@
     <x>0</x>
     <y>0</y>
     <width>1022</width>
-    <height>188</height>
+    <height>189</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_2">
-   <property name="margin">
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
     <number>0</number>
    </property>
    <item row="0" column="0">
@@ -25,7 +34,16 @@
      <item>
       <widget class="QWidget" name="controlWidget" native="true">
        <layout class="QGridLayout" name="gridLayout">
-        <property name="margin">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
          <number>0</number>
         </property>
         <item row="0" column="0">
@@ -44,7 +62,7 @@
            <string>...</string>
           </property>
           <property name="icon">
-           <iconset resource="../resources.qrc">
+           <iconset resource="../resources_unix.qrc">
             <normaloff>:/toolbar/icons/trash-empty.png</normaloff>:/toolbar/icons/trash-empty.png</iconset>
           </property>
          </widget>
@@ -93,7 +111,7 @@
            <string>...</string>
           </property>
           <property name="icon">
-           <iconset resource="../resources.qrc">
+           <iconset resource="../resources_unix.qrc">
             <normaloff>:/toolbar/icons/system-shutdown.png</normaloff>:/toolbar/icons/system-shutdown.png</iconset>
           </property>
           <property name="autoExclusive">
@@ -178,7 +196,7 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="../resources.qrc"/>
+  <include location="../resources_unix.qrc"/>
  </resources>
  <connections/>
 </ui>

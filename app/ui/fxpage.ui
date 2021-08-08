@@ -33,7 +33,7 @@
      </property>
      <widget class="QWidget" name="videoTab">
       <attribute name="icon">
-       <iconset resource="../resources.qrc">
+       <iconset resource="../resources_unix.qrc">
         <normaloff>:/toolbar/icons/video_icon.png</normaloff>:/toolbar/icons/video_icon.png</iconset>
       </attribute>
       <attribute name="title">
@@ -128,7 +128,7 @@
      </widget>
      <widget class="QWidget" name="audioTab">
       <attribute name="icon">
-       <iconset resource="../resources.qrc">
+       <iconset resource="../resources_unix.qrc">
         <normaloff>:/toolbar/icons/audio-volume-high.png</normaloff>:/toolbar/icons/audio-volume-high.png</iconset>
       </attribute>
       <attribute name="title">
@@ -238,7 +238,7 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="../resources.qrc"/>
+  <include location="../resources_unix.qrc"/>
  </resources>
  <connections/>
 </ui>

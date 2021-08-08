@@ -33,7 +33,7 @@
      </property>
      <widget class="QWidget" name="importTab">
       <attribute name="icon">
-       <iconset resource="../resources.qrc">
+       <iconset resource="../resources_unix.qrc">
         <normaloff>:/toolbar/icons/document-open.png</normaloff>:/toolbar/icons/document-open.png</iconset>
       </attribute>
       <attribute name="title">
@@ -96,7 +96,7 @@
      </widget>
      <widget class="QWidget" name="patternsTab">
       <attribute name="icon">
-       <iconset resource="../resources.qrc">
+       <iconset resource="../resources_unix.qrc">
         <normaloff>:/images/icons/transparency.png</normaloff>:/images/icons/transparency.png</iconset>
       </attribute>
       <attribute name="title">
@@ -129,7 +129,7 @@
      </widget>
      <widget class="QWidget" name="titlesTab">
       <attribute name="icon">
-       <iconset resource="../resources.qrc">
+       <iconset resource="../resources_unix.qrc">
         <normaloff>:/toolbar/icons/text.png</normaloff>:/toolbar/icons/text.png</iconset>
       </attribute>
       <attribute name="title">
@@ -172,7 +172,7 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="../resources.qrc"/>
+  <include location="../resources_unix.qrc"/>
  </resources>
  <connections/>
 </ui>

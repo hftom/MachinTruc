@@ -14,7 +14,7 @@
    <string>Filters</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="../resources.qrc">
+   <iconset resource="../resources_unix.qrc">
     <normaloff>:/toolbar/icons/tools-wizard.png</normaloff>:/toolbar/icons/tools-wizard.png</iconset>
   </property>
   <layout class="QGridLayout" name="gridLayout_2">
@@ -40,7 +40,7 @@
                 <string>...</string>
                </property>
                <property name="icon">
-                <iconset resource="../resources.qrc">
+                <iconset resource="../resources_unix.qrc">
                  <normaloff>:/toolbar/icons/list-add.png</normaloff>:/toolbar/icons/list-add.png</iconset>
                </property>
                <property name="iconSize">
@@ -57,7 +57,7 @@
                 <string>...</string>
                </property>
                <property name="icon">
-                <iconset resource="../resources.qrc">
+                <iconset resource="../resources_unix.qrc">
                  <normaloff>:/toolbar/icons/list-remove.png</normaloff>:/toolbar/icons/list-remove.png</iconset>
                </property>
                <property name="iconSize">
@@ -134,7 +134,7 @@
                 <string>...</string>
                </property>
                <property name="icon">
-                <iconset resource="../resources.qrc">
+                <iconset resource="../resources_unix.qrc">
                  <normaloff>:/toolbar/icons/list-add.png</normaloff>:/toolbar/icons/list-add.png</iconset>
                </property>
                <property name="iconSize">
@@ -151,7 +151,7 @@
                 <string>...</string>
                </property>
                <property name="icon">
-                <iconset resource="../resources.qrc">
+                <iconset resource="../resources_unix.qrc">
                  <normaloff>:/toolbar/icons/list-remove.png</normaloff>:/toolbar/icons/list-remove.png</iconset>
                </property>
                <property name="iconSize">
@@ -230,7 +230,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="../resources.qrc"/>
+  <include location="../resources_unix.qrc"/>
  </resources>
  <connections>
   <connection>

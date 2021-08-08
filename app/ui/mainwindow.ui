@@ -184,7 +184,7 @@
                 <string>...</string>
                </property>
                <property name="icon">
-                <iconset resource="../resources.qrc">
+                <iconset resource="../resources_unix.qrc">
                  <normaloff>:/toolbar/icons/applications-multimedia.png</normaloff>:/toolbar/icons/applications-multimedia.png</iconset>
                </property>
                <property name="iconSize">
@@ -219,7 +219,7 @@
                 <string>...</string>
                </property>
                <property name="icon">
-                <iconset resource="../resources.qrc">
+                <iconset resource="../resources_unix.qrc">
                  <normaloff>:/toolbar/icons/tools-wizard.png</normaloff>:/toolbar/icons/tools-wizard.png</iconset>
                </property>
                <property name="iconSize">
@@ -251,7 +251,7 @@
                 <string>...</string>
                </property>
                <property name="icon">
-                <iconset resource="../resources.qrc">
+                <iconset resource="../resources_unix.qrc">
                  <normaloff>:/toolbar/icons/mixer-front.png</normaloff>:/toolbar/icons/mixer-front.png</iconset>
                </property>
                <property name="iconSize">
@@ -381,7 +381,7 @@
                   <string>...</string>
                  </property>
                  <property name="icon">
-                  <iconset resource="../resources.qrc">
+                  <iconset resource="../resources_unix.qrc">
                    <normaloff>:/toolbar/icons/media-skip-backward.png</normaloff>:/toolbar/icons/media-skip-backward.png</iconset>
                  </property>
                 </widget>
@@ -401,7 +401,7 @@
                   <string>...</string>
                  </property>
                  <property name="icon">
-                  <iconset resource="../resources.qrc">
+                  <iconset resource="../resources_unix.qrc">
                    <normaloff>:/toolbar/icons/media-seek-backward.png</normaloff>:/toolbar/icons/media-seek-backward.png</iconset>
                  </property>
                 </widget>
@@ -424,7 +424,7 @@
                   <string>...</string>
                  </property>
                  <property name="icon">
-                  <iconset resource="../resources.qrc">
+                  <iconset resource="../resources_unix.qrc">
                    <normaloff>:/toolbar/icons/media-playback-start.png</normaloff>
                    <activeon>:/toolbar/icons/media-playback-pause.png</activeon>:/toolbar/icons/media-playback-start.png</iconset>
                  </property>
@@ -448,7 +448,7 @@
                   <string>...</string>
                  </property>
                  <property name="icon">
-                  <iconset resource="../resources.qrc">
+                  <iconset resource="../resources_unix.qrc">
                    <normaloff>:/toolbar/icons/media-seek-forward.png</normaloff>:/toolbar/icons/media-seek-forward.png</iconset>
                  </property>
                 </widget>
@@ -468,7 +468,7 @@
                   <string>...</string>
                  </property>
                  <property name="icon">
-                  <iconset resource="../resources.qrc">
+                  <iconset resource="../resources_unix.qrc">
                    <normaloff>:/toolbar/icons/media-skip-forward.png</normaloff>:/toolbar/icons/media-skip-forward.png</iconset>
                  </property>
                 </widget>
@@ -504,7 +504,7 @@
                   <string>...</string>
                  </property>
                  <property name="icon">
-                  <iconset resource="../resources.qrc">
+                  <iconset resource="../resources_unix.qrc">
                    <normaloff>:/toolbar/icons/arrow-right.png</normaloff>:/toolbar/icons/arrow-right.png</iconset>
                  </property>
                 </widget>
@@ -524,7 +524,7 @@
                   <string>...</string>
                  </property>
                  <property name="icon">
-                  <iconset resource="../resources.qrc">
+                  <iconset resource="../resources_unix.qrc">
                    <normaloff>:/toolbar/icons/arrow-left.png</normaloff>:/toolbar/icons/arrow-left.png</iconset>
                  </property>
                 </widget>
@@ -563,7 +563,7 @@
                   <string>...</string>
                  </property>
                  <property name="icon">
-                  <iconset resource="../resources.qrc">
+                  <iconset resource="../resources_unix.qrc">
                    <normaloff>:/toolbar/icons/clips.png</normaloff>
                    <activeon>:/toolbar/icons/project.png</activeon>:/toolbar/icons/clips.png</iconset>
                  </property>
@@ -916,7 +916,7 @@
   </action>
  </widget>
  <resources>
-  <include location="../resources.qrc"/>
+  <include location="../resources_unix.qrc"/>
  </resources>
  <connections/>
 </ui>
