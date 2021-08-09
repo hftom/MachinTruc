@@ -60,7 +60,7 @@ bool Composer::setSharedContext( QGLWidget *shared )
 	
 #ifdef Q_OS_UNIX
 	qDebug() << "MOVIT_SHADERDIR : " << MOVIT_SHADERDIR;
-	if (!init_movit( MOVIT_SHADERDIR, MOVIT_DEBUG_ON )) {
+	if (!init_movit( MOVIT_SHADERDIR, MOVIT_DEBUG_OFF )) {
 		return false;
 	}
 #else
