@@ -13,13 +13,6 @@
 
 
 
-static const char *MyResizeOpaqueEffect_shader =
-"vec4 FUNCNAME( vec2 tc ) {\n"
-"	return vec4(INPUT(tc).rgb, 1.0);\n"
-"}\n";
-
-
-
 class MyResizeOpaqueEffect : public Effect {
 public:
 	MyResizeOpaqueEffect() 	: width(1280), height(720)
@@ -28,7 +21,7 @@ public:
 		register_int("height", &height);
 	}
 	std::string effect_type_id() const override { return "MyResizeOpaqueEffect"; }
-	std::string output_fragment_shader() override { return MyResizeOpaqueEffect_shader; }
+	std::string output_fragment_shader() override { return GLFilter::getShader("resize_opaque.frag"); }
 	bool needs_texture_bounce() const override { return true; }
 	bool changes_output_size() const override { return true; }
 	bool sets_virtual_output_size() const override { return false; }
@@ -89,25 +82,6 @@ private:
 };
 
 
-static const char *MyRotateEffect_shader=
-"uniform vec2 PREFIX(factor);\n"
-"uniform vec2 PREFIX(cosSin);\n"
-"uniform vec2 PREFIX(offset);\n"
-"uniform vec2 PREFIX(scale);\n"
-"uniform vec2 PREFIX(centerOffset);\n"
-"\n"
-"vec4 FUNCNAME( vec2 tc ) {\n"
-"	tc -= PREFIX(offset);\n"
-"	tc *= PREFIX(scale);\n"
-"	tc -= PREFIX(centerOffset);\n"
-"	tc *= PREFIX(factor);\n"
-"	tc *= mat2( PREFIX(cosSin).x, PREFIX(cosSin).y, -PREFIX(cosSin).y, PREFIX(cosSin).x );\n"
-"	tc /= PREFIX(factor);\n"
-"	tc += PREFIX(centerOffset);\n"
-"	return clamp( INPUT( tc ), vec4(0.0), vec4(1.0) );\n"
-"}\n";
-
-
 
 class MyRotateEffect : public Effect {
 public:
@@ -123,7 +97,7 @@ public:
 	}
 	
 	virtual std::string effect_type_id() const { return "MyRotateEffect"; }
-	std::string output_fragment_shader() { return MyRotateEffect_shader; }
+	std::string output_fragment_shader() { return GLFilter::getShader("rotate.frag"); }
 	
 	virtual void inform_input_size(unsigned, unsigned width, unsigned height) {
 		iwidth = width;

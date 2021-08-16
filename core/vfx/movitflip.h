@@ -5,19 +5,11 @@
 
 
 
-static const char *MyFlipEffect_shader=
-"vec4 FUNCNAME(vec2 tc) {\n"
-"	tc.y = 1.0 - tc.y;\n"
-"	return INPUT(tc);\n"
-"}\n";
-
-
-
 class MyFlipEffect : public Effect {
 public:
 	MyFlipEffect() {}
 	virtual std::string effect_type_id() const { return "MyFlipEffect"; }
-	std::string output_fragment_shader() { return MyFlipEffect_shader; }
+	std::string output_fragment_shader() { return GLFilter::getShader("movit_flip.frag"); }
 
 	virtual bool needs_linear_light() const { return false; }
 	virtual bool needs_srgb_primaries() const { return false; }

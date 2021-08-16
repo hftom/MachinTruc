@@ -7,31 +7,6 @@
 
 
 
-static const char *EdgeEffect_frag=
-"uniform vec2 PREFIX(one_div_size);\n"
-"vec4 FUNCNAME( vec2 tc ) {\n"
-"	float xof = PREFIX(one_div_size).x;\n"
-"	float yof = PREFIX(one_div_size).y;\n"
-"	vec4 c1 = INPUT( tc );\n"
-"	vec4 c2 = INPUT( vec2( tc.x + xof, tc.y ) );\n"
-"	float diff = abs(c2.r - c1.r) + abs(c2.g - c1.g) + abs(c2.b - c1.b);\n"
-"	c2 = INPUT( vec2( tc.x, tc.y + yof ) );\n"
-"	diff += abs(c2.r - c1.r) + abs(c2.g - c1.g) + abs(c2.b - c1.b);\n"
-"	c2 = INPUT( vec2( tc.x - xof, tc.y ) );\n"
-"	diff += abs(c2.r - c1.r) + abs(c2.g - c1.g) + abs(c2.b - c1.b);\n"
-"	c2 = INPUT( vec2( tc.x, tc.y - yof ) );\n"
-"	diff += abs(c2.r - c1.r) + abs(c2.g - c1.g) + abs(c2.b - c1.b);\n"
-"	diff *= PREFIX(amp);\n"
-"	if ( diff < PREFIX(depth) )\n"
-"		diff = 0.0;\n"
-"	diff = clamp( diff, 0.0, 1.0 );\n"
-"	vec4 top = vec4( vec3( 0.0 ), diff ) * c1.a;\n"
-"	vec4 bottom = mix( c1, vec4(1.0, 1.0, 1.0, c1.a), PREFIX(opacity));\n"
-"	return (top + (1.0 - top.a) * bottom) * c1.a;\n"
-"}\n";
-
-
-
 class EdgeEffect : public Effect {
 public:
 	EdgeEffect() : amp(3.0), depth(1.0), opacity(1.0), iwidth(1), iheight(1) {
@@ -40,7 +15,7 @@ public:
 		register_float("opacity", &opacity);
 	}
 	std::string effect_type_id() const { return "EdgeEffect"; }
-	std::string output_fragment_shader() { return EdgeEffect_frag; }
+	std::string output_fragment_shader() { return GLFilter::getShader("edge.frag"); }
 	bool needs_texture_bounce() const { return true; }
 	
 	virtual void inform_input_size(unsigned, unsigned width, unsigned height) {

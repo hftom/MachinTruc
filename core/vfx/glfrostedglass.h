@@ -10,15 +10,6 @@
 
 
 
-static const char *MySlidingWindow_shader=
-"vec4 FUNCNAME( vec2 tc ) {\n"
-"	if ( tc.x <= PREFIX(position) || tc.x >= 1.0 - PREFIX(position) )\n"
-"		return INPUT2( tc );\n"
-"	return INPUT1( tc );\n"
-"}\n";
-
-
-
 class MySlidingWindow : public Effect {
 public:
 	MySlidingWindow() : position(0) {
@@ -26,29 +17,13 @@ public:
 	}
 	
 	virtual std::string effect_type_id() const { return "MySlidingWindow"; }
-	std::string output_fragment_shader() { return MySlidingWindow_shader; }
+	std::string output_fragment_shader() { return GLFilter::getShader("sliding_window.frag"); }
 	virtual bool needs_srgb_primaries() const { return false; }
 	virtual unsigned num_inputs() const { return 2; }
 
 private:
 	float position;
 };
-
-
-
-static const char *MyMixWindow_shader=
-"vec4 FUNCNAME( vec2 tc ) {\n"
-"	if ( tc.x > PREFIX(position) && tc.x < 1.0 - PREFIX(position) ) {\n"
-"		if ( PREFIX(strength_first) > 0.5 )\n"
-"			return INPUT1(tc);\n"
-"		return INPUT2(tc);\n"
-"	}\n"
-"	vec4 first = INPUT1(tc);\n"
-"	vec4 second = INPUT2(tc);\n"
-"	vec4 result = vec4(PREFIX(strength_first)) * first + vec4(PREFIX(strength_second)) * second;\n"
-"	result.a = clamp(result.a, 0.0, 1.0);\n"
-"	return result;\n"
-"}\n";
 
 
 
@@ -59,7 +34,7 @@ public:
 	virtual unsigned num_inputs() const { return 2; }
 	virtual void rewrite_graph( EffectChain *graph, Node *self );
 	virtual bool set_float( const std::string &key, float value );
-	virtual std::string output_fragment_shader() { return MyMixWindow_shader; }
+	virtual std::string output_fragment_shader() { return GLFilter::getShader("mix_window.frag"); }
 
 private:
 	BlurEffect *blur1, *blur2;

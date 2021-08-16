@@ -7,24 +7,13 @@
 
 #include "glfilter.h"
 
-static const char *MyBorderEffect_shader=
-"uniform vec2 PREFIX(border);\n"
-"vec4 FUNCNAME(vec2 tc) {\n"
-"	if ( any( lessThan( tc, PREFIX(border) ) ) ||\n"
-"		any( greaterThan( tc, 1.0 - PREFIX(border) ) ) ) {\n"
-"		return PREFIX(color);\n"
-"	}\n"
-"\n"
-"	return INPUT(tc);\n"
-"}\n";
-
 
 
 class MyBorderEffect : public Effect {
 public:
 	MyBorderEffect();
 	virtual std::string effect_type_id() const { return "MyBorderEffect"; }
-	std::string output_fragment_shader() { return MyBorderEffect_shader; }
+	std::string output_fragment_shader() { return GLFilter::getShader("border.frag"); }
 	
 	virtual void inform_input_size(unsigned, unsigned width, unsigned height) {
 		iwidth = width;

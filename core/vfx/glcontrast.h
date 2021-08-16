@@ -7,17 +7,6 @@
 
 
 
-static const char *MContrastEffect_shader=
-"vec4 FUNCNAME( vec2 tc ) {\n"
-"	vec4 col = INPUT( tc );\n"
-"	vec3 c = col.rgb / col.a;\n"
-"	c = pow(c, vec3(1.0 / PREFIX(brightness)));\n"
-"	c = mix( c, vec3(0.5),  -PREFIX(contrast));\n"
-"	return vec4( clamp( c, 0.0, 1.0 ) * col.a, col.a );\n"
-"}\n";
-
-
-
 class MContrastEffect : public Effect {
 public:
 	MContrastEffect() : contrast(0.0), brightness(0.0) {
@@ -25,7 +14,7 @@ public:
 		register_float("brightness", &brightness);
 	}
 	virtual std::string effect_type_id() const { return "MContrastEffect"; }
-	std::string output_fragment_shader() { return MContrastEffect_shader; }
+	std::string output_fragment_shader() { return GLFilter::getShader("contrast.frag"); }
 
 private:
 	float contrast, brightness;

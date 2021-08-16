@@ -34,6 +34,8 @@ public:
 
 
 	static QString getShaderRGBTOHSV();
+	static std::string getShader(QString name);
+	static QString getQStringShader(QString name);
 };
 
 #endif //GLFILTER_H

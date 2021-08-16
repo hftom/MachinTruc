@@ -10,20 +10,11 @@
 
 
 
-static const char *MyShadowMapEffect_frag=
-"uniform vec2 PREFIX(offset);\n"
-"vec4 FUNCNAME(vec2 tc) {\n"
-"	float a = INPUT( tc - PREFIX(offset) ).a;\n"
-"	return vec4(PREFIX(color) * PREFIX(opacity), PREFIX(opacity)) * a;\n"
-"}\n";
-
-
-
 class MyShadowMapEffect : public Effect {
 public:
 	MyShadowMapEffect();
 	virtual std::string effect_type_id() const { return "MyShadowMapEffect"; }
-	std::string output_fragment_shader() { return MyShadowMapEffect_frag; }
+	std::string output_fragment_shader() { return GLFilter::getShader("drop_shadow.frag"); }
 	
 	virtual void inform_input_size(unsigned, unsigned width, unsigned height) {
 		iwidth = width;

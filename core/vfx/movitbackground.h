@@ -7,20 +7,12 @@
 
 
 
-static const char *MovitBackgroundEffect_shader=
-"vec4 FUNCNAME(vec2 tc) {\n"
-"	vec4 top = INPUT(tc);\n"
-"	return top + (1.0 - top.a) * vec4(0.0, 0.0, 0.0, 1.0);\n"
-"}\n";
-
-
-
 class MovitBackgroundEffect : public Effect {
 public:
 	MovitBackgroundEffect() {}
 	
 	std::string effect_type_id() const { return "MovitBackgroundEffect"; }
-	std::string output_fragment_shader() { return MovitBackgroundEffect_shader; }
+	std::string output_fragment_shader() { return GLFilter::getShader("movit_background.frag"); }
 	bool needs_srgb_primaries() const { return false; }
 	AlphaHandling alpha_handling() const { return INPUT_PREMULTIPLIED_ALPHA_KEEP_BLANK; }
 };

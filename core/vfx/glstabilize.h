@@ -18,23 +18,6 @@ extern "C" {
 
 
 
-static const char *MyStabilizeEffect_shader=
-"uniform vec2 PREFIX(factor);\n"
-"uniform vec2 PREFIX(cosSin);\n"
-"uniform vec2 PREFIX(offset);\n"
-"\n"
-"vec4 FUNCNAME( vec2 tc ) {\n"
-"	tc -= 0.5;\n"
-"	tc *= PREFIX(factor);\n"
-"	tc *= mat2( PREFIX(cosSin).x, PREFIX(cosSin).y, -PREFIX(cosSin).y, PREFIX(cosSin).x );\n"
-"	tc /= PREFIX(factor);\n"
-"	tc -= PREFIX(offset);\n"
-"	tc += 0.5;\n"
-"	return clamp( INPUT( tc ), vec4(0.0), vec4(1.0) );\n"
-"}\n";
-
-
-
 class MyStabilizeEffect : public Effect {
 public:
 	MyStabilizeEffect() : iwidth(1), iheight(1), top(0), left(0), angle(0.0), SAR(1.0), zoom(1.0) {
@@ -46,7 +29,7 @@ public:
 	}
 	
 	virtual std::string effect_type_id() const { return "MyStabilizeEffect"; }
-	std::string output_fragment_shader() { return MyStabilizeEffect_shader; }
+	std::string output_fragment_shader() { return GLFilter::getShader("stabilize.frag"); }
 	
 	virtual void inform_input_size(unsigned, unsigned width, unsigned height) {
 		iwidth = width;

@@ -7,21 +7,11 @@
 
 
 
-static const char *MyCutEffect_frag=
-"uniform sampler2D PREFIX(mask);\n"
-"\n"
-"vec4 FUNCNAME( vec2 tc ) {\n"
-"	vec4 col = INPUT( tc );\n"
-"	return vec4(0);\n"
-"}\n";
-
-
-
 class MyCutEffect : public Effect {
 public:
 	MyCutEffect() {}
 	std::string effect_type_id() const { return "MyCutEffect"; }
-	std::string output_fragment_shader() { return MyCutEffect_frag; }
+	std::string output_fragment_shader() { return GLFilter::getShader("cut.frag"); }
 };
 
 

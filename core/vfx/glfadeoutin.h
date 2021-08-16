@@ -5,15 +5,6 @@
 
 
 
-static const char *MyFadeOutIn_shader=
-"vec4 FUNCNAME( vec2 tc ) {\n"
-"	if ( PREFIX(show_second) > 0.0 )\n"
-"		return INPUT2( tc ) * PREFIX(opacity);\n"
-"	return INPUT1( tc ) * PREFIX(opacity);\n"
-"}\n";
-
-
-
 class MyFadeOutInEffect : public Effect {
 public:
 	MyFadeOutInEffect() : show_second( 0 ) {
@@ -21,7 +12,7 @@ public:
 		register_float( "opacity", &opacity );
 	}	
 	virtual std::string effect_type_id() const { return "MyFadeOutInEffect"; }
-	std::string output_fragment_shader() { return MyFadeOutIn_shader; }
+	std::string output_fragment_shader() { return GLFilter::getShader("fade_out_in.frag"); }
 	virtual unsigned num_inputs() const { return 2; }
 
 private:
