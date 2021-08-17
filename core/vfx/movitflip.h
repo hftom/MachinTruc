@@ -3,6 +3,8 @@
 
 #include <movit/effect.h>
 
+#include "vfx/glfilter.h"
+
 
 
 class MyFlipEffect : public Effect {

@@ -13,7 +13,6 @@ extern "C" {
 #include <QMutexLocker>
 
 #include "engine/stabilizecollection.h"
-
 #include "glfilter.h"
 
 
