@@ -30,19 +30,21 @@
     <file>shaders/blank_input.frag</file>
     <file>shaders/border.frag</file>
     <file>shaders/clouds_input.frag</file>
-    <file>shaders/contrast.frag</file>         
-    <file>shaders/cover.frag</file>       
-    <file>shaders/cut.frag</file>          
-    <file>shaders/defish.frag</file>            
-    <file>shaders/drop_shadow.frag</file>         
-    <file>shaders/edge.frag</file>    
-    <file>shaders/fade_out_in.frag</file>           
-    <file>shaders/hand_drawing_edge.frag</file>    
+    <file>shaders/contrast.frag</file>
+    <file>shaders/cover.frag</file>
+    <file>shaders/cut.frag</file>
+    <file>shaders/defish.frag</file>
+    <file>shaders/drop_shadow.frag</file>
+    <file>shaders/edge.frag</file>
+    <file>shaders/fade_out_in.frag</file>
+    <file>shaders/hand_drawing_edge.frag</file>
     <file>shaders/hand_drawing.frag</file>
-    <file>shaders/hard_cut.frag</file>   
-    <file>shaders/kaleidoscope.frag</file>  
-    <file>shaders/laser_grid_input.frag</file>     
-    <file>shaders/mirror.frag</file>   
+    <file>shaders/hard_cut.frag</file>
+    <file>shaders/kaleidoscope.frag</file>
+    <file>shaders/laser_grid_input.frag</file>
+    <file>shaders/mask.frag</file>
+    <file>shaders/mirror.frag</file>
+    <file>shaders/mix_mask.frag</file>
     <file>shaders/mix_window.frag</file>
     <file>shaders/movit_background.frag</file>
     <file>shaders/movit_flip.frag</file>

@@ -20,10 +20,3 @@ std::string GLFilter::getShader(QString name)
 {
 	return GLFilter::getQStringShader(name).toStdString();
 }
-
-
-
-QString GLFilter::getShaderRGBTOHSV()
-{
-	return GLFilter::getQStringShader("rgb_to_hsv.frag");
-}

@@ -32,8 +32,6 @@ public:
 	virtual QString getDescriptorFirst( double, Frame*, Profile* ) { return ""; }
 	virtual QString getDescriptorSecond( double, Frame*, Profile* ) { return ""; }
 
-
-	static QString getShaderRGBTOHSV();
 	static std::string getShader(QString name);
 	static QString getQStringShader(QString name);
 };

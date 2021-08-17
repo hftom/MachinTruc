@@ -27,7 +27,42 @@
   </qresource>
   <qresource prefix="my_shaders">
     <file>shaders/background_color.frag</file>
+    <file>shaders/blank_input.frag</file>
     <file>shaders/border.frag</file>
+    <file>shaders/clouds_input.frag</file>
+    <file>shaders/contrast.frag</file>
+    <file>shaders/cover.frag</file>
+    <file>shaders/cut.frag</file>
+    <file>shaders/defish.frag</file>
+    <file>shaders/drop_shadow.frag</file>
+    <file>shaders/edge.frag</file>
+    <file>shaders/fade_out_in.frag</file>
+    <file>shaders/hand_drawing_edge.frag</file>
+    <file>shaders/hand_drawing.frag</file>
+    <file>shaders/hard_cut.frag</file>
+    <file>shaders/kaleidoscope.frag</file>
+    <file>shaders/laser_grid_input.frag</file>
+    <file>shaders/mask.frag</file>
+    <file>shaders/mirror.frag</file>
+    <file>shaders/mix_mask.frag</file>
+    <file>shaders/mix_window.frag</file>
+    <file>shaders/movit_background.frag</file>
+    <file>shaders/movit_flip.frag</file>
+    <file>shaders/noise.frag</file>
+    <file>shaders/optical_fiber_input.frag</file>
+    <file>shaders/orientation.frag</file>
+    <file>shaders/pixelize.frag</file>
+    <file>shaders/push.frag</file>
+    <file>shaders/resize_opaque.frag</file>
+    <file>shaders/rgb_to_hsv.frag</file>
+    <file>shaders/rotate.frag</file>
+    <file>shaders/sliding_window.frag</file>
+    <file>shaders/soft_border.frag</file>
+    <file>shaders/stabilize.frag</file>
+    <file>shaders/text.frag</file>
+    <file>shaders/warp_input.frag</file>
+    <file>shaders/warp2_input.frag</file>
+    <file>shaders/water.frag</file>
   </qresource>
   <qresource prefix="movit_shaders">
     <file>movit_win_shaders/alpha_division_effect.frag</file>
