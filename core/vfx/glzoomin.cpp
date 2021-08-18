@@ -9,6 +9,8 @@ GLZoomIn::GLZoomIn( QString id, QString name ) : GLSize( id, name )
 	xOffset->hidden = true;
 	yOffset->hidden = true;
 	rotateAngle->hidden = true;
+	blurFiller->hidden = true;
+	
 	//softBorder->hidden = true;
 	rotateStart = addParameter( "rotateStart", tr("Start angle:"), Parameter::PDOUBLE, 15.0, -360.0, 360.0, false );
 	inverse = addBooleanParameter( "inverse", tr("Inverse"), 0 );
