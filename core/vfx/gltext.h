@@ -9,18 +9,6 @@
 
 #include "glfilter.h"
 
-static const char *MyTextEffect_shader=
-"uniform sampler2D PREFIX(string_tex);\n"
-"uniform vec2 PREFIX(offset);\n"
-"uniform vec2 PREFIX(scale);\n"
-"vec4 FUNCNAME( vec2 tc ) {\n"
-"	vec4 background = INPUT( tc );\n"
-"	tc -= PREFIX(offset);\n"
-"	tc *= PREFIX(scale);\n"
-"	vec4 text = tex2D( PREFIX(string_tex), vec2( tc.x, 1.0 - tc.y ) ) * PREFIX(opacity);\n"
-"	return text + (1.0 - text.a) * background;\n"
-"}\n";
-
 
 
 class MyTextEffect : public Effect {
@@ -43,7 +31,7 @@ public:
 	}
 	
 	virtual std::string effect_type_id() const { return "MyTextEffect"; }
-	std::string output_fragment_shader() { return MyTextEffect_shader; }
+	std::string output_fragment_shader() { return GLFilter::getShader("text.frag"); }
 	
 	virtual void inform_input_size(unsigned, unsigned width, unsigned height) {
 		iwidth = width;

@@ -6,50 +6,6 @@
 
 #include "vfx/glfilter.h"
 
-/* Simple Water shader. (c) Victor Korsun, bitekas@gmail.com; 2012.
-   Attribution-ShareAlike CC License.
-*/
-static const char *WaterEffect_frag=
-"uniform vec2 PREFIX(size_div_delta);\n"
-"\n"
-"// crystals effect\n"
-"const float PREFIX(delta_theta) = 2.0 * 3.1415926535897932 / 7.0;\n"
-"float PREFIX(color)( vec2 coord ) {\n"
-"	float col = 0.0;\n"
-"	float theta = 0.0;\n"
-"	for ( int i = 0; i < 8; i++ ) {\n"
-"		vec2 adjc = coord;\n"
-"		theta = PREFIX(delta_theta) * float( i );\n"
-"		adjc.x += cos( theta ) * PREFIX(time) * PREFIX(speed);\n"
-"		adjc.y -= sin( theta ) * PREFIX(time) * PREFIX(speed);\n"
-"		col = col + cos( ( adjc.x * cos( theta ) - adjc.y * sin( theta ) ) * PREFIX(frequency) ) * PREFIX(intensity);\n"
-"	}\n"
-"	return cos( col );\n"
-"}\n"
-"\n"
-"vec4 FUNCNAME(vec2 tc) {\n"
-"	vec2 p = tc, c1 = p, c2 = p;\n"
-"	float cc1 = PREFIX(color)( c1 );\n"
-"	c2.x += PREFIX(size_div_delta).x;\n"
-"	float dx = PREFIX(emboss) * ( cc1 - PREFIX(color)( c2 ) ) / PREFIX(delta);\n"
-"	c2.x = p.x;\n"
-"	c2.y -= PREFIX(size_div_delta).y;\n"
-"	float dy = PREFIX(emboss) * ( cc1 - PREFIX(color)( c2 ) ) / PREFIX(delta);\n"
-"	c1.x += dx;\n"
-"	c1.y += dy;\n"
-"	float alpha = 1.0 + dot( dx, dy ) * PREFIX(intence);\n"
-"	vec4 result = INPUT( c1 );\n"
-"	result.rgb *= alpha;\n"
-"	return result;\n"
-"}\n";
-
-/*
-// noise
-"float PREFIX(rand)(vec2 seed){\n"
-"	return fract(sin(dot(seed ,vec2(12.9898,78.233))) * 43758.5453) - 0.5;\n"
-"}\n"
-*/
-
 
 
 class WaterEffect : public Effect {
@@ -75,7 +31,7 @@ public:
 	}
 
 	virtual std::string effect_type_id() const { return "WaterEffect"; }
-	std::string output_fragment_shader() { return WaterEffect_frag; }
+	std::string output_fragment_shader() { return GLFilter::getShader("water.frag"); }
 	
 	virtual void inform_input_size(unsigned, unsigned width, unsigned height) {
 		inwidth = width;

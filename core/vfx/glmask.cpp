@@ -122,28 +122,6 @@ void GLMask::setGraph(EffectChain *graph, Node *input, Node *receiverSender, Nod
 
 
 
-static const char* mask_shader =
-"vec4 FUNCNAME(vec2 tc) {\n"
-"	vec3 hsv = PREFIX(rgb2hsv)(INPUT(tc).rgb, PREFIX(hsvColor).x + 180.0);\n"
-"	float offset = 180.0 - PREFIX(hsvColor).x;\n"
-"	hsv.x = mod(hsv.x + offset, 360.0);\n"
-"	float hx = PREFIX(hsvColor).x + offset;\n"
-"\n"
-"	float d = distance(hsv.x, hx) / PREFIX(varianceH);\n"
-"	d += distance(hsv.y, PREFIX(hsvColor).y) / PREFIX(varianceS);\n"
-"	d += distance(hsv.z, PREFIX(hsvColor).z) / PREFIX(varianceV);\n"
-"	d = min(d / 3.0, 1.0);\n"
-"	if (d <= 0.5) {\n"
-"		d = pow(2 * d, PREFIX(gain)) / 2.0;\n"
-"	}\n"
-"	else {\n"
-"		d = -(pow(2 * (1.0 - d), PREFIX(gain)) / 2.0) + 1.0;\n"
-"	}\n"
-"	return vec4(1.0 - d);\n"
-"}\n";
-
-
-
 MaskEffect::MaskEffect() : hsvColor(0.0f, 0.0f, 0.5f),
 	varianceH(0),
 	varianceS(0),
@@ -168,31 +146,10 @@ std::string MaskEffect::effect_type_id() const
 
 std::string MaskEffect::output_fragment_shader()
 {
-	QString s = GLFilter::getShaderRGBTOHSV();
-	s.append(mask_shader);
+	QString s = GLFilter::getQStringShader("rgb_to_hsv.frag");
+	s.append(GLFilter::getQStringShader("mask.frag"));
 	return s.toStdString();
 }
-
-
-
-static const char* mix_mask_shader =
-"vec4 FUNCNAME(vec2 tc) {\n"
-"	vec4 org = INPUT1(tc);\n"
-"	vec4 effect = INPUT2(tc);\n"
-"#if INVERT\n"
-"	float mask = 1.0 - INPUT3(tc).a;\n"
-"#else\n"
-"	float mask = INPUT3(tc).a;\n"
-"#endif\n"
-"\n"
-"#if SHOW\n"
-"	return vec4(1.0) * mask + vec4(0.0, 0.0, 0.0, 1.0 - mask);\n"
-"#else\n"
-"	return vec4(mix( org, effect, mask ));\n"
-"#endif\n"
-"#undef INVERT\n"
-"#undef SHOW\n"
-"}\n";
 
 
 
@@ -213,7 +170,7 @@ std::string MixMaskEffect::effect_type_id() const
 
 std::string MixMaskEffect::output_fragment_shader()
 {
-	QString s = mix_mask_shader;
+	QString s = GLFilter::getQStringShader("mix_mask.frag");
 	if ( invert )
 		s.prepend( "#define INVERT 1\n" );
 	else

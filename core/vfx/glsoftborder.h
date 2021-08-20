@@ -7,29 +7,13 @@
 
 #include "glfilter.h"
 
-static const char *MySoftBorderEffect_shader=
-"uniform vec2 PREFIX(border);\n"
-"uniform vec2 PREFIX(half_texel);\n"
-"vec4 FUNCNAME(vec2 tc) {\n"
-"	float a = 1.0;\n"
-"	if ( any( greaterThan( PREFIX(border), vec2(0.0) ) ) ) {\n"
-"		vec2 coord = tc - PREFIX(half_texel);\n"
-"		a = coord.x / PREFIX(border.x);\n"
-"		a = min( a, coord.y / PREFIX(border.y) );\n"
-"		coord = tc + PREFIX(half_texel);\n"
-"		a = min( a, ( 1.0 - coord.x ) / PREFIX(border.x) );\n"
-"		a = min( a, ( 1.0 - coord.y ) / PREFIX(border.y) );\n"
-"	}\n"
-"	return INPUT( tc ) * clamp( a, 0.0, 1.0 );\n"
-"}\n";
-
 
 
 class MySoftBorderEffect : public Effect {
 public:
 	MySoftBorderEffect();
 	virtual std::string effect_type_id() const { return "MySoftBorderEffect"; }
-	std::string output_fragment_shader() { return MySoftBorderEffect_shader; }
+	std::string output_fragment_shader() { return GLFilter::getShader("soft_border.frag"); }
 	
 	virtual void inform_input_size(unsigned, unsigned width, unsigned height) {
 		iwidth = width;

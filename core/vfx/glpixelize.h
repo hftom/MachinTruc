@@ -9,23 +9,11 @@
 
 
 
-static const char *MyPixelizeEffect_shader=
-"uniform vec2 PREFIX(pixsize);\n"
-"vec4 FUNCNAME(vec2 tc) {\n"
-"	float x = tc.x / PREFIX(pixsize).x;\n"
-"	tc.x = PREFIX(pixsize).x * int(x);\n"
-"	float y = tc.y / PREFIX(pixsize).y;\n"
-"	tc.y = PREFIX(pixsize).y * int(y);\n"
-"	return INPUT( tc );\n"
-"}\n";
-
-
-
 class MyPixelizeEffect : public Effect {
 public:
 	MyPixelizeEffect();
 	virtual std::string effect_type_id() const { return "MyPixelizeEffect"; }
-	std::string output_fragment_shader() { return MyPixelizeEffect_shader; }
+	std::string output_fragment_shader() { return GLFilter::getShader("pixelize.frag"); }
 	
 	virtual void inform_input_size(unsigned, unsigned width, unsigned height) {
 		iwidth = width;

@@ -9,22 +9,6 @@
 
 
 
-static const char *MyDefishEffect_shader=
-"uniform float PREFIX(radius);\n"
-"uniform vec2 PREFIX(size);\n"
-"uniform vec2 PREFIX(half_size);\n"
-"vec4 FUNCNAME(vec2 tc) {\n"
-"	vec2 new = tc * PREFIX(size) - PREFIX(half_size);\n"
-"	float r = length( new ) / PREFIX(radius);\n"
-"	float theta = 1.0;\n"
-"	if  ( r != 0.0 )\n"
-"		theta = atan( r ) / r;\n"
-"\n"
-"	return INPUT( (theta * new * PREFIX(scale) + PREFIX(half_size)) / PREFIX(size) );\n"
-"}\n";
-
-
-
 class MyDefishEffect : public Effect {
 public:
 	MyDefishEffect()
@@ -38,7 +22,7 @@ public:
 	}
 	
 	virtual std::string effect_type_id() const { return "MyDefishEffect"; }
-	std::string output_fragment_shader() { return MyDefishEffect_shader; }
+	std::string output_fragment_shader() { return GLFilter::getShader("defish.frag"); }
 	
 	virtual void inform_input_size(unsigned, unsigned width, unsigned height) {
 		iwidth = width;

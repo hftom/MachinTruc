@@ -5,22 +5,13 @@
 
 
 
-static const char *MyHardCutEffect_shader=
-"vec4 FUNCNAME( vec2 tc ) {\n"
-"	if ( PREFIX(show_second) > 0.0 )\n"
-"		return INPUT2( tc );\n"
-"	return INPUT1( tc );\n"
-"}\n";
-
-
-
 class MyHardCutEffect : public Effect {
 public:
 	MyHardCutEffect() : show_second( 0 ) {
 		register_float( "show_second", &show_second );
 	}	
 	virtual std::string effect_type_id() const { return "MyHardCutEffect"; }
-	std::string output_fragment_shader() { return MyHardCutEffect_shader; }
+	std::string output_fragment_shader() { return GLFilter::getShader("hard_cut.frag"); }
 	virtual bool needs_srgb_primaries() const { return false; }
 	virtual unsigned num_inputs() const { return 2; }
 

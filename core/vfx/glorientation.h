@@ -9,21 +9,6 @@
 
 
 
-static const char *MyOrientationEffect_shader=
-"vec4 FUNCNAME( vec2 tc ) {\n"
-"#ifdef ANGLE_90\n"
-"	return INPUT( vec2(1.0 - tc.y, tc.x) );\n"
-"#endif\n"
-"#ifdef ANGLE_270\n"
-"	return INPUT( vec2(tc.y, 1.0 - tc.x) );\n"
-"#endif\n"
-"	return INPUT( vec2(1.0 - tc.x, 1.0 - tc.y) );\n"
-"#undef ANGLE_90\n"
-"#undef ANGLE_270\n"
-"}\n";
-
-
-
 class MyOrientationEffect : public Effect {
 public:
 	MyOrientationEffect() : iwidth(1), iheight(1), angle(0) {
@@ -33,7 +18,7 @@ public:
 	std::string effect_type_id() const { return "MyOrientationEffect"; }
 	
 	std::string output_fragment_shader() { 
-		QString s = MyOrientationEffect_shader;
+		QString s = GLFilter::getQStringShader("orientation.frag");
 		if ( angle == 90 )
 			return s.prepend( "#define ANGLE_90 1\n" ).toLatin1().data();
 		if ( angle == 270 )
