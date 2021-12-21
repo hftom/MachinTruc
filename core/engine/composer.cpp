@@ -57,6 +57,10 @@ bool Composer::setSharedContext( QGLWidget *shared )
 	hiddenContext->makeCurrent();
 
 	glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
+
+	int maxTextureSize;
+	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize);
+	qDebug() << "MAX_TEXTURE_SIZE : " << maxTextureSize;
 	
 #ifdef Q_OS_UNIX
 	qDebug() << "MOVIT_SHADERDIR : " << MOVIT_SHADERDIR;
