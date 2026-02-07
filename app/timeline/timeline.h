@@ -48,6 +48,18 @@ public:
 
 
 
+class TimelineScroller
+{
+public:
+	TimelineScroller() : running(false) {}
+
+	bool running;
+	double moveStartPosition;
+	double scrollBarStartPosition;
+};
+
+
+
 class Timeline : public QGraphicsScene
 {
 	Q_OBJECT
@@ -79,6 +91,8 @@ public:
 	void trackSelectWindowMove( QPointF p );
 	void trackSelectWindowRelease(bool extend);
 	void itemSelected( AbstractViewItem *it, bool extend = false, bool moreToCome = false );
+
+	void startMoveTimeline();
 	
 	void playheadMoved( double p );
 	
@@ -184,6 +198,8 @@ private:
 	QPointF mouseScenePosition;
 	
 	bool forceEnsureVisible;
+
+	TimelineScroller timelineScroller;
 	
 	QUndoStack *undoStack;
 	

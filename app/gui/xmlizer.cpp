@@ -40,6 +40,11 @@ Clip* XMLizer::readClip( QDomElement &element, QList<Source*> *sourcesList, QLis
 			okLen = true;
 		}
 	}
+
+	// backward compatibility
+	if (name == "Blank") {
+		name = "GLSL_Blank";
+	}
 	
 	if ( !( okName && okPos && okStart && okLen ) ) {
 		readError = true;

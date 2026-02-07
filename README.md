@@ -17,8 +17,8 @@ Deps:
 Compilation:
 - mkdir build
 - cd build
-- qmake ..
-- make
+- qmake CONFIG+=debug_and_release ..
+- make release | make debug
 
 Run:
 - ./machintruc

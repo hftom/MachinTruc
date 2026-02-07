@@ -222,6 +222,11 @@ void ProjectFile::readSource( QDomElement &element )
 		readError = true;
 		return;
 	}
+
+	if (name == "Blank") {
+		// old version, ignore Blank as source
+		return;
+	}
 	
 	// sourcesList must _not_ have duplicates.
 	for ( int i = 0; i < sourcesList.count(); ++i ) {

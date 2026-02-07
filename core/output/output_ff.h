@@ -38,9 +38,11 @@ private:
 	AVFormatContext *formatCtx;
 	
 	AVStream *videoStream;
+	AVCodecContext *videoCodecCtx;
 	AVFrame *videoFrame;
 	
 	AVStream *audioStream;
+	AVCodecContext *audioCodecCtx;
 	AVFrame *audioFrame;
 	uint8_t *audioSamples;
 	int audioSamplesSize;

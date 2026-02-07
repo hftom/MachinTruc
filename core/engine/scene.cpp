@@ -1,3 +1,5 @@
+#include <QDebug>
+
 #include "engine/util.h"
 #include "engine/scene.h"
 #include "engine/filtercollection.h"
@@ -425,11 +427,18 @@ bool Scene::canResize( Clip *clip, double &newLength, int track )
 	}
 	if ( clip->getSpeed() < 0 ) {
 		if ( clip->getSource()->getType() == InputBase::FFMPEG && clip->start() + ((clip->length() - newLength) * qAbs(clip->getSpeed())) < start ) {
+			qDebug() << "canResize: clip start would be before stream start";
 			return false;
 		}
 	}
 	else {
 		if ( clip->getSource()->getType() == InputBase::FFMPEG && clip->start() + (newLength * qAbs(clip->getSpeed())) > end + margin ) {
+			qDebug() << "clip->start" << clip->start();
+			qDebug() << "newLength" << newLength;
+			qDebug() << "clip->getSpeed()" << clip->getSpeed();
+			qDebug() << "end" << end;
+			qDebug() << "margin" << margin;
+			qDebug() << "canResize: clip end would be after stream end";
 			return false;
 		}
 	}

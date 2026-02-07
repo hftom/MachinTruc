@@ -11,8 +11,10 @@ OutputFF::OutputFF( MQueue<Frame*> *vf, MQueue<Frame*> *af )
 	running( false ),
 	formatCtx( NULL ),
 	videoStream( NULL ),
+	videoCodecCtx( NULL ),
 	videoFrame( NULL ),
 	audioStream( NULL ),
+	audioCodecCtx( NULL ),
 	audioFrame( NULL ),
 	audioSamples( NULL ),
 	audioSamplesSize( 0 ),
@@ -35,38 +37,48 @@ OutputFF::~OutputFF()
 
 
 void OutputFF::close()
-{	
-	if ( videoStream ) {
-		avcodec_close( videoStream->codec );
-		videoStream = NULL;
-	}
-	if ( videoFrame ) {
+{
+    // 2. On libère les contextes de codecs (les nôtres, pas ceux du stream)
+    if ( videoCodecCtx ) {
+        avcodec_free_context( &videoCodecCtx );
+        videoCodecCtx = NULL;
+    }
+    if ( audioCodecCtx ) {
+        avcodec_free_context( &audioCodecCtx );
+        audioCodecCtx = NULL;
+    }
+
+    // 3. On libère les structures de format (les streams sont libérés avec)
+    if ( formatCtx ) {
+        if ( !(formatCtx->oformat->flags & AVFMT_NOFILE) ) {
+            avio_closep( &formatCtx->pb );
+        }
+        avformat_free_context( formatCtx );
+        formatCtx = NULL;
+    }
+
+    // 4. On remet les pointeurs de streams à NULL (ils ont été libérés par avformat_free_context)
+    videoStream = NULL;
+    audioStream = NULL;
+
+    // 5. Libération des frames et buffers
+    if ( videoFrame ) {
 		av_frame_free( &videoFrame );
 		videoFrame = NULL;
 	}
-
-	if ( audioStream ) {
-		avcodec_close( audioStream->codec );
-		audioStream = NULL;
-	}
-	if ( audioSamples ) {
-		av_freep( &audioSamples );
-	}
-	if ( audioBuffer ) {
-		av_freep( &audioBuffer );
-	}
-	if ( audioFrame ) {
+    if ( audioFrame ) {
 		av_frame_free( &audioFrame );
 		audioFrame = NULL;
 	}
-	
-	if ( formatCtx ) {
-		avformat_free_context( formatCtx );
-		formatCtx = NULL;
-	}
-	
-	if ( swr ) {
+    
+    if ( swr ) {
 		swr_free( &swr );
+		swr = NULL;
+	}
+    
+    if ( audioBuffer ) {
+		av_freep( &audioBuffer );
+		audioBufferLen = 0;
 	}
 }
 
@@ -90,14 +102,19 @@ bool OutputFF::openVideo( Profile &prof, int vrate, int vcodec, QString vcodecNa
 		qDebug() << "Could not find video encoder.";
 		return false;
 	}
-	videoStream = avformat_new_stream( formatCtx, codec );
+	videoStream = avformat_new_stream( formatCtx, NULL );
 	if ( !videoStream ) {
 		qDebug() << "Could not allocate video stream.";
 		return false;
 	}
 	videoStream->id = formatCtx->nb_streams - 1;
 	
-	AVCodecContext *videoCodecCtx = videoStream->codec;
+	videoCodecCtx = avcodec_alloc_context3(codec);
+	if (!videoCodecCtx) {
+		qDebug() << "Could not allocate video codec context.";
+		return false;
+	}
+
 	/* put sample parameters */
 	videoCodecCtx->bit_rate = vrate * 1000000;
 	/* resolution must be a multiple of two */
@@ -135,6 +152,11 @@ bool OutputFF::openVideo( Profile &prof, int vrate, int vcodec, QString vcodecNa
 		return false;
 	}
 
+	if (avcodec_parameters_from_context(videoStream->codecpar, videoCodecCtx) < 0) {
+		qDebug() << "Could not copy video codec parameters";
+		return false;
+	}
+
 	videoFrame = av_frame_alloc();
 	if ( !videoFrame ) {
 		qDebug() << "Could not allocate video frame.";
@@ -158,108 +180,94 @@ bool OutputFF::openVideo( Profile &prof, int vrate, int vcodec, QString vcodecNa
 
 bool OutputFF::openAudio( Profile &prof, int vcodec )
 {
-	AVCodecID codec_id = AV_CODEC_ID_AAC;
-	if (vcodec == VCODEC_MPEG2) {
-		codec_id = AV_CODEC_ID_MP2;
-	}
+    // Initialisation par sécurité pour éviter les crashs dans close() en cas d'échec ici
+    audioStream = NULL;
+    audioCodecCtx = NULL;
+    audioFrame = NULL;
+    swr = NULL;
+    audioBuffer = NULL;
 
-	// find the video encoder
-	AVCodec *codec = avcodec_find_encoder( codec_id );
-	if ( !codec ) {
-		qDebug() << "Audio encoder not found.";
-		return false;
-	}
-	
-	audioStream = avformat_new_stream( formatCtx, codec );
-	if ( !audioStream ) {
-		qDebug() << "Could not allocate audio stream.";
-		return false;
-	}
-	audioStream->id = formatCtx->nb_streams - 1;
+    AVCodec *codec;
 
-	AVCodecContext *audioCodecCtx = audioStream->codec;
-	
-	/* put sample parameters */
-	audioCodecCtx->bit_rate = 256000;
-	
-	// set encoder sample format
-	if (vcodec == VCODEC_MPEG2) {
-		audioCodecCtx->sample_fmt = AV_SAMPLE_FMT_S16;
-	}
-	else {
-		audioCodecCtx->sample_fmt = AV_SAMPLE_FMT_FLTP;
-		// set strict -2
-		audioCodecCtx->strict_std_compliance = -2;
-	}
+    // 1. Sélection du codec
+    AVCodecID codec_id = (vcodec == VCODEC_HEVC || vcodec == VCODEC_H264) ? AV_CODEC_ID_AAC : AV_CODEC_ID_MP2;
+    codec = avcodec_find_encoder(codec_id);
+    if (!codec) {
+        qDebug() << "Audio encoder not found";
+        return false;
+    }
 
-	/* select other audio parameters supported by the encoder */
-    audioCodecCtx->sample_rate = prof.getAudioSampleRate();
+    // 2. Création du flux
+    audioStream = avformat_new_stream(formatCtx, NULL);
+    if (!audioStream) return false;
+    audioStream->id = formatCtx->nb_streams - 1;
+
+    // 3. Allocation du contexte
+    audioCodecCtx = avcodec_alloc_context3(codec);
+    if (!audioCodecCtx) return false;
+
+    // 4. Paramétrage (Ajusté pour éviter les incompatibilités)
+    audioCodecCtx->sample_fmt     = codec->sample_fmts ? codec->sample_fmts[0] : AV_SAMPLE_FMT_FLTP;
+    audioCodecCtx->bit_rate       = 128000;
+    audioCodecCtx->sample_rate    = prof.getAudioSampleRate();
     audioCodecCtx->channel_layout = AV_CH_LAYOUT_STEREO;
-    audioCodecCtx->channels = av_get_channel_layout_nb_channels( audioCodecCtx->channel_layout );
-	
-	audioStream->time_base = (AVRational){ 1, audioCodecCtx->sample_rate };
-	
-	if ( formatCtx->oformat->flags & AVFMT_GLOBALHEADER )
-		audioCodecCtx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
+    audioCodecCtx->channels       = av_get_channel_layout_nb_channels(audioCodecCtx->channel_layout);
+    
+    // TRÈS IMPORTANT : évite le crash au trailer pour certains formats (MP4)
+    if (formatCtx->oformat->flags & AVFMT_GLOBALHEADER) {
+        audioCodecCtx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
+    }
 
-	/* open it */
-	if ( avcodec_open2( audioCodecCtx, codec, NULL ) < 0 ) {
-		qDebug() << "Could not open audio codec.";
-		return false;
-	}
+    // 5. Ouverture du codec
+    if (avcodec_open2(audioCodecCtx, codec, NULL) < 0) return false;
 
-	audioFrame = av_frame_alloc();
-	if ( !audioFrame ) {
-		qDebug() << "Could not allocate audio frame.";
-		return false;
-	}
-	audioFrame->format = audioCodecCtx->sample_fmt;
-	audioFrame->nb_samples  = audioCodecCtx->frame_size;
-	audioFrame->channel_layout = audioCodecCtx->channel_layout;
-	audioFrame->sample_rate = audioCodecCtx->sample_rate;
+    // 6. Transfert des paramètres vers le flux (Essentiel pour av_write_trailer)
+    avcodec_parameters_from_context(audioStream->codecpar, audioCodecCtx);
 
-	/* the codec gives us the frame size, in samples,
-	* we calculate the size of the samples buffer in bytes */
-	audioSamplesSize = av_samples_get_buffer_size( NULL, audioCodecCtx->channels,
-												audioCodecCtx->frame_size,
-												audioCodecCtx->sample_fmt, 0 );
-	audioCodecFrameSize = audioCodecCtx->frame_size;
+    // 7. ALLOCATION DU BUFFER
+    int inChannels = prof.getAudioChannels();
+    int inBytesPerChannel = Profile::bytesPerChannel(&prof);
+    int inBytesPerSample = inChannels * inBytesPerChannel;
 
-	if ( audioSamplesSize < 0 ) {
-		qDebug() << "Could not get samples buffer size.";
-		return false;
-	}
-	qDebug() << "audioSamplesSize" << audioSamplesSize;
-	audioSamples = (uint8_t*)av_malloc( audioSamplesSize );
-	if ( !audioSamples ) {
-		qDebug() << "Could not allocate samples buffer.";
-		return false;
-	}
-	audioBuffer = (uint8_t*)av_malloc( audioCodecCtx->frame_size * prof.getAudioChannels() * Profile::bytesPerChannel(&prof) );
-	audioBufferLen = 0;
-	if ( !audioBuffer ) {
-		qDebug() << "Could not allocate audio buffer.";
-		return false;
-	}
-	/* setup the data pointers in the AVFrame */
-	int ret = avcodec_fill_audio_frame( audioFrame, audioCodecCtx->channels, 
-										audioCodecCtx->sample_fmt,
-										(const uint8_t*)audioSamples, audioSamplesSize, 0 );
-	if ( ret < 0 ) {
-		qDebug() << "Could not setup audio frame";
-		return false;
-	}
+    audioCodecFrameSize = audioCodecCtx->frame_size;
+    if (audioCodecFrameSize <= 0) audioCodecFrameSize = 1024;
 
-	// set audio resampler 
-	swr = swr_alloc_set_opts( swr, AV_CH_LAYOUT_STEREO, audioCodecCtx->sample_fmt, audioCodecCtx->sample_rate, AV_CH_LAYOUT_STEREO,
-							  FFmpegCommon::getGlobalInstance()->convertProfileSampleFormat(prof.getAudioFormat()),
-							  prof.getAudioSampleRate(), 0, NULL );
-	if (!swr || swr_init( swr ) < 0) {
-		qDebug() << "Could not init resampler";
-		return false;
-	}
+    // Allocation sécurisée du buffer intermédiaire
+    audioBuffer = (uint8_t*)av_malloc(audioCodecFrameSize * inBytesPerSample);
+    audioBufferLen = 0;
+    if (!audioBuffer) return false;
 
-	return true;
+    // 8. Préparation de la Frame FFmpeg
+    audioFrame = av_frame_alloc();
+    if (!audioFrame) return false;
+    audioFrame->nb_samples     = audioCodecFrameSize;
+    audioFrame->format         = audioCodecCtx->sample_fmt;
+    audioFrame->channel_layout = audioCodecCtx->channel_layout;
+    
+    if (av_frame_get_buffer(audioFrame, 0) < 0) return false;
+
+    // 9. Initialiser le Resampler (SWR) avec détection précise
+    int64_t in_ch_layout = (inChannels == 1) ? AV_CH_LAYOUT_MONO : AV_CH_LAYOUT_STEREO;
+    
+    AVSampleFormat in_sample_fmt;
+    if (inBytesPerChannel == 2) {
+        in_sample_fmt = AV_SAMPLE_FMT_S16;
+    } else {
+        in_sample_fmt = AV_SAMPLE_FMT_FLT;
+    }
+
+    swr = swr_alloc_set_opts(NULL,
+                             audioCodecCtx->channel_layout, audioCodecCtx->sample_fmt, audioCodecCtx->sample_rate,
+                             in_ch_layout,                  in_sample_fmt,             prof.getAudioSampleRate(),
+                             0, NULL);
+    
+    if (!swr || swr_init(swr) < 0) {
+        qDebug() << "Could not initialize the resampling context";
+        return false;
+    }
+
+    totalSamples = 0;
+    return true;
 }
 
 
@@ -307,6 +315,12 @@ bool OutputFF::openFormat( QString filename, Profile &prof, int vrate, int vcode
 			close();
 			return false;
 		}
+	}
+
+	if (formatCtx->nb_streams != 2) {
+		qDebug() << "Unexpected number of streams in format context:" << formatCtx->nb_streams;
+		close();
+		return false;
 	}
     
 	// Write the stream header, if any.
@@ -404,52 +418,37 @@ void OutputFF::run()
 			usleep( 1000 );
 		}
 	}
-	
-	AVPacket pkt;
-	pkt.data = NULL;    // packet data will be allocated by the encoder
-	pkt.size = 0;
-	av_init_packet( &pkt );
-	// get the delayed video frames
-	int i = 0, ret;
-	for ( int got_output = 1; got_output; i++ ) {
-		ret = avcodec_encode_video2( videoStream->codec, &pkt, NULL, &got_output );
-		if ( ret < 0 ) {
-			qDebug() << "Error encoding video frame.";
-		}
-		
-		if ( got_output ) {
-			// rescale output packet timestamp values from codec to stream timebase
-			av_packet_rescale_ts( &pkt, videoStream->codec->time_base, videoStream->time_base );
-			pkt.stream_index = videoStream->index;
-			// Write the compressed frame to the media file.
-			ret = av_interleaved_write_frame( formatCtx, &pkt );
-			if ( ret < 0 )
-				qDebug() << "Error while writing video frame.";
-		}
-	}
-	
-	pkt.data = NULL;    // packet data will be allocated by the encoder
-	pkt.size = 0;
-	av_init_packet( &pkt );
-	i = 0;
-	/* get the delayed audio frames */
-    for ( int got_output = 1; got_output; i++ ) {
-        ret = avcodec_encode_audio2( audioStream->codec, &pkt, NULL, &got_output );
-        if ( ret < 0 ) {
-            qDebug() << "Error encoding audio frame.";
-        }
 
-        if ( got_output ) {
-			// rescale output packet timestamp values from codec to stream timebase
-			av_packet_rescale_ts( &pkt, audioStream->codec->time_base, audioStream->time_base );
-			pkt.stream_index = audioStream->index;
-			// Write the compressed frame to the media file.
-			ret = av_interleaved_write_frame( formatCtx, &pkt );
-			if ( ret < 0 )
-				qDebug() << "Error while writing audio frame.";
-		}
-    }
-    
+	// Flush Vidéo
+	AVPacket *pkt = av_packet_alloc(); // Allocation unique pour tout le flush
+	avcodec_send_frame(videoCodecCtx, NULL);
+	while (true) {
+		int ret = avcodec_receive_packet(videoCodecCtx, pkt);
+		if (ret == AVERROR_EOF || ret == AVERROR(EAGAIN))
+			break;
+
+		av_packet_rescale_ts(pkt, videoCodecCtx->time_base, videoStream->time_base);
+		pkt->stream_index = videoStream->index;
+		av_interleaved_write_frame(formatCtx, pkt);
+		av_packet_unref(pkt);
+	}
+
+	// Flush Audio
+	avcodec_send_frame(audioCodecCtx, NULL);
+	while (true) {
+		int ret = avcodec_receive_packet(audioCodecCtx, pkt);
+		if (ret == AVERROR_EOF || ret == AVERROR(EAGAIN))
+			break;
+
+		av_packet_rescale_ts(pkt, audioCodecCtx->time_base, audioStream->time_base);
+		pkt->stream_index = audioStream->index;
+		av_interleaved_write_frame(formatCtx, pkt);
+		av_packet_unref(pkt);
+	}
+
+	// Libération finale
+	av_packet_free(&pkt);
+
 	/* Write the trailer, if any. The trailer must be written before you
 	* close the CodecContexts open when you wrote the header; otherwise
 	* av_write_trailer() may try to use memory that was freed on
@@ -463,117 +462,185 @@ void OutputFF::run()
 
 bool OutputFF::encodeVideo( Frame *f, int nFrame )
 {
-	int ret, got_output;
-	AVPacket pkt;
-	
-	pkt.data = NULL;    // packet data will be allocated by the encoder
-	pkt.size = 0;
-	av_init_packet( &pkt );
-	
-	/* when we pass a frame to the encoder, it may keep a reference to it
-	* internally;
-	* make sure we do not overwrite it here */
-	av_frame_make_writable( videoFrame );
-	
-	uint8_t *buf = f->data();
-	int w = f->profile.getVideoWidth();
-	int h = f->profile.getVideoHeight();
-	int i;
-	uint8_t *dst = videoFrame->data[0];
-	for ( i = 0; i < h; ++i ) {
-		memcpy( dst + i * videoFrame->linesize[0], buf, w );
-		buf += w;
-	}
-	dst = videoFrame->data[1];
-	for ( i = 0; i < h / 2; ++i ) {
-		memcpy( dst + i * videoFrame->linesize[1], buf, w / 2);
-		buf += w / 2;
-	}
-	dst = videoFrame->data[2];
-	for ( i = 0; i < h / 2; ++i ) {
-		memcpy( dst + i * videoFrame->linesize[2], buf, w / 2);
-		buf += w / 2;
-	}
+    if ( !videoStream || !videoCodecCtx || !videoFrame ) return false;
 
-	videoFrame->pts = nFrame;
+    int ret;
+    AVPacket *pkt = av_packet_alloc();
+    if ( !pkt ) return false;
 
-	// encode the image
-	ret = avcodec_encode_video2( videoStream->codec, &pkt, videoFrame, &got_output );
-	if ( ret < 0 ) {
-		qDebug() << "Error encoding video frame" << nFrame;
-	}
+    // 1. Préparation de la frame
+    if ( av_frame_make_writable( videoFrame ) < 0 ) {
+        av_packet_free( &pkt );
+        return false;
+    }
 
-	if ( got_output ) {
-		// rescale output packet timestamp values from codec to stream timebase
-		av_packet_rescale_ts( &pkt, videoStream->codec->time_base, videoStream->time_base );
-		pkt.stream_index = videoStream->index;
-		// Write the compressed frame to the media file.
-		ret = av_interleaved_write_frame( formatCtx, &pkt );
-		if ( ret < 0 )
-			qDebug() << "Error while writing video frame.";
-	}
-	
-	return true;
+    // 2. COPIE DES PIXELS (YUV420P)
+    int width = videoCodecCtx->width;
+    int height = videoCodecCtx->height;
+    uint8_t *src = f->data();
+
+    // Plan Y
+    for ( int y = 0; y < height; y++ ) {
+        memcpy( videoFrame->data[0] + y * videoFrame->linesize[0], src + y * width, width );
+    }
+    src += width * height;
+
+    // Plan U
+    for ( int y = 0; y < height / 2; y++ ) {
+        memcpy( videoFrame->data[1] + y * videoFrame->linesize[1], src + y * ( width / 2 ), width / 2 );
+    }
+    src += ( width / 2 ) * ( height / 2 );
+
+    // Plan V
+    for ( int y = 0; y < height / 2; y++ ) {
+        memcpy( videoFrame->data[2] + y * videoFrame->linesize[2], src + y * ( width / 2 ), width / 2 );
+    }
+
+    // 3. RÉGLAGE DU PTS
+    // Comme la time_base est réglée sur 1/fps dans openVideo, le PTS est simplement l'index de l'image.
+    videoFrame->pts = nFrame;
+
+    // 4. ENCODAGE
+    ret = avcodec_send_frame( videoCodecCtx, videoFrame );
+    if ( ret < 0 ) {
+        qDebug() << "Error sending video frame to encoder" << nFrame;
+        av_packet_free( &pkt );
+        return false;
+    }
+
+    while ( ret >= 0 ) {
+        ret = avcodec_receive_packet( videoCodecCtx, pkt );
+        if ( ret == AVERROR(EAGAIN) || ret == AVERROR_EOF ) break;
+        if ( ret < 0 ) {
+            av_packet_free( &pkt );
+            return false;
+        }
+
+        // Rescale des timestamps de l'encodeur vers le conteneur
+        av_packet_rescale_ts( pkt, videoCodecCtx->time_base, videoStream->time_base );
+        pkt->stream_index = videoStream->index;
+
+        ret = av_interleaved_write_frame( formatCtx, pkt );
+        av_packet_unref( pkt );
+        
+        if ( ret < 0 ) qDebug() << "Error while writing video frame PTS:" << nFrame;
+    }
+    
+    av_packet_free( &pkt );
+    return true;
 }
 
 
 
 bool OutputFF::encodeAudio( Frame *f, int nFrame )
 {
-	int ret, got_output;
-	AVPacket pkt;
-	
-	av_init_packet( &pkt );
-	pkt.data = NULL;    // packet data will be allocated by the encoder
-	pkt.size = 0;
-		
-	uint8_t *buf = f->data();
-	int nSamples = f->audioSamples();
-	int inBytesPerSample = f->profile.getAudioChannels() * Profile::bytesPerChannel(&f->profile);
-	uint8_t *end = buf + (nSamples * inBytesPerSample);
+    if ( !audioStream || !audioCodecCtx || !swr || !audioBuffer ) return false;
 
-	do {
-		int ns = qMin( nSamples, audioCodecFrameSize - (audioBufferLen / inBytesPerSample) );
-		memcpy( audioBuffer + audioBufferLen, buf, ns * inBytesPerSample );
-		audioBufferLen += ns * inBytesPerSample;
-		nSamples -= ns;
-		buf += ns * inBytesPerSample;
+    int ret;
 
-		if ( audioBufferLen == audioCodecFrameSize * inBytesPerSample ) {
-			// convert
-			swr_convert( swr, (uint8_t**)audioFrame->extended_data, audioCodecFrameSize,
-						 (const uint8_t**)&audioBuffer, audioCodecFrameSize );
-			
-			/* when we pass a frame to the encoder, it may keep a reference to it
-			* internally;
-			* make sure we do not overwrite it here */
-			av_frame_make_writable( audioFrame );
-			
-			
-			audioFrame->pts = av_rescale_q( totalSamples,
-											(AVRational){1, audioStream->codec->sample_rate},
-											audioStream->codec->time_base );
-			
-			// encode the samples
-			ret = avcodec_encode_audio2( audioStream->codec, &pkt, audioFrame, &got_output );
-			if ( ret < 0 ) {
-				qDebug() << "Error encoding audio frame" << nFrame;
-			}
-			
-			if ( got_output ) {
-				// rescale output packet timestamp values from codec to stream timebase
-				av_packet_rescale_ts( &pkt, audioStream->codec->time_base, audioStream->time_base );
-				pkt.stream_index = audioStream->index;
-				// Write the compressed frame to the media file.
-				ret = av_interleaved_write_frame( formatCtx, &pkt );
-				if ( ret < 0 )
-					qDebug() << "Error while writing audio frame.";
-			}
-			
-			totalSamples += audioCodecFrameSize;
-			audioBufferLen = 0;
-		}
-	} while (buf < end);
+    AVPacket *pkt = av_packet_alloc();
+    if ( !pkt ) return false;
 
-	return true;
+    // Récupération des données brutes de la frame entrante
+    uint8_t *buf = f->data();
+    int nSamples = f->audioSamples();
+
+    // Calcul de la taille d'un échantillon complet en octets (ex: 2 canaux * 4 bytes = 8 bytes)
+    // On utilise les infos du profil pour être cohérent avec ce que openAudio a configuré
+    int inBytesPerSample = f->profile.getAudioChannels() * Profile::bytesPerChannel(&f->profile);
+    
+    // Pointeur de fin pour la boucle de lecture
+    uint8_t *end = buf + (nSamples * inBytesPerSample);
+
+    do {
+        // On remplit le buffer tampon jusqu'à avoir assez pour une frame AAC (généralement 1024 samples)
+        // audioCodecFrameSize a été défini dans openAudio
+        int samplesNeeded = audioCodecFrameSize - (audioBufferLen / inBytesPerSample);
+        int samplesAvailable = nSamples;
+        
+        int ns = qMin( samplesAvailable, samplesNeeded );
+        
+        // Copie des données dans le buffer intermédiaire
+        if ( ns > 0 ) {
+            memcpy( audioBuffer + audioBufferLen, buf, ns * inBytesPerSample );
+            audioBufferLen += ns * inBytesPerSample;
+            nSamples -= ns;
+            buf += ns * inBytesPerSample;
+        }
+
+        // Si le buffer est plein (on a 1024 samples), on encode
+        if ( audioBufferLen == audioCodecFrameSize * inBytesPerSample ) {
+            
+            // A. CONVERSION (Interleaved -> Planar / S16 -> FLTP)
+            const uint8_t *inData[1];
+            inData[0] = audioBuffer;
+
+            // On s'assure que la frame de sortie est inscriptible
+            ret = av_frame_make_writable( audioFrame );
+            if ( ret < 0 ) {
+                av_packet_free( &pkt );
+                return false;
+            }
+
+            // Conversion via SwrContext
+            // Note : swr_convert attend le nombre d'échantillons PAR CANAL, pas les octets.
+            ret = swr_convert( swr, 
+                         audioFrame->data,          audioCodecFrameSize,
+                         (const uint8_t**)inData,   audioCodecFrameSize );
+            
+            if ( ret < 0 ) {
+                 qDebug() << "Error during swr_convert";
+                 av_packet_free( &pkt );
+                 return false;
+            }
+
+            // B. CALCUL DU PTS (Presentation Time Stamp)
+            // Utilise totalSamples pour garantir la continuité temporelle sans trous
+            audioFrame->pts = av_rescale_q( totalSamples,
+                                            (AVRational){1, audioCodecCtx->sample_rate},
+                                            audioCodecCtx->time_base );
+
+            // C. ENCODAGE (Nouvelle API Send/Receive)
+            // Envoi de la frame brute à l'encodeur
+            ret = avcodec_send_frame( audioCodecCtx, audioFrame );
+            if ( ret < 0 ) {
+                qDebug() << "Error sending audio frame to encoder (nFrame:" << nFrame << ") Code:" << ret;
+                // On ne retourne pas false ici, on essaie de continuer au cas où
+            }
+
+            // Récupération des paquets compressés
+            while ( ret >= 0 ) {
+                ret = avcodec_receive_packet( audioCodecCtx, pkt );
+                
+                if ( ret == AVERROR(EAGAIN) || ret == AVERROR_EOF ) {
+                    break; 
+                } else if ( ret < 0 ) {
+                    qDebug() << "Error encoding audio frame (Receive)";
+                    break;
+                }
+
+                // Ajustement des timestamps pour le conteneur (MP4/MKV...)
+                av_packet_rescale_ts( pkt, audioCodecCtx->time_base, audioStream->time_base );
+                pkt->stream_index = audioStream->index;
+                
+                // Écriture dans le fichier
+                int writeRet = av_interleaved_write_frame( formatCtx, pkt );
+                if ( writeRet < 0 ) {
+                    qDebug() << "Error while writing audio packet.";
+                }
+                
+                // Libération du contenu du paquet (mais pas de la structure)
+                av_packet_unref( pkt );
+            }
+
+            // Mise à jour du compteur global et du buffer
+            totalSamples += audioCodecFrameSize;
+            audioBufferLen = 0;
+        }
+    } while ( buf < end );
+
+    // Libération finale de la structure du paquet
+    av_packet_free( &pkt );
+
+    return true;
 }

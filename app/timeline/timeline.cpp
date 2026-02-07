@@ -2,6 +2,7 @@
 #include <QMimeData>
 #include <QInputDialog>
 #include <QMessageBox>
+#include <QScrollBar>
 
 #include "undoclipadd.h"
 #include "undoclipremove.h"
@@ -90,6 +91,18 @@ void Timeline::viewMouseMove( QPointF pos )
 	ruler->setPosition( qMax( 0.0, pos.x() - RULERWIDTH / 2 ), y );
 
 	mouseScenePosition = QPointF( pos.x(), t );
+
+	if (timelineScroller.running) {		
+		QGraphicsView *v = views().first();
+		QPoint delta = v->mapFromScene(pos.x() - timelineScroller.moveStartPosition, 0);
+		delta = v->mapToScene(delta).toPoint();
+		
+		qDebug() << "delta=" << delta;
+
+		QScrollBar *hbar = v->horizontalScrollBar();
+		hbar->setValue(hbar->value() - delta.x());
+		timelineScroller.moveStartPosition = pos.x();
+	}
 }
 
 
@@ -113,6 +126,16 @@ void Timeline::viewMouseLeave()
 	ruler->setPosition( ruler->pos().x(), 0 );
 	
 	mouseScenePosition = QPointF( -1, -1 );
+}
+
+
+
+void Timeline::startMoveTimeline()
+{
+	timelineScroller.running = true;
+	timelineScroller.moveStartPosition = mouseScenePosition.x();
+	timelineScroller.scrollBarStartPosition = views().first()->horizontalScrollBar()->value();
+	qDebug() << "moveTimelineStartPosition" << timelineScroller.moveStartPosition;
 }
 
 
@@ -305,6 +328,8 @@ void Timeline::trackSelectWindowMove( QPointF p )
 
 void Timeline::trackSelectWindowRelease(bool extend)
 {
+	timelineScroller.running = false;
+
 	if ( !selectWindowItem ) {
 		return;
 	}
@@ -1325,7 +1350,7 @@ void Timeline::addSelectionToTimeline()
 		return;
 	}
 	AddClipsSettings settings = dlg.getSettings();
-	double transitionLength = settings.transition != "none" ? MICROSECOND * settings.transitionDuration : 0;
+	double transitionLength = settings.transition != "none" ? MICROSECOND * settings.transitionDuration / 1000.0 : 0;
 	
 	int activeTrack = cursor->getActiveTrack();
 	double clipPos = cursor->mapRectToScene( cursor->rect() ).left();
@@ -1337,7 +1362,7 @@ void Timeline::addSelectionToTimeline()
 	
 	for (int j = 0; j < list.count(); ++j) {
 		Source *source = list.at(j);
-		double len = (source->getType() == InputBase::IMAGE ? (double)settings.imageDuration * MICROSECOND : source->getProfile().getStreamDuration());
+		double len = (source->getType() == InputBase::IMAGE ? (double)settings.imageDuration * MICROSECOND / 1000.0 : source->getProfile().getStreamDuration());
 		Clip *c = scene->createClip( source, clipPos, source->getProfile().getStreamStartTime(), len );
 		if (scene->canMove( c, c->length(), clipPos, activeTrack )) {
 			c->setPosition( clipPos );

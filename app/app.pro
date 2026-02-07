@@ -150,7 +150,6 @@ win32 {
 }
 
 CONFIG += c++11
-CONFIG += debug
 
 CONFIG += link_pkgconfig
 PKGCONFIG += movit

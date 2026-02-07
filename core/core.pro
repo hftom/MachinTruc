@@ -191,7 +191,7 @@ QT += opengl
 QT += concurrent
 
 CONFIG += c++11
-CONFIG += staticlib debug
+CONFIG += staticlib
 
 CONFIG += link_pkgconfig
 PKGCONFIG += movit

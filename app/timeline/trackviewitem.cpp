@@ -40,7 +40,12 @@ void TrackViewItem::mousePressEvent( QGraphicsSceneMouseEvent * event )
 		t->trackSelectWindow( event->scenePos() );
 	}
 	else if ( event->button() == Qt::LeftButton ) {
-		t->trackPressed( event->scenePos() );
+		if (event->modifiers() & Qt::ControlModifier) {
+			t->startMoveTimeline();
+		}
+		else {
+			t->trackPressed( event->scenePos() );
+		}
 	}
 	else if ( event->button() == Qt::RightButton ) {
 		t->trackPressedRightBtn( this, event->screenPos() );
