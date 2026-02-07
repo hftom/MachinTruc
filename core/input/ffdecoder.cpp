@@ -725,6 +725,11 @@ bool FFDecoder::makeFrame( Frame *f, AVFrame *avFrame, double ratio, double pts,
 			bitDepth = 12;
 			break;
 		}
+		case AV_PIX_FMT_RGB32: {
+			formatType = Frame::RGBA;
+			pw[0] *= 4;
+			break;
+		}
 		default: {
 			printf("AV_PIX_FMT not supported\n");
 			return false;
@@ -734,7 +739,16 @@ bool FFDecoder::makeFrame( Frame *f, AVFrame *avFrame, double ratio, double pts,
 	f->setVideoFrame( formatType, videoCodecCtx->width, videoCodecCtx->height,
 					  ratio, avFrame->interlaced_frame, avFrame->top_field_first, pts, dur, orientation, 0, bitDepth);
 
-	copyYUVPlanar(f->data(), avFrame, ph, pw, bitDepth);
+	if (formatType >= Frame::RGBA) {
+		uint8_t *buf = f->data();
+		for ( int i = 0; i < videoCodecCtx->height; ++i) {
+			memcpy( buf, avFrame->data[0] + (avFrame->linesize[0] * i), pw[0]);
+			buf += pw[0];
+		}
+	}
+	else {
+		copyYUVPlanar(f->data(), avFrame, ph, pw, bitDepth);
+	}
 
 	return true;
 }

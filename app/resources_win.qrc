@@ -56,6 +56,7 @@
     <file>shaders/resize_opaque.frag</file>
     <file>shaders/rgb_to_hsv.frag</file>
     <file>shaders/rotate.frag</file>
+    <file>shaders/scrolling.frag</file>
     <file>shaders/sliding_window.frag</file>
     <file>shaders/soft_border.frag</file>
     <file>shaders/stabilize.frag</file>
