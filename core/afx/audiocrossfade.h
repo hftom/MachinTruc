@@ -36,7 +36,7 @@ public:
 	bool process( Frame *first, Buffer *buf1, Frame *second, Buffer *buf2, Buffer *dst, Profile *p ) {
 		// ATTENTION: first or second can be NULL (but not both)
 		// a NULL frame is considered silent.
-		int samples, channels;
+			int samples = 0, channels = 0;
 		if ( first ) {
 			firstVol->process( first, buf1, buf1, p );
 			samples = first->audioSamples();

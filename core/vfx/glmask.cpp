@@ -48,7 +48,7 @@ QString GLMask::getMaskDescriptor( double pts, Frame *src, Profile *p  )
 					.arg(getParamValue(smoothColor).toDouble() > 0 ? 1 : 0)
 					// We do access blur and mask in processMask, and they are created in setGraph, that is, at movit chain finalize.
 					// So, make sure the chain is rebuilt by printing our pointer in the fingerprint.
-					.arg(QString().sprintf("%p", this));
+						.arg(QString::asprintf("%p", this));
 		default: return "";
 	}
 }

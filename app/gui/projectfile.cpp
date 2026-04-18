@@ -1,4 +1,14 @@
+#include <QCoreApplication>
+#include <QEventLoop>
+
 #include "projectfile.h"
+
+namespace {
+void pumpUiEvents()
+{
+	QCoreApplication::processEvents( QEventLoop::AllEvents, 5 );
+}
+}
 
 
 
@@ -72,6 +82,7 @@ bool ProjectFile::loadProject( QString filename, QList<Source*> builtin )
 		
 		if ( e.tagName() == "Source" ) {
 			readSource( e );
+			pumpUiEvents();
 		}
 	}
 	
@@ -85,6 +96,7 @@ bool ProjectFile::loadProject( QString filename, QList<Source*> builtin )
 		
 		if ( e.tagName() == "Scene" ) {
 			readScene( e );
+			pumpUiEvents();
 		}
 	}
 	
@@ -292,6 +304,7 @@ void ProjectFile::readScene( QDomElement &element )
 			if ( ok )
 				readTrack( e, scene, index );
 		}
+		pumpUiEvents();
 	}
 }
 
@@ -322,6 +335,7 @@ void ProjectFile::readTrack( QDomElement &element, Scene *scene, int index )
 				}
 			}
 		}
+		pumpUiEvents();
 	}
 }
 

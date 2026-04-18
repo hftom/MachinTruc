@@ -1,7 +1,7 @@
 #ifndef RENDERINGDIALOG_H
 #define RENDERINGDIALOG_H
 
-#include <QTime>
+#include <QElapsedTimer>
 
 #include "output/output_ff.h"
 #include "ui_render.h"
@@ -40,7 +40,7 @@ private:
 	Profile profile;
 	bool encoderRunning;
 	OutputFF *out;
-	QTime eta;
+	QElapsedTimer eta;
 	
 signals:
 	void renderStarted( double startPts, QSize out );

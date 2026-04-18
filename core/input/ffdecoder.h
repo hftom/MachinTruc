@@ -166,8 +166,8 @@ private:
 	SwrContext *swr;
 	int lastChannels;
 	int64_t lastLayout;
-	AVCodec *videoCodec;
-	AVCodec *audioCodec;
+	const AVCodec *videoCodec;
+	const AVCodec *audioCodec;
 	int videoStream;
 	int audioStream;
 	AVFrame *videoAvframe;

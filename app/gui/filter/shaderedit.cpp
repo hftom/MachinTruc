@@ -36,7 +36,7 @@ ShaderEdit::ShaderEdit( QWidget *parent, Parameter *p ) : ParameterWidget( paren
 	//font.setPointSize( 12 );
 	editor->setFont( font );
 	editor->setStyleSheet( "QPlainTextEdit{ background-color:#FFFEC7; color:black; }" );
-	editor->setTabStopWidth( QFontMetrics( font ).averageCharWidth() * 2 );
+		editor->setTabStopDistance( QFontMetrics( font ).averageCharWidth() * 2 );
 	highlighter = new Highlighter( editor->document() );
 	widgets.append( editor );
 	allLayout->addWidget( editor );

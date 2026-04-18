@@ -1,9 +1,48 @@
+#include <QApplication>
 #include <QFileInfo>
 #include <QDir>
-#include <QMessageBox>
 #include <QFileDialog>
+#include <QFileIconProvider>
+#include <QFileSystemModel>
+#include <QMessageBox>
+#include <QStyle>
 
 #include "renderingdialog.h"
+
+namespace {
+
+class SimpleFileIconProvider : public QFileIconProvider
+{
+public:
+	QIcon icon( const QFileInfo &info ) const override
+	{
+		if ( info.isDir() )
+			return QApplication::style()->standardIcon( QStyle::SP_DirIcon );
+		return QApplication::style()->standardIcon( QStyle::SP_FileIcon );
+	}
+	QIcon icon( IconType type ) const override
+	{
+		switch ( type ) {
+			case Folder:
+				return QApplication::style()->standardIcon( QStyle::SP_DirIcon );
+			case File:
+			default:
+				return QApplication::style()->standardIcon( QStyle::SP_FileIcon );
+		}
+	}
+};
+
+void configureFileDialog( QFileDialog &dialog )
+{
+	dialog.setOption( QFileDialog::DontUseNativeDialog, true );
+	dialog.setOption( QFileDialog::DontUseCustomDirectoryIcons, true );
+	dialog.setViewMode( QFileDialog::Detail );
+	QFileSystemModel *model = dialog.findChild<QFileSystemModel*>();
+	if ( model )
+		model->setIconProvider( new SimpleFileIconProvider );
+}
+
+}
 
 
 
@@ -93,7 +132,12 @@ void RenderingDialog::heightChanged( int val )
 
 void RenderingDialog::openFile()
 {
-	QString file = QFileDialog::getSaveFileName( this, tr("Render to file") );
+	QFileDialog dialog( this, tr("Render to file") );
+	dialog.setAcceptMode( QFileDialog::AcceptSave );
+	configureFileDialog( dialog );
+	if ( dialog.exec() != QDialog::Accepted )
+		return;
+	QString file = dialog.selectedFiles().value( 0 );
 	if ( !file.isEmpty() ) {
 		QFileInfo fi( file );
 		QString suffix = fi.suffix();

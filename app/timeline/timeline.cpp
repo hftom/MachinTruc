@@ -1333,11 +1333,9 @@ void Timeline::addSelectionToTimeline()
 		return;
 	}
 	
-	bool imageOnly = true;
 	double minLength = 0;
 	for (int j = 0; j < list.count(); ++j) {
 		if (list.at(j)->getType() != InputBase::IMAGE) {
-			imageOnly = false;
 			if (minLength == 0 || list.at(j)->getProfile().getStreamDuration() < minLength) {
 				minLength = list.at(j)->getProfile().getStreamDuration();
 			}

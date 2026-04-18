@@ -116,8 +116,8 @@ bool InputImage::open( QString fn )
 	width = image.width();
 	height = image.height();
 	rgba = image.depth() == 32;
-	buffer = BufferPool::globalInstance()->getBuffer( image.byteCount() );
-	memcpy( buffer->data(), image.constBits(), image.byteCount() );
+	buffer = BufferPool::globalInstance()->getBuffer( image.sizeInBytes() );
+	memcpy( buffer->data(), image.constBits(), image.sizeInBytes() );
 
 	getOrientation();
 

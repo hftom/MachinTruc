@@ -17,6 +17,7 @@ int SDL_main(int argc, char **argv)
 {
 #ifdef Q_OS_UNIX
 	QCoreApplication::setAttribute( Qt::AA_X11InitThreads );
+	QCoreApplication::setAttribute( Qt::AA_DontUseNativeDialogs );
 #endif
 	
 	QApplication app(argc, argv);

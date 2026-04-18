@@ -77,7 +77,7 @@ public:
 		QByteArray encodedData;
 		foreach ( const QModelIndex &index, indexes ) {
 			if ( index.isValid() && index.row() < filters->count() ) {
-				encodedData.append( filters->at( index.row() ).identifier );
+					encodedData.append( filters->at( index.row() ).identifier.toLatin1() );
 			}
 		}
 		mimeData->setData( MIMETYPEEFFECT, encodedData );

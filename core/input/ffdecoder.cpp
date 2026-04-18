@@ -63,11 +63,11 @@ void FFDecoder::close()
 
 	// Close the codec
 	if ( videoCodecCtx ) {
-		avcodec_close( videoCodecCtx );
+		avcodec_free_context( &videoCodecCtx );
 		videoCodecCtx = NULL;
 	}
 	if ( audioCodecCtx ) {
-		avcodec_close( audioCodecCtx );
+		avcodec_free_context( &audioCodecCtx );
 		audioCodecCtx = NULL;
 	}
 
@@ -111,16 +111,13 @@ bool FFDecoder::probe( QString fn, Profile *prof )
 	prof->setHasVideo( false );
 	
 	if ( haveAudio ) {
-		int64_t channel_layout = (audioCodecCtx->channel_layout && audioCodecCtx->channels == av_get_channel_layout_nb_channels(audioCodecCtx->channel_layout)) ?
-								audioCodecCtx->channel_layout : av_get_default_channel_layout(audioCodecCtx->channels);
-		int bufSize = 1024;
-		char buf[ bufSize ];
+		char buf[1024];
 		buf[0] = 0;
-		av_get_channel_layout_string( buf, bufSize, 0, channel_layout );
+		av_channel_layout_describe( &audioCodecCtx->ch_layout, buf, sizeof(buf) );
 		prof->setAudioLayoutName( QString( buf ) );
-		prof->setAudioCodecName( QString( av_codec_get_codec_descriptor( audioCodecCtx )->name ) );
+		prof->setAudioCodecName( QString( avcodec_get_name( audioCodecCtx->codec_id ) ) );
 		prof->setAudioSampleRate( audioCodecCtx->sample_rate );
-		prof->setAudioChannels( audioCodecCtx->channels );
+		prof->setAudioChannels( audioCodecCtx->ch_layout.nb_channels );
 		//prof->setAudioFormat( Profile::SAMPLE_FMT_S16 );
 		prof->setStreamStartTime( startTime );
 		prof->setStreamDuration( duration );
@@ -196,15 +193,13 @@ bool FFDecoder::probe( QString fn, Profile *prof )
 			tbx = ((double)ctx->time_base.den / (double)ctx->time_base.num);
 		if ( st->r_frame_rate.den && st->r_frame_rate.num )
 			tbr = (double)st->r_frame_rate.num / (double)st->r_frame_rate.den;
-		if ( tbx && tbr ) {
-			if ( tbr > 5 && tbr < 121 ) {
-				fps = tbr;
-				if ( fps > 30 && ilaced )
-					fps /= 2.0;
-			}
-			else if ( tbx > 18 && tbx < 121 )
-				fps = tbx / 2.0;
+		if ( tbr > 5 && tbr < 121 ) {
+			fps = tbr;
+			if ( fps > 30 && ilaced )
+				fps /= 2.0;
 		}
+		else if ( tbx > 18 && tbx < 121 )
+			fps = tbx / 2.0;
 		// compare to usual framerates
 		double cfr = 0;
 		for ( i = 0; i < NCFR; ++i ) {
@@ -222,6 +217,9 @@ bool FFDecoder::probe( QString fn, Profile *prof )
 			if ( fabs( fps - cfps ) < 2 )
 				fps = cfps;
 		}
+
+		if ( fps == 0 )
+			return haveAudio;
 
 		prof->setVideoFrameRate( fps );
 		prof->setVideoFrameDuration( MICROSECOND / fps );
@@ -251,7 +249,7 @@ bool FFDecoder::probe( QString fn, Profile *prof )
 			return haveAudio;
 		}
 
-		prof->setVideoCodecName( QString( av_codec_get_codec_descriptor( videoCodecCtx )->name ) );
+		prof->setVideoCodecName( QString( avcodec_get_name( videoCodecCtx->codec_id ) ) );
 		prof->setVideoWidth( f.profile.getVideoWidth() );
 		prof->setVideoHeight( f.profile.getVideoHeight() );
 		prof->setVideoSAR( f.profile.getVideoSAR() );
@@ -287,22 +285,26 @@ bool FFDecoder::ffOpen( QString fn )
 	orientation = 0;
 
 	for ( i = 0; i < formatCtx->nb_streams; i++ ) {
-		if ( videoStream == -1 && outProfile.hasVideo() && formatCtx->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO ) {
-			if ( (videoCodecCtx = formatCtx->streams[ i ]->codec) ) {
-				if ( (videoCodec = avcodec_find_decoder( videoCodecCtx->codec_id )) ) {
+		AVStream *stream = formatCtx->streams[i];
+		if ( videoStream == -1 && outProfile.hasVideo() && stream->codecpar->codec_type == AVMEDIA_TYPE_VIDEO ) {
+			videoCodec = avcodec_find_decoder( stream->codecpar->codec_id );
+			if ( videoCodec ) {
+				videoCodecCtx = avcodec_alloc_context3( videoCodec );
+				if ( videoCodecCtx && avcodec_parameters_to_context( videoCodecCtx, stream->codecpar ) >= 0 ) {
 					videoStream = i;
-					AVStream *st = formatCtx->streams[ i ];
 					AVDictionaryEntry *tag = NULL;
-					if ( (tag = av_dict_get( st->metadata, "rotate", tag, AV_DICT_IGNORE_SUFFIX )) )
+					if ( (tag = av_dict_get( stream->metadata, "rotate", tag, AV_DICT_IGNORE_SUFFIX )) )
 						orientation = QString( tag->value ).toInt();
 					haveVideo = true;
 					videoCodecCtx->thread_count = 0;
 				}
 			}
 		}
-		if ( audioStream == -1 && outProfile.hasAudio() && formatCtx->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO ) {
-			if ( (audioCodecCtx = formatCtx->streams[ i ]->codec) ) {
-				if ( (audioCodec = avcodec_find_decoder( audioCodecCtx->codec_id )) ) {
+		if ( audioStream == -1 && outProfile.hasAudio() && stream->codecpar->codec_type == AVMEDIA_TYPE_AUDIO ) {
+			audioCodec = avcodec_find_decoder( stream->codecpar->codec_id );
+			if ( audioCodec ) {
+				audioCodecCtx = avcodec_alloc_context3( audioCodec );
+				if ( audioCodecCtx && avcodec_parameters_to_context( audioCodecCtx, stream->codecpar ) >= 0 ) {
 					audioStream = i;
 					haveAudio = true;
 				}
@@ -314,9 +316,7 @@ bool FFDecoder::ffOpen( QString fn )
 		return false;
 
 	if ( videoCodecCtx ) {
-		AVDictionary *opts = NULL;
-		av_dict_set( &opts, "refcounted_frames", "1", 0 );
-		if ( avcodec_open2( videoCodecCtx, videoCodec, &opts ) < 0 ) {
+		if ( avcodec_open2( videoCodecCtx, videoCodec, NULL ) < 0 ) {
 			return false; // Could not open codec_id
 		}
 		yadif.reset( outProfile.getVideoFrameRate() > inProfile.getVideoFrameRate(), videoStream, formatCtx, videoCodecCtx );
@@ -341,7 +341,7 @@ void FFDecoder::resetAudioResampler()
 	if ( !haveAudio )
 		return;
 
-	if ( !audioCodecCtx->channels || !audioCodecCtx->sample_rate || (audioCodecCtx->sample_fmt == AV_SAMPLE_FMT_NONE) ) {
+	if ( !audioCodecCtx->ch_layout.nb_channels || !audioCodecCtx->sample_rate || (audioCodecCtx->sample_fmt == AV_SAMPLE_FMT_NONE) ) {
 		haveAudio = false;
 		return;
 	}
@@ -349,12 +349,14 @@ void FFDecoder::resetAudioResampler()
 	if ( swr )
 		swr_free( &swr );
 
-	lastLayout = (audioCodecCtx->channel_layout && audioCodecCtx->channels == av_get_channel_layout_nb_channels(audioCodecCtx->channel_layout)) ?
-								audioCodecCtx->channel_layout : av_get_default_channel_layout(audioCodecCtx->channels);
-	lastChannels = audioCodecCtx->channels;
-	swr = swr_alloc_set_opts( swr, FFmpegCommon::getGlobalInstance()->convertProfileAudioLayout( outProfile.getAudioLayout() ),
-							  FFmpegCommon::getGlobalInstance()->convertProfileSampleFormat( outProfile.getAudioFormat() ),
-							  outProfile.getAudioSampleRate(), lastLayout, audioCodecCtx->sample_fmt, audioCodecCtx->sample_rate, 0, NULL );
+	lastChannels = audioCodecCtx->ch_layout.nb_channels;
+	lastLayout = 0;
+	AVChannelLayout outChLayout = {};
+	av_channel_layout_from_mask( &outChLayout, FFmpegCommon::getGlobalInstance()->convertProfileAudioLayout( outProfile.getAudioLayout() ) );
+	swr_alloc_set_opts2( &swr, &outChLayout,
+					 FFmpegCommon::getGlobalInstance()->convertProfileSampleFormat( outProfile.getAudioFormat() ),
+					 outProfile.getAudioSampleRate(), &audioCodecCtx->ch_layout, audioCodecCtx->sample_fmt, audioCodecCtx->sample_rate, 0, NULL );
+	av_channel_layout_uninit( &outChLayout );
 	swr_init( swr );
 }
 
@@ -450,7 +452,6 @@ bool FFDecoder::seekTo( double p, Frame *f, AudioFrame *af )
 					++loop;
 					continue;
 				}
-				printf("seekTo !decodeVideo\n");
 				return false;
 			}
 			//printf("decoded PTS=%f, timestamp=%f, wanted PTS=%f\n", f->pts(), timestamp, p );
@@ -515,7 +516,6 @@ bool FFDecoder::seekTo( double p, Frame *f, AudioFrame *af )
 
 bool FFDecoder::decodeVideo( Frame *f )
 {
-	int gotFrame = 0;
 	double vpts = 0;
 
 	while ( 1 ) {
@@ -541,8 +541,7 @@ bool FFDecoder::decodeVideo( Frame *f )
 		AVPacket *packet;
 		if ( endOfFile & EofVideoPacket ) {
 			// get the last few frames
-			packet = (AVPacket*)malloc( sizeof(AVPacket) );
-			av_init_packet( packet );
+			packet = av_packet_alloc();
 			packet->data = NULL;
 			packet->size = 0;
 		}
@@ -550,14 +549,20 @@ bool FFDecoder::decodeVideo( Frame *f )
 			if ( !(packet = videoPackets.dequeue()) )
 				return false;
 		}
-		int len = avcodec_decode_video2( videoCodecCtx, videoAvframe, &gotFrame, packet );
-		if ( len >= 0 && gotFrame ) {
+		int len = avcodec_send_packet( videoCodecCtx, packet );
+		// In flush mode the decoder is already draining: send_packet returns AVERROR_EOF
+		// on the second and subsequent calls. We must still call receive_frame to drain
+		// frames buffered by multi-threaded decoders (e.g. H.264 frame-threading).
+		if ( len >= 0 || (endOfFile & EofVideoPacket) ) {
+			len = avcodec_receive_frame( videoCodecCtx, videoAvframe );
+		}
+		if ( len >= 0 ) {
 			AVStream *st = formatCtx->streams[videoStream];
 			double tb = av_q2d( st->time_base ) * AV_TIME_BASE;
-			vpts = av_frame_get_best_effort_timestamp( videoAvframe ) * tb;
+			vpts = videoAvframe->best_effort_timestamp * tb;
 
 			double ratio = 1.0;
-			if ( st->sample_aspect_ratio.num && av_cmp_q(st->sample_aspect_ratio, st->codec->sample_aspect_ratio) ) {
+			if ( st->sample_aspect_ratio.num && av_cmp_q( st->sample_aspect_ratio, videoCodecCtx->sample_aspect_ratio ) ) {
 				ratio = (double)st->sample_aspect_ratio.num / (double)st->sample_aspect_ratio.den;
 			}
 			else if ( videoAvframe->sample_aspect_ratio.num && videoAvframe->sample_aspect_ratio.den ) {
@@ -737,7 +742,7 @@ bool FFDecoder::makeFrame( Frame *f, AVFrame *avFrame, double ratio, double pts,
 	}
 
 	f->setVideoFrame( formatType, videoCodecCtx->width, videoCodecCtx->height,
-					  ratio, avFrame->interlaced_frame, avFrame->top_field_first, pts, dur, orientation, 0, bitDepth);
+					  ratio, (avFrame->flags & AV_FRAME_FLAG_INTERLACED) != 0, (avFrame->flags & AV_FRAME_FLAG_TOP_FIELD_FIRST) != 0, pts, dur, orientation, 0, bitDepth);
 
 	if (formatType >= Frame::RGBA) {
 		uint8_t *buf = f->data();
@@ -781,7 +786,6 @@ void FFDecoder::copyYUVPlanar(uint8_t *buf, AVFrame *avFrame, int ph[3], int pw[
 
 bool FFDecoder::decodeAudio( AudioFrame *f, int sync, double *pts )
 {
-	int gotFrame = 0;
 	int writtenSamples = 0;
 
 	while ( 1 ) {
@@ -800,89 +804,76 @@ bool FFDecoder::decodeAudio( AudioFrame *f, int sync, double *pts )
 			}
 			currentAudioPacket.set( audioPackets.dequeue() );
 		}
-		int len=0;
-		while ( len >= 0 && currentAudioPacket.packet->size > 0 ) {
-			len = avcodec_decode_audio4( audioCodecCtx, audioAvframe, &gotFrame, currentAudioPacket.packet );
-			if ( len >= 0 && gotFrame ) {
-				double vpts;
-				if ( currentAudioPacket.pts != AV_NOPTS_VALUE )
-					vpts = currentAudioPacket.pts;
-				else {
-					vpts = av_q2d( formatCtx->streams[audioStream]->time_base ) * AV_TIME_BASE ;
-					vpts *= av_frame_get_best_effort_timestamp( audioAvframe );
-				}
-
-				if ( !sync ) {
-					// get the pts of the resampled chunk
-					vpts -= swr_get_delay( swr, outProfile.getAudioSampleRate() ) * MICROSECOND / outProfile.getAudioSampleRate();
-				}
-
-				// roundup estimate
-				int outSamples = av_rescale_rnd( swr_get_delay( swr, audioCodecCtx->sample_rate ) + audioAvframe->nb_samples, outProfile.getAudioSampleRate(), audioCodecCtx->sample_rate, AV_ROUND_UP );
-				// FIXME:nasty hack to avoid ringbuffer overflow
-				//outSamples *= outProfile.getAudioChannels();
-
-				// audio channels and layout may have changed
-				// if so, we flush swr internal buffer and reset
-				int64_t layout = (audioCodecCtx->channel_layout && audioCodecCtx->channels == av_get_channel_layout_nb_channels(audioCodecCtx->channel_layout)) ?
-								audioCodecCtx->channel_layout : av_get_default_channel_layout(audioCodecCtx->channels);
-				if ( audioCodecCtx->channels != lastChannels || layout != lastLayout ) {
-					//printf("channels=%d, lastChannels=%d\n", audioCodecCtx->channels, lastChannels);
-					int n = swr_get_delay( swr, outProfile.getAudioSampleRate() ) * outProfile.getAudioChannels();
-					uint8_t* dst = f->write( writtenSamples, n );
-					writtenSamples += swr_convert( swr, &dst, n, 0, 0 );
-					resetAudioResampler();
-				}
-
-				// We have to convert in order to get the exact number of out samples
-				// but we want swr_convert to write directly into the AudioFrame buffer.
-				// So, if all samples have to be skipped, don't call f->writeDone,
-				// thus the write pointer isn't increased and next time we will overwrite this chunk.
-				uint8_t* dst = f->write( writtenSamples, outSamples );
-				outSamples = swr_convert( swr, &dst, outSamples, (const uint8_t**)audioAvframe->extended_data, audioAvframe->nb_samples );
-				writtenSamples += outSamples;
-				if ( sync ) {
-					if ( sync == DECODEAUDIOPROBE ) {
-						*pts = vpts;
-						return true;
-					}
-					// how much samples to skip?
-					int ns = (*pts - vpts) * (double)outProfile.getAudioSampleRate() / MICROSECOND;
-					//printf("pts=%f, vpts=%f, ns=%d, sr=%d, outSamples=%d\n", *pts, vpts, ns, outProfile.getAudioSampleRate(), outSamples);
-					if ( ns < 0 ) {
-						// we have to seek back again
-						freeCurrentAudioPacket();
-						return false;
-					}
-					else if ( ns < outSamples ) {
-						// Tell AudioFrame that "ns" samples are skipped
-						f->writeDone( *pts, writtenSamples, ns );
-						if ( (currentAudioPacket.packet->size - len) <= 0 )
-							freeCurrentAudioPacket();
-						else {
-							shiftCurrentAudioPacket( len );
-							shiftCurrentAudioPacketPts( vpts );
-						}
-						return true;
-					}
-					else {
-						writtenSamples = 0;
-						shiftCurrentAudioPacketPts( vpts );
-					}
-				}
-				else {
-					f->writeDone( vpts, writtenSamples );
-					if ( (currentAudioPacket.packet->size - len) <= 0 )
-						freeCurrentAudioPacket();
-					else {
-						shiftCurrentAudioPacket( len );
-						shiftCurrentAudioPacketPts( vpts );
-					}
-					return true;
-				}
-			}
-			shiftCurrentAudioPacket( len );
+		if ( avcodec_send_packet( audioCodecCtx, currentAudioPacket.packet ) < 0 ) {
+			freeCurrentAudioPacket();
+			continue;
 		}
+
+		if ( avcodec_receive_frame( audioCodecCtx, audioAvframe ) < 0 ) {
+			freeCurrentAudioPacket();
+			continue;
+		}
+
+		double vpts;
+		if ( currentAudioPacket.pts != AV_NOPTS_VALUE )
+			vpts = currentAudioPacket.pts;
+		else {
+			vpts = av_q2d( formatCtx->streams[audioStream]->time_base ) * AV_TIME_BASE;
+			vpts *= audioAvframe->best_effort_timestamp;
+		}
+
+		if ( !sync ) {
+			// get the pts of the resampled chunk
+			vpts -= swr_get_delay( swr, outProfile.getAudioSampleRate() ) * MICROSECOND / outProfile.getAudioSampleRate();
+		}
+
+		// roundup estimate
+		int outSamples = av_rescale_rnd( swr_get_delay( swr, audioCodecCtx->sample_rate ) + audioAvframe->nb_samples, outProfile.getAudioSampleRate(), audioCodecCtx->sample_rate, AV_ROUND_UP );
+		// FIXME:nasty hack to avoid ringbuffer overflow
+		//outSamples *= outProfile.getAudioChannels();
+
+		// audio channels and layout may have changed
+		// if so, we flush swr internal buffer and reset
+		if ( audioCodecCtx->ch_layout.nb_channels != lastChannels ) {
+			int n = swr_get_delay( swr, outProfile.getAudioSampleRate() ) * outProfile.getAudioChannels();
+			uint8_t* dst = f->write( writtenSamples, n );
+			writtenSamples += swr_convert( swr, &dst, n, 0, 0 );
+			resetAudioResampler();
+		}
+
+		// We have to convert in order to get the exact number of out samples
+		// but we want swr_convert to write directly into the AudioFrame buffer.
+		// So, if all samples have to be skipped, don't call f->writeDone,
+		// thus the write pointer isn't increased and next time we will overwrite this chunk.
+		uint8_t* dst = f->write( writtenSamples, outSamples );
+		outSamples = swr_convert( swr, &dst, outSamples, (const uint8_t**)audioAvframe->extended_data, audioAvframe->nb_samples );
+		writtenSamples += outSamples;
+		if ( sync ) {
+			if ( sync == DECODEAUDIOPROBE ) {
+				*pts = vpts;
+				freeCurrentAudioPacket();
+				return true;
+			}
+			int ns = (*pts - vpts) * (double)outProfile.getAudioSampleRate() / MICROSECOND;
+			if ( ns < 0 ) {
+				freeCurrentAudioPacket();
+				return false;
+			}
+			else if ( ns < outSamples ) {
+				f->writeDone( *pts, writtenSamples, ns );
+				freeCurrentAudioPacket();
+				return true;
+			}
+			else {
+				writtenSamples = 0;
+			}
+		}
+		else {
+			f->writeDone( vpts, writtenSamples );
+			freeCurrentAudioPacket();
+			return true;
+		}
+
 		freeCurrentAudioPacket();
 	}
 
@@ -900,8 +891,7 @@ void FFDecoder::shiftCurrentAudioPacketPts( double pts )
 
 void FFDecoder::shiftCurrentAudioPacket( int len )
 {
-	currentAudioPacket.packet->size -= len;
-	currentAudioPacket.packet->data += len;
+	Q_UNUSED( len );
 }
 
 
@@ -919,27 +909,20 @@ bool FFDecoder::getPacket()
 {
 	if ( endOfFile )
 		return false;
-	AVPacket *packet = (AVPacket*)malloc( sizeof(AVPacket) );
+	AVPacket *packet = av_packet_alloc();
 	if ( !packet ) {
 		return false;
 	}
-	av_init_packet( packet );
 	if ( av_read_frame( formatCtx, packet ) < 0 ) {
 		freePacket( packet );
 		endOfFile |= EofPacket;
 		return false;
 	}
 	if ( packet->stream_index == videoStream ) {
-		if ( !av_dup_packet( packet ) )
-			videoPackets.enqueue( packet );
-		else
-			freePacket( packet );
+		videoPackets.enqueue( packet );
 	}
 	else if ( packet->stream_index == audioStream ) {
-		if ( !av_dup_packet( packet ) )
-			audioPackets.enqueue( packet );
-		else
-			freePacket( packet );
+		audioPackets.enqueue( packet );
 	}
 	else {
 		freePacket( packet );
@@ -951,8 +934,9 @@ bool FFDecoder::getPacket()
 
 void FFDecoder::freePacket( AVPacket *packet )
 {
-	av_free_packet( packet );
-	free( packet );
+	if ( packet ) {
+		av_packet_free( &packet );
+	}
 }
 
 

@@ -532,7 +532,7 @@ void InputFF::resample( Frame *f )
 	}
 	else*/ if ( delta >= videoResampler.outputDuration ) {
 		// this frame will be duplicated (delta / videoResampler.outputDuration) times
-		printf("duplicate, delta=%f, f->pts=%f, outputPts=%f\n", delta, f->pts(), videoResampler.outputPts);
+		//printf("duplicate, delta=%f, f->pts=%f, outputPts=%f\n", delta, f->pts(), videoResampler.outputPts);
 		// add some to delta to prevent subduplicate
 		videoResampler.setRepeat( f->pts(), (delta + 1) / videoResampler.outputDuration );
 		reorderedVideoFrames.enqueue( f );
@@ -540,7 +540,7 @@ void InputFF::resample( Frame *f )
 	}
 	else if ( delta <= -videoResampler.outputDuration ) {
 		// skip
-		printf("skip frame delta=%f, f->pts=%f, outputPts=%f\n", delta, f->pts(), videoResampler.outputPts);
+		//printf("skip frame delta=%f, f->pts=%f, outputPts=%f\n", delta, f->pts(), videoResampler.outputPts);
 		delete f;
 	}
 	else {
@@ -557,7 +557,7 @@ void InputFF::resampleBackward( Frame *f )
 	double delta = ( videoResampler.outputPts - videoResampler.outputDuration ) - ( f->pts() - duration );
 	if ( delta >= videoResampler.outputDuration ) {
 		// this frame will be duplicated (delta / videoResampler.outputDuration) times
-		printf("duplicate, delta=%f, f->pts=%f, outputPts=%f\n", delta, f->pts(), videoResampler.outputPts);
+		//printf("duplicate, delta=%f, f->pts=%f, outputPts=%f\n", delta, f->pts(), videoResampler.outputPts);
 		// add some to delta to prevent subduplicate
 		videoResampler.setRepeat( f->pts(), (delta + 1) / videoResampler.outputDuration );
 		reorderedVideoFrames.enqueue( f );
@@ -565,7 +565,7 @@ void InputFF::resampleBackward( Frame *f )
 	}
 	else if ( delta <= -videoResampler.outputDuration ) {
 		// skip
-		printf("skip frame delta=%f, f->pts=%f, outputPts=%f\n", delta, f->pts(), videoResampler.outputPts);
+		//printf("skip frame delta=%f, f->pts=%f, outputPts=%f\n", delta, f->pts(), videoResampler.outputPts);
 		delete f;
 	}
 	else {

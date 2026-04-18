@@ -7,9 +7,28 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QMessageBox>
+#include <QApplication>
 #include <QFileDialog>
+#include <QFileIconProvider>
+#include <QFileSystemModel>
+#include <QStyle>
 
 #include "videoout/videowidget.h"
+
+namespace {
+class SimpleFileIconProvider : public QFileIconProvider {
+public:
+    QIcon icon( IconType ) const override { return QApplication::style()->standardIcon( QStyle::SP_FileIcon ); }
+    QIcon icon( const QFileInfo & ) const override { return QApplication::style()->standardIcon( QStyle::SP_FileIcon ); }
+};
+void configureFileDialog( QFileDialog &dialog ) {
+    dialog.setOption( QFileDialog::DontUseNativeDialog, true );
+    dialog.setOption( QFileDialog::DontUseCustomDirectoryIcons, true );
+    dialog.setViewMode( QFileDialog::Detail );
+    QFileSystemModel *model = dialog.findChild<QFileSystemModel*>();
+    if ( model ) model->setIconProvider( new SimpleFileIconProvider );
+}
+}
 
 #define OVDTOPLEFT 1
 #define OVDTOPRIGHT 2
@@ -261,7 +280,12 @@ void VideoWidget::shot()
 		return;
 	}
 
-	QString file = QFileDialog::getSaveFileName( this, tr("Save current image") );
+	QFileDialog dialog( this, tr("Save current image") );
+	dialog.setAcceptMode( QFileDialog::AcceptSave );
+	configureFileDialog( dialog );
+	if ( dialog.exec() != QDialog::Accepted )
+		return;
+	QString file = dialog.selectedFiles().value( 0 );
 	if ( file.isEmpty() ) {
 		return;
 	}
@@ -284,7 +308,7 @@ void VideoWidget::wheelEvent( QWheelEvent * event )
 
 	if ( event->modifiers() & Qt::ControlModifier )
 		d *= 10;
-	if ( event->delta() < 0 )
+	if ( event->angleDelta().y() < 0 )
 		d *= -1;
 
 	event->accept();

@@ -12,6 +12,26 @@
 
 
 
+// Item intermédiaire entre le thread GL (readback PBO) et le thread sws (conversion RGB→YUV)
+struct RgbItem {
+	Frame   *frame;
+	uint8_t *rgbData; // buffer av_malloc'd, libéré par SwsWorker
+	int      w, h;
+};
+
+// Thread dédié à la conversion colorimétrique RGB→YUV (sws_scale), découplé du thread GL
+class SwsWorker : public QThread {
+public:
+	SwsWorker( MQueue<RgbItem*> *pending, MQueue<Frame*> *encode );
+	~SwsWorker();
+	volatile bool running;
+private:
+	void run() override;
+	MQueue<RgbItem*> *pendingRgb;
+	MQueue<Frame*>   *encodeVideoFrames;
+};
+
+
 
 class Metronom : public QThread
 {

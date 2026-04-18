@@ -8,26 +8,6 @@
 
 static FFmpegCommon globalFFmpeg;
 
-static int lockManager( void **mutex, enum AVLockOp op)
-{
-	QMutex **m = (QMutex**)mutex;
-	switch ( op ) {
-		case AV_LOCK_CREATE:
-			(*m) = new QMutex();
-			break;
-		case AV_LOCK_OBTAIN:
-			(*m)->lock();
-			break;
-		case AV_LOCK_RELEASE:
-			(*m)->unlock();
-			break;
-		case AV_LOCK_DESTROY:
-			delete (*m);
-			break;
-	}
-	return 0;
-}
-
 
 
 FFmpegCommon::FFmpegCommon()
@@ -40,10 +20,6 @@ FFmpegCommon::FFmpegCommon()
 bool FFmpegCommon::initFFmpeg()
 {
 	if ( !initDone ) {
-		av_lockmgr_register( lockManager );
-		avcodec_register_all();
-		av_register_all();
-		avfilter_register_all();
 		initDone = true;
 		
 		/*const AVCodecDescriptor *desc = NULL;
@@ -64,9 +40,10 @@ bool FFmpegCommon::initFFmpeg()
 		h264CodecNames << "default";
 		hevcCodecNames << "default";
 		
-		AVCodec * codec = av_codec_next(NULL);
-		while (codec != NULL) {
-			if (av_codec_is_encoder(codec) && codec->type == AVMEDIA_TYPE_VIDEO) {
+		void *codecIter = NULL;
+		const AVCodec *codec = NULL;
+		while ( (codec = av_codec_iterate( &codecIter )) ) {
+			if ( codec->type == AVMEDIA_TYPE_VIDEO && av_codec_is_encoder( codec ) ) {
 				QString cn = codec->name;
 				if (cn.contains("264")) {
 					qDebug() << codec->name;
@@ -77,7 +54,6 @@ bool FFmpegCommon::initFFmpeg()
 					hevcCodecNames << codec->name;
 				}
 			}
-			codec = av_codec_next(codec);
 		}
 	}
 

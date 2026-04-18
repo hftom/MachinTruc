@@ -13,7 +13,7 @@
 // 1 in metronom::runShow
 // 1 in display
 // less than 2 would freeze the app.
-#define NUMOUTPUTFRAMES 5
+#define NUMOUTPUTFRAMES 10
 
 
 
@@ -41,6 +41,92 @@ static const int fastPlaybackSpeed[NFPS][2] = {
 };
 
 
+
+// ---------------------------------------------------------------------------
+// SwsWorker : conversion RGB→YUV420P dans un thread séparé
+// ---------------------------------------------------------------------------
+
+SwsWorker::SwsWorker( MQueue<RgbItem*> *pending, MQueue<Frame*> *encode )
+	: running( false ), pendingRgb( pending ), encodeVideoFrames( encode ) {}
+
+SwsWorker::~SwsWorker()
+{
+	running = false;
+	wait();
+}
+
+void SwsWorker::run()
+{
+	struct SwsContext *swsCtx = NULL;
+	RgbItem *item;
+
+	// Boucle principale : tourne tant que running == true
+	while ( running ) {
+		if ( (item = pendingRgb->dequeue()) ) {
+			int w = item->w, h = item->h;
+
+			if ( !swsCtx ) {
+				swsCtx = sws_getContext( w, h, AV_PIX_FMT_RGB24,
+										 w, h, AV_PIX_FMT_YUV420P,
+										 0, NULL, NULL, NULL );
+				const int *coefs = sws_getCoefficients( w * h > 1280 * 576 ? SWS_CS_ITU709 : SWS_CS_ITU601 );
+				sws_setColorspaceDetails( swsCtx, coefs, 1, coefs, 0, 0, 0, 0 );
+			}
+
+			item->frame->setVideoFrame( Frame::YUV420P, w, h,
+										item->frame->profile.getVideoSAR(),
+										item->frame->profile.getVideoInterlaced(),
+										item->frame->profile.getVideoTopFieldFirst(),
+										item->frame->pts(),
+										item->frame->profile.getVideoFrameDuration() );
+
+			const uint8_t * const src[4] = { item->rgbData, NULL, NULL, NULL };
+			const int srcStride[4] = { w * 3, 0, 0, 0 };
+			uint8_t *dst[4] = { item->frame->data(),
+								item->frame->data() + w * h,
+								item->frame->data() + w * h * 5 / 4 };
+			const int dstStride[4] = { w, w / 2, w / 2 };
+
+			sws_scale( swsCtx, src, srcStride, 0, h, dst, dstStride );
+
+			av_free( item->rgbData );
+			encodeVideoFrames->enqueue( item->frame );
+			delete item;
+		}
+		else
+			usleep( 1000 );
+	}
+
+	// Drain : traitement des items restants après l'arrêt du thread GL
+	while ( (item = pendingRgb->dequeue()) ) {
+		if ( swsCtx ) {
+			int w = item->w, h = item->h;
+			item->frame->setVideoFrame( Frame::YUV420P, w, h,
+										item->frame->profile.getVideoSAR(),
+										item->frame->profile.getVideoInterlaced(),
+										item->frame->profile.getVideoTopFieldFirst(),
+										item->frame->pts(),
+										item->frame->profile.getVideoFrameDuration() );
+			const uint8_t * const src[4] = { item->rgbData, NULL, NULL, NULL };
+			const int srcStride[4] = { w * 3, 0, 0, 0 };
+			uint8_t *dst[4] = { item->frame->data(),
+								item->frame->data() + w * h,
+								item->frame->data() + w * h * 5 / 4 };
+			const int dstStride[4] = { w, w / 2, w / 2 };
+			sws_scale( swsCtx, src, srcStride, 0, h, dst, dstStride );
+			encodeVideoFrames->enqueue( item->frame );
+		}
+		av_free( item->rgbData );
+		delete item;
+	}
+
+	if ( swsCtx )
+		sws_freeContext( swsCtx );
+}
+
+
+
+// ---------------------------------------------------------------------------
 
 Metronom::Metronom( PlaybackBuffer *pb )
 	: speed( 0 ),
@@ -265,23 +351,23 @@ void Metronom::runRender()
 {
 	Frame *f;
 	QGLFramebufferObject *fb = NULL;
-	struct SwsContext *swsCtx;
-	GLuint pbo = 0;
+	// Double PBO : pbo[pboIndex] reçoit le DMA courant,
+	// pbo[1-pboIndex] contient le DMA de la frame précédente (déjà terminé).
+	GLuint pbo[2] = { 0, 0 };
+	int pboIndex = 0;
+	Frame *pendingFrame = NULL;
+
+	// File intermédiaire GL → SwsWorker
+	MQueue<RgbItem*> pendingRgbFrames;
+	SwsWorker swsWorker( &pendingRgbFrames, &encodeVideoFrames );
+	swsWorker.running = true;
+	swsWorker.start();
 
 	while ( running ) {
 		if ( (f = videoFrames.dequeue()) ) {
 			int w = f->profile.getVideoWidth();
 			int h = f->profile.getVideoHeight();
-			if ( !pbo ) {
-				swsCtx = sws_getContext( w, h, AV_PIX_FMT_RGB24,
-										w, h, AV_PIX_FMT_YUV420P,
-										0, NULL, NULL, NULL );
-				const int *coefs;
-				if ( w * h > 1280 * 576 )
-					coefs = sws_getCoefficients( SWS_CS_ITU709 );
-				else
-					coefs = sws_getCoefficients( SWS_CS_ITU601 );
-				sws_setColorspaceDetails( swsCtx, coefs, 1, coefs, 0, 0, 0, 0 );
+			if ( !pbo[0] ) {
 				fb = new QGLFramebufferObject( w, h );
 				glViewport( 0, 0, w, h );
 				glMatrixMode( GL_PROJECTION );
@@ -291,14 +377,18 @@ void Metronom::runRender()
 				glEnable( GL_TEXTURE_2D );
 				glActiveTexture( GL_TEXTURE0 );
 
-				glGenBuffers(1, &pbo);
-				glBindBuffer(GL_PIXEL_PACK_BUFFER_ARB, pbo);
-				glBufferData(GL_PIXEL_PACK_BUFFER_ARB, w * h * 3 + 32, NULL, GL_STREAM_READ);
+				glGenBuffers(2, pbo);
+				for ( int i = 0; i < 2; ++i ) {
+					glBindBuffer(GL_PIXEL_PACK_BUFFER_ARB, pbo[i]);
+					glBufferData(GL_PIXEL_PACK_BUFFER_ARB, w * h * 3 + 32, NULL, GL_STREAM_READ);
+				}
+				glBindBuffer(GL_PIXEL_PACK_BUFFER_ARB, 0);
 			}
 
 			if ( f->fence() )
 				glClientWaitSync( f->fence()->fence(), 0, GL_TIMEOUT_IGNORED );
 
+			// 1. Blit la texture de la frame courante dans le FBO
 			fb->bind();
 			glBindTexture( GL_TEXTURE_2D, f->fbo()->texture() );
 			glBegin( GL_QUADS );
@@ -309,39 +399,83 @@ void Metronom::runRender()
 			glEnd();
 			glPixelStorei( GL_PACK_ALIGNMENT, 1 );
 
-			glBindBuffer(GL_PIXEL_PACK_BUFFER_ARB, pbo);
+			// 2. Lance le DMA GPU→RAM de la frame courante (asynchrone)
+			glBindBuffer(GL_PIXEL_PACK_BUFFER_ARB, pbo[pboIndex]);
 			glReadPixels( 0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, BUFFER_OFFSET(0) );
-			uint8_t *rgbData = (uint8_t*)glMapBuffer(GL_PIXEL_PACK_BUFFER_ARB, GL_READ_ONLY);
-
-			f->setVideoFrame( Frame::YUV420P, w, h, f->profile.getVideoSAR(),
-							  f->profile.getVideoInterlaced(),
-							  f->profile.getVideoTopFieldFirst(),
-							  f->pts(),
-							  f->profile.getVideoFrameDuration() );
-
-			const uint8_t * const src[4] = { rgbData, NULL, NULL, NULL };
-			const int srcStride[4] = { w * 3, 0, 0, 0 };
-			uint8_t *dst[4] = { f->data(), f->data() + w * h, f->data() + w * h * 5 / 4 };
-			const int dstStride[4] = { w, w / 2, w / 2 };
-
-			sws_scale( swsCtx, src, srcStride, 0, h, dst, dstStride );
-
-			glUnmapBuffer(GL_PIXEL_PACK_BUFFER_ARB);
-			glBindBuffer(GL_PIXEL_PACK_BUFFER_ARB, 0);
 			fb->release();
 
-			encodeVideoFrames.enqueue( f );
+			// 3. Map le PBO de la frame précédente (DMA déjà terminé),
+			//    copie en RAM et libère immédiatement le PBO — sws_scale délégué au SwsWorker.
+			if ( pendingFrame ) {
+				int pw = pendingFrame->profile.getVideoWidth();
+				int ph = pendingFrame->profile.getVideoHeight();
+
+				glBindBuffer(GL_PIXEL_PACK_BUFFER_ARB, pbo[1 - pboIndex]);
+				uint8_t *rgbData = (uint8_t*)glMapBuffer(GL_PIXEL_PACK_BUFFER_ARB, GL_READ_ONLY);
+
+				if ( rgbData ) {
+					RgbItem *item = new RgbItem;
+					item->frame   = pendingFrame;
+					item->w       = pw;
+					item->h       = ph;
+					item->rgbData = (uint8_t*)av_malloc( pw * ph * 3 );
+					if ( item->rgbData )
+						memcpy( item->rgbData, rgbData, pw * ph * 3 );
+					glUnmapBuffer(GL_PIXEL_PACK_BUFFER_ARB);
+
+					if ( item->rgbData )
+						pendingRgbFrames.enqueue( item );
+					else
+						delete item;
+				}
+				else
+					glUnmapBuffer(GL_PIXEL_PACK_BUFFER_ARB);
+
+				glBindBuffer(GL_PIXEL_PACK_BUFFER_ARB, 0);
+			}
+
+			pendingFrame = f;
+			pboIndex ^= 1;
 		}
 		else
 			usleep( 1000 );
 	}
 
-	if (pbo)
-		glDeleteBuffers( 1, &pbo );
+	// Flush : envoie la dernière frame au SwsWorker
+	if ( pendingFrame && pbo[0] ) {
+		int pw = pendingFrame->profile.getVideoWidth();
+		int ph = pendingFrame->profile.getVideoHeight();
+
+		glBindBuffer(GL_PIXEL_PACK_BUFFER_ARB, pbo[1 - pboIndex]);
+		uint8_t *rgbData = (uint8_t*)glMapBuffer(GL_PIXEL_PACK_BUFFER_ARB, GL_READ_ONLY);
+		if ( rgbData ) {
+			RgbItem *item = new RgbItem;
+			item->frame   = pendingFrame;
+			item->w       = pw;
+			item->h       = ph;
+			item->rgbData = (uint8_t*)av_malloc( pw * ph * 3 );
+			if ( item->rgbData ) {
+				memcpy( item->rgbData, rgbData, pw * ph * 3 );
+				glUnmapBuffer(GL_PIXEL_PACK_BUFFER_ARB);
+				pendingRgbFrames.enqueue( item );
+			} else {
+				glUnmapBuffer(GL_PIXEL_PACK_BUFFER_ARB);
+				delete item;
+			}
+		} else {
+			glUnmapBuffer(GL_PIXEL_PACK_BUFFER_ARB);
+		}
+		glBindBuffer(GL_PIXEL_PACK_BUFFER_ARB, 0);
+	}
+
+	// Arrête le SwsWorker : il vide la queue restante avant de terminer
+	swsWorker.running = false;
+	swsWorker.wait();
+
+	if ( pbo[0] )
+		glDeleteBuffers( 2, pbo );
 	if ( fb )
 		delete fb;
-	if ( swsCtx )
-		sws_freeContext( swsCtx );
 }
 
 

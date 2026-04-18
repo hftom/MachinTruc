@@ -1,11 +1,53 @@
-#include <QMessageBox>
+#include <QApplication>
 #include <QFileDialog>
+#include <QFileIconProvider>
+#include <QFileSystemModel>
+#include <QMessageBox>
 #include <QShortcut>
+#include <QStyle>
 
 #include "engine/util.h"
 #include "gui/topwindow.h"
 #include "renderingdialog.h"
 #include "projectprofiledialog.h"
+
+namespace {
+
+class SimpleFileIconProvider : public QFileIconProvider
+{
+public:
+	QIcon icon( const QFileInfo &info ) const override
+	{
+		if ( info.isDir() )
+			return QApplication::style()->standardIcon( QStyle::SP_DirIcon );
+		return QApplication::style()->standardIcon( QStyle::SP_FileIcon );
+	}
+
+	QIcon icon( IconType type ) const override
+	{
+		switch ( type ) {
+			case Folder:
+				return QApplication::style()->standardIcon( QStyle::SP_DirIcon );
+			case File:
+			default:
+				return QApplication::style()->standardIcon( QStyle::SP_FileIcon );
+		}
+	}
+};
+
+void configureFileDialog( QFileDialog &dialog )
+{
+	dialog.setOption( QFileDialog::DontUseNativeDialog, true );
+	dialog.setOption( QFileDialog::DontUseCustomDirectoryIcons, true );
+	dialog.setViewMode( QFileDialog::Detail );
+
+	QFileSystemModel *model = dialog.findChild<QFileSystemModel*>();
+	if ( model ) {
+		model->setIconProvider( new SimpleFileIconProvider );
+	}
+}
+
+}
 
 #define VIDEOCLEARDELAY 200
 #define AUTORECOVERY "autorecovery.mct"
@@ -870,8 +912,13 @@ void TopWindow::clipThumbRequest( ThumbRequest request )
 
 void TopWindow::openSources()
 {
-	QStringList	list = QFileDialog::getOpenFileNames( this, tr("Open files"), openSourcesCurrentDir,
+	QFileDialog dialog( this, tr("Open files"), openSourcesCurrentDir,
 		"Videos(*.3gp *.ac3 *.avi *.dv *.eac3 *.flac *.flv *.jpg *.jpeg *.m2t *.mjpg *.mkv *.mov *.mp2 *.mp3 *.mp4 *.mpa *.mpc *.mpeg *.mpg *.mts *.ogg *.png *.ts *.vob *.wav *webm *.wma *.wmv)" );
+	dialog.setFileMode( QFileDialog::ExistingFiles );
+	configureFileDialog( dialog );
+	QStringList list;
+	if ( dialog.exec() )
+		list = dialog.selectedFiles();
 
 	if ( !list.isEmpty() ) {
 		openSourcesCurrentDir = QFileInfo( list[0] ).absolutePath();
@@ -1007,9 +1054,12 @@ void TopWindow::thumbResultReady( ThumbRequest result )
 void TopWindow::saveProject()
 {
 	if ( currentProjectFile.isEmpty() ) {
-		QString file = QFileDialog::getSaveFileName( this, tr("Save project"),
-						openProjectCurrentDir, "MachinTruc(*.mct)" );
-
+		QFileDialog dialog( this, tr("Save project"), openProjectCurrentDir, "MachinTruc(*.mct)" );
+		dialog.setAcceptMode( QFileDialog::AcceptSave );
+		configureFileDialog( dialog );
+		if ( dialog.exec() != QDialog::Accepted )
+			return;
+		QString file = dialog.selectedFiles().value( 0 );
 		if ( file.isEmpty() )
 			return;
 		openProjectCurrentDir = QFileInfo( file ).absolutePath();
@@ -1039,8 +1089,12 @@ void TopWindow::openProject()
 		return;
 	}
 
-	QString file = QFileDialog::getOpenFileName( this, tr("Open project"),
-						openProjectCurrentDir, "MachinTruc(*.mct)" );
+	QFileDialog dialog( this, tr("Open project"), openProjectCurrentDir, "MachinTruc(*.mct)" );
+	dialog.setFileMode( QFileDialog::ExistingFile );
+	configureFileDialog( dialog );
+	QString file;
+	if ( dialog.exec() )
+		file = dialog.selectedFiles().value( 0 );
 
 	if ( file.isEmpty() )
 		return;

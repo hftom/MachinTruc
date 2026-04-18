@@ -10,6 +10,7 @@
 #include <QGLWidget>
 #include <QWheelEvent>
 #include <QTimer>
+#include <QElapsedTimer>
 
 
 
@@ -85,7 +86,7 @@ private:
 	QPen timerBackgroundPen;
 	QPen timerPen;
 	QTimer timer;
-	QTime drawTime;
+	QElapsedTimer drawTime;
 	bool show;
 	
 	int startAngle, arcAngle;

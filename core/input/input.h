@@ -21,7 +21,7 @@ public:
 		mmi( 0 ),
 		speed( 1 )
 	{
-		mmiProvider = QString().sprintf("%p", this);
+		mmiProvider = QString::asprintf("%p", this);
 	}
 	virtual ~InputBase() {}
 	virtual bool probe( QString fn, Profile *prof ) = 0;

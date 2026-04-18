@@ -1,7 +1,7 @@
 #### MachinTruc is a GPU accelerated non linear video editor.
 
 
-![Screenshot](http://hftom.fr/machintruc-2.jpg)
+![Screenshot](http://razwave.hftom.fr/machintruc-2.jpg)
 
 
 

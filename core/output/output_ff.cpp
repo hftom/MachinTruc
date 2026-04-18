@@ -1,5 +1,5 @@
 #include <QDebug>
-#include <QTime>
+#include <QElapsedTimer>
 
 #include "output_ff.h"
 
@@ -91,7 +91,7 @@ bool OutputFF::openVideo( Profile &prof, int vrate, int vcodec, QString vcodecNa
 		case VCODEC_HEVC: vcodec_id = AV_CODEC_ID_H265; break;
 		case VCODEC_MPEG2: vcodec_id = AV_CODEC_ID_MPEG2VIDEO; break;
 	}
-	AVCodec *codec = NULL;
+	const AVCodec *codec = NULL;
 	if (!vcodecName.isEmpty() && vcodecName != "default") {
 		codec = avcodec_find_encoder_by_name(vcodecName.toUtf8().data());
 	}
@@ -133,6 +133,7 @@ bool OutputFF::openVideo( Profile &prof, int vrate, int vcodec, QString vcodecNa
 	videoCodecCtx->gop_size = prof.getVideoFrameRate();
 	videoCodecCtx->max_b_frames = 2;
 	videoCodecCtx->pix_fmt = AV_PIX_FMT_YUV420P;
+	videoCodecCtx->thread_count = 0; // auto : FFmpeg choisit le nombre optimal de threads
 	int sw = (double)prof.getVideoWidth() * prof.getVideoSAR();
 	int sh = prof.getVideoWidth();
 	videoCodecCtx->sample_aspect_ratio = (AVRational){ sw, sh };
@@ -187,7 +188,7 @@ bool OutputFF::openAudio( Profile &prof, int vcodec )
     swr = NULL;
     audioBuffer = NULL;
 
-    AVCodec *codec;
+	const AVCodec *codec;
 
     // 1. Sélection du codec
     AVCodecID codec_id = (vcodec == VCODEC_HEVC || vcodec == VCODEC_H264) ? AV_CODEC_ID_AAC : AV_CODEC_ID_MP2;
@@ -210,8 +211,7 @@ bool OutputFF::openAudio( Profile &prof, int vcodec )
     audioCodecCtx->sample_fmt     = codec->sample_fmts ? codec->sample_fmts[0] : AV_SAMPLE_FMT_FLTP;
     audioCodecCtx->bit_rate       = 128000;
     audioCodecCtx->sample_rate    = prof.getAudioSampleRate();
-    audioCodecCtx->channel_layout = AV_CH_LAYOUT_STEREO;
-    audioCodecCtx->channels       = av_get_channel_layout_nb_channels(audioCodecCtx->channel_layout);
+    av_channel_layout_from_mask( &audioCodecCtx->ch_layout, AV_CH_LAYOUT_STEREO );
     
     // TRÈS IMPORTANT : évite le crash au trailer pour certains formats (MP4)
     if (formatCtx->oformat->flags & AVFMT_GLOBALHEADER) {
@@ -242,13 +242,14 @@ bool OutputFF::openAudio( Profile &prof, int vcodec )
     if (!audioFrame) return false;
     audioFrame->nb_samples     = audioCodecFrameSize;
     audioFrame->format         = audioCodecCtx->sample_fmt;
-    audioFrame->channel_layout = audioCodecCtx->channel_layout;
+    av_channel_layout_copy( &audioFrame->ch_layout, &audioCodecCtx->ch_layout );
     
     if (av_frame_get_buffer(audioFrame, 0) < 0) return false;
 
     // 9. Initialiser le Resampler (SWR) avec détection précise
-    int64_t in_ch_layout = (inChannels == 1) ? AV_CH_LAYOUT_MONO : AV_CH_LAYOUT_STEREO;
-    
+    AVChannelLayout in_ch_layout = {};
+    av_channel_layout_from_mask( &in_ch_layout, (inChannels == 1) ? AV_CH_LAYOUT_MONO : AV_CH_LAYOUT_STEREO );
+
     AVSampleFormat in_sample_fmt;
     if (inBytesPerChannel == 2) {
         in_sample_fmt = AV_SAMPLE_FMT_S16;
@@ -256,10 +257,11 @@ bool OutputFF::openAudio( Profile &prof, int vcodec )
         in_sample_fmt = AV_SAMPLE_FMT_FLT;
     }
 
-    swr = swr_alloc_set_opts(NULL,
-                             audioCodecCtx->channel_layout, audioCodecCtx->sample_fmt, audioCodecCtx->sample_rate,
-                             in_ch_layout,                  in_sample_fmt,             prof.getAudioSampleRate(),
-                             0, NULL);
+    swr_alloc_set_opts2( &swr,
+                         &audioCodecCtx->ch_layout, audioCodecCtx->sample_fmt, audioCodecCtx->sample_rate,
+                         &in_ch_layout,             in_sample_fmt,             prof.getAudioSampleRate(),
+                         0, NULL );
+    av_channel_layout_uninit( &in_ch_layout );
     
     if (!swr || swr_init(swr) < 0) {
         qDebug() << "Could not initialize the resampling context";
@@ -377,7 +379,7 @@ void OutputFF::run()
 	unsigned nVideo = 0, nAudio = 0;
 	bool wait;
 	bool videoEnd = false;
-	QTime time;
+	QElapsedTimer time;
 	time.start();
 	totalSamples = 0;
 	

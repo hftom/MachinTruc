@@ -40,8 +40,8 @@ protected:
 		QDrag *drag = new QDrag( this );
 		QMimeData *mimeData = new QMimeData();
 		QByteArray encodedData;
-		encodedData.append( QString::number( row( it ) ) + " " );
-		encodedData.append( type );
+				encodedData.append( (QString::number( row( it ) ) + " ").toLatin1() );
+				encodedData.append( type.toLatin1() );
 		mimeData->setData( MIMETYPESOURCE, encodedData );
 		drag->setMimeData(mimeData);
 		//drag->setPixmap( QPixmap(":/images/icons/sound.png") );

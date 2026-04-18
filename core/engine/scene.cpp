@@ -524,7 +524,7 @@ bool Scene::canMoveMulti( Clip *clip, double clipLength, double &newPos, int tra
 	if ( t->clipAt( 0 ) == clip )
 		return true;
 	
-	Clip *c;
+	Clip *c = NULL;
 	int k = 0;
 	while ( k < count ) {
 		c = t->clipAt( k );
@@ -636,7 +636,7 @@ bool Scene::checkPlacement( Clip *clip, int track, double clipPos, double clipLe
 	if ( k == count )
 		return true;
 	// we are clipA
-	if ( clipPos < c->position() ) {
+	if ( c && clipPos < c->position() ) {
 		// we can't end after clipB
 		if ( c->position() + c->length() < clipPos + clipLength - margin )
 			return false;
